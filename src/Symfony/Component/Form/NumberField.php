@@ -27,10 +27,12 @@ class NumberField extends InputField
         // default precision is locale specific (usually around 3)
         $this->addOption('precision');
         $this->addOption('grouping', false);
+        $this->addOption('integer_only', false);
 
         $this->setValueTransformer(new NumberToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
             'grouping' => $this->getOption('grouping'),
+            'integer_only' => $this->getOption('integer_only'),
         )));
     }
 

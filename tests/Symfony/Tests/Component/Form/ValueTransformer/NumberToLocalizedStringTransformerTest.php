@@ -43,6 +43,17 @@ class NumberToLocalizedStringTransformerTest extends LocalizedTestCase
         $this->assertEquals('678,92', $transformer->transform(678.916));
     }
 
+    public function testTransformWithIntegerOnly()
+    {
+        $transformer = new NumberToLocalizedStringTransformer(array(
+            'integer_only' => true,
+        ));
+        $transformer->setLocale('de_AT');
+
+        $this->assertEquals('123', $transformer->transform(123.45));
+        $this->assertEquals('678', $transformer->transform(678.916));
+    }
+
     public function testReverseTransform()
     {
         $transformer = new NumberToLocalizedStringTransformer();
@@ -65,6 +76,17 @@ class NumberToLocalizedStringTransformerTest extends LocalizedTestCase
         $this->assertEquals(12345.912, $transformer->reverseTransform('12.345,912'));
         $this->assertEquals(1234.5, $transformer->reverseTransform('1234,5'));
         $this->assertEquals(12345.912, $transformer->reverseTransform('12345,912'));
+    }
+
+    public function testReverseTransformWithIntegerOnly()
+    {
+        $transformer = new NumberToLocalizedStringTransformer(array(
+            'integer_only' => true,
+        ));
+        $transformer->setLocale('de_AT');
+
+        $this->assertEquals(123, $transformer->reverseTransform('123,45'));
+        $this->assertEquals(678, $transformer->reverseTransform('678,92'));
     }
 
     public function testTransformExpectsNumeric()

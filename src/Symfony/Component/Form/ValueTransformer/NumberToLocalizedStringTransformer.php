@@ -18,8 +18,9 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
      */
     protected function configure()
     {
-        $this->addOption('precision', null);
+        $this->addOption('precision');
         $this->addOption('grouping', false);
+        $this->addOption('integer_only', false);
 
         parent::configure();
     }
@@ -49,7 +50,8 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
     /**
      * Transforms a localized number into an integer or float
      *
-     * @param string $value
+     * @param  string $value
+     * @return number
      */
     public function reverseTransform($value)
     {
@@ -58,6 +60,7 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
         }
 
         $formatter = $this->getNumberFormatter();
+        // TODO: If "integer_only", specify TYPE_INT64 or TYPE_INT32 so we return int instead of double
         $value = $formatter->parse($value);
 
         if (intl_is_failure($formatter->getErrorCode())) {
@@ -81,6 +84,12 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
         }
 
         $formatter->setAttribute(\NumberFormatter::GROUPING_USED, $this->getOption('grouping'));
+
+        if ($this->getOption('integer_only')) {
+            $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, 0);
+            $formatter->setAttribute(\NumberFormatter::PARSE_INT_ONLY, true);
+            $formatter->setAttribute(\NumberFormatter::ROUNDING_MODE, \NumberFormatter::ROUND_FLOOR);
+        }
 
         return $formatter;
     }

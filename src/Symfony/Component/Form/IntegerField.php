@@ -23,6 +23,7 @@ class IntegerField extends NumberField
     protected function configure()
     {
         $this->addOption('precision', 0);
+        $this->addOption('integer_only', true);
 
         parent::configure();
     }
@@ -32,6 +33,6 @@ class IntegerField extends NumberField
      */
     public function getData()
     {
-        return (int)parent::getData();
+        return (int) parent::getData();
     }
 }
