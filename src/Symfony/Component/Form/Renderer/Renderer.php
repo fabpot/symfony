@@ -65,6 +65,25 @@ abstract class Renderer extends Configurable implements RendererInterface
     /**
      * {@inheritDoc}
      */
+    public function renderHiddenFields(FieldInterface $group, array $attributes = array())
+    {
+        $html = "";
+
+        foreach ($group as $field) {
+            if (true === $field->isHidden()) {
+                if ($field->hasErrors()) {
+                    $html .= $field->renderErrors().PHP_EOL;
+                }
+                $html .= $field->render().PHP_EOL;
+            }
+        }
+
+        return $html;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setTranslator(TranslatorInterface $translator)
     {
         // TODO

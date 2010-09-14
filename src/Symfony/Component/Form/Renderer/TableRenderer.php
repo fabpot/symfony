@@ -24,20 +24,24 @@ class TableRenderer extends Renderer
      */
     public function render(FieldInterface $group, array $attributes = array())
     {
-        $html = "<table>\n";
+        $html = $this->renderHiddenFields($group, $attributes);
+
+        $html .= "<table>\n";
 
         foreach ($group as $field) {
-            $label = self::humanize($field->getKey());
+            if (false === $field->isHidden()) {
+                $label = self::humanize($field->getKey());
 
-            $html .= "<tr>\n";
-            $html .= "<td><label for=\"{$field->getId()}\">$label</label></td>\n";
-            $html .= "<td>\n";
-            if ($field->hasErrors()) {
-                $html .= $field->renderErrors()."\n";
+                $html .= "<tr>\n";
+                $html .= "<td><label for=\"{$field->getId()}\">$label</label></td>\n";
+                $html .= "<td>\n";
+                if ($field->hasErrors()) {
+                    $html .= $field->renderErrors()."\n";
+                }
+                $html .= $field->render()."\n";
+                $html .= "</td>";
+                $html .= "</tr>\n";
             }
-            $html .= $field->render()."\n";
-            $html .= "</td>";
-            $html .= "</tr>\n";
         }
 
         $html .= "</table>\n";
