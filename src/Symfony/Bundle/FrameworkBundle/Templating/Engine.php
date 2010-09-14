@@ -173,4 +173,17 @@ class Engine extends BaseEngine
 
         return array($parts[2], $options);
     }
+
+    /**
+     * addJavascript adds javascripts to the javascripts helper
+     *
+     * @param string    $javascript A JavaScript file path
+     * @param array     $attributes An array of attributes
+     *
+     * @author Jérémy Romey "jeremyFreeAgent" <jeremy@free-agent.fr>
+     */
+    public function addJavascript($javascript, $attributes = array())
+    {
+        $this->get('javascripts')->add($javascript, $attributes = array(), $this->level);
+    }
 }

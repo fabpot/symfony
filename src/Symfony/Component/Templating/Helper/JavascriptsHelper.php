@@ -41,12 +41,13 @@ class JavascriptsHelper extends Helper
     /**
      * Adds a JavaScript file.
      *
-     * @param string $javascript A JavaScript file path
-     * @param array  $attributes An array of attributes
+     * @param string    $javascript A JavaScript file path
+     * @param array     $attributes An array of attributes
+     * @param integer   $level      The Engine level
      */
-    public function add($javascript, $attributes = array())
+    public function add($javascript, $attributes = array(), $level = 0)
     {
-        $this->javascripts[$this->assetHelper->getUrl($javascript)] = $attributes;
+        $this->javascripts[$level][$this->assetHelper->getUrl($javascript)] = $attributes;
     }
 
     /**
@@ -66,14 +67,25 @@ class JavascriptsHelper extends Helper
      */
     public function render()
     {
-        $html = '';
-        foreach ($this->javascripts as $path => $attributes) {
-            $atts = '';
-            foreach ($attributes as $key => $value) {
-                $atts .= ' '.sprintf('%s="%s"', $key, htmlspecialchars($value, ENT_QUOTES, $this->charset));
-            }
+        $javascripts = $this->javascripts;
+        krsort($javascripts);
 
-            $html .= sprintf('<script type="text/javascript" src="%s"%s></script>', $path, $atts)."\n";
+        $pathsRendered = array();
+
+        $html = '';
+        foreach ($javascripts as $level => $javascript) {
+            foreach ($javascript as $path => $attributes) {
+                if (!in_array($path, $pathsRendered))
+                {
+                    array_push($pathsRendered, $path);
+                    $atts = '';
+                    foreach ($attributes as $key => $value) {
+                        $atts .= ' '.sprintf('%s="%s"', $key, htmlspecialchars($value, ENT_QUOTES, $this->charset));
+                    }
+
+                    $html .= sprintf('<script type="text/javascript" src="%s"%s></script>', $path, $atts)."\n";
+                }
+            }
         }
 
         return $html;
