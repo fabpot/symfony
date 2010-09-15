@@ -184,6 +184,6 @@ class Engine extends BaseEngine
      */
     public function addJavascript($javascript, $attributes = array())
     {
-        $this->get('javascripts')->add($javascript, $attributes = array(), $this->level);
+        $this->get('javascripts')->add($javascript, $attributes, $this->level);
     }
 }
