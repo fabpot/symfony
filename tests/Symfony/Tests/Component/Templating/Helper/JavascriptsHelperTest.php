@@ -22,13 +22,18 @@ class JavascriptsHelperTest extends \PHPUnit_Framework_TestCase
         $assetHelper = new AssetsHelper();
         $helper = new JavascriptsHelper($assetHelper);
         $helper->add('foo');
-        $this->assertEquals(array('/foo' => array()), $helper->get(), '->add() adds a JavaScript');
+        $this->assertEquals(array(0 => array('/foo' => array())), $helper->get(), '->add() adds a JavaScript');
         $helper->add('/foo');
-        $this->assertEquals(array('/foo' => array()), $helper->get(), '->add() does not add the same JavaScript twice');
+        $this->assertEquals(array(0 => array('/foo' => array())), $helper->get(), '->add() does not add the same JavaScript twice');
+        $helper = new JavascriptsHelper($assetHelper);
+        $helper->add('foo', array(), 1);
+        $this->assertEquals(array(1 => array('/foo' => array())), $helper->get(), '->add() adds a JavaScript at level 1');
+        $helper->add('bar', array(), 2);
+        $this->assertEquals(array(1 => array('/foo' => array()), 2 => array('/bar' => array())), $helper->get(), '->add() adds a JavaScript at level 2');
         $helper = new JavascriptsHelper($assetHelper);
         $assetHelper->setBaseURLs('http://assets.example.com/');
         $helper->add('foo');
-        $this->assertEquals(array('http://assets.example.com/foo' => array()), $helper->get(), '->add() converts the JavaScript to a public path');
+        $this->assertEquals(array(0 => array('http://assets.example.com/foo' => array())), $helper->get(), '->add() converts the JavaScript to a public path');
     }
 
     public function testMagicToString()
