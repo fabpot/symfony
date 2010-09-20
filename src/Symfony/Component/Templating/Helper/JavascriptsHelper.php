@@ -67,14 +67,14 @@ class JavascriptsHelper extends Helper
      */
     public function render()
     {
-        $javascripts = $this->javascripts;
-        krsort($javascripts);
+        $javascriptLevels = $this->javascripts;
+        krsort($javascriptLevels);
 
         $pathsRendered = array();
 
         $html = '';
-        foreach ($javascripts as $level => $javascript) {
-            foreach ($javascript as $path => $attributes) {
+        foreach ($javascriptLevels as $level => $javascripts) {
+            foreach ($javascripts as $path => $attributes) {
                 if (!in_array($path, $pathsRendered))
                 {
                     array_push($pathsRendered, $path);
