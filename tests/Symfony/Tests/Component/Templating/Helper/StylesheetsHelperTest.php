@@ -22,13 +22,18 @@ class StylesheetsHelperTest extends \PHPUnit_Framework_TestCase
         $assetHelper = new AssetsHelper();
         $helper = new StylesheetsHelper($assetHelper);
         $helper->add('foo');
-        $this->assertEquals(array('/foo' => array()), $helper->get(), '->add() adds a stylesheet');
+        $this->assertEquals(array(0 => array('/foo' => array())), $helper->get(), '->add() adds a Stylesheet');
         $helper->add('/foo');
-        $this->assertEquals(array('/foo' => array()), $helper->get(), '->add() does not add the same stylesheet twice');
+        $this->assertEquals(array(0 => array('/foo' => array())), $helper->get(), '->add() does not add the same Stylesheet twice');
+        $helper = new StylesheetsHelper($assetHelper);
+        $helper->add('foo', array(), 1);
+        $this->assertEquals(array(1 => array('/foo' => array())), $helper->get(), '->add() adds a Stylesheet at level 1');
+        $helper->add('bar', array(), 2);
+        $this->assertEquals(array(1 => array('/foo' => array()), 2 => array('/bar' => array())), $helper->get(), '->add() adds a Stylesheet at level 2');
         $helper = new StylesheetsHelper($assetHelper);
         $assetHelper->setBaseURLs('http://assets.example.com/');
         $helper->add('foo');
-        $this->assertEquals(array('http://assets.example.com/foo' => array()), $helper->get(), '->add() converts the stylesheet to a public path');
+        $this->assertEquals(array(0 => array('http://assets.example.com/foo' => array())), $helper->get(), '->add() converts the Stylesheet to a public path');
     }
 
     public function testMagicToString()

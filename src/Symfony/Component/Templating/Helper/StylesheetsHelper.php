@@ -41,12 +41,13 @@ class StylesheetsHelper extends Helper
     /**
      * Adds a stylesheets file.
      *
-     * @param string $stylesheet A stylesheet file path
-     * @param array  $attributes An array of attributes
+     * @param string    $stylesheet A stylesheet file path
+     * @param array     $attributes An array of attributes
+     * @param integer   $level      The Engine level
      */
-    public function add($stylesheet, $attributes = array())
+    public function add($stylesheet, $attributes = array(), $level = 0)
     {
-        $this->stylesheets[$this->assetHelper->getUrl($stylesheet)] = $attributes;
+        $this->stylesheets[$level][$this->assetHelper->getUrl($stylesheet)] = $attributes;
     }
 
     /**
@@ -66,14 +67,21 @@ class StylesheetsHelper extends Helper
      */
     public function render()
     {
-        $html = '';
-        foreach ($this->stylesheets as $path => $attributes) {
-            $atts = '';
-            foreach ($attributes as $key => $value) {
-                $atts .= ' '.sprintf('%s="%s"', $key, htmlspecialchars($value, ENT_QUOTES, $this->charset));
-            }
+        $stylesheetsLevels = $this->stylesheets;
+        krsort($stylesheetsLevels);
 
-            $html .= sprintf('<link href="%s" rel="stylesheet" type="text/css"%s />', $path, $atts)."\n";
+        $pathsRendered = array();
+
+        $html = '';
+        foreach ($stylesheetsLevels as $level => $stylesheets) {
+            foreach ($stylesheets as $path => $attributes) {
+                $atts = '';
+                foreach ($attributes as $key => $value) {
+                    $atts .= ' '.sprintf('%s="%s"', $key, htmlspecialchars($value, ENT_QUOTES, $this->charset));
+                }
+
+                $html .= sprintf('<link href="%s" rel="stylesheet" type="text/css"%s />', $path, $atts)."\n";
+            }
         }
 
         return $html;

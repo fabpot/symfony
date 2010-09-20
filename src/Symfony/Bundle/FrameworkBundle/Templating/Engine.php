@@ -186,4 +186,17 @@ class Engine extends BaseEngine
     {
         $this->get('javascripts')->add($javascript, $attributes, $this->level);
     }
+
+    /**
+     * addStylesheet adds stylesheets to the stylesheets helper
+     *
+     * @param string    $stylesheet A StyleSheet file path
+     * @param array     $attributes An array of attributes
+     *
+     * @author Jérémy Romey "jeremyFreeAgent" <jeremy@free-agent.fr>
+     */
+    public function addStylesheet($stylesheet, $attributes = array())
+    {
+        $this->get('stylesheets')->add($stylesheet, $attributes, $this->level);
+    }
 }
