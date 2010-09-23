@@ -44,6 +44,16 @@ class TwigExtension extends Extension
                 $container->setParameter('twig.form.resources', array_merge($container->getParameter('twig.form.resources'), $resources));
             }
         }
+
+        // escaper extension
+        if (array_key_exists('escaper', $config)) {
+            if ($config['escaper']===null) {
+                // Disable escaper extension
+                $container->remove('twig.extension.escaper');
+            } else {
+                $container->setParameter('twig.escaper.auto', $config['escaper']);
+            }
+        }
     }
 
     /**
