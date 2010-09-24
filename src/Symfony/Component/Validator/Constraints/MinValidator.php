@@ -14,11 +14,16 @@ class MinValidator extends ConstraintValidator
             return true;
         }
 
-        if (!is_numeric($value)) {
+        if (!is_numeric($value) && !$value instanceof \DateTime) {
             throw new UnexpectedTypeException($value, 'numeric');
         }
 
         if ($value < $constraint->limit) {
+            if ($value instanceof \DateTime) {
+                $value = $value->format('Y-m-d H:i:s');
+                $constraint->limit = $constraint->limit->format('Y-m-d H:i:s');
+            }
+	
             $this->setMessage($constraint->message, array(
                 'value' => $value,
                 'limit' => $constraint->limit,

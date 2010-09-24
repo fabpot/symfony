@@ -76,4 +76,18 @@ class MinValidatorTest extends \PHPUnit_Framework_TestCase
             'limit' => 10,
         ));
     }
+
+    public function testDateTimeCanBeUsed()
+    {
+        $dateBefore = new \DateTime('2010-10-18 04:20:00');
+        $dateMax 	= new \DateTime('2010-10-19 04:20:00');
+        $dateAfter 	= new \DateTime('2010-10-20 04:20:00');
+
+        $constraint = new Max(array(
+            'limit' => $dateMax
+        ));
+
+        $this->assertFalse($this->validator->isValid($dateBefore, $constraint));
+        $this->assertTrue($this->validator->isValid($dateAfter, $constraint));
+    }
 }
