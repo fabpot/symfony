@@ -29,6 +29,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     protected $loading          = array();
     protected $resources        = array();
     protected $extensionConfigs = array();
+    protected $injectors        = array();
 
     /**
      * Registers an extension.
@@ -392,6 +393,32 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return $this->aliases[$id];
     }
 
+    public function addInterfaceInjector(InterfaceInjector $injector)
+    {
+        $class = $injector->getClass();
+        if ( ! isset($this->injectors[$class])) {
+            $this->injectors[$class] = array();
+        }
+        $this->injectors[$class][] = $injector;
+
+        foreach ($this->definitions as $id => $definition) {
+            $defClass = $definition->getClass();
+            if (null !== $defClass && $injector->isFor($defClass)) {
+                $injector->processDefinition($definition);
+            }
+        }
+    }
+
+    public function getInterfaceInjectors($class)
+    {
+        return isset($this->injectors[$class]) ? $this->injectors[$class] : array();
+    }
+
+    public function removeInterfaceInjectors($class)
+    {
+        unset($this->injectors[$class]);
+    }
+
     /**
      * Registers a service definition.
      *
@@ -450,6 +477,12 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function setDefinition($id, Definition $definition)
     {
         unset($this->aliases[$id]);
+
+        if (null !== $definition->getClass()) {
+            foreach ($this->getInterfaceInjectors($definition->getClass()) as $injector) {
+                $injector->processDefinition($definition);
+            }
+        }
 
         return $this->definitions[$id] = $definition;
     }

@@ -26,6 +26,7 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
     static public function setUpBeforeClass()
     {
         self::$fixturesPath = realpath(__DIR__.'/../Fixtures/');
+        require_once self::$fixturesPath.'/includes/foo.php';
         require_once self::$fixturesPath.'/includes/ProjectExtension.php';
         require_once self::$fixturesPath.'/includes/ProjectWithXsdExtension.php';
     }
@@ -242,6 +243,16 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($loader->supports('foo.xml'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');
+    }
+
+    public function testLoadInterfaceInjectors()
+    {
+        $container = new ContainerBuilder();
+        $loader = new ProjectLoader2($container, self::$fixturesPath.'/xml');
+        $loader->load('interfaces1.xml');
+        $services = $container->getDefinitions();
+        $this->assertTrue(isset($services['foo']), '->load() parses <service> elements');
+        $this->assertTrue($services['foo']->hasMethodCall('setBar'), '->load() parses <interface> elements and applies method calls to implementing services correctly');
     }
 }
 

@@ -26,6 +26,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     static public function setUpBeforeClass()
     {
         self::$fixturesPath = realpath(__DIR__.'/../Fixtures/');
+        require_once self::$fixturesPath.'/includes/foo.php';
         require_once self::$fixturesPath.'/includes/ProjectExtension.php';
     }
 
@@ -154,6 +155,16 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($loader->supports('foo.yml'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');
+    }
+
+    public function testLoadInterfaceInjectors()
+    {
+        $container = new ContainerBuilder();
+        $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
+        $loader->load('interfaces1.yml');
+        $services = $container->getDefinitions();
+        $this->assertTrue(isset($services['foo']), '->load() parses services');
+        $this->assertTrue($services['foo']->hasMethodCall('setBar'), '->load() parses interfaces elements and applies method calls to implementing services correctly');
     }
 }
 
