@@ -64,20 +64,20 @@ class XmlDumperTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-	public function testInterfaceInjectors()
-	{
-		$interfaceInjector = new InterfaceInjector('FooClass');
-		$interfaceInjector->addMethodCall('setBar', array('someValue'));
-		$container = include self::$fixturesPath.'/containers/interfaces1.php';
-		$container->addInterfaceInjector($interfaceInjector);
+    public function testInterfaceInjectors()
+    {
+        $interfaceInjector = new InterfaceInjector('FooClass');
+        $interfaceInjector->addMethodCall('setBar', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces1.php';
+        $container->addInterfaceInjector($interfaceInjector);
 
-		$dumper = new XmlDumper($container);
+        $dumper = new XmlDumper($container);
 
-		$classBody = $dumper->dump();
-		//TODO: find a better way to test dumper
-		//var_dump($classBody);
+        $classBody = $dumper->dump();
+        //TODO: find a better way to test dumper
+        //var_dump($classBody);
 
-		$this->assertEquals("<?xml version=\"1.0\" ?>
+        $this->assertEquals("<?xml version=\"1.0\" ?>
 
 <container xmlns=\"http://www.symfony-project.org/schema/dic/services\"
     xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
@@ -99,5 +99,5 @@ class XmlDumperTest extends \PHPUnit_Framework_TestCase
   </services>
 </container>
 ", $classBody);
-	}
+    }
 }

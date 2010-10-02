@@ -57,7 +57,7 @@ class InterfaceInjector
      */
     public function processDefinition(Definition $definition, $class = null)
     {
-		$class = $class ?: $definition->getClass();
+        $class = $class ?: $definition->getClass();
         if (!$this->supported($class)) {
             return;
         }

@@ -252,7 +252,7 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->load('interfaces1.xml');
         $interfaces = $container->getAllInterfaceInjectors();
         $this->assertTrue(isset($interfaces['FooClass']), '->load() parses <interface> elements');
-		$interface = $interfaces['FooClass'][0];
+        $interface = $interfaces['FooClass'][0];
         $this->assertTrue($interface->hasMethodCall('setBar'), '->load() applies method calls correctly');
     }
 }

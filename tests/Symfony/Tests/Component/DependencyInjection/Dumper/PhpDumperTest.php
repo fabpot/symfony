@@ -82,19 +82,19 @@ class PhpDumperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($bar, $container->get('bar'), '->set() overrides an already defined service');
     }
 
-	public function testInterfaceInjectors()
-	{
-		$interfaceInjector = new InterfaceInjector('FooClass');
-		$interfaceInjector->addMethodCall('setBar', array('someValue'));
-		$container = include self::$fixturesPath.'/containers/interfaces1.php';
-		$container->addInterfaceInjector($interfaceInjector);
+    public function testInterfaceInjectors()
+    {
+        $interfaceInjector = new InterfaceInjector('FooClass');
+        $interfaceInjector->addMethodCall('setBar', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces1.php';
+        $container->addInterfaceInjector($interfaceInjector);
 
-		$dumper = new PhpDumper($container);
+        $dumper = new PhpDumper($container);
 
-		$classBody = $dumper->dump();
-		// TODO: need a proper way of testing it
-		// var_dump($classBody);
-		$this->assertEquals("<?php
+        $classBody = $dumper->dump();
+        // TODO: need a proper way of testing it
+        // var_dump($classBody);
+        $this->assertEquals("<?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
@@ -169,5 +169,5 @@ class ProjectServiceContainer extends Container
     }
 }
 ", $classBody);
-	}
+    }
 }

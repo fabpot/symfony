@@ -164,7 +164,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->load('interfaces1.yml');
         $interfaces = $container->getAllInterfaceInjectors();
         $this->assertTrue(isset($interfaces['FooClass']), '->load() parses interfaces');
-		$interface = $interfaces['FooClass'][0];
+        $interface = $interfaces['FooClass'][0];
         $this->assertTrue($interface->hasMethodCall('setBar'), '->load() parses interfaces elements');
     }
 }

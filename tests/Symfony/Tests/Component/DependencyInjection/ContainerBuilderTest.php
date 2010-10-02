@@ -414,7 +414,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($container->getInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass')));
 
         $container->setDefinition('test', $definition);
-		$container->get('test');
+        $container->get('test');
 
         $container->removeInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass');
         $this->assertEquals(0, count($container->getInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass')));

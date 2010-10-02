@@ -14,10 +14,10 @@ return $container;
 
 class FooClass
 {
-	public $bar;
+    public $bar;
 
-	public function setBar($bar)
-	{
-		$this->bar = $bar;
-	}
+    public function setBar($bar)
+    {
+        $this->bar = $bar;
+    }
 }

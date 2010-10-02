@@ -50,11 +50,11 @@ class XmlDumper extends Dumper
         return sprintf("  <parameters>\n%s  </parameters>\n", $this->convertParameters($parameters, 'parameter', 4));
     }
 
-	protected function addInterfaceInjector(InterfaceInjector $injector)
-	{
-		$code = \sprintf("    <interface class=\"%s\">\n", $injector->getClass());
+    protected function addInterfaceInjector(InterfaceInjector $injector)
+    {
+        $code = \sprintf("    <interface class=\"%s\">\n", $injector->getClass());
 
-		foreach ($injector->getMethodCalls() as $call) {
+        foreach ($injector->getMethodCalls() as $call) {
             if (count($call[1])) {
                 $code .= sprintf("      <call method=\"%s\">\n%s      </call>\n", $call[0], $this->convertParameters($call[1], 'argument', 8));
             } else {
@@ -62,28 +62,28 @@ class XmlDumper extends Dumper
             }
         }
 
-		$code .= "    </interface>\n";
+        $code .= "    </interface>\n";
 
         return $code;
-	}
+    }
 
-	protected function addInterfaceInjectors()
-	{
+    protected function addInterfaceInjectors()
+    {
         if (!$this->container->getAllInterfaceInjectors()) {
             return '';
         }
 
         $code = '';
         foreach ($this->container->getAllInterfaceInjectors() as $class => $injectors) {
-			foreach ($injectors as $injector) {
-				$code .= $this->addInterfaceInjector($injector);
-			}
+            foreach ($injectors as $injector) {
+                $code .= $this->addInterfaceInjector($injector);
+            }
         }
 
         return sprintf("  <interfaces>\n%s  </interfaces>\n", $code);
-	}
+    }
 
-	protected function addService($id, $definition)
+    protected function addService($id, $definition)
     {
         $code = sprintf("    <service id=\"%s\"%s%s%s%s>\n",
             $id,
