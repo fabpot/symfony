@@ -106,12 +106,34 @@ EOF;
             $code = sprintf("        \$instance = new %s(%s);\n", $definition->getClass(), implode(', ', $arguments));
         }
 
+		$class = $this->extractParameter($definition->getClass());
+
+        foreach ($this->container->getInterfaceInjectors($class) as $injector) {
+            $injector->processDefinition($definition, $class);
+        }
+
         if ($definition->isShared()) {
             $code .= sprintf("        \$this->shared['$id'] = \$instance;\n");
         }
 
         return $code;
     }
+
+	private function extractParameter($param)
+	{
+		if (preg_match('/^%([^%]+)%$/', $param, $match)) {
+			return $this->container->getParameter(strtolower($match[1]));
+		} else {
+			$container = $this->container;
+			$extractParameters = function ($match) use ($container)
+			{
+				return $container->getParameter(strtolower($match[2]));
+			};
+
+			return str_replace('%%', '%', preg_replace_callback('/(?<!%)(%)([^%]+)\1/', $extractParameters, $param));
+		}
+		return $param;
+	}
 
     protected function addServiceMethodCalls($id, $definition)
     {

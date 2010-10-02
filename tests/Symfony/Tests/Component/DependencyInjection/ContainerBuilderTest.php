@@ -396,4 +396,48 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $container->registerExtension($extension = new \ProjectExtension());
         $this->assertTrue($container->getExtension('project') === $extension, '->registerExtension() registers an extension');
     }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::addInterfaceInjector
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::removeInterfaceInjectors
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::getInterfaceInjectors
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::setDefinition
+     */
+    public function testInterfaceInjection()
+    {
+        $definition = new Definition('Symfony\Tests\Component\DependencyInjection\FooClass');
+
+        $injector1 = $this->getMockInterfaceInjector('Symfony\Tests\Component\DependencyInjection\FooClass', 1);
+
+        $container = new ContainerBuilder();
+        $container->addInterfaceInjector($injector1);
+        $this->assertEquals(1, count($container->getInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass')));
+
+        $container->setDefinition('test', $definition);
+		$container->get('test');
+
+        $container->removeInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass');
+        $this->assertEquals(0, count($container->getInterfaceInjectors('Symfony\Tests\Component\DependencyInjection\FooClass')));
+    }
+
+    /**
+     * @param string $class
+     * @param int $methodCallsCount
+     * @return Symfony\Component\DependencyInjection\InterfaceInjector
+     */
+    private function getMockInterfaceInjector($class, $methodCallsCount)
+    {
+        $injector = $this->getMock('Symfony\Component\DependencyInjection\InterfaceInjector', array(), array('Symfony\Tests\Component\DependencyInjection\FooClass'), '', true, true);
+        $injector->expects($this->exactly($methodCallsCount))
+            ->method('processDefinition')
+        ;
+        $injector->expects($this->once())
+            ->method('getClass')
+            ->will($this->returnValue($class))
+        ;
+        return $injector;
+    }
 }
+
+
+class FooClass {}

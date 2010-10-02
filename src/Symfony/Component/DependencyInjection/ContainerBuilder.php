@@ -29,6 +29,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     protected $loading          = array();
     protected $resources        = array();
     protected $extensionConfigs = array();
+    protected $injectors        = array();
 
     /**
      * Registers an extension.
@@ -392,7 +393,31 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return $this->aliases[$id];
     }
 
-    /**
+    public function addInterfaceInjector(InterfaceInjector $injector)
+    {
+        $class = $injector->getClass();
+        if ( ! isset($this->injectors[$class])) {
+            $this->injectors[$class] = array();
+        }
+        $this->injectors[$class][] = $injector;
+    }
+
+    public function getInterfaceInjectors($class)
+    {
+        return isset($this->injectors[$class]) ? $this->injectors[$class] : array();
+    }
+
+    public function removeInterfaceInjectors($class)
+    {
+        unset($this->injectors[$class]);
+    }
+
+	public function getAllInterfaceInjectors()
+	{
+		return $this->injectors;
+	}
+
+	/**
      * Registers a service definition.
      *
      * This methods allows for simple registration of service definition
@@ -535,6 +560,13 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
 
             $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs($arguments);
         }
+
+        $class = get_class($service);
+		if (isset($this->injectors[$class])) {
+			foreach ($this->injectors[$class] as $injector) {
+				$injector->processDefinition($definition, $class);
+			}
+		}
 
         if ($definition->isShared()) {
             $this->services[$id] = $service;
