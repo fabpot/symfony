@@ -236,7 +236,7 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function bind($taintedData)
     {
-        $this->transformedData = is_array($taintedData) || is_object($taintedData) ? $taintedData : (string)$taintedData;
+        $this->transformedData = (is_array($taintedData) || is_object($taintedData)) ? $taintedData : (string)$taintedData;
         $this->bound = true;
         $this->errors = array();
 
@@ -245,7 +245,7 @@ abstract class Field extends Configurable implements FieldInterface
         }
 
         try {
-            $this->data = $this->processData($data = $this->reverseTransform($this->transformedData));
+            $this->data = $this->processData($this->reverseTransform($this->transformedData));
             $this->transformedData = $this->transform($this->data);
         } catch (TransformationFailedException $e) {
             // TODO better text
@@ -450,7 +450,7 @@ abstract class Field extends Configurable implements FieldInterface
         } else if (null === $this->valueTransformer) {
             return $value;
         } else {
-            return $this->valueTransformer->reverseTransform($value);
+            return $this->valueTransformer->reverseTransform($value, $this->data);
         }
     }
 
