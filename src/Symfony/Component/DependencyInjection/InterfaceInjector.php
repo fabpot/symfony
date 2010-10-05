@@ -29,6 +29,8 @@ class InterfaceInjector
      */
     private $calls = array();
 
+    private $processedDefinitions = array();
+
     /**
      * Contructs interface injector by specifying the target class name
      *
@@ -57,6 +59,9 @@ class InterfaceInjector
      */
     public function processDefinition(Definition $definition, $class = null)
     {
+        if (in_array($definition, $this->processedDefinitions, true)) {
+            return;
+        }
         $class = $class ?: $definition->getClass();
         if (!$this->supported($class)) {
             return;
@@ -65,6 +70,7 @@ class InterfaceInjector
             list($method, $arguments) = $callback;
             $definition->addMethodCall($method, $arguments);
         }
+        $this->processedDefinitions[] = $definition;
     }
 
     /**

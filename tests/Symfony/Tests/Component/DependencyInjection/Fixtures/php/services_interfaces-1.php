@@ -25,6 +25,47 @@ class ProjectServiceContainer extends Container
     }
 
     /**
+     * Gets the 'barFactory' service.
+     *
+     * This service is shared.
+     * This method always returns the same instance of the service.
+     *
+     * 
+     */
+    protected function getBarFactoryService()
+    {
+        if (isset($this->shared['barFactory'])) return $this->shared['barFactory'];
+
+        $class = NULL;
+        $instance = new $class();
+        $this->shared['barFactory'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
+
+        return $instance;
+    }
+
+    /**
+     * Gets the 'bar' service.
+     *
+     * This service is shared.
+     * This method always returns the same instance of the service.
+     *
+     * @return Object An instance returned by barFactory::createBarClass().
+     */
+    protected function getBarService()
+    {
+        if (isset($this->shared['bar'])) return $this->shared['bar'];
+
+        $instance = $this->getBarFactoryService()->createBarClass();
+        $this->shared['bar'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
+
+        return $instance;
+    }
+
+    /**
      * Returns service ids for a given tag.
      *
      * @param string $name The tag name
@@ -46,5 +87,8 @@ class ProjectServiceContainer extends Container
      */
     protected function applyIntrefaceInjectors($instance)
     {
+        if ($instance instanceof \BarClass) {
+            $instance->setFoo('someValue');
+        }
     }
 }

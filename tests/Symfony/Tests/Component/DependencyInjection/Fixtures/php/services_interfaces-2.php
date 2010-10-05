@@ -25,6 +25,27 @@ class ProjectServiceContainer extends Container
     }
 
     /**
+     * Gets the 'foo' service.
+     *
+     * This service is shared.
+     * This method always returns the same instance of the service.
+     *
+     * @return Object A %cla%o%ss% instance.
+     */
+    protected function getFooService()
+    {
+        if (isset($this->shared['foo'])) return $this->shared['foo'];
+
+        $class = $this->getParameter('cla').'o'.$this->getParameter('ss');
+        $instance = new $class();
+        $this->shared['foo'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
+
+        return $instance;
+    }
+
+    /**
      * Returns service ids for a given tag.
      *
      * @param string $name The tag name
@@ -40,11 +61,27 @@ class ProjectServiceContainer extends Container
     }
 
     /**
+     * Gets the default parameters.
+     *
+     * @return array An array of the default parameters
+     */
+    protected function getDefaultParameters()
+    {
+        return array(
+            'cla' => 'Fo',
+            'ss' => 'Class',
+        );
+    }
+
+    /**
      * Applies all known interface injection calls
      * 
      * @param Object $instance
      */
     protected function applyIntrefaceInjectors($instance)
     {
+        if ($instance instanceof \FooClass) {
+            $instance->setBar('someValue');
+        }
     }
 }

@@ -38,4 +38,13 @@ class Container extends AbstractContainer
 
         return isset($tags[$name]) ? $tags[$name] : array();
     }
+
+    /**
+     * Applies all known interface injection calls
+     * 
+     * @param Object $instance
+     */
+    protected function applyIntrefaceInjectors($instance)
+    {
+    }
 }

@@ -62,4 +62,13 @@ class ProjectServiceContainer extends Container
             ),
         );
     }
+
+    /**
+     * Applies all known interface injection calls
+     * 
+     * @param Object $instance
+     */
+    protected function applyIntrefaceInjectors($instance)
+    {
+    }
 }

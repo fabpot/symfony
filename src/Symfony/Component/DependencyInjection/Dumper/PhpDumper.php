@@ -49,8 +49,41 @@ class PhpDumper extends Dumper
             $this->addServices().
             $this->addTags().
             $this->addDefaultParametersMethod().
+            $this->addInterfaceInjectors().
             $this->endClass()
         ;
+    }
+
+    protected function addInterfaceInjectors()
+    {
+        $code = <<<EOF
+
+    /**
+     * Applies all known interface injection calls
+     * 
+     * @param Object \$instance
+     */
+    protected function applyIntrefaceInjectors(\$instance)
+    {
+
+EOF;
+        foreach ($this->container->getAllInterfaceInjectors() as $class => $injectors) {
+            foreach ($injectors as $injector) {
+                $code .= sprintf("        if (\$instance instanceof \\%s) {\n", $injector->getClass());
+                foreach ($injector->getMethodCalls() as $call) {
+                    foreach ($call[1] as $value) {
+                        $arguments[] = $this->dumpValue($value);
+                    }
+                    $code .= $this->wrapServiceConditionals($call[1], sprintf("            \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
+                }
+                $code .= sprintf("        }\n");
+            }
+        }
+        $code .= <<<EOF
+    }
+
+EOF;
+        return $code;
     }
 
     protected function addServiceInclude($id, $definition)
@@ -108,10 +141,6 @@ EOF;
 
         $class = $this->extractParameter($definition->getClass());
 
-        foreach ($this->container->getInterfaceInjectors($class) as $injector) {
-            $injector->processDefinition($definition, $class);
-        }
-
         if ($definition->isShared()) {
             $code .= sprintf("        \$this->shared['$id'] = \$instance;\n");
         }
@@ -146,6 +175,8 @@ EOF;
 
             $calls .= $this->wrapServiceConditionals($call[1], sprintf("        \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
         }
+
+        $calls = sprintf("\n        \$this->applyInterfaceInjection(\$instance);\n");
 
         return $calls;
     }

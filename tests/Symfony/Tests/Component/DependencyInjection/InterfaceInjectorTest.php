@@ -69,6 +69,17 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedResult, $injector->supported($class), '->supported() must return true if injector is to be used on a class, false otherwise');
     }
 
+    public function testProcessesDefinitionOnlyOnce()
+    {
+        $injector = new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service');
+        $injector->addMethodCall('method');
+
+        $definition = $this->getMockDefinition('Symfony\Tests\Component\DependencyInjection\Service', 1);
+
+        $injector->processDefinition($definition);
+        $injector->processDefinition($definition);
+    }
+
     public function getMethodCalls()
     {
         return array(

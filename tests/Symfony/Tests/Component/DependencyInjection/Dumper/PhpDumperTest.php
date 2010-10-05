@@ -91,83 +91,18 @@ class PhpDumperTest extends \PHPUnit_Framework_TestCase
 
         $dumper = new PhpDumper($container);
 
-        $classBody = $dumper->dump();
-        // TODO: need a proper way of testing it
-        // var_dump($classBody);
-        $this->assertEquals("<?php
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Parameter;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-
-/**
- * ProjectServiceContainer
- *
- * This class has been auto-generated
- * by the Symfony Dependency Injection Component.
- */
-class ProjectServiceContainer extends Container
-{
-    protected \$shared = array();
-
-    /**
-     * Constructor.
-     */
-    public function __construct()
-    {
-        parent::__construct(new ParameterBag(\$this->getDefaultParameters()));
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-2.php', $dumper->dump(), '->dump() dumps interface injectors');
     }
 
-    /**
-     * Gets the 'foo' service.
-     *
-     * This service is shared.
-     * This method always returns the same instance of the service.
-     *
-     * @return Object A %cla%o%ss% instance.
-     */
-    protected function getFooService()
+    public function testInterfaceInjectorsAndServiceFactories()
     {
-        if (isset(\$this->shared['foo'])) return \$this->shared['foo'];
+        $interfaceInjector = new InterfaceInjector('BarClass');
+        $interfaceInjector->addMethodCall('setFoo', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces2.php';
+        $container->addInterfaceInjector($interfaceInjector);
 
-        \$class = \$this->getParameter('cla').'o'.\$this->getParameter('ss');
-        \$instance = new \$class();
-        \$this->shared['foo'] = \$instance;
-        \$instance->setBar('someValue');
+        $dumper = new PhpDumper($container);
 
-        return \$instance;
-    }
-
-    /**
-     * Returns service ids for a given tag.
-     *
-     * @param string \$name The tag name
-     *
-     * @return array An array of tags
-     */
-    public function findTaggedServiceIds(\$name)
-    {
-        static \$tags = array (
-);
-
-        return isset(\$tags[\$name]) ? \$tags[\$name] : array();
-    }
-
-    /**
-     * Gets the default parameters.
-     *
-     * @return array An array of the default parameters
-     */
-    protected function getDefaultParameters()
-    {
-        return array(
-            'cla' => 'Fo',
-            'ss' => 'Class',
-        );
-    }
-}
-", $classBody);
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-1.php', $dumper->dump(), '->dump() dumps interface injectors');
     }
 }

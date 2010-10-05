@@ -31,11 +31,11 @@ class ProjectServiceContainer extends Container
      */
     protected function getFooService()
     {
-        require_once '%path%foo.php';
+        require_once 'D:\\Projects\\My\\symfony\\tests\\Symfony\\Tests\\Component\\DependencyInjection\\Fixtures\\includes\\foo.php';
 
         $instance = call_user_func(array('FooClass', 'getInstance'), 'foo', $this->getFoo_BazService(), array($this->getParameter('foo') => 'foo is '.$this->getParameter('foo'), 'bar' => $this->getParameter('foo')), true, $this);
-        $instance->setBar('bar');
-        $instance->initialize();
+
+        $this->applyInterfaceInjection($instance);
         sc_configure($instance);
 
         return $instance;
@@ -55,6 +55,8 @@ class ProjectServiceContainer extends Container
 
         $instance = new FooClass('foo', $this->getFoo_BazService(), $this->getParameter('foo_bar'));
         $this->shared['bar'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
         $this->getFoo_BazService()->configure($instance);
 
         return $instance;
@@ -74,6 +76,8 @@ class ProjectServiceContainer extends Container
 
         $instance = call_user_func(array($this->getParameter('baz_class'), 'getInstance'));
         $this->shared['foo.baz'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
         call_user_func(array($this->getParameter('baz_class'), 'configureStatic1'), $instance);
 
         return $instance;
@@ -95,6 +99,8 @@ class ProjectServiceContainer extends Container
         $instance = new $class();
         $this->shared['foo_bar'] = $instance;
 
+        $this->applyInterfaceInjection($instance);
+
         return $instance;
     }
 
@@ -112,14 +118,8 @@ class ProjectServiceContainer extends Container
 
         $instance = new FooClass();
         $this->shared['method_call1'] = $instance;
-        $instance->setBar($this->getFooService());
-        $instance->setBar($this->get('foo', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        if ($this->has('foo')) {
-            $instance->setBar($this->get('foo', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        }
-        if ($this->has('foobaz')) {
-            $instance->setBar($this->get('foobaz', ContainerInterface::NULL_ON_INVALID_REFERENCE));
-        }
+
+        $this->applyInterfaceInjection($instance);
 
         return $instance;
     }
@@ -138,6 +138,8 @@ class ProjectServiceContainer extends Container
 
         $instance = $this->getFoo_BazService()->getInstance();
         $this->shared['factory_service'] = $instance;
+
+        $this->applyInterfaceInjection($instance);
 
         return $instance;
     }
@@ -193,5 +195,14 @@ class ProjectServiceContainer extends Container
             'foo_class' => 'FooClass',
             'foo' => 'bar',
         );
+    }
+
+    /**
+     * Applies all known interface injection calls
+     * 
+     * @param Object $instance
+     */
+    protected function applyIntrefaceInjectors($instance)
+    {
     }
 }
