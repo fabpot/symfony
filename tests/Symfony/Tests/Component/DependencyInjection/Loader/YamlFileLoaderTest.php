@@ -162,9 +162,9 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
         $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
         $loader->load('interfaces1.yml');
-        $interfaces = $container->getAllInterfaceInjectors();
-        $this->assertTrue(isset($interfaces['FooClass']), '->load() parses interfaces');
-        $interface = $interfaces['FooClass'][0];
+        $interfaces = $container->getInterfaceInjectors('FooClass');
+        $this->assertEquals(1, count($interfaces), '->load() parses interfaces');
+        $interface = $interfaces['FooClass'];
         $this->assertTrue($interface->hasMethodCall('setBar'), '->load() parses interfaces elements');
     }
 }

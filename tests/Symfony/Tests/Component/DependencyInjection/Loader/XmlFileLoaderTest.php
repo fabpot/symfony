@@ -250,9 +250,9 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
         $loader = new ProjectLoader2($container, self::$fixturesPath.'/xml');
         $loader->load('interfaces1.xml');
-        $interfaces = $container->getAllInterfaceInjectors();
-        $this->assertTrue(isset($interfaces['FooClass']), '->load() parses <interface> elements');
-        $interface = $interfaces['FooClass'][0];
+        $interfaces = $container->getInterfaceInjectors('FooClass');
+        $this->assertEquals(1, count($interfaces), '->load() parses <interface> elements');
+        $interface = $interfaces['FooClass'];
         $this->assertTrue($interface->hasMethodCall('setBar'), '->load() applies method calls correctly');
     }
 }

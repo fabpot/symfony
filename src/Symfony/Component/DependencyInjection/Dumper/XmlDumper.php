@@ -69,15 +69,13 @@ class XmlDumper extends Dumper
 
     protected function addInterfaceInjectors()
     {
-        if (!$this->container->getAllInterfaceInjectors()) {
+        if (!$this->container->getInterfaceInjectors()) {
             return '';
         }
 
         $code = '';
-        foreach ($this->container->getAllInterfaceInjectors() as $class => $injectors) {
-            foreach ($injectors as $injector) {
-                $code .= $this->addInterfaceInjector($injector);
-            }
+        foreach ($this->container->getInterfaceInjectors() as $injector) {
+            $code .= $this->addInterfaceInjector($injector);
         }
 
         return sprintf("  <interfaces>\n%s  </interfaces>\n", $code);
