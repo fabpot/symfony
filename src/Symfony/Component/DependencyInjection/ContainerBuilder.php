@@ -5,6 +5,7 @@ namespace Symfony\Component\DependencyInjection;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Component\DependencyInjection\InterfaceInjector;
 
 /*
  * This file is part of the Symfony framework.
@@ -396,25 +397,20 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function addInterfaceInjector(InterfaceInjector $injector)
     {
         $class = $injector->getClass();
-        if ( ! isset($this->injectors[$class])) {
-            $this->injectors[$class] = array();
+        if (isset($this->injectors[$class])) {
+            return $this->injectors[$class]->merge($injector);
         }
-        $this->injectors[$class][] = $injector;
+        $this->injectors[$class] = $injector;
     }
 
-    public function getInterfaceInjectors($class)
+    public function getInterfaceInjectors($service = null)
     {
-        return isset($this->injectors[$class]) ? $this->injectors[$class] : array();
-    }
-
-    public function removeInterfaceInjectors($class)
-    {
-        unset($this->injectors[$class]);
-    }
-
-    public function getAllInterfaceInjectors()
-    {
-        return $this->injectors;
+        if (null === $service) {
+            return $this->injectors;
+        }
+        return array_filter($this->injectors, function(InterfaceInjector $injector) use ($service) {
+            return $injector->supports($service);
+        });
     }
 
     /**
@@ -561,11 +557,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs($arguments);
         }
 
-        $class = get_class($service);
-        if (isset($this->injectors[$class])) {
-            foreach ($this->injectors[$class] as $injector) {
-                $injector->processDefinition($definition, $class);
-            }
+        
+        foreach ($this->getInterfaceInjectors($service) as $injector) {
+            $injector->processDefinition($definition, $service);
         }
 
         if ($definition->isShared()) {
