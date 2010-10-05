@@ -66,9 +66,12 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
      */
     public function testSupported(InterfaceInjector $injector, $class, $expectedResult)
     {
-        $this->assertEquals($expectedResult, $injector->supported($class), '->supported() must return true if injector is to be used on a class, false otherwise');
+        $this->assertEquals($expectedResult, $injector->supports($class), '->supports() must return true if injector is to be used on a class, false otherwise');
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\InterfaceInjector::processDefinition
+     */
     public function testProcessesDefinitionOnlyOnce()
     {
         $injector = new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service');
@@ -78,6 +81,27 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
 
         $injector->processDefinition($definition);
         $injector->processDefinition($definition);
+    }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\InterfaceInjector::merge
+     */
+    public function testMerge()
+    {
+        $injector1 = new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service');
+        $injector1->addMethodCall('method_one');
+
+        $injector2 = new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service');
+        $injector2->addMethodCall('method_two');
+
+        $injector1->merge($injector2);
+
+        $methodCalls = $injector1->getMethodCalls();
+        $this->assertEquals(2, count($methodCalls));
+        $this->assertEquals(array(
+            array('method_one', array()),
+            array('method_two', array()),
+        ), $methodCalls);
     }
 
     public function getMethodCalls()

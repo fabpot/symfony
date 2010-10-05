@@ -63,7 +63,7 @@ class InterfaceInjector
             return;
         }
         $class = $class ?: $definition->getClass();
-        if (!$this->supported($class)) {
+        if (!$this->supports($class)) {
             return;
         }
         foreach ($this->calls as $callback) {
@@ -76,13 +76,19 @@ class InterfaceInjector
     /**
      * Inspects if current interface injector is to be used with a given class
      *
-     * @param string $class
+     * @param string $object
      * @return boolean
      */
-    public function supported($class)
+    public function supports($object)
     {
-        $class = new \ReflectionClass($class);
-        return is_a($class->newInstance(), $this->class);
+        if (is_string($object)) {
+            $class = new \ReflectionClass($object);
+            $object = $class->newInstance();
+        }
+        if ( ! is_object($object)) {
+            throw new \Exception('asd');
+        }
+        return is_a($object, $this->class);
     }
 
     /**
@@ -145,6 +151,21 @@ class InterfaceInjector
     public function getMethodCalls()
     {
         return $this->calls;
+    }
+
+    /**
+     * Merges another InterfaceInjector
+     *
+     * @param InterfaceInjector $injector
+     */
+    public function merge(InterfaceInjector $injector)
+    {
+        if ($this->class === $injector->getClass()) {
+            foreach ($injector->getMethodCalls() as $call) {
+                list ($method, $arguments) = $call;
+                $this->addMethodCall($method, $arguments);
+            }
+        }
     }
 
 }
