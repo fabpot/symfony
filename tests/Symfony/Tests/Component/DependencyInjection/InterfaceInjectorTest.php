@@ -104,6 +104,15 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
         ), $methodCalls);
     }
 
+    /**
+     * @expectedException Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
+     */
+    public function testSupportsThrowsExceptionOnInvalidArgument()
+    {
+        $injector = new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service');
+        $injector->supports(array());
+    }
+
     public function getMethodCalls()
     {
         return array(

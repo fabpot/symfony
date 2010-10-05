@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+
 /*
  * This file is part of the Symfony framework.
  *
@@ -86,7 +88,7 @@ class InterfaceInjector
             $object = $class->newInstance();
         }
         if ( ! is_object($object)) {
-            throw new \Exception('asd');
+            throw new InvalidArgumentException(sprintf("%s expects class or object, %s given", __METHOD__, substr(str_replace("\n", '', var_export($object, true)), 0, 10)));
         }
         return is_a($object, $this->class);
     }
