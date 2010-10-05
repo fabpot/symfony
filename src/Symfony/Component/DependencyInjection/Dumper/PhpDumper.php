@@ -56,6 +56,10 @@ class PhpDumper extends Dumper
 
     protected function addInterfaceInjectors()
     {
+        if (0 === count($this->container->getInterfaceInjectors())) {
+            return;
+        }
+
         $code = <<<EOF
 
     /**
@@ -67,17 +71,15 @@ class PhpDumper extends Dumper
     {
 
 EOF;
-        foreach ($this->container->getAllInterfaceInjectors() as $class => $injectors) {
-            foreach ($injectors as $injector) {
-                $code .= sprintf("        if (\$instance instanceof \\%s) {\n", $injector->getClass());
-                foreach ($injector->getMethodCalls() as $call) {
-                    foreach ($call[1] as $value) {
-                        $arguments[] = $this->dumpValue($value);
-                    }
-                    $code .= $this->wrapServiceConditionals($call[1], sprintf("            \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
+        foreach ($this->container->getInterfaceInjectors() as $injector) {
+            $code .= sprintf("        if (\$instance instanceof \\%s) {\n", $injector->getClass());
+            foreach ($injector->getMethodCalls() as $call) {
+                foreach ($call[1] as $value) {
+                    $arguments[] = $this->dumpValue($value);
                 }
-                $code .= sprintf("        }\n");
+                $code .= $this->wrapServiceConditionals($call[1], sprintf("            \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
             }
+            $code .= sprintf("        }\n");
         }
         $code .= <<<EOF
     }
@@ -139,29 +141,11 @@ EOF;
             $code = sprintf("        \$instance = new %s(%s);\n", $definition->getClass(), implode(', ', $arguments));
         }
 
-        $class = $this->extractParameter($definition->getClass());
-
         if ($definition->isShared()) {
             $code .= sprintf("        \$this->shared['$id'] = \$instance;\n");
         }
 
         return $code;
-    }
-
-    private function extractParameter($param)
-    {
-        if (preg_match('/^%([^%]+)%$/', $param, $match)) {
-            return $this->container->getParameter(strtolower($match[1]));
-        } else {
-            $container = $this->container;
-            $extractParameters = function ($match) use ($container)
-            {
-                return $container->getParameter(strtolower($match[2]));
-            };
-
-            return str_replace('%%', '%', preg_replace_callback('/(?<!%)(%)([^%]+)\1/', $extractParameters, $param));
-        }
-        return $param;
     }
 
     protected function addServiceMethodCalls($id, $definition)
@@ -176,7 +160,9 @@ EOF;
             $calls .= $this->wrapServiceConditionals($call[1], sprintf("        \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
         }
 
-        $calls = sprintf("\n        \$this->applyInterfaceInjection(\$instance);\n");
+        if (count($this->container->getInterfaceInjectors()) > 0) {
+            $calls = sprintf("\n        \$this->applyInterfaceInjection(\$instance);\n");
+        }
 
         return $calls;
     }
