@@ -31,7 +31,7 @@ class ProjectServiceContainer extends Container
      */
     protected function getFooService()
     {
-        require_once 'D:\\Projects\\My\\symfony\\tests\\Symfony\\Tests\\Component\\DependencyInjection\\Fixtures\\includes\\foo.php';
+        require_once '%path%foo.php';
 
         $instance = call_user_func(array('FooClass', 'getInstance'), 'foo', $this->getFoo_BazService(), array($this->getParameter('foo') => 'foo is '.$this->getParameter('foo'), 'bar' => $this->getParameter('foo')), true, $this);
 
