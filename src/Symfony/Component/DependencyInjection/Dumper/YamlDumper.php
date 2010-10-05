@@ -44,7 +44,7 @@ class YamlDumper extends Dumper
         foreach ($this->container->getInterfaceInjectors() as $injector) {
             $code .= sprintf("    %s:\n", $injector->getClass());
             if ($injector->getMethodCalls()) {
-                $code .= sprintf("    calls:\n      %s\n", str_replace("\n", "\n      ", Yaml::dump($this->dumpValue($injector->getMethodCalls()), 1)));
+                $code .= sprintf("        calls:\n          %s\n", str_replace("\n", "\n          ", Yaml::dump($this->dumpValue($injector->getMethodCalls()), 1)));
             }
         }
         return $code;

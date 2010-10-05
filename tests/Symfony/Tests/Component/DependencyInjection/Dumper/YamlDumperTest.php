@@ -76,9 +76,9 @@ class YamlDumperTest extends \PHPUnit_Framework_TestCase
 
 interfaces:
     FooClass:
-    calls:
-      - [setBar, [someValue]]
-      
+        calls:
+          - [setBar, [someValue]]
+          
 
 services:
   foo:
