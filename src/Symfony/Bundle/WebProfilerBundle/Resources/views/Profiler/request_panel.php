@@ -48,11 +48,11 @@
                 <th><?php echo $key ?></th>
                 <td>
                     <?php if (is_object($value)): ?>
-                        <em>Object</em>
+                      <em>Object (<?php echo get_class($value); ?>)</em>
                     <?php elseif (is_resource($value)): ?>
                         <em>Resource</em>
                     <?php elseif (is_array($value)): ?>
-                        <em>Array</em>
+                        <pre><?php print_r($value); ?></pre>
                     <?php else: ?>
                         <?php echo $value ?>
                     <?php endif; ?>
