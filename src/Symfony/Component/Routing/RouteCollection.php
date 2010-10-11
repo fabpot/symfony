@@ -100,7 +100,11 @@ class RouteCollection
         }
 
         foreach ($this->getRoutes() as $route) {
-            $route->setPattern($prefix.$route->getPattern());
+            if($route->getPattern() == '/') {
+                $route->setPattern($prefix);
+            } else {
+                $route->setPattern($prefix.$route->getPattern());
+            }
         }
     }
 
