@@ -223,7 +223,7 @@ class DoctrineExtension extends Extension
             'auto_generate_proxy_classes'
         );
         foreach ($options as $key) {
-            if (isset($config[$key])) {
+            if (array_key_exists($key, $config)) {
                 $container->setParameter('doctrine.orm.'.$key, $config[$key]);
             }
         }
