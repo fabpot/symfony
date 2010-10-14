@@ -43,7 +43,7 @@
     </tr>
 
     <?php if (count($sessionAttributes = $data->getSessionAttributes())):?>
-        <?php foreach ($sessionAttributes->getRawValue() as $key => $value): ?>
+        <?php foreach ($sessionAttributes as $key => $value): ?>
             <tr>
                 <th><?php echo $key ?></th>
                 <td>
