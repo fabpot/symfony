@@ -100,6 +100,8 @@ class FrameworkExtension extends Extension
             $this->registerUserConfiguration($config, $container);
         }
 
+        $this->registerConsoleConfiguration($config, $container);
+
         $this->registerTranslatorConfiguration($config, $container);
 
         $this->addCompiledClasses($container, array(
@@ -122,6 +124,18 @@ class FrameworkExtension extends Extension
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\BaseController',
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller',
         ));
+    }
+
+    /**
+     * Loads the console configuration.
+     *
+     * @param array            $config        An array of configuration settings
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     */
+    protected function registerConsoleConfiguration($config, ContainerBuilder $container)
+    {
+        $loader = new XmlFileLoader($container, __DIR__ . '/../Resources/config');
+        $loader->load('console.xml');
     }
 
     /**

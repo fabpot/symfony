@@ -130,34 +130,6 @@ abstract class Bundle extends ContainerAware implements BundleInterface
     }
 
     /**
-     * Finds and registers Commands.
-     *
-     * Override this method if your bundle commands do not follow the conventions:
-     *
-     * * Commands are in the 'Command' sub-directory
-     * * Commands extend Symfony\Component\Console\Command\Command
-     *
-     * @param Application $application An Application instance
-     */
-    public function registerCommands(Application $application)
-    {
-        if (!$dir = realpath($this->getPath().'/Command')) {
-            return;
-        }
-
-        $finder = new Finder();
-        $finder->files()->name('*Command.php')->in($dir);
-
-        $prefix = $this->namespacePrefix.'\\'.$this->name.'\\Command';
-        foreach ($finder as $file) {
-            $r = new \ReflectionClass($prefix.strtr($file->getPath(), array($dir => '', '/' => '\\')).'\\'.basename($file, '.php'));
-            if ($r->isSubclassOf('Symfony\\Component\\Console\\Command\\Command') && !$r->isAbstract()) {
-                $application->addCommand($r->newInstance());
-            }
-        }
-    }
-
-    /**
      * Initializes the properties on this object that require a reflection
      * object to have been created.
      */

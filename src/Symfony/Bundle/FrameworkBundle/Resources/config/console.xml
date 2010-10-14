@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://www.symfony-project.org/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="console.command.assets_install.class">Symfony\Bundle\FrameworkBundle\Command\AssetsInstallCommand</parameter>
+        <parameter key="console.command.init_bundle.class">Symfony\Bundle\FrameworkBundle\Command\InitBundleCommand</parameter>
+        <parameter key="console.command.router_debug.class">Symfony\Bundle\FrameworkBundle\Command\RouterDebugCommand</parameter>
+        <parameter key="console.command.router_apache_dumper.class">Symfony\Bundle\FrameworkBundle\Command\RouterApacheDumperCommand</parameter>
+    </parameters>
+
+    <services>
+        <service id="console.command.assets_install" class="%console.command.assets_install.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="console.command.init_bundle" class="%console.command.init_bundle.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="console.command.router_debug" class="%console.command.router_debug.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="console.command.router_apache_dumper" class="%console.command.router_apache_dumper.class%">
+            <tag name="console.command" />
+        </service>
+    </services>
+</container>

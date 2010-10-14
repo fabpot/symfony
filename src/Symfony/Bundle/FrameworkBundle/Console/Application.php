@@ -76,8 +76,9 @@ class Application extends BaseApplication
 
     protected function registerCommands()
     {
-        foreach ($this->kernel->getBundles() as $bundle) {
-            $bundle->registerCommands($this);
+        $container = $this->kernel->getContainer();
+        foreach ($container->findTaggedServiceIds('console.command') as $id => $attributes) {
+            $this->addCommand($container->get($id));
         }
     }
 }
