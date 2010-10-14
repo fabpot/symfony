@@ -4,29 +4,46 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd">
 
-  <parameters>
-    <parameter key="propel.class">Propel</parameter>
-    <parameter key="propel.configuration.class">PropelConfiguration</parameter>
-    <parameter key="propel.logger.class">Symfony\Bundle\PropelBundle\Logger\PropelLogger</parameter>
-    <parameter key="propel.dbal.default_connection">default</parameter>
-  </parameters>
+    <parameters>
+        <parameter key="propel.class">Propel</parameter>
+        <parameter key="propel.configuration.class">PropelConfiguration</parameter>
+        <parameter key="propel.logger.class">Symfony\Bundle\PropelBundle\Logger\PropelLogger</parameter>
+        <parameter key="propel.dbal.default_connection">default</parameter>
 
-  <services>
-    <service id="propel" class="%propel.class%">
-      <call method="setConfiguration">
-        <argument type="service" id="propel.configuration" />
-      </call>
-      <call method="setLogger">
-        <argument type="service" id="propel.logger" />
-      </call>
-      <call method="initialize" />
-    </service>
+        <!-- console commands -->
+        <parameter key="propel.console.command.build.class">Symfony\Bundle\PropelBundle\Command\BuildCommand</parameter>
+        <parameter key="propel.console.command.build_model.class">Symfony\Bundle\PropelBundle\Command\BuildModelCommand</parameter>
+        <parameter key="propel.console.command.build_sql.class">Symfony\Bundle\PropelBundle\Command\BuildSqlCommand</parameter>
+    </parameters>
 
-    <service id="propel.configuration" class="%propel.configuration.class%" />
+    <services>
+        <service id="propel" class="%propel.class%">
+            <call method="setConfiguration">
+                <argument type="service" id="propel.configuration" />
+            </call>
+            <call method="setLogger">
+                <argument type="service" id="propel.logger" />
+            </call>
+            <call method="initialize" />
+        </service>
 
-    <service id="propel.logger" class="%propel.logger.class%">
-      <argument type="service" id="logger" on-invalid="null" />
-    </service>
+        <service id="propel.configuration" class="%propel.configuration.class%" />
 
-  </services>
+        <service id="propel.logger" class="%propel.logger.class%">
+            <argument type="service" id="logger" on-invalid="null" />
+        </service>
+
+        <!-- console commands -->
+        <service id="propel.console.command.build" class="%propel.console.command.build.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="propel.console.command.build_model" class="%propel.console.command.build_model.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="propel.console.command.build_sql" class="%propel.console.command.build_sql.class%">
+            <tag name="console.command" />
+        </service>
+    </services>
 </container>
