@@ -33,6 +33,8 @@ class DependencyInjectionValidatorFactory implements ConstraintValidatorFactoryI
     protected $container;
 
     /**
+     * Constructor.
+     *
      * @param ContainerInterface $container
      */
     public function __construct(ContainerInterface $container)
@@ -41,14 +43,14 @@ class DependencyInjectionValidatorFactory implements ConstraintValidatorFactoryI
     }
 
     /**
-     * Returns a contraint validator from the container service, setting it if it
-     * doesn't exist yet
+     * Returns a constraint validator from the container service, setting it if it doesn't exist yet.
      *
-     * Throws an exception if validator service is not instance of
-     * ConstraintValidatorInterface.
+     * Throws an exception if validator service is not instance of ConstraintValidatorInterface.
      *
-     * @param  Constraint $constraint
+     * @param Constraint $constraint
+     *
      * @return ConstraintValidatorInterface
+     *
      * @throws \LogicException
      */
     public function getInstance(Constraint $constraint)
@@ -70,9 +72,10 @@ class DependencyInjectionValidatorFactory implements ConstraintValidatorFactoryI
     }
 
     /**
-     * Returns the matching service ID for the given validator class name
+     * Returns the matching service ID for the given validator class name.
      *
-     * @param  string $className
+     * @param string $className
+     *
      * @return string
      */
     protected function getServiceIdFromClass($className)

@@ -16,8 +16,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * Validates a given value.
  *
- * @author     Bernhard Schussek <bernhard.schussek@symfony-project.com>
- * @version    SVN: $Id: ValidatorInterface.php 138 2010-01-18 22:05:14Z flo $
+ * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
 interface ValidatorInterface
 {

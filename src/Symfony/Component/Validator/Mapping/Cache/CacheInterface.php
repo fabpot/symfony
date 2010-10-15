@@ -30,7 +30,8 @@ interface CacheInterface
     /**
      * Returns the metadata for the given class from the cache
      *
-     * @param string $class
+     * @param string $class Class Name
+     *
      * @return ClassMetadata
      */
     public function read($class);
@@ -38,8 +39,7 @@ interface CacheInterface
     /**
      * Stores a class metadata in the cache
      *
-     * @param $class
-     * @param $metadata
+     * @param ClassMetadata $metadata A Class Metadata
      */
     public function write(ClassMetadata $metadata);
 }
