@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://www.symfony-project.org/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <!-- console commands -->
+        <parameter key="doctrine.migrations.console.command.execute.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsExecuteDoctrineCommand</parameter>
+        <parameter key="doctrine.migrations.console.command.migrate.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsMigrateDoctrineCommand</parameter>
+        <parameter key="doctrine.migrations.console.command.version.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsVersionDoctrineCommand</parameter>
+        <parameter key="doctrine.migrations.console.command.diff.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsDiffDoctrineCommand</parameter>
+        <parameter key="doctrine.migrations.console.command.generate.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsGenerateDoctrineCommand</parameter>
+        <parameter key="doctrine.migrations.console.command.status.class">Symfony\Bundle\DoctrineMigrationsBundle\Command\MigrationsStatusDoctrineCommand</parameter>
+    </parameters>
+
+    <services>
+        <!-- console commands -->
+        <service id="doctrine.migrations.console.command.execute" class="%doctrine.migrations.console.command.execute.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.migrations.console.command.migrate" class="%doctrine.migrations.console.command.migrate.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.migrations.console.command.version" class="%doctrine.migrations.console.command.version.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.migrations.console.command.diff" class="%doctrine.migrations.console.command.diff.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.migrations.console.command.generate" class="%doctrine.migrations.console.command.generate.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.migrations.console.command.status" class="%doctrine.migrations.console.command.status.class%">
+            <tag name="console.command" />
+        </service>
+    </services>
+</container>

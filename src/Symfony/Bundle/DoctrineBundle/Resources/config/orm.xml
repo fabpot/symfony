@@ -42,7 +42,7 @@
         <!-- console commands -->
         <parameter key="doctrine.orm.console.command.clear_metadata_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearMetadataCacheDoctrineCommand</parameter>
         <parameter key="doctrine.orm.console.command.clear_query_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearQueryCacheDoctrineCommand</parameter>
-        <parameter key="doctrine.orm.console.command.clear_results_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearResultsCacheDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.clear_result_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearResultCacheDoctrineCommand</parameter>
         <parameter key="doctrine.orm.console.command.convert_doctrine1_schema.class">Symfony\Bundle\DoctrineBundle\Command\ConvertDoctrine1SchemaDoctrineCommand</parameter>
         <parameter key="doctrine.orm.console.command.convert_mapping.class">Symfony\Bundle\DoctrineBundle\Command\ConvertMappingDoctrineCommand</parameter>
         <parameter key="doctrine.orm.console.command.create_schema.class">Symfony\Bundle\DoctrineBundle\Command\CreateSchemaDoctrineCommand</parameter>
@@ -91,7 +91,7 @@
             <tag name="console.command" />
         </service>
 
-        <service id="doctrine.orm.console.command.clear_results_cache" class="%doctrine.orm.console.command.clear_results_cache.class%">
+        <service id="doctrine.orm.console.command.clear_result_cache" class="%doctrine.orm.console.command.clear_result_cache.class%">
             <tag name="console.command" />
         </service>
 
