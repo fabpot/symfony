@@ -38,7 +38,7 @@ class DoctrineMigrationsExtension extends Extension
      */
     public function getXsdValidationBasePath()
     {
-        return __DIR__.'/../Resources/config/schema';
+        return null;
     }
 
     /**
@@ -48,7 +48,7 @@ class DoctrineMigrationsExtension extends Extension
      */
     public function getNamespace()
     {
-        return 'http://www.symfony-project.org/schema/dic/doctrine';
+        return 'http://www.symfony-project.org/schema/dic/doctrine-migrations';
     }
 
     /**
