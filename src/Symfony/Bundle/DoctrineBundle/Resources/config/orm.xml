@@ -38,6 +38,24 @@
         <parameter key="doctrine.orm.xml_mapping_dirs">%doctrine.orm.metadata_driver.mapping_dirs%</parameter>
         <parameter key="doctrine.orm.yml_mapping_dirs">%doctrine.orm.metadata_driver.mapping_dirs%</parameter>
         <parameter key="doctrine.orm.metadata_driver.entity_dirs" type="collection"></parameter>
+
+        <!-- console commands -->
+        <parameter key="doctrine.orm.console.command.clear_metadata_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearMetadataCacheDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.clear_query_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearQueryCacheDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.clear_results_cache.class">Symfony\Bundle\DoctrineBundle\Command\ClearResultsCacheDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.convert_doctrine1_schema.class">Symfony\Bundle\DoctrineBundle\Command\ConvertDoctrine1SchemaDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.convert_mapping.class">Symfony\Bundle\DoctrineBundle\Command\ConvertMappingDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.create_schema.class">Symfony\Bundle\DoctrineBundle\Command\CreateSchemaDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.drop_schema.class">Symfony\Bundle\DoctrineBundle\Command\DropSchemaDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.ensure_production_settings.class">Symfony\Bundle\DoctrineBundle\Command\EnsureProductionSettingsDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.generate_entities.class">Symfony\Bundle\DoctrineBundle\Command\GenerateEntitiesDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.generate_entity.class">Symfony\Bundle\DoctrineBundle\Command\GenerateEntityDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.generate_proxies.class">Symfony\Bundle\DoctrineBundle\Command\GenerateProxiesDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.generate_repositories.class">Symfony\Bundle\DoctrineBundle\Command\GenerateRepositoriesDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.import_mapping.class">Symfony\Bundle\DoctrineBundle\Command\ImportMappingDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.load_data_fixtures.class">Symfony\Bundle\DoctrineBundle\Command\LoadDataFixturesDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.run_dql.class">Symfony\Bundle\DoctrineBundle\Command\RunDqlDoctrineCommand</parameter>
+        <parameter key="doctrine.orm.console.command.update_schema.class">Symfony\Bundle\DoctrineBundle\Command\UpdateSchemaDoctrineCommand</parameter>
     </parameters>
 
     <services>
@@ -62,6 +80,71 @@
         <!--- YAML Metadata Driver Service -->
         <service id="doctrine.orm.metadata_driver.yml" class="%doctrine.orm.metadata.yml_class%">
             <argument>%doctrine.orm.metadata_driver.mapping_dirs%</argument>
+        </service>
+
+        <!-- console commands -->
+        <service id="doctrine.orm.console.command.clear_metadata_cache" class="%doctrine.orm.console.command.clear_metadata_cache.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.clear_query_cache" class="%doctrine.orm.console.command.clear_query_cache.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.clear_results_cache" class="%doctrine.orm.console.command.clear_results_cache.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.convert_doctrine1_schema" class="%doctrine.orm.console.command.convert_doctrine1_schema.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.convert_mapping" class="%doctrine.orm.console.command.convert_mapping.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.create_schema" class="%doctrine.orm.console.command.create_schema.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.drop_schema" class="%doctrine.orm.console.command.drop_schema.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.ensure_production_settings" class="%doctrine.orm.console.command.ensure_production_settings.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.generate_entities" class="%doctrine.orm.console.command.generate_entities.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.generate_entity" class="%doctrine.orm.console.command.generate_entity.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.generate_proxies" class="%doctrine.orm.console.command.generate_proxies.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.generate_repositories" class="%doctrine.orm.console.command.generate_repositories.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.import_mapping" class="%doctrine.orm.console.command.import_mapping.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.load_data_fixtures" class="%doctrine.orm.console.command.load_data_fixtures.class%">
+            <tag name="console.command" />
+        </service>
+
+        <service id="doctrine.orm.console.command.run_dql" class="%doctrine.orm.console.command.run_dql.class%">
+            <tag name="console.command" />
+        </service>
+        
+        <service id="doctrine.orm.console.command.update_schema" class="%doctrine.orm.console.command.update_schema.class%">
+            <tag name="console.command" />
         </service>
     </services>
 </container>
