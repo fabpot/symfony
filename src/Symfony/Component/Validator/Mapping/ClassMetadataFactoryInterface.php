@@ -13,5 +13,5 @@ namespace Symfony\Component\Validator\Mapping;
 
 interface ClassMetadataFactoryInterface
 {
-    public function getClassMetadata($class);
+    function getClassMetadata($class);
 }
