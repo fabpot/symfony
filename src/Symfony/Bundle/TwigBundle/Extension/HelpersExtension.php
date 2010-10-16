@@ -66,6 +66,9 @@ class HelpersExtension extends \Twig_Extension
 
             // {% include 'sometemplate.php' with ['something' : 'something2'] %}
             new HelperTokenParser('include', '<name> [with <arguments:array>]', 'templating.engine', 'render'),
+
+            // {% extends 'TestBundle::layout.php' %} Make the extend capabilities engine render agnostic
+            new HelperTokenParser('extends', '<name>', 'templating.engine', 'extend'),
         );
     }
 
