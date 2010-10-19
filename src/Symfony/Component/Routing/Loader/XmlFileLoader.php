@@ -95,17 +95,7 @@ class XmlFileLoader extends FileLoader
                     $options[(string) $node->getAttribute('key')] = trim((string) $node->nodeValue);
                     break;
                 case 'requirement':
-                    if('collection' === $node->getAttribute('type')) {
-                        $requirement = array();
-                        foreach($node->childNodes as $requirementNode) {
-                            if ($requirementNode instanceof \DOMElement) {
-                                $requirement[] = $requirementNode->nodeValue;
-                            }
-                        }
-                    }
-                    else {
-                        $requirement = trim((string) $node->nodeValue);
-                    }
+                    $requirement = explode(',', trim((string) $node->nodeValue));
                     $requirements[(string) $node->getAttribute('key')] = $requirement;
                     break;
                 default:
