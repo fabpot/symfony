@@ -17,7 +17,7 @@
   <xsd:complexType name="route">
     <xsd:sequence>
       <xsd:element name="default" type="element" minOccurs="0" maxOccurs="unbounded" />
-      <xsd:element name="requirement" type="element" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element name="requirement" type="requirement" minOccurs="0" maxOccurs="unbounded" />
       <xsd:element name="option" type="element" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
 
@@ -34,4 +34,19 @@
   <xsd:complexType name="element" mixed="true">
     <xsd:attribute name="key" type="xsd:string" />
   </xsd:complexType>
+
+  <xsd:complexType name="requirement" mixed="true">
+    <xsd:sequence>
+      <xsd:element name="requirement" type="element" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="type" type="requirement_type" />
+    <xsd:attribute name="key" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:simpleType name="requirement_type">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="collection" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
 </xsd:schema>
