@@ -190,7 +190,7 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         if (method_exists($this, $method = 'get'.strtr($id, array('_' => '', '.' => '_')).'Service')) {
-            return $this->$method();
+            return $this->$method($invalidBehavior);
         }
 
         if (self::EXCEPTION_ON_INVALID_REFERENCE === $invalidBehavior) {

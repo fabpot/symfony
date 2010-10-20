@@ -173,7 +173,7 @@ EOF;
      *
      * $return
      */
-    protected function get{$name}Service()
+    protected function get{$name}Service(\$invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE)
     {
 
 EOF;
@@ -207,7 +207,7 @@ EOF;
      *
      * @return $type An instance of the $id service
      */
-    protected function get{$name}Service()
+    protected function get{$name}Service(\$invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE)
     {
         return {$this->getServiceCall($id)};
     }
@@ -434,10 +434,10 @@ EOF;
             }
 
             if ($this->container->hasDefinition($id)) {
-                return sprintf('$this->get%sService()', Container::camelize($id));
+                return sprintf('$this->get%sService($invalidBehavior)', Container::camelize($id));
             }
 
-            return sprintf('$this->get(\'%s\')', $id);
+            return sprintf('$this->get(\'%s\', $invalidBehavior)', $id);
         }
     }
 }
