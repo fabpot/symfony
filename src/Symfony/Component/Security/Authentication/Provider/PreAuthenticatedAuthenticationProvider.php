@@ -45,14 +45,14 @@ class PreAuthenticatedAuthenticationProvider implements AuthenticationProviderIn
         $this->accountChecker = $accountChecker;
     }
 
-     /**
-      * {@inheritdoc}
-      */
-     public function authenticate(TokenInterface $token)
-     {
-         if (!$this->supports($token)) {
-             return null;
-         }
+    /**
+     * {@inheritdoc}
+     */
+    public function authenticate(TokenInterface $token)
+    {
+        if (!$this->supports($token)) {
+            return null;
+        }
 
         if (null === $token->getUser()) {
             throw new BadCredentialsException('No pre-authenticated principal found in request.');

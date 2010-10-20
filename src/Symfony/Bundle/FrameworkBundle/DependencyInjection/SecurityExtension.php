@@ -160,7 +160,7 @@ class SecurityExtension extends Extension
     protected function createFirewall(ContainerBuilder $container, $firewall, $providerIds)
     {
         // unique id for this firewall
-        $id = md5(json_encode($firewall));
+        $id = md5(serialize($firewall));
 
         // Matcher
         $i = 0;
@@ -342,7 +342,7 @@ class SecurityExtension extends Extension
         }
 
         if (!$name) {
-            $name = md5(json_encode($provider));
+            $name = md5(serialize($provider));
         }
 
         $name = $this->getUserProviderId($name);
