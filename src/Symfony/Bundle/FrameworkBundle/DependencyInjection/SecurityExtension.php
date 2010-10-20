@@ -65,13 +65,14 @@ class SecurityExtension extends Extension
 
         $hierarchy = array();
         foreach ($roles as $id => $role) {
-            if (is_array($role) && isset($role['id'])) {
-                $id = $role['id'];
-            }
-
             $value = $role;
-            if (is_array($role) && isset($role['value'])) {
-                $value = $role['value'];
+            if (is_array($role)) {
+                if (isset($role['id'])) {
+                    $id = $role['id'];
+                }
+                if (isset($role['value'])) {
+                    $value = $role['value'];
+                }
             }
 
             $hierarchy[$id] = is_array($value) ? $value : preg_split('/\s*,\s*/', $value);
@@ -456,11 +457,8 @@ class SecurityExtension extends Extension
             'failure_path'                   => null,
             'failure_forward'                => false,
         );
-        foreach (array_keys($options) as $key) {
-            if (isset($config[$key])) {
-                $options[$key] = $config[$key];
-            }
-        }
+        array_merge($options, $config);
+
         $container->setParameter('security.authentication.form.options', $options);
         $container->setParameter('security.authentication.form.login_path', $options['login_path']);
 
