@@ -457,7 +457,11 @@ class SecurityExtension extends Extension
             'failure_path'                   => null,
             'failure_forward'                => false,
         );
-        array_merge($options, $config);
+        while(list($key) = each($options)) {
+            if (isset($config[$key])) {
+                $options[$key] = $config[$key];
+            }
+        }
 
         $container->setParameter('security.authentication.form.options', $options);
         $container->setParameter('security.authentication.form.login_path', $options['login_path']);
