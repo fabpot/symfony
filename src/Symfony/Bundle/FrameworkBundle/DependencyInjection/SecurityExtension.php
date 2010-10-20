@@ -160,7 +160,7 @@ class SecurityExtension extends Extension
     protected function createFirewall(ContainerBuilder $container, $firewall, $providerIds)
     {
         // unique id for this firewall
-        $id = md5(serialize($firewall));
+        $id = md5(json_encode($firewall));
 
         // Matcher
         $i = 0;
@@ -342,7 +342,7 @@ class SecurityExtension extends Extension
         }
 
         if (!$name) {
-            $name = md5(serialize($provider));
+            $name = md5(json_encode($provider));
         }
 
         $name = $this->getUserProviderId($name);
@@ -390,7 +390,7 @@ class SecurityExtension extends Extension
                 $user['roles'] = is_array($user['roles']) ? $user['roles'] : preg_split('/\s*,\s*/', $user['roles']);
             }
 
-            $userId = $name.'_'.md5(serialize(array($username, $user['password'], $user['roles'])));
+            $userId = $name.'_'.md5(json_encode(array($username, $user['password'], $user['roles'])));
 
             $container
                 ->register($userId, 'Symfony\Component\Security\User\User')
