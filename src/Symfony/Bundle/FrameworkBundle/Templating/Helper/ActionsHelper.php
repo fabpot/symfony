@@ -4,6 +4,8 @@ namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
 
 use Symfony\Component\Templating\Helper\Helper;
 use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
+use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
+use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 
 /*
  * This file is part of the Symfony framework.
@@ -19,7 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class ActionsHelper extends Helper
+class ActionsHelper extends Helper implements HelperInterface
 {
     protected $resolver;
 
@@ -75,5 +77,18 @@ class ActionsHelper extends Helper
     public function getName()
     {
         return 'actions';
+    }
+
+    /**
+     * Creates a Twig token parser
+     *
+     * @return array of Twig_TokenParser instance that describe how to call this helper
+     */
+    public function getTwigTokenParsers()
+    {
+        return array(
+            // {% render 'BlogBundle:Post:list' with ['limit': 2], ['alt': 'BlogBundle:Post:error'] %}
+            new HelperTokenParser('render', '<template> [with <attributes:hash>[, <options:hash>]]', 'templating.helper.actions', 'render'),
+        );
     }
 }

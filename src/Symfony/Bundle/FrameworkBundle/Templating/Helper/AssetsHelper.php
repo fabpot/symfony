@@ -4,6 +4,8 @@ namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Templating\Helper\AssetsHelper as BaseAssetsHelper;
+use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
+use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 
 /*
  * This file is part of the Symfony package.
@@ -19,7 +21,7 @@ use Symfony\Component\Templating\Helper\AssetsHelper as BaseAssetsHelper;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class AssetsHelper extends BaseAssetsHelper
+class AssetsHelper extends BaseAssetsHelper implements HelperInterface
 {
     /**
      * Constructor.
@@ -31,5 +33,18 @@ class AssetsHelper extends BaseAssetsHelper
     public function __construct(Request $request, $baseURLs = array(), $version = null)
     {
         parent::__construct($request->getBasePath(), $baseURLs, $version);
+    }
+
+    /**
+     * Creates a Twig token parser
+     *
+     * @return array of Twig_TokenParser instance that describe how to call this helper
+     */
+    public function getTwigTokenParsers()
+    {
+        return array(
+            // {% asset 'css/blog.css' %}
+            new HelperTokenParser('asset', '<location>', 'templating.helper.assets', 'getUrl'),
+        );
     }
 }

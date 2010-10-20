@@ -3,6 +3,7 @@
 namespace Symfony\Bundle\TwigBundle\Extension;
 
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
+use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\IncludeTokenParser;
 use Symfony\Bundle\TwigBundle\TokenParser\UrlTokenParser;
@@ -24,6 +25,9 @@ use Symfony\Component\Yaml\Dumper as YamlDumper;
  */
 class TemplatingExtension extends \Twig_Extension
 {
+    /**
+     * @var \Symfony\Component\DependencyInjection\ContainerInterface
+     */
     protected $container;
 
     public function __construct(ContainerInterface $container)
@@ -89,31 +93,19 @@ class TemplatingExtension extends \Twig_Extension
      */
     public function getTokenParsers()
     {
-        return array(
-            // {% javascript 'bundles/blog/js/blog.js' %}
-            new HelperTokenParser('javascript', '<js> [with <arguments:hash>]', 'templating.helper.javascripts', 'add'),
-
-            // {% javascripts %}
-            new HelperTokenParser('javascripts', '', 'templating.helper.javascripts', 'render'),
-
-            // {% stylesheet 'bundles/blog/css/blog.css' with { 'media': 'screen' } %}
-            new HelperTokenParser('stylesheet', '<css> [with <arguments:hash>]', 'templating.helper.stylesheets', 'add'),
-
-            // {% stylesheets %}
-            new HelperTokenParser('stylesheets', '', 'templating.helper.stylesheets', 'render'),
-
-            // {% asset 'css/blog.css' %}
-            new HelperTokenParser('asset', '<location>', 'templating.helper.assets', 'getUrl'),
-
-            // {% render 'BlogBundle:Post:list' with { 'limit': 2 }, { 'alt': 'BlogBundle:Post:error' } %}
-            new HelperTokenParser('render', '<template> [with <attributes:hash>[, <options:hash>]]', 'templating.helper.actions', 'render'),
-
-            // {% flash 'notice' %}
-            new HelperTokenParser('flash', '<name>', 'templating.helper.session', 'getFlash'),
-
+        $parsers = array(
             // {% include 'sometemplate.php' with { 'something' : 'something2' } %}
             new IncludeTokenParser(),
         );
+
+        foreach ($this->container->findTaggedServiceIds('templating.helper') as $id => $attributes) {
+            $service = $this->container->get($id);
+            if (!$service instanceof HelperInterface) {
+                continue;
+            }
+            $parsers = array_merge($parsers, $service->getTwigTokenParsers());
+        }
+        return $parsers;
     }
 
     public function yamlEncode($input, $inline = 0)

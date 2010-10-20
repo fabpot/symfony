@@ -2,6 +2,9 @@
 
 namespace Symfony\Component\Templating\Helper;
 
+use Symfony\Bundle\TwigBundle\Templating\HelperInterface as TwigHelperInterface;
+use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
+
 /*
  * This file is part of the Symfony package.
  *
@@ -23,7 +26,7 @@ namespace Symfony\Component\Templating\Helper;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class JavascriptsHelper extends Helper
+class JavascriptsHelper extends Helper implements TwigHelperInterface
 {
     protected $javascripts = array();
     protected $assetHelper;
@@ -106,5 +109,20 @@ class JavascriptsHelper extends Helper
     public function getName()
     {
         return 'javascripts';
+    }
+
+    /**
+     * Creates a Twig token parser
+     *
+     * @return array of Twig_TokenParser instance that describe how to call this helper
+     */
+    public function getTwigTokenParsers()
+    {
+        return array(
+            // {% javascript 'bundles/blog/js/blog.js' %}
+            new HelperTokenParser('javascript', '<js> [with <arguments:hash>]', 'templating.helper.javascripts', 'add'),
+            // {% javascripts %}
+            new HelperTokenParser('javascripts', '', 'templating.helper.javascripts', 'render'),
+        );
     }
 }

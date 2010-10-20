@@ -2,6 +2,9 @@
 
 namespace Symfony\Component\Templating\Helper;
 
+use Symfony\Bundle\TwigBundle\Templating\HelperInterface as TwigHelperInterface;
+use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
+
 /*
  * This file is part of the Symfony package.
  *
@@ -23,7 +26,7 @@ namespace Symfony\Component\Templating\Helper;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class StylesheetsHelper extends Helper
+class StylesheetsHelper extends Helper implements TwigHelperInterface
 {
     protected $stylesheets = array();
     protected $assetHelper;
@@ -106,5 +109,20 @@ class StylesheetsHelper extends Helper
     public function getName()
     {
         return 'stylesheets';
+    }
+
+    /**
+     * Creates a Twig token parser
+     *
+     * @return array of Twig_TokenParser instance that describe how to call this helper
+     */
+    public function getTwigTokenParsers()
+    {
+        return array(
+            // {% stylesheet 'bundles/blog/css/blog.css' with ['media': 'screen'] %}
+            new HelperTokenParser('stylesheet', '<css> [with <arguments:hash>]', 'templating.helper.stylesheets', 'add'),
+            // {% stylesheets %}
+            new HelperTokenParser('stylesheets', '', 'templating.helper.stylesheets', 'render'),
+        );
     }
 }
