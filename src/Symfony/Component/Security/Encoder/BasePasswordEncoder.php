@@ -53,6 +53,10 @@ abstract class BasePasswordEncoder implements PasswordEncoderInterface
      */
     protected function mergePasswordAndSalt($password, $salt)
     {
+        if (false !== strrpos($password, '{') || false !== strrpos($password, '}')) {
+            throw new \InvalidArgumentException('Cannot use { or } in password.');
+        }
+
         if (empty($salt)) {
             return $password;
         }
