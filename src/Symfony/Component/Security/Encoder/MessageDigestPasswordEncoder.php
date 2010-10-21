@@ -25,10 +25,10 @@ class MessageDigestPasswordEncoder extends BasePasswordEncoder
      * Constructor.
      *
      * @param string  $algorithm          The digest algorithm to use
-     * @param Boolean $encodeHashAsBase64 Whether to base64 encode the password
+     * @param Boolean $encodeHashAsBase64 Whether to base64 encode the password hash
      * @param integer $iterations         The number of iterations to use to stretch the password
      */
-    public function __construct($algorithm = 'sha1', $encodeHashAsBase64 = false, $iterations = 1)
+    public function __construct($algorithm = 'sha256', $encodeHashAsBase64 = false, $iterations = 1)
     {
         $this->algorithm = $algorithm;
         $this->encodeHashAsBase64 = $encodeHashAsBase64;
@@ -41,14 +41,42 @@ class MessageDigestPasswordEncoder extends BasePasswordEncoder
     public function encodePassword($raw, $salt)
     {
         $salted = $this->mergePasswordAndSalt($raw, $salt);
-        $digest = call_user_func($this->algorithm, $salted);
-
-        // "stretch" the encoded value
-        for ($i = 1; $i < $this->iterations; $i++) {
-            $digest = call_user_func($this->algorithm, $digest);
-        }
+        $digest = $this->callAlgorithm($this->algorithm, $salted, $this->iterations);
 
         return $this->encodeHashAsBase64 ? base64_encode($digest) : $digest;
+    }
+    
+    /**
+     * Calls the given algorithm and returns the hashed result
+     * 
+     * @param string $algorithm The name of the algorithm to call
+     * @param string $raw The input to perform the algorith on
+     * @param integer $iterations The number of times to perform the algorithm
+     * @return string
+     */
+    protected function callAlgorithm($algorithm, $raw, $iterations = 1)
+    {
+        if (in_array($algorithm, hash_algos(), true)) {
+        	  $digest = hash($algorithm, $raw);
+        	
+            for ($i = 1; $i < $iterations; $i++) {
+            	  $digest = hash($algorithm, $digest);
+            }
+            
+            return $digest;
+        }
+        
+        if (function_exists($algorithm)) {
+        	  $digest = $algorithm($raw);
+        	
+        	  for ($i = 1; $i < $iterations; $i++) {
+        		    $digest = $algorithm($digest);
+        	  }
+        	
+        	  return $digest;
+        }
+        
+ 		    throw new \LogicException(sprintf('The algorithm "%s" is not supported.', $algorithm));
     }
 
     /**
