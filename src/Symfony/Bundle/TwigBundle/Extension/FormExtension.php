@@ -94,7 +94,7 @@ class FormExtension extends \Twig_Extension
 
     public function render(FieldInterface $field, array $attributes = array())
     {
-        if ($field instanceof Form || get_class($field) === 'Symfony\Component\Form\FieldGroup') {
+        if ($field instanceof FieldGroupInterface) {
             return $this->templates['group']->getBlock('group', array(
                 'group'      => $field,
                 'attributes' => $attributes,
