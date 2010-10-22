@@ -23,6 +23,7 @@ class UniversalClassLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new UniversalClassLoader();
         $loader->registerNamespace('Namespaced', __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures');
+        $loader->registerNamespace('Namespaced\\Foo', __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures/Extension');
         $loader->registerPrefix('Pearlike_', __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures');
         $loader->loadClass($testClassName);
         $this->assertTrue(class_exists($className), $message);
@@ -35,6 +36,8 @@ class UniversalClassLoaderTest extends \PHPUnit_Framework_TestCase
             array('\\Pearlike_Foo',    'Pearlike_Foo',      '->loadClass() loads Pearlike_Foo class'),
             array('\\Namespaced\\Bar', '\\Namespaced\\Bar', '->loadClass() loads Namespaced\Bar class with a leading slash'),
             array('\\Pearlike_Bar',    '\\Pearlike_Bar',    '->loadClass() loads Pearlike_Bar class with a leading slash'),
+            array('\\Namespaced\\Foo\\Bar', 'Namespaced\\Foo\\Bar',   '->loadClass() loads Namespaced\Foo\Bar class'),
+            array('\\Namespaced\\Foo\\ExtensionBar', 'Namespaced\\Foo\\ExtensionBar',   '->loadClass() loads Namespaced\Foo\ExtensionBar class'),
         );
     }
 }
