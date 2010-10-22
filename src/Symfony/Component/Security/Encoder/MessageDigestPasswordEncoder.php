@@ -40,45 +40,21 @@ class MessageDigestPasswordEncoder extends BasePasswordEncoder
      */
     public function encodePassword($raw, $salt)
     {
+        if (!in_array($this->algorithm, hash_algos(), true)) {
+            throw new \LogicException(sprintf('The algorithm "%s" is not supported.', $this->algorithm));
+        }
+        
         $salted = $this->mergePasswordAndSalt($raw, $salt);
-        $digest = $this->callAlgorithm($this->algorithm, $salted, $this->iterations);
+        $digest = hash($this->algorithm, $salted);
+        
+        // "stretch" hash
+        for ($i = 1; $i < $this->iterations; $i++) {
+            $digest = hash($this->algorithm, $digest);
+        }
 
         return $this->encodeHashAsBase64 ? base64_encode($digest) : $digest;
     }
     
-    /**
-     * Calls the given algorithm and returns the hashed result
-     * 
-     * @param string $algorithm The name of the algorithm to call
-     * @param string $raw The input to perform the algorith on
-     * @param integer $iterations The number of times to perform the algorithm
-     * @return string
-     */
-    protected function callAlgorithm($algorithm, $raw, $iterations = 1)
-    {
-        if (in_array($algorithm, hash_algos(), true)) {
-        	  $digest = hash($algorithm, $raw);
-        	
-            for ($i = 1; $i < $iterations; $i++) {
-            	  $digest = hash($algorithm, $digest);
-            }
-            
-            return $digest;
-        }
-        
-        if (function_exists($algorithm)) {
-        	  $digest = $algorithm($raw);
-        	
-        	  for ($i = 1; $i < $iterations; $i++) {
-        		    $digest = $algorithm($digest);
-        	  }
-        	
-        	  return $digest;
-        }
-        
- 		    throw new \LogicException(sprintf('The algorithm "%s" is not supported.', $algorithm));
-    }
-
     /**
      * {@inheritdoc}
      */
