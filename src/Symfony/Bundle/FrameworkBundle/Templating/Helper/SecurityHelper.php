@@ -38,6 +38,16 @@ class SecurityHelper extends Helper
         return $this->context->vote($role, $object);
     }
 
+    public function getUser()
+    {
+        return $this->context->getUser();
+    }
+
+    public function isAuthenticated()
+    {
+        return $this->context->isAuthenticated();
+    }
+
     /**
      * Returns the canonical name of this helper.
      *
