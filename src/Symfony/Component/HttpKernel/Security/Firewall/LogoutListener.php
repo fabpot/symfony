@@ -2,10 +2,11 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
+use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\SecurityContext;
 
 /*
  * This file is part of the Symfony framework.
@@ -26,10 +27,12 @@ class LogoutListener
     protected $securityContext;
     protected $logoutPath;
     protected $targetUrl;
+    protected $handlers;
 
     /**
      * Constructor
      *
+     * @param SecurityContext $securityContext
      * @param string $logoutPath The path that starts the logout process
      * @param string $targetUrl  The URL to redirect to after logout
      */
@@ -38,6 +41,12 @@ class LogoutListener
         $this->securityContext = $securityContext;
         $this->logoutPath = $logoutPath;
         $this->targetUrl = $targetUrl;
+        $this->handlers = array();
+    }
+    
+    public function addHandler(LogoutHandlerInterface $handler)
+    {
+        $this->handlers[] = $handler;
     }
 
     /**
@@ -63,13 +72,17 @@ class LogoutListener
         if ($this->logoutPath !== $request->getPathInfo()) {
             return;
         }
-
-        $this->securityContext->setToken(null);
-        $request->getSession()->invalidate();
-
+        
         $response = new Response();
         $response->setRedirect(0 !== strpos($this->targetUrl, 'http') ? $request->getUriForPath($this->targetUrl) : $this->targetUrl, 302);
-
+        
+        $token = $this->securityContext->getToken();
+        
+        foreach ($this->handlers as $handler) {
+            $handler->logout($request, $response, $token);
+        }
+        
+        $this->securityContext->setToken(null);
         $event->setReturnValue($response);
 
         return true;

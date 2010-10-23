@@ -22,7 +22,8 @@ use Symfony\Component\Security\Authentication\Token\TokenInterface;
  *
  * This authentication provider will not perform any checks on authentication
  * requests, as they should already be pre-authenticated. However, the
- * UserProviderInterface implementation may still throw a UsernameNotFoundException, for example.
+ * UserProviderInterface implementation may still throw a
+ * UsernameNotFoundException, for example.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -52,7 +53,7 @@ class PreAuthenticatedAuthenticationProvider implements AuthenticationProviderIn
              return null;
          }
 
-        if (null === $token->getUser()) {
+        if (!$user = $token->getUser()) {
             throw new BadCredentialsException('No pre-authenticated principal found in request.');
         }
 /*
@@ -60,7 +61,7 @@ class PreAuthenticatedAuthenticationProvider implements AuthenticationProviderIn
             throw new BadCredentialsException('No pre-authenticated credentials found in request.');
         }
 */
-        $user = $this->userProvider->loadUserByUsername($token->getUser());
+        $user = $this->userProvider->loadUserByUsername($user);
 
         $this->accountChecker->checkPostAuth($user);
 

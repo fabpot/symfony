@@ -22,7 +22,8 @@ use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
  */
 
 /**
- * DaoAuthenticationProvider uses a UserProviderInterface to retrieve the user for a UsernamePasswordToken.
+ * DaoAuthenticationProvider uses a UserProviderInterface to retrieve the user
+ * for a UsernamePasswordToken.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -38,9 +39,9 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
      * @param AccountCheckerInterface  $accountChecker  An AccountCheckerInterface instance
      * @param PasswordEncoderInterface $passwordEncoder A PasswordEncoderInterface instance
      */
-    public function __construct(UserProviderInterface $userProvider, AccountCheckerInterface $accountChecker, PasswordEncoderInterface $passwordEncoder = null)
+    public function __construct(UserProviderInterface $userProvider, AccountCheckerInterface $accountChecker, PasswordEncoderInterface $passwordEncoder = null, $hideUserNotFoundExceptions = true)
     {
-        parent::__construct($accountChecker);
+        parent::__construct($accountChecker, $hideUserNotFoundExceptions);
 
         if (null === $passwordEncoder) {
             $passwordEncoder = new PlaintextPasswordEncoder();
@@ -54,11 +55,9 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
      */
     protected function checkAuthentication(AccountInterface $account, UsernamePasswordToken $token)
     {
-        if (null === $token->getCredentials()) {
+        if (!$presentedPassword = (string) $token->getCredentials()) {
             throw new BadCredentialsException('Bad credentials');
         }
-
-        $presentedPassword = (string) $token->getCredentials();
 
         if (!$this->passwordEncoder->isPasswordValid($account->getPassword(), $presentedPassword, $account->getSalt())) {
             throw new BadCredentialsException('Bad credentials');
@@ -79,8 +78,8 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
             throw new AuthenticationServiceException($repositoryProblem->getMessage(), $token, 0, $repositoryProblem);
         }
 
-        if (null === $user) {
-            throw new AuthenticationServiceException('UserProvider returned null.');
+        if (!$user instanceof AccountInterface) {
+            throw new AuthenticationServiceException('The user provider must return an AccountInterface object.');
         }
 
         return $user;

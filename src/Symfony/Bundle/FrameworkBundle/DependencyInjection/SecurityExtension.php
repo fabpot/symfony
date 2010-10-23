@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 
@@ -130,7 +131,7 @@ class SecurityExtension extends Extension
         if (!$firewalls = $this->fixConfig($config, 'firewall')) {
             return;
         }
-
+        
         // load service templates
         $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
         $loader->load('security_templates.xml');
@@ -150,6 +151,8 @@ class SecurityExtension extends Extension
             'security.authentication.listener.digest',
             'security.access_listener',
             'security.exception_listener',
+            'security.authentication.rememberme.simplehash',
+            'security.authentication.rememberme.persistent',
         );
         foreach ($ids as $id) {
             $container->remove($id);
@@ -199,6 +202,11 @@ class SecurityExtension extends Extension
         // Context serializer listener
         if (!isset($firewall['stateless']) || !$firewall['stateless']) {
             $listeners[] = new Reference('security.context_listener');
+            
+            $container
+                ->getDefinition('security.logout_listener')
+                ->addMethodCall('addHandler', array(new Reference('security.logout.handlers.session')))
+            ;
         }
 
         // Logout listener
@@ -243,6 +251,16 @@ class SecurityExtension extends Extension
         $hasListeners = false;
         $defaultEntryPoint = null;
 
+        // Remember Me (this is attached later, see below)
+        $rememberMeProvider = $rememberMeListener = $rememberMeServices = null;
+        if (array_key_exists('remember_me', $firewall)) {
+            $firewall['remember-me'] = $firewall['remember_me'];
+        }
+        if (array_key_exists('remember-me', $firewall)) {
+            list($rememberMeProvider, $rememberMeListener, $rememberMeServices) = 
+                $this->createRememberMeListener($container, $id, $firewall['remember-me'], $defaultProvider, $providerIds);
+        }        
+        
         // X509
         if (array_key_exists('x509', $firewall)) {
             list($provider, $listener) = $this->createX509Listener($container, $id, $firewall['x509'], $defaultProvider, $providerIds);
@@ -259,6 +277,13 @@ class SecurityExtension extends Extension
         if (array_key_exists('form-login', $firewall)) {
             list($provider, $listener) = $this->createFormLoginListener($container, $id, $firewall['form-login'], $defaultProvider, $providerIds);
 
+            if (null !== $rememberMeServices) {
+                $container
+                    ->getDefinition($listener)
+                    ->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServices)))
+                ;
+            }
+            
             $listeners[] = new Reference($listener);
             $providers[] = new Reference($provider);
             $hasListeners = true;
@@ -294,13 +319,20 @@ class SecurityExtension extends Extension
                 $defaultEntryPoint = 'security.authentication.digest_entry_point';
             }
         }
-
+        
+        // Remember-me
+        if (null !== $rememberMeListener && null !== $rememberMeProvider) {
+            $listeners[] = new Reference($rememberMeListener);
+            $providers[] = new Reference($rememberMeProvider);
+            $hasListeners = true;
+        }
+        
         // Anonymous
         if (array_key_exists('anonymous', $firewall)) {
             $listeners[] = new Reference('security.authentication.listener.anonymous');
             $hasListeners = true;
         }
-
+        
         if (false === $hasListeners) {
             throw new \LogicException(sprintf('No authentication listener registered for pattern "%s".', isset($firewall['pattern']) ? $firewall['pattern'] : ''));
         }
@@ -367,6 +399,19 @@ class SecurityExtension extends Extension
                     new Reference('security.user.entity_manager'),
                     $provider['entity']['class'],
                     isset($provider['entity']['property']) ? $provider['entity']['property'] : null,
+            ));
+
+            return array($name, $encoder);
+        }
+
+        // Doctrine Document DAO provider
+        if (isset($provider['document'])) {
+            $container
+                ->register($name, '%security.user.provider.document.class%')
+                ->setArguments(array(
+                    new Reference('security.user.document_manager'),
+                    $provider['document']['class'],
+                    isset($provider['document']['property']) ? $provider['document']['property'] : null,
             ));
 
             return array($name, $encoder);
@@ -516,6 +561,79 @@ class SecurityExtension extends Extension
         $listener->setArguments($arguments);
 
         return array($provider, $listenerId);
+    }
+    
+    protected function createRememberMeListener($container, $id, $config, $defaultProvider, $providerIds)
+    {
+        $rememberMeKey = isset($config['key']) ? $config['key'] : new Parameter('security.rememberme.key');
+        
+        // user provider
+        $userProvider = isset($config['provider']) ? $this->getUserProviderId($config['provider']) : $defaultProvider;
+        
+        // authentication provider
+        $authenticationProvider = 'security.authentication.provider.rememberme.'.$id;
+        $container
+            ->register($authenticationProvider, '%security.authentication.provider.rememberme.class%')
+            ->setArguments(array(new Reference('security.account_checker'), $rememberMeKey))
+        ;
+        
+        // remember me services
+        if (isset($config['services'])) {
+            $config['service'] = $config['services'];
+        }
+        if (!isset($config['service'])) {
+            if (isset($config['token_provider'])) {
+                $config['token-provider'] = $config['token_provider'];
+            }
+            if (isset($config['token-provider'])) {
+                $rememberMeServicesId = $this->getRememberMeServicesId('persistent');
+            } else {
+                $rememberMeServicesId = $this->getRememberMeServicesId('simplehash');
+            }
+            
+            $container
+                ->getDefinition('security.logout_listener')
+                ->addMethodCall('addHandler', array(new Reference($rememberMeServicesId.$id)))
+            ;
+        } else {
+            $rememberMeServicesId = $this->getRememberMeServicesId($config['service']);
+        }
+            
+        $rememberMeServices = $container->setDefinition($rememberMeServicesId.$id, clone $container->getDefinition($rememberMeServicesId));
+        $arguments = $rememberMeServices->getArguments();
+        $arguments[0] = new Reference($userProvider);
+        $rememberMeServices->setArguments($arguments);
+
+        if (isset($config['token-provider'])) {
+            $methodCalls = array();
+            foreach ($rememberMeServices->getMethodCalls() as $call) {
+                list($method, $arguments) = $call;
+                
+                if ('setTokenProvider' === $method) {
+                    $methodCalls[] = array($method, array(new Reference('security.rememberme.token.provider.'.$config['token-provider'])));
+                }
+                if ('setKey' === $method) {
+                    $methodCalls[] = array($method, array($rememberMeKey));
+                }
+            }
+            
+            $rememberMeServices->setMethodCalls($methodCalls);
+        }
+        
+        // listener
+        $listenerId = 'security.authentication.listener.rememberme.'.$id;
+        $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.rememberme'));
+        $arguments = $listener->getArguments();
+        $arguments[1] = new Reference($rememberMeServicesId.$id);
+        $arguments[2] = new Reference($authenticationProvider);
+        $listener->setArguments($arguments);
+        
+        return array($authenticationProvider, $listenerId, $rememberMeServicesId.$id);
+    }
+    
+    protected function getRememberMeServicesId($name)
+    {
+        return 'security.authentication.rememberme.services.'.$name;
     }
 
     protected function createAccessListener($container, $id, $providers)

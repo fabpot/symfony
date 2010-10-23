@@ -255,7 +255,9 @@ class Request
 
     public function hasSession()
     {
-        return $this->cookies->has(session_name());
+        $sessionName = null === $this->session ? 'SYMFONY_SESSION' : session_name();
+
+        return $this->cookies->has($sessionName);
     }
 
     public function setSession(Session $session)
@@ -439,10 +441,15 @@ class Request
         if ($host = $this->headers->get('X_FORWARDED_HOST')) {
             $elements = explode(',', $host);
 
-            return trim($elements[count($elements) - 1]);
+            $host = trim($elements[count($elements) - 1]);
         } else {
-            return $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            $host = $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
         }
+
+        // Remove port number from host
+        $elements = explode(':', $host);
+
+        return trim($elements[0]);
     }
 
     public function setMethod($method)

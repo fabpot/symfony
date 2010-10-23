@@ -2,15 +2,16 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Security\Exception\AuthenticationException;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 
 /*
@@ -33,6 +34,7 @@ abstract class FormAuthenticationListener
     protected $authenticationManager;
     protected $options;
     protected $logger;
+    protected $rememberMeServices;
 
     /**
      * Constructor.
@@ -46,8 +48,6 @@ abstract class FormAuthenticationListener
     {
         $this->securityContext = $securityContext;
         $this->authenticationManager = $authenticationManager;
-        $this->logger = $logger;
-
         $this->options = array_merge(array(
             'check_path'                     => '/login_check',
             'login_path'                     => '/login',
@@ -58,10 +58,21 @@ abstract class FormAuthenticationListener
             'failure_path'                   => null,
             'failure_forward'                => false,
         ), $options);
+        $this->logger = $logger;
     }
 
     /**
+     * Sets the RememberMeServices implementation to use
      * 
+     * @param RememberMeServicesInterface $rememberMeServices
+     */
+    public function setRememberMeServices(RememberMeServicesInterface $rememberMeServices)
+    {
+        $this->rememberMeServices = $rememberMeServices;
+    }
+
+    /**
+     * Subscribe to the core.security event
      *
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
@@ -98,17 +109,6 @@ abstract class FormAuthenticationListener
 
         return true;
     }
-
-    /**
-     * Performs authentication.
-     *
-     * @param  Request $request A Request instance
-     *
-     * @return TokenInterface The authenticated token, or null if full authentication is not possible
-     *
-     * @throws AuthenticationException if the authentication fails
-     */
-    abstract protected function attemptAuthentication(Request $request);
 
     protected function onFailure(Request $request, \Exception $failed)
     {
@@ -161,6 +161,10 @@ abstract class FormAuthenticationListener
         $path = $this->determineTargetUrl($request);
         $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
 
+        if (null !== $this->rememberMeServices) {
+            $this->rememberMeServices->loginSuccess($request, $response, $token);
+        }
+        
         return $response;
     }
 
@@ -191,4 +195,15 @@ abstract class FormAuthenticationListener
 
         return $this->options['default_target_path'];
     }
+
+    /**
+     * Performs authentication.
+     *
+     * @param  Request $request A Request instance
+     *
+     * @return TokenInterface The authenticated token, or null if full authentication is not possible
+     *
+     * @throws AuthenticationException if the authentication fails
+     */
+    abstract protected function attemptAuthentication(Request $request);
 }

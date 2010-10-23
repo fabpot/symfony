@@ -58,7 +58,11 @@ class WebDebugToolbarListener
                 $response->headers->get('location'), $response->headers->get('location'))
             );
             $r->headers->set('X-Debug-Token', $response->headers->get('X-Debug-Token'));
-
+            
+            if ($response->headers->has('Set-Cookie')) {
+                $r->headers->set('Set-Cookie', $response->headers->get('set-cookie'));
+            }
+            
             $response = $r;
         }
 
@@ -72,7 +76,7 @@ class WebDebugToolbarListener
             return $response;
         }
 
-        $response->setContent($this->injectToolbar($request, $response));
+        $this->injectToolbar($request, $response);
 
         return $response;
     }
@@ -86,12 +90,23 @@ class WebDebugToolbarListener
      */
     protected function injectToolbar(Request $request, Response $response)
     {
-        $toolbar = "\n".str_replace("\n", '', $this->resolver->render('WebProfilerBundle:Profiler:toolbar'))."\n";
-        $content = str_ireplace('</body>', $toolbar.'</body>', $response->getContent(), $count);
-        if (!$count) {
-            $content .= $toolbar;
+        if (function_exists('mb_stripos')) {
+            $posrFunction = 'mb_strripos';
+            $substrFunction = 'mb_substr';
+        } else {
+            $posrFunction = 'strripos';
+            $substrFunction = 'substr';
         }
 
-        return $content;
+        $toolbar = "\n".str_replace("\n", '', $this->resolver->render('WebProfilerBundle:Profiler:toolbar'))."\n";
+        $content = $response->getContent();
+
+        if (false === $pos = $posrFunction($content, '</body>')) {
+            $content .= $toolbar;
+        } else {
+            $content = $substrFunction($content, 0, $pos).$toolbar.$substrFunction($content, $pos);
+        }
+
+        $response->setContent($content);
     }
 }

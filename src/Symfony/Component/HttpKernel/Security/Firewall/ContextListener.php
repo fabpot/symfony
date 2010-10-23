@@ -2,14 +2,13 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
-use Symfony\Component\HttpKernel\LoggerInterface;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Security\Authentication\Token\AnonymousToken;
-use Symfony\Component\Security\SecurityContext;
 
 /*
  * This file is part of the Symfony framework.
@@ -30,22 +29,23 @@ class ContextListener
     protected $context;
     protected $logger;
 
-    public function __construct(SecurityContext $context, $logger = null)
+    public function __construct(SecurityContext $context, LoggerInterface $logger = null)
     {
         $this->context = $context;
         $this->logger = $logger;
     }
 
     /**
-     * Registers a core.security listener to load the SecurityContext from the session.
+     * Registers a core.security listener to load the SecurityContext from the
+     * session.
      *
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
      */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
+    public function register(EventDispatcher $dispatcher, $readPriority = 0, $writePriority = -1)
     {
-        $dispatcher->connect('core.security', array($this, 'read'), $priority);
-        $dispatcher->connect('core.response', array($this, 'write'), $priority);
+        $dispatcher->connect('core.security', array($this, 'read'), $readPriority);
+        $dispatcher->connect('core.response', array($this, 'write'), $writePriority);
     }
 
     /**
@@ -86,8 +86,8 @@ class ContextListener
         if (HttpKernelInterface::MASTER_REQUEST !== $event->getParameter('request_type')) {
             return $response;
         }
-
-        if (null === $token = $this->context->getToken()) {
+        
+        if (!$event->getParameter('request')->hasSession() || null === $token = $this->context->getToken()) {
             return $response;
         }
 

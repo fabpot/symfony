@@ -2,11 +2,10 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
-use Symfony\Component\Security\Exception\AuthenticationServiceException;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
 
 /*
@@ -19,8 +18,8 @@ use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
  */
 
 /**
- * UsernamePasswordFormAuthenticationListener is the default implementation of an authentication via a simple form
- * composed of a username and a password.
+ * UsernamePasswordFormAuthenticationListener is the default implementation of
+ * an authentication via a simple form composed of a username and a password.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */

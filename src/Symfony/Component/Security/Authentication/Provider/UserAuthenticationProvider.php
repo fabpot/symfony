@@ -7,6 +7,7 @@ use Symfony\Component\Security\User\AccountCheckerInterface;
 use Symfony\Component\Security\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Exception\AuthenticationException;
 use Symfony\Component\Security\Exception\BadCredentialsException;
+use Symfony\Component\Security\Exception\AuthenticationServiceException;
 use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 
@@ -42,16 +43,6 @@ abstract class UserAuthenticationProvider implements AuthenticationProviderInter
     }
 
     /**
-     * Does additional checks on the user and token (like validating the credentials).
-     *
-     * @param AccountInterface      $account The retrieved AccountInterface instance
-     * @param UsernamePasswordToken $token   The UsernamePasswordToken token to be authenticated
-     *
-     * @throws AuthenticationException if the credentials could not be validated
-     */
-    abstract protected function checkAuthentication(AccountInterface $account, UsernamePasswordToken $token);
-
-    /**
      * {@inheritdoc}
      */
     public function authenticate(TokenInterface $token)
@@ -72,33 +63,16 @@ abstract class UserAuthenticationProvider implements AuthenticationProviderInter
             throw $notFound;
         }
 
-        if (null === $user) {
-            throw new \LogicException('The retrieveUser() methods returned null which should not be possible.');
+        if (!$user instanceof AccountInterface) {
+            throw new AuthenticationServiceException('The retrieveUser() methods must return an AccountInterface object.');
         }
 
-        try {
-            $this->accountChecker->checkPreAuth($user);
-            $this->checkAuthentication($user, $token);
-        } catch (AuthenticationException $e) {
-            throw $e;
-        }
-
+        $this->accountChecker->checkPreAuth($user);
+        $this->checkAuthentication($user, $token);
         $this->accountChecker->checkPostAuth($user);
 
         return new UsernamePasswordToken($user, $token->getCredentials(), $user->getRoles());
     }
-
-    /**
-     * Retrieves the user from an implementation-specific location.
-     *
-     * @param string                $username The username to retrieve
-     * @param UsernamePasswordToken $token    The Token
-     *
-     * @return mixed The user
-     *
-     * @throws AuthenticationException if the credentials could not be validated
-     */
-    abstract protected function retrieveUser($username, UsernamePasswordToken $token);
 
     /**
      * {@inheritdoc}
@@ -107,4 +81,27 @@ abstract class UserAuthenticationProvider implements AuthenticationProviderInter
     {
         return $token instanceof UsernamePasswordToken;
     }
+
+    /**
+     * Retrieves the user from an implementation-specific location.
+     *
+     * @param string                $username The username to retrieve
+     * @param UsernamePasswordToken $token    The Token
+     *
+     * @return AccountInterface The user
+     *
+     * @throws AuthenticationException if the credentials could not be validated
+     */
+    abstract protected function retrieveUser($username, UsernamePasswordToken $token);
+
+    /**
+     * Does additional checks on the user and token (like validating the
+     * credentials).
+     *
+     * @param AccountInterface      $account The retrieved AccountInterface instance
+     * @param UsernamePasswordToken $token   The UsernamePasswordToken token to be authenticated
+     *
+     * @throws AuthenticationException if the credentials could not be validated
+     */
+    abstract protected function checkAuthentication(AccountInterface $account, UsernamePasswordToken $token);
 }
