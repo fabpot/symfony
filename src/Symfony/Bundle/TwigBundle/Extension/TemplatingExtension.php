@@ -67,7 +67,7 @@ class TemplatingExtension extends \Twig_Extension
             new HelperTokenParser('route', '<route> [with <arguments:array>]', 'templating.helper.router', 'generate'),
 
             // {% render 'BlogBundle:Post:list' with ['limit': 2], ['alt': 'BlogBundle:Post:error'] %}
-            new HelperTokenParser('render', '<template> [with <attributes:array>[, <options:array>]]', 'templating.helper.actions', 'render'),
+            new HelperTokenParser('render', '<template> [with <attributes:array>[ <options:array>]]', 'templating.helper.actions', 'render'),
 
             // {% flash 'notice' %}
             new HelperTokenParser('flash', '<name>', 'templating.helper.session', 'getFlash'),
