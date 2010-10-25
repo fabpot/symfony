@@ -20,6 +20,9 @@ class UsernamePasswordToken extends Token
 {
     /**
      * Constructor.
+     * 
+     * @param string $user The username (like a nickname, email address, etc.)
+     * @param string $credentials This usually is the password of the user
      */
     public function __construct($user, $credentials, array $roles = array())
     {
