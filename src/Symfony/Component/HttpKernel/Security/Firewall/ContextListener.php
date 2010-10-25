@@ -56,8 +56,7 @@ class ContextListener
     public function read(Event $event)
     {
         $request = $event->getParameter('request');
-
-        $session = $request->hasSession() ? $request->getSession() : null;
+        $session = $request->getSession();
 
         if (null === $session || null === $token = $session->get('_security')) {
             $this->context->setToken(null);
