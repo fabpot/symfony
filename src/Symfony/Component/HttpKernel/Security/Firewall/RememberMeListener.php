@@ -6,7 +6,7 @@ use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 
-class RememberMeListener 
+abstract class RememberMeListener 
 {
 	protected $securityContext;
 	protected $authenticationManager;
@@ -49,10 +49,25 @@ class RememberMeListener
     {
         $request = $event->getParameter('request');
 
+        if (null === $cookie = $request->cookies->get($this->options['name'])) {
+        	return;
+        }
+        
+        $cookie = base64_decode($cookie);
+        if (false === $usernameEnd = strpos($cookie, ':'))
+        {
+        	return;
+        }
+        
+        $username = substr($cookie, 0, $usernameEnd);
+        $data = substr($cookie, $usernameEnd + 1);
+        
+        $token = new RememberMe
+        
         try {
-            if (null === $token = $this->attemptAuthentication($request)) {
-                return;
-            }
+        	if (null === $token = $this->extractToken($request)) {
+        		return;
+        	}
 
             $response = $this->onSuccess($request, $token);
         } catch (AuthenticationException $failed) {

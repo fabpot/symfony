@@ -51,6 +51,8 @@ unknown_type
         <parameter key="security.authentication.listener.anonymous.class">Symfony\Component\HttpKernel\Security\Firewall\AnonymousAuthenticationListener</parameter>
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
+		<parameter key="security.authentication.listener.rememberme.class">Symfony\Component\HttpKernel\Security\Firewall\RememberMeListener</parameter>
+        
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
 
         <parameter key="security.logout_listener.class">Symfony\Component\HttpKernel\Security\Firewall\LogoutListener</parameter>
@@ -109,6 +111,12 @@ unknown_type
             <argument>%security.anonymous.key%</argument>
             <argument type="service" id="logger" on-invalid="null" />
         </service>
+        
+        <service id="security.authentication.listener.rememberme" class="%security.authentication.listener.rememberme.class%">
+        	<argument type="service" id="security.context" />
+        	<argument type="service" id="security.rememberme.token_provider" on-invalid="null" />
+        	<argument type="service" id="logger" on-invalid="null" />
+        </service>
 
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" />
 
@@ -137,10 +145,6 @@ unknown_type
             <argument type="service" id="logger" on-invalid="null" />
         </service>
         
-        <service id="security.rememberme_listener" class="%security.rememberme_listener.class%">
-        	<argument type="service" id="security.context" />
-        </service>
-
         <service id="security.access.decision_manager" class="%security.access.decision_manager.class%">
             <argument type="service" id="service_container" />
         </service>

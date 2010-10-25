@@ -12,14 +12,6 @@
             <argument type="service" id="logger" on-invalid="null" />
         </service>
 
-		<service id="security.authentication.rememberme_listener" class="%security.authentication.rememberme_listener.class%">
-			<argument type="service" id="security.context"/>
-			<argument type="service" id="security.authentication.manager" />
-			<argument type="service" id="security.authentication.rememberme.options" />
-			<argument type="service" id="security.authentication.token.provider" on-invalid="null" />
-			<argument type="service" id="logger" on-invalid="null" />
-		</service>
-
         <service id="security.authentication.listener.x509" class="%security.authentication.listener.x509.class%">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
