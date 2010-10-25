@@ -62,19 +62,16 @@ abstract class RememberMeListener
         $username = substr($cookie, 0, $usernameEnd);
         $data = substr($cookie, $usernameEnd + 1);
         
-        $token = new RememberMe
-        
         try {
-        	if (null === $token = $this->extractToken($request)) {
+        	$token = $this->authenticationManager->authenticate(new SimpleHashRememberMeToken($username, $data));
+        	if (null === $token) {
         		return;
         	}
-
-            $response = $this->onSuccess($request, $token);
         } catch (AuthenticationException $failed) {
             $response = $this->onFailure($request, $failed);
-        }
 
-        $event->setReturnValue($response);
+        	$event->setReturnValue($response);
+        }
 
         return true;
     }

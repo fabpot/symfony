@@ -1,10 +1,14 @@
 <?php
 namespace \Symfony\Component\Security\Authentication\Token;
 
-class RememberMeToken extends Token
+/**
+ * Base class for "Remember Me" tokens
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
+abstract class RememberMeToken extends Token
 {
 	protected $username;
-	protected $data;
 	
 	/**
 	 * Constructor
@@ -15,6 +19,13 @@ class RememberMeToken extends Token
 		parent::__construct();
 		
 		$this->username = $username;
-		$this->data = $data;
+		$this->extractData($data);
 	}
+	
+	public function getUsername() 
+	{
+		return $this->username;
+	}
+	
+	abstract protected function extractData($data);
 }
