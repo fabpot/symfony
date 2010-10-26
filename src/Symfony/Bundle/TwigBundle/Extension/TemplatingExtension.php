@@ -63,8 +63,8 @@ class TemplatingExtension extends \Twig_Extension
             // {% asset 'css/blog.css' %}
             new HelperTokenParser('asset', '<location>', 'templating.helper.assets', 'getUrl'),
 
-            // {% route 'blog_post' with ['id': post.id], true %}
-            new HelperTokenParser('route', '<route> [with <arguments:array>[, <global>]]', 'templating.helper.router', 'generate'),
+            // {% route 'blog_post' with ['id': post.id] global true %}
+            new HelperTokenParser('route', '<route> [with <arguments:array>] [global <global>]', 'templating.helper.router', 'generate'),
 
             // {% render 'BlogBundle:Post:list' with ['limit': 2], ['alt': 'BlogBundle:Post:error'] %}
             new HelperTokenParser('render', '<template> [with <attributes:array>[, <options:array>]]', 'templating.helper.actions', 'render'),
