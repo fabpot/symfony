@@ -130,7 +130,7 @@ class SecurityExtension extends Extension
         if (!$firewalls = $this->fixConfig($config, 'firewall')) {
             return;
         }
-
+        
         // load service templates
         $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
         $loader->load('security_templates.xml');
@@ -252,6 +252,11 @@ class SecurityExtension extends Extension
             $hasListeners = true;
         }
 
+        // Remember Me
+        if (array_key_exists('rememberme', $firewall)) {
+        	$listeners[] 
+        }
+
         // Form
         if (array_key_exists('form_login', $firewall)) {
             $firewall['form-login'] = $firewall['form_login'];
@@ -300,7 +305,7 @@ class SecurityExtension extends Extension
             $listeners[] = new Reference('security.authentication.listener.anonymous');
             $hasListeners = true;
         }
-
+        
         if (false === $hasListeners) {
             throw new \LogicException(sprintf('No authentication listener registered for pattern "%s".', isset($firewall['pattern']) ? $firewall['pattern'] : ''));
         }
@@ -433,6 +438,13 @@ class SecurityExtension extends Extension
         return array($provider, $listenerId);
     }
 
+    protected function createRememberMeListener($container, $id, $config, $defaultProvider, $providerIds)
+    {
+    	$userProvider = isset($config['provider']) ? $this->getUserProviderId($config['provider']) : $defaultProvider;
+    	
+    	$provider = 'security.authentication.'
+    }
+    
     protected function createFormLoginListener($container, $id, $config, $defaultProvider, $providerIds)
     {
         // provider
