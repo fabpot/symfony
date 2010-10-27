@@ -6,26 +6,16 @@ namespace \Symfony\Component\Security\Authentication\Token;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-abstract class RememberMeToken extends Token
+class RememberMeToken extends Token
 {
-	protected $username;
-	
 	/**
 	 * Constructor
 	 * @param string $username
 	 * @param string $data
 	 */
-	public function __construct($username, $data) {
-		parent::__construct();
+	public function __construct(AccountInterface $user) {
+		parent::__construct($user->getRoles());
 		
-		$this->username = $username;
-		$this->extractData($data);
+		$this->user = $user;
 	}
-	
-	public function getUsername() 
-	{
-		return $this->username;
-	}
-	
-	abstract protected function extractData($data);
 }

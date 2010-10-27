@@ -6,11 +6,14 @@ use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ *  
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
 abstract class RememberMeListener 
 {
 	protected $securityContext;
-	protected $authenticationManager;
-	protected $options;
+	protected $rememberMeServices;
 	protected $logger;
 	
 	/**
@@ -21,11 +24,10 @@ abstract class RememberMeListener
 	 * @param array $options
 	 * @param LoggerInterface $logger
 	 */
-	public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, array $options = array(), LoggerInterface $logger = null)
+	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, LoggerInterface $logger = null)
 	{
 		$this->securityContext = $securityContext;
-		$this->authenticationManager = $authenticationManager;
-		$this->options = $options;
+		$this->rememberMeServices = $rememberMeServices;
 		$this->logger = $logger;
 	}
 	
@@ -49,25 +51,17 @@ abstract class RememberMeListener
     {
         $request = $event->getParameter('request');
 
-        if (null === $cookie = $request->cookies->get($this->options['name'])) {
-        	return;
-        }
-        
-        $cookie = base64_decode($cookie);
-        if (false === $usernameEnd = strpos($cookie, ':'))
-        {
-        	return;
-        }
-        
-        $username = substr($cookie, 0, $usernameEnd);
-        $data = substr($cookie, $usernameEnd + 1);
-        
         try {
-        	$token = $this->authenticationManager->authenticate(new SimpleHashRememberMeToken($username, $data));
-        	if (null === $token) {
+        	if (null === $token = $this->rememberMeServices->autoLogin($request)) {
         		return;
         	}
+        	
+        	// TODO
+        	$this->rememberMeServices->onLoginSuccess();
         } catch (AuthenticationException $failed) {
+        	// TODO
+        	$this->rememberMeServices->onLoginFail();
+        	
             $response = $this->onFailure($request, $failed);
 
         	$event->setReturnValue($response);

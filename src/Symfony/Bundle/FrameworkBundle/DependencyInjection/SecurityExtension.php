@@ -252,11 +252,6 @@ class SecurityExtension extends Extension
             $hasListeners = true;
         }
 
-        // Remember Me
-        if (array_key_exists('rememberme', $firewall)) {
-        	$listeners[] 
-        }
-
         // Form
         if (array_key_exists('form_login', $firewall)) {
             $firewall['form-login'] = $firewall['form_login'];
@@ -298,6 +293,18 @@ class SecurityExtension extends Extension
             if (null === $defaultEntryPoint) {
                 $defaultEntryPoint = 'security.authentication.digest_entry_point';
             }
+        }
+        
+        // Remember Me
+        if (array_key_exists('remember_me', $firewall)) {
+        	$firewall['remember-me'] = $firewall['remember_me'];
+        }
+        if (array_key_exists('remember-me', $firewall)) {
+        	list($provider, $listener) = $this->createRememberMeListener($container, $id, $firewall['remember-me'], $defaultProvider, $providerIds);
+        	
+        	$listeners[] = new Reference($listener);
+        	$providers[] = new Reference($provider);
+        	$hasListeners = true;
         }
 
         // Anonymous
@@ -438,13 +445,6 @@ class SecurityExtension extends Extension
         return array($provider, $listenerId);
     }
 
-    protected function createRememberMeListener($container, $id, $config, $defaultProvider, $providerIds)
-    {
-    	$userProvider = isset($config['provider']) ? $this->getUserProviderId($config['provider']) : $defaultProvider;
-    	
-    	$provider = 'security.authentication.'
-    }
-    
     protected function createFormLoginListener($container, $id, $config, $defaultProvider, $providerIds)
     {
         // provider
@@ -528,6 +528,12 @@ class SecurityExtension extends Extension
         $listener->setArguments($arguments);
 
         return array($provider, $listenerId);
+    }
+    
+    protected function createRememberMeListener($container, $id, $config, $defaultProvider, $providerIds)
+    {
+    	var_dump(func_get_args());
+    	exit;
     }
 
     protected function createAccessListener($container, $id, $providers)

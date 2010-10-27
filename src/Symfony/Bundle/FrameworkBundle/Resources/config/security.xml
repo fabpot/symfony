@@ -45,12 +45,13 @@
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
 		<parameter key="security.authentication.listener.rememberme.class">Symfony\Component\HttpKernel\Security\Firewall\RememberMeListener</parameter>
-        <parameter key="security.authentication.listener.rememberme.options.name">SYMFONY_REMEMBERME</parameter>
-        <parameter key="security.authentication.listener.rememberme.options.lifetime">31536000</parameter>
-        <parameter key="security.authentication.listener.rememberme.options.path">/</parameter>
-        <parameter key="security.authentication.listener.rememberme.options.domain" />
-        <parameter key="security.authentication.listener.rememberme.options.secure">false</parameter>
-        <parameter key="security.authentication.listener.rememberme.options.httponly">false</parameter>
+		<parameter key="security.authentication.rememberme.class">Symfony\Component\Security\Authentication\RememberMe\TokenBasedRememberMeServices</parameter>
+        <parameter key="security.authentication.rememberme.options.name">SYMFONY_REMEMBERME</parameter>
+        <parameter key="security.authentication.rememberme.options.lifetime">31536000</parameter>
+        <parameter key="security.authentication.rememberme.options.path">/</parameter>
+        <parameter key="security.authentication.rememberme.options.domain" />
+        <parameter key="security.authentication.rememberme.options.secure">false</parameter>
+        <parameter key="security.authentication.rememberme.options.httponly">false</parameter>
         
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
 
@@ -113,8 +114,12 @@
         
         <service id="security.authentication.listener.rememberme" class="%security.authentication.listener.rememberme.class%">
         	<argument type="service" id="security.context" />
-        	<argument type="collection">%security.authentication.listener.rememberme.options%</argument>
+        	<argument type="service" id="security.authentication.rememberme" />
         	<argument type="service" id="logger" on-invalid="null" />
+        </service>
+        
+        <service id="security.authentication.rememberme" class="%security.authentication.rememberme.class%">
+        	<argument type="collection">%security.authentication.rememberme.options%</argument>
         </service>
 
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" />
