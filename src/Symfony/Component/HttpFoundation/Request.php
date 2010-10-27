@@ -439,10 +439,16 @@ class Request
         if ($host = $this->headers->get('X_FORWARDED_HOST')) {
             $elements = explode(',', $host);
 
-            return trim($elements[count($elements) - 1]);
+            $host = trim($elements[count($elements) - 1]);
         } else {
-            return $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            $host = $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
         }
+
+        // Remove port number from host
+        $elements = explode(':', $host);
+        $host = trim($elements[0]);
+        
+        return $host;
     }
 
     public function setMethod($method)
