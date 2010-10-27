@@ -441,7 +441,15 @@ class Request
 
             return trim($elements[count($elements) - 1]);
         } else {
-            return $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            $host = $this->headers->get('HOST');
+            if ( NULL === $host ) {
+                return $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', ''));
+            } else {
+                // Remove 'port number' from Host Header
+                $elements = explode(':', $host);
+
+                return trim($elements[0]);
+            }
         }
     }
 
