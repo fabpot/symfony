@@ -1,4 +1,5 @@
 <?php
+use Symfony\Component\HttpFoundation\Response;
 namespace \Symfony\Component\HttpKernel\Security\Firewall;
 
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
@@ -14,6 +15,7 @@ abstract class RememberMeListener
 {
 	protected $securityContext;
 	protected $rememberMeServices;
+	protected $authenticationManager;
 	protected $logger;
 	
 	/**
@@ -24,10 +26,11 @@ abstract class RememberMeListener
 	 * @param array $options
 	 * @param LoggerInterface $logger
 	 */
-	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, LoggerInterface $logger = null)
+	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, AuthenticationManagerInterface $authenticationManager, LoggerInterface $logger = null)
 	{
 		$this->securityContext = $securityContext;
 		$this->rememberMeServices = $rememberMeServices;
+		$this->authenticationManager = $authenticationManager;
 		$this->logger = $logger;
 	}
 	
@@ -40,10 +43,11 @@ abstract class RememberMeListener
     public function register(EventDispatcher $dispatcher, $priority = 0)
     {
         $dispatcher->connect('core.security', array($this, 'handle'), $priority);
+        $dispatcher->connect('core.response', array($this, 'updateCookies'), $priority);
     }
 	
     /**
-     * Handles form based authentication.
+     * Handles remember-me cookie based authentication.
      *
      * @param Event $event An Event instance
      */
@@ -51,22 +55,45 @@ abstract class RememberMeListener
     {
         $request = $event->getParameter('request');
 
+        if (null !== $this->securityContext->getToken()) {
+        	return;
+        }
+        
+        if (null === $token = $this->rememberMeServices->autoLogin($request)) {
+        	return;
+        }
+        
         try {
-        	if (null === $token = $this->rememberMeServices->autoLogin($request)) {
+        	if (null === $token = $this->authenticationManager->authenticate($token)) {
         		return;
         	}
         	
-        	// TODO
-        	$this->rememberMeServices->onLoginSuccess();
-        } catch (AuthenticationException $failed) {
-        	// TODO
-        	$this->rememberMeServices->onLoginFail();
+        	$this->securityContext->setToken($token);
         	
-            $response = $this->onFailure($request, $failed);
-
-        	$event->setReturnValue($response);
+        	if (null !== $this->logger) {
+        		$this->logger->debug('SecurityContext populated with remember-me token.');
+        	}
+        } catch (AuthenticationException $failed) {
+        	if (null !== $this->logger) {
+        		$this->logger->debug(
+        			'SecurityContext not populated with remember-me token as the'
+        		   .' AuthenticationManager rejected the AuthenticationToken returned'
+        		   .' by the RememberMeServices: '.$failed->getMessage()
+        		);
+        	}
         }
-
-        return true;
+    }
+    
+    /**
+     * Update cookies 
+     * @param Event $event
+     */
+    public function updateCookies(Event $event, Response $response)
+    {
+    	if (HttpKernelInterface::MASTER_REQUEST !== $event->getParameter('request_type')) {
+            return $response;
+        }
+        
+        
     }
 }

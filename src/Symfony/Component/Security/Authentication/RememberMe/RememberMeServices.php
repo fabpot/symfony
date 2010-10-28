@@ -1,21 +1,27 @@
 <?php
 
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+namespace \Symfony\Component\Security\Authentication\RememberMe;
+
 use Symfony\Component\Security\User\UserProviderInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
-namespace \Symfony\Component\Security\Authentication\RememberMe;
 
 abstract class RememberMeServices implements RememberMeServicesInterface
 {
-	protected $authenticationManager;
+	const COOKIE_DELIMITER = ':';
+	
 	protected $userProvider;
 	protected $options;
+	protected $logger;
 	protected $tokenProvider;
 	
-	public function __construct(AuthenticationManagerInterface $authenticationManager, UserProviderInterface $userProvider, array $options = array())
+	public function __construct(UserProviderInterface $userProvider, array $options = array(), LoggerInterface $logger = null)
 	{
-		$this->authenticationManager = $authenticationManager;
 		$this->userProvider = $userProvider;
 		$this->options = $options;
+		$this->logger = $logger;
 	}
 	
 	public function setTokenProvider(TokenProviderInterface $tokenProvider)
@@ -23,15 +29,54 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 		$this->tokenProvider = $tokenProvider;
 	}
 	
-	abstract public function autoLogin(Request $request);
+	public function autoLogin(Request $request)
+	{
+		if (null === $cookie = $request->cookies->get($this->options['name'])) {
+			return;
+		}
+		
+		if (null !== $this->logger) {
+			$this->logger->debug('Remember-me cookie detected.');
+		}
+		
+		try {
+			$cookieParts = $this->decodeCookie($cookie);
+			$token = $this->processAutoLoginCookie($cookieParts);
+			
+			if (null !== $this->logger) {
+				$this->logger->debug('Remember-me cookie accepted.');
+			}
+			
+			return $token;
+		} catch (AuthenticationException $failed) {
+			$this->cancelCookie();
+		}
+	}
 	
-	public function loginFail() 
+	/**
+	 * 
+	 * @param mixed $cookieParts
+	 * @return TokenInterface
+	 */
+	abstract protected function processAutoLoginCookie($cookieParts);
+	
+	protected function decodeCookie($rawCookie)
+	{
+		return explode(self::COOKIE_DELIMITER, base64_decode($rawCookie));
+	}
+	
+	public function onLoginFail() 
 	{
 		// TODO
 	}
 	
-	public function loginSuccess()
+	public function onLoginSuccess(Request $request, Response $response, TokenInterface $token)
 	{
-		// TODO
+		
+	}
+	
+	protected function cancelCookie()
+	{
+		
 	}
 }
