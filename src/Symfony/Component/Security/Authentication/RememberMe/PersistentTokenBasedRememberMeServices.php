@@ -25,7 +25,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
 			throw new CookieTheftException('This token was already used. The account is possibly compromised.');
 		}
 		
-		return new RememberMeToken($user);
+		return $user;
 	}
 	
 	protected function generateRandomValue()

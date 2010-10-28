@@ -25,7 +25,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
 			throw new AuthenticationException('Token is already expired.');
 		}
 		
-		return new RememberMeToken($user);
+		return $user;
 	}
 	
 	protected function generateCookieHash($username, $expires, $password)
