@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 
@@ -534,13 +535,16 @@ class SecurityExtension extends Extension
     
     protected function createRememberMeListener($container, $id, $config, $defaultProvider, $providerIds)
     {
+    	$rememberMeKey = isset($config['key']) ? $config['key'] : new Parameter('security.rememberme.key');
+    	
         // user provider
         $userProvider = isset($config['provider']) ? $this->getUserProviderId($config['provider']) : $defaultProvider;
         
-        $provider = 'security.authentication.provider.dao.'.$id;
+        // authentication provider
+        $authenticationProvider = 'security.authentication.provider.rememberme.'.$id;
         $container
-            ->register($provider, '%security.authentication.provider.dao.class%')
-            ->setArguments(array(new Reference($userProvider), new Reference('security.account_checker'), new Reference('security.encoder.'.$providerIds[$userProvider])));
+            ->register($authenticationProvider, '%security.authentication.provider.rememberme.class%')
+            ->addMethodCall('setKey', array($rememberMeKey));
         ;
         
     	// remember me services
@@ -560,7 +564,19 @@ class SecurityExtension extends Extension
     	$rememberMeServices->setArguments($arguments);
 
     	if (isset($config['token-provider'])) {
-    		$rememberMeServices->addMethodCall('setTokenProvider', array(new Reference('security.rememberme.token.provider.'.$config['token-provider'])));
+    		$methodCalls = array();
+    		foreach ($rememberMeServices->getMethodCalls() as $call) {
+    			list($method, $arguments) = $call;
+    			
+    			if ('setTokenProvider' === $method) {
+    				$methodCalls[] = array($method, array(new Reference('security.rememberme.token.provider.'.$config['token-provider'])));
+    			}
+    			if ('setKey' === $method) {
+    				$methodCalls[] = array($method, array($rememberMeKey));
+    			}
+    		}
+    		
+    		$rememberMeServices->setMethodCalls($methodCalls);
     	}
     	
         // listener
@@ -568,9 +584,10 @@ class SecurityExtension extends Extension
 		$listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.rememberme'));
     	$arguments = $listener->getArguments();
     	$arguments[1] = new Reference($rememberMeServicesId.$id);
+    	$arguments[2] = new Reference($authenticationProvider);
     	$listener->setArguments($arguments);
     	
-    	return array($provider, $listenerId);
+    	return array($authenticationProvider, $listenerId);
     }
     
     protected function getRememberMeServicesId($name)

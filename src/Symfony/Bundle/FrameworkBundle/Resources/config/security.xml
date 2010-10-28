@@ -18,7 +18,7 @@
 
         <parameter key="security.authentication.provider.dao.class">Symfony\Component\Security\Authentication\Provider\DaoAuthenticationProvider</parameter>
         <parameter key="security.authentication.provider.pre_authenticated.class">Symfony\Component\Security\Authentication\Provider\PreAuthenticatedAuthenticationProvider</parameter>
-        <parameter key="security.authentication.provider.remember_me.class">Symfony\Component\Security\Authentication\Provider\RememberMeAuthenticationProvider</parameter>
+        <parameter key="security.authentication.provider.rememberme.class">Symfony\Component\Security\Authentication\Provider\RememberMeAuthenticationProvider</parameter>
 
         <parameter key="security.authentication.manager.class">Symfony\Component\Security\Authentication\AuthenticationProviderManager</parameter>
         
@@ -53,8 +53,7 @@
         <parameter key="security.authentication.rememberme.options.domain" />
         <parameter key="security.authentication.rememberme.options.secure">false</parameter>
         <parameter key="security.authentication.rememberme.options.httponly">false</parameter>
-        <!-- This key is only used by the TokenBasedRememberMeServices -->
-        <parameter key="security.authentication.rememberme.key"></parameter>
+        <parameter key="security.rememberme.key"></parameter>
         <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\RememberMe\Token\InMemoryTokenProvider</parameter>
         
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
@@ -128,7 +127,7 @@
         	<argument type="collection">%security.authentication.rememberme.options%</argument>
         	<argument type="service" id="logger" on-invalid="null" />
         	<call method="setKey">
-        		<argument>%security.authentication.rememberme.simplehash.key%</argument>
+        		<argument>%security.rememberme.key%</argument>
         	</call>
         </service>
         
@@ -138,6 +137,9 @@
         	<argument type="service" id="logger" on-invalid="null" />
         	<call method="setTokenProvider">
         		<argument type="service" id="security.rememberme.token.provider.in_memory"></argument>
+        	</call>
+        	<call method="setKey">
+        		<argument>%security.rememberme.key%</argument>
         	</call>
         </service>
         

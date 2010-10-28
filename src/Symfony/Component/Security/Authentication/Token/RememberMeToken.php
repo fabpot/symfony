@@ -8,14 +8,22 @@ namespace \Symfony\Component\Security\Authentication\Token;
  */
 class RememberMeToken extends Token
 {
+	protected $key;
+	
 	/**
 	 * Constructor
 	 * @param string $username
-	 * @param string $data
+	 * @param string $key
 	 */
-	public function __construct(AccountInterface $user) {
+	public function __construct(AccountInterface $user, $key) {
 		parent::__construct($user->getRoles());
 		
 		$this->user = $user;
+		$this->key = $key;
+	}
+	
+	public function getKey()
+	{
+		return $this->key;
 	}
 }

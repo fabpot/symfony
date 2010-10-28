@@ -1,6 +1,7 @@
 <?php
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -18,7 +19,6 @@ class RememberMeListener
 	protected $securityContext;
 	protected $rememberMeServices;
 	protected $authenticationManager;
-	protected $options;
 	protected $logger;
 	
 	/**
@@ -30,12 +30,11 @@ class RememberMeListener
 	 * @param array $options
 	 * @param LoggerInterface $logger
 	 */
-	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, AuthenticationManagerInterface $authenticationManager, array $options, LoggerInterface $logger = null)
+	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, AuthenticationManagerInterface $authenticationManager, LoggerInterface $logger = null)
 	{
 		$this->securityContext = $securityContext;
 		$this->rememberMeServices = $rememberMeServices;
 		$this->authenticationManager = $authenticationManager;
-		$this->options = $options;
 		$this->logger = $logger;
 	}
 	
@@ -99,6 +98,6 @@ class RememberMeListener
             return $response;
         }
         
-        
+        return $response;
     }
 }
