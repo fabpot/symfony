@@ -27,11 +27,12 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 	
 	public function loginFail() 
 	{
-		// TODO
+		// TODO: Invalidate any and all remember-me tokens
 	}
 	
 	public function loginSuccess()
 	{
-		// TODO
+		// TODO: Set the remember-me token if requested (this should be called after
+		//       an interactive authentication was successful; e.g. after the form-login)
 	}
 }
