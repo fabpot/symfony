@@ -561,7 +561,13 @@ class SecurityExtension extends Extension
         ;
         
     	// remember me services
+    	if (isset($config['services'])) {
+    		$config['service'] = $config['services'];
+    	}
     	if (!isset($config['service'])) {
+    		if (isset($config['token_provider'])) {
+    			$config['token-provider'] = $config['token_provider'];
+    		}
 	    	if (isset($config['token-provider'])) {
 	    		$rememberMeServicesId = $this->getRememberMeServicesId('persistent');
 	    	} else {
