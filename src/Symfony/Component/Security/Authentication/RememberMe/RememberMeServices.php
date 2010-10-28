@@ -9,6 +9,20 @@ use Symfony\Component\Security\User\UserProviderInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * Base class implementing the RememberMeServicesInterface
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
 abstract class RememberMeServices implements RememberMeServicesInterface
 {
 	const COOKIE_DELIMITER = ':';
@@ -62,11 +76,15 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 	
 	/**
 	 * 
-	 * @param mixed $cookieParts
-	 * @return TokenInterface
+	 * @param array $cookieParts
+	 * @return AccountInterface
 	 */
 	abstract protected function processAutoLoginCookie($cookieParts);
 	
+	/**
+	 * @param string $rawCookie
+	 * @return array
+	 */
 	protected function decodeCookie($rawCookie)
 	{
 		return explode(self::COOKIE_DELIMITER, base64_decode($rawCookie));

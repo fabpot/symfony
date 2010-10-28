@@ -3,6 +3,22 @@ namespace Symfony\Component\Security\Authentication\RememberMe;
 
 use Symfony\Component\Security\Exception\AuthenticationException;
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * Concrete implementation of the RememberMeServicesInterface which needs
+ * an implementation of TokenProviderInterface for providing remember-me
+ * capabilities.
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
 class PersistentTokenBasedRememberMeServices extends RememberMeServices
 {
 	protected function processAutoLoginCookie($cookieParts)
@@ -20,7 +36,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
 		}
 		
 		if ($persistentToken->getTokenValue() !== $tokenValue) {
-			$this->tokenProvider->deleteTokensBySeries($series);
+			$this->tokenProvider->deleteTokenBySeries($series);
 			
 			throw new CookieTheftException('This token was already used. The account is possibly compromised.');
 		}
