@@ -1,6 +1,7 @@
 <?php
+namespace Symfony\Component\Security\Authentication\RememberMe;
+
 use Symfony\Component\Security\Exception\AuthenticationException;
-namespace \Symfony\Component\Security\Authentication\RememberMe;
 
 class PersistentTokenBasedRememberMeServices extends RememberMeServices
 {

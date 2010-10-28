@@ -1,5 +1,5 @@
 <?php
-namespace \Symfony\Component\Security\Authentication\RememberMe;
+namespace Symfony\Component\Security\Authentication\RememberMe;
 
 interface TokenProviderInterface
 {

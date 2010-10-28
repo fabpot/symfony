@@ -1,36 +1,41 @@
 <?php
-use Symfony\Component\HttpFoundation\Response;
-namespace \Symfony\Component\HttpKernel\Security\Firewall;
+namespace Symfony\Component\HttpKernel\Security\Firewall;
 
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\Authentication\RememberMe\RememberMeServicesInterface;
 
 /**
  *  
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-abstract class RememberMeListener 
+class RememberMeListener 
 {
 	protected $securityContext;
 	protected $rememberMeServices;
 	protected $authenticationManager;
+	protected $options;
 	protected $logger;
 	
 	/**
 	 * Constructor
 	 * 
 	 * @param SecurityContext $securityContext
+	 * @param RememberMeServicesInterface $rememberMeServices
 	 * @param AuthenticationManagerInterface $authenticationManager
 	 * @param array $options
 	 * @param LoggerInterface $logger
 	 */
-	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, AuthenticationManagerInterface $authenticationManager, LoggerInterface $logger = null)
+	public function __construct(SecurityContext $securityContext, RememberMeServicesInterface $rememberMeServices, AuthenticationManagerInterface $authenticationManager, array $options, LoggerInterface $logger = null)
 	{
 		$this->securityContext = $securityContext;
 		$this->rememberMeServices = $rememberMeServices;
 		$this->authenticationManager = $authenticationManager;
+		$this->options = $options;
 		$this->logger = $logger;
 	}
 	

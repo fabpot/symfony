@@ -1,12 +1,13 @@
 <?php
 
+namespace Symfony\Component\Security\Authentication\RememberMe;
+
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-namespace \Symfony\Component\Security\Authentication\RememberMe;
-
 use Symfony\Component\Security\User\UserProviderInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 abstract class RememberMeServices implements RememberMeServicesInterface
 {
@@ -16,12 +17,18 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 	protected $options;
 	protected $logger;
 	protected $tokenProvider;
+	protected $key;
 	
 	public function __construct(UserProviderInterface $userProvider, array $options = array(), LoggerInterface $logger = null)
 	{
 		$this->userProvider = $userProvider;
 		$this->options = $options;
 		$this->logger = $logger;
+	}
+	
+	public function setKey($key)
+	{
+		$this->key = $key;
 	}
 	
 	public function setTokenProvider(TokenProviderInterface $tokenProvider)

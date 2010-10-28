@@ -45,13 +45,17 @@
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
 		<parameter key="security.authentication.listener.rememberme.class">Symfony\Component\HttpKernel\Security\Firewall\RememberMeListener</parameter>
-		<parameter key="security.authentication.rememberme.class">Symfony\Component\Security\Authentication\RememberMe\TokenBasedRememberMeServices</parameter>
+		<parameter key="security.authentication.rememberme.persistent.class">Symfony\Component\Security\Authentication\RememberMe\PersistentTokenBasedRememberMeServices</parameter>
+		<parameter key="security.authentication.rememberme.simplehash.class">Symfony\Component\Security\Authentication\RememberMe\TokenBasedRememberMeServices</parameter>
         <parameter key="security.authentication.rememberme.options.name">SYMFONY_REMEMBERME</parameter>
         <parameter key="security.authentication.rememberme.options.lifetime">31536000</parameter>
         <parameter key="security.authentication.rememberme.options.path">/</parameter>
         <parameter key="security.authentication.rememberme.options.domain" />
         <parameter key="security.authentication.rememberme.options.secure">false</parameter>
         <parameter key="security.authentication.rememberme.options.httponly">false</parameter>
+        <!-- This key is only used by the TokenBasedRememberMeServices -->
+        <parameter key="security.authentication.rememberme.key"></parameter>
+        <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\RememberMe\Token\InMemoryTokenProvider</parameter>
         
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
 
@@ -115,7 +119,30 @@
         <service id="security.authentication.listener.rememberme" class="%security.authentication.listener.rememberme.class%">
         	<argument type="service" id="security.context" />
         	<argument type="service" id="security.authentication.rememberme" />
+        	<argument type="service" id="security.authentication.manager" />
         	<argument type="service" id="logger" on-invalid="null" />
+        </service>
+        
+        <service id="security.authentication.rememberme.simplehash" class="%security.authentication.rememberme.simplehash.class%">
+        	<argument type="service" id="security.user.provider.in_memory" />
+        	<argument type="collection">%security.authentication.rememberme.options%</argument>
+        	<argument type="service" id="logger" on-invalid="null" />
+        	<call method="setKey">
+        		<argument>%security.authentication.rememberme.simplehash.key%</argument>
+        	</call>
+        </service>
+        
+        <service id="security.authentication.rememberme.persistent" class="%security.authentication.rememberme.persistent.class%">
+        	<argument type="service" id="security.user.provider.in_memory" />
+        	<argument type="collection">%security.authentication.rememberme.options%</argument>
+        	<argument type="service" id="logger" on-invalid="null" />
+        	<call method="setTokenProvider">
+        		<argument type="service" id="security.rememberme.token.provider.in_memory"></argument>
+        	</call>
+        </service>
+        
+        <service id="security.rememberme.token.provider.in_memory" class="%security.rembemerme.token.provider.in_memory.class%">
+        	
         </service>
         
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" />

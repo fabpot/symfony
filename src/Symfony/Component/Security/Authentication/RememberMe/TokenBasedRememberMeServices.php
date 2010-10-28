@@ -1,6 +1,6 @@
 <?php
 
-namespace \Symfony\Component\Security\Authentication\RememberMe;
+namespace Symfony\Component\Security\Authentication\RememberMe;
 
 use Symfony\Component\Security\Exception\AuthenticationException;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
@@ -17,7 +17,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
 		$user = $this->userProvider->loadUserByUsername($username);
 		
 		// TODO: Do we need constant-time comparison here?
-		if ($hash !== $this->generateCookieHash($username, $expires, $user->getPassword(), $user->getSalt())) {
+		if ($hash !== $this->generateCookieHash($username, $expires, $user->getPassword())) {
 			throw new AuthenticationException('Token has invalid hash.');
 		}
 		
@@ -28,8 +28,12 @@ class TokenBasedRememberMeServices extends RememberMeServices
 		return new RememberMeToken($user);
 	}
 	
-	protected function generateCookieHash($username, $expires, $password, $salt) 
+	protected function generateCookieHash($username, $expires, $password)
 	{
-		return hash('sha256', sprintf('%s:%d:%s:%s', $username, $expires, $password, $salt));
+		if (0 === strlen($key)) {
+			throw new \InvalidArgumentException('"security.authentication.rememberme.simplehash.key" must not be empty.');
+		}
+				
+		return hash('sha256', $username.self::COOKIE_DELIMITER.$expires.self::COOKIE_DELIMITER.$password.self::COOKIE_DELIMITER.$this->key);
 	}
 }
