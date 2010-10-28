@@ -4,17 +4,13 @@ namespace \Symfony\Component\Security\Authentication\RememberMe;
 
 class PersistentTokenBasedRememberMeServices extends RememberMeServices
 {
-	public function autoLogin(Request $request)
+	protected function processAutoLoginCookie($cookieParts)
 	{
-		if (null === $cookie = $request->cookies->get($this->options['name'])) {
-			return;
-		}
-		
-		if (3 !== count($parts = explode(':', base64_decode($cookie)))) {
+		if (count($cookieParts) !== 3) {
 			throw new AuthenticationException('invalid cookie');
 		}
 		
-		list($series, $tokenValue, $hash) = $parts;
+		list($series, $tokenValue, $hash) = $cookieParts;
 		$persistentToken = $this->tokenProvider->loadTokenBySeries($series);
 		$user = $this->userProvider->loadUserByUsername($persistentToken->getUsername());
 		
@@ -23,19 +19,12 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
 		}
 		
 		if ($persistentToken->getTokenValue() !== $tokenValue) {
-			$this->tokenProvider->deleteTokensByUsername($persistentToken->getUsername());
+			$this->tokenProvider->deleteTokensBySeries($series);
 			
-			throw new AuthenticationException('This token was already used. The account is possibly compromised.');
+			throw new CookieTheftException('This token was already used. The account is possibly compromised.');
 		}
 		
-		
-		$authenticationToken = $this->authenticationManager->authenticate(new RememberMeToken($user));
-		
-		$newTokenValue = $this->generateRandomValue();
-		$this->tokenProvider->updateToken($series, $newTokenValue, new Date());
-		// TODO: add the updated cookie to the response
-		
-		return $authenticationToken;
+		return new RememberMeToken($user);
 	}
 	
 	protected function generateRandomValue()

@@ -1,6 +1,9 @@
 <?php
-use Symfony\Component\HttpFoundation\Request;
 namespace \Symfony\Component\Security\Authentication\RememberMe;
+
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 interface RememberMeServicesInterface
 {
@@ -28,5 +31,5 @@ interface RememberMeServicesInterface
 	/**
 	 * Called whenever an interactive authentication attempt is successful. An implementation may automatically set a remember-me token in the HttpServletResponse, although this is not recommended. Instead, implementations should typically look for a request parameter that indicates the browser has presented an explicit request for authentication to be remembered, such as the presence of a HTTP POST parameter. 
 	 */
-	function onLoginSuccess();
+	function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
 }

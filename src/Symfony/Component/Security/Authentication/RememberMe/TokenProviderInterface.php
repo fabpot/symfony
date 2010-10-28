@@ -12,9 +12,9 @@ interface TokenProviderInterface
 	
 	/**
 	 * Deletes all tokens belonging to username
-	 * @param string $username
+	 * @param string $series
 	 */
-	function deleteTokensByUsername($username);
+	function deleteTokensBySeries($series);
 	
 	/**
 	 * Updates the token according to this data

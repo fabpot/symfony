@@ -118,10 +118,6 @@
         	<argument type="service" id="logger" on-invalid="null" />
         </service>
         
-        <service id="security.authentication.rememberme" class="%security.authentication.rememberme.class%">
-        	<argument type="collection">%security.authentication.rememberme.options%</argument>
-        </service>
-
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" />
 
         <service id="security.authentication.form_entry_point" class="%security.authentication.form_entry_point.class%">

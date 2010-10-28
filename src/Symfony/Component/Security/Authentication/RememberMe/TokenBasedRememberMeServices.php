@@ -7,17 +7,13 @@ use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 
 class TokenBasedRememberMeServices extends RememberMeServices
 {
-	public function autoLogin(Request $request)
+	protected function processAutoLoginCookie($cookieParts)
 	{
-		if (null === $cookie = $request->cookies->get($this->options['name'])) {
-			return;
-		}
-		
-		if (3 !== count($parts = explode(':', base64_decode($cookie)))) {
+		if (count($cookieParts) !== 3) {
 			throw new AuthenticationException('Invalid remember me token.');
 		}
 		
-		list($username, $expires, $hash) = $parts;
+		list($username, $expires, $hash) = $cookieParts;
 		$user = $this->userProvider->loadUserByUsername($username);
 		
 		// TODO: Do we need constant-time comparison here?
@@ -29,7 +25,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
 			throw new AuthenticationException('Token is already expired.');
 		}
 		
-		return $this->authenticationManager->authenticate(new RememberMeToken($user));
+		return new RememberMeToken($user);
 	}
 	
 	protected function generateCookieHash($username, $expires, $password, $salt) 
