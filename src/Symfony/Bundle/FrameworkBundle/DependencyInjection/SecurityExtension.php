@@ -202,6 +202,11 @@ class SecurityExtension extends Extension
         // Context serializer listener
         if (!isset($firewall['stateless']) || !$firewall['stateless']) {
             $listeners[] = new Reference('security.context_listener');
+            
+            $container
+                ->getDefinition('security.logout_listener')
+                ->addMethodCall('addHandler', array(new Reference('security.logout.handlers.session')))
+            ;
         }
 
         // Logout listener
@@ -246,6 +251,16 @@ class SecurityExtension extends Extension
         $hasListeners = false;
         $defaultEntryPoint = null;
 
+        // Remember Me (this is attached later, see below)
+        $rememberMeProvider = $rememberMeListener = $rememberMeServices = null;
+        if (array_key_exists('remember_me', $firewall)) {
+        	$firewall['remember-me'] = $firewall['remember_me'];
+        }
+        if (array_key_exists('remember-me', $firewall)) {
+        	list($rememberMeProvider, $rememberMeListener, $rememberMeServices) = 
+        		$this->createRememberMeListener($container, $id, $firewall['remember-me'], $defaultProvider, $providerIds);
+        }        
+        
         // X509
         if (array_key_exists('x509', $firewall)) {
             list($provider, $listener) = $this->createX509Listener($container, $id, $firewall['x509'], $defaultProvider, $providerIds);
@@ -262,6 +277,13 @@ class SecurityExtension extends Extension
         if (array_key_exists('form-login', $firewall)) {
             list($provider, $listener) = $this->createFormLoginListener($container, $id, $firewall['form-login'], $defaultProvider, $providerIds);
 
+            if (null !== $rememberMeServices) {
+            	$container
+            		->getDefinition($listener)
+            		->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServices)))
+            	;
+            }
+            
             $listeners[] = new Reference($listener);
             $providers[] = new Reference($provider);
             $hasListeners = true;
@@ -298,18 +320,13 @@ class SecurityExtension extends Extension
             }
         }
         
-        // Remember Me
-        if (array_key_exists('remember_me', $firewall)) {
-        	$firewall['remember-me'] = $firewall['remember_me'];
-        }
-        if (array_key_exists('remember-me', $firewall)) {
-        	list($provider, $listener) = $this->createRememberMeListener($container, $id, $firewall['remember-me'], $defaultProvider, $providerIds);
-        	
-        	$listeners[] = new Reference($listener);
-        	$providers[] = new Reference($provider);
+        // Remember-me
+        if (null !== $rememberMeListener && null !== $rememberMeProvider) {
+        	$listeners[] = new Reference($rememberMeListener);
+        	$providers[] = new Reference($rememberMeProvider);
         	$hasListeners = true;
         }
-
+        
         // Anonymous
         if (array_key_exists('anonymous', $firewall)) {
             $listeners[] = new Reference('security.authentication.listener.anonymous');
@@ -573,6 +590,11 @@ class SecurityExtension extends Extension
 	    	} else {
 	    		$rememberMeServicesId = $this->getRememberMeServicesId('simplehash');
 	    	}
+	    	
+	    	$container
+	    	    ->getDefinition('security.logout_listener')
+	    	    ->addMethodCall('addHandler', array(new Reference($rememberMeServicesId.$id)))
+	    	;
     	} else {
     		$rememberMeServicesId = $this->getRememberMeServicesId($config['service']);
     	}
@@ -606,12 +628,12 @@ class SecurityExtension extends Extension
     	$arguments[2] = new Reference($authenticationProvider);
     	$listener->setArguments($arguments);
     	
-    	return array($authenticationProvider, $listenerId);
+    	return array($authenticationProvider, $listenerId, $rememberMeServicesId.$id);
     }
     
     protected function getRememberMeServicesId($name)
     {
-    	return 'security.authentication.rememberme.'.$name;
+    	return 'security.authentication.rememberme.services.'.$name;
     }
 
     protected function createAccessListener($container, $id, $providers)

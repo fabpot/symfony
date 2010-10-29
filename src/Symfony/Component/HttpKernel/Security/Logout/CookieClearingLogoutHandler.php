@@ -16,11 +16,10 @@ class CookieClearingLogoutHandler implements LogoutHandlerInterface
 	
 	public function logout(Request $request, Response $response, TokenInterface $token)
 	{
-		$contextPath = $request->getBasePath();
 		$expires = time() - 86400;
 		
 		foreach ($this->cookieNames as $cookieName) {
-			$response->headers->setCookie($cookieName, '', $contextPath, $expires);
+			$response->headers->setCookie($cookieName, '', null, $expires);
 		}
 	}
 }

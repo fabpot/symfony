@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Security\Authentication\RememberMe;
 
+use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
+
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +25,7 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-abstract class RememberMeServices implements RememberMeServicesInterface
+abstract class RememberMeServices implements RememberMeServicesInterface, LogoutHandlerInterface
 {
 	const COOKIE_DELIMITER = ':';
 	
@@ -62,13 +64,13 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 		
 		try {
 			$cookieParts = $this->decodeCookie($cookie);
-			$user = $this->processAutoLoginCookie($cookieParts);
+			$token = $this->processAutoLoginCookie($cookieParts);
 			
 			if (null !== $this->logger) {
 				$this->logger->debug('Remember-me cookie accepted.');
 			}
 			
-			return new RememberMeToken($user, $this->key);
+			return $token;
 		} catch (AuthenticationException $failed) {
 			$this->cancelCookie();
 		}
@@ -82,6 +84,16 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 	abstract protected function processAutoLoginCookie($cookieParts);
 	
 	/**
+	 * 
+	 * @param Request $request
+	 * @param Response $response
+	 * @param TokenInterface $token
+	 * @return void
+	 */
+	abstract protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
+	
+	
+	/**
 	 * @param string $rawCookie
 	 * @return array
 	 */
@@ -90,19 +102,51 @@ abstract class RememberMeServices implements RememberMeServicesInterface
 		return explode(self::COOKIE_DELIMITER, base64_decode($rawCookie));
 	}
 	
-	public function onLoginFail() 
+	protected function encodeCookie(array $cookieParts)
 	{
-		// TODO: Invalidate any and all remember-me tokens
+		return base64_encode(implode(self::COOKIE_DELIMITER, $cookieParts));
 	}
 	
-	public function onLoginSuccess(Request $request, Response $response, TokenInterface $token)
+	public function logout(Request $request, Response $response, TokenInterface $token)
 	{
-		// TODO: Set the remember-me token if requested (this should be called after
-		//       an interactive authentication was successful; e.g. after the form-login)
+	    $this->cancelCookie($response);
 	}
 	
-	protected function cancelCookie()
+	public function loginFail(Request $request, Response $response) 
 	{
+		$this->cancelCookie($response);
+	}
+	
+	public function loginSuccess(Request $request, Response $response, TokenInterface $token)
+	{
+		if (!$this->isRememberMeRequested($request)) {
+			if (null !== $this->logger) {
+				$this->logger->debug('Remember-me was not requested.');
+			}
+			
+			return;
+		}
 		
+		$this->onLoginSuccess($request, $response, $token);
+	}
+	
+	protected function cancelCookie(Response $response)
+	{
+	    $response->headers->setCookie($this->options['name'], '', null, time() - 86400);
+	}
+	
+	protected function isRememberMeRequested(Request $request)
+	{
+		if (true === $this->options['always_remember_me']) {
+			return true;
+		}
+		
+		$parameter = $request->request->get($this->options['remember_me_parameter']);
+		
+		if ($parameter === null && null !== $this->logger) {
+			$this->logger->debug(sprintf('Did not send remember-me cookie (remember-me parameter "%s" was not sent).', $this->options['remember_me_parameter']));
+		}
+		
+		return $parameter === 'true' || $parameter === 'on' || $parameter === '1' || $parameter === 'yes';
 	}
 }

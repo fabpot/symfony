@@ -49,7 +49,7 @@ interface RememberMeServicesInterface
 	 * 
 	 * This method needs to take care of invalidating the cookie.
 	 */
-	function onLoginFail(Request $request, Response $response);
+	function loginFail(Request $request, Response $response);
 
 	/**
 	 * Called whenever an interactive authentication attempt is successful
@@ -62,5 +62,5 @@ interface RememberMeServicesInterface
 	 * (such as a HTTP POST parameter) that indicates the browser has explicitly
 	 * requested for the authentication to be remembered.
 	 */
-	function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
+	function loginSuccess(Request $request, Response $response, TokenInterface $token);
 }

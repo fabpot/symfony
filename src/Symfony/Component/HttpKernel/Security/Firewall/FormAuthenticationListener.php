@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\Security\Authentication\RememberMe\RememberMeServicesInterface;
+
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
@@ -33,6 +35,7 @@ abstract class FormAuthenticationListener
     protected $authenticationManager;
     protected $options;
     protected $logger;
+    protected $rememberMeServices;
 
     /**
      * Constructor.
@@ -59,6 +62,11 @@ abstract class FormAuthenticationListener
         $this->logger = $logger;
     }
 
+    public function setRememberMeServices(RememberMeServicesInterface $rememberMeServices)
+    {
+    	$this->rememberMeServices = $rememberMeServices;
+    }
+    
     /**
      * 
      *
@@ -149,6 +157,10 @@ abstract class FormAuthenticationListener
         $path = $this->determineTargetUrl($request);
         $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
 
+        if (null !== $this->rememberMeServices) {
+        	$this->rememberMeServices->loginSuccess($request, $response, $token);
+        }
+        
         return $response;
     }
 

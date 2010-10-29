@@ -35,9 +35,9 @@ interface TokenProviderInterface
 	 * 
 	 * @param string $series
 	 * @param string $tokenValue
-	 * @param Date $lastUsed
+	 * @param DateTime $lastUsed
 	 */
-	function updateToken($series, $tokenValue, $lastUsed);
+	function updateToken($series, $tokenValue, \DateTime $lastUsed);
 	
 	/**
 	 * Creates a new token

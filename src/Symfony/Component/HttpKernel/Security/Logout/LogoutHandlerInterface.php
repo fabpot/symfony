@@ -1,6 +1,6 @@
 <?php
 
-namespace \Symfony\Component\HttpKernel\Security\Logout;
+namespace Symfony\Component\HttpKernel\Security\Logout;
 
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\HttpFoundation\Response;

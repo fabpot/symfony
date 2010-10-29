@@ -1,5 +1,8 @@
 <?php
+
 namespace \Symfony\Component\Security\Authentication\Token;
+
+use Symfony\Component\Security\Authentication\RememberMe\PersistentTokenInterface;
 
 /**
  * Base class for "Remember Me" tokens
@@ -9,6 +12,13 @@ namespace \Symfony\Component\Security\Authentication\Token;
 class RememberMeToken extends Token
 {
 	protected $key;
+	
+	/**
+	 * The persistent token which resulted in this authentication token
+	 * 
+	 * @var PersistentTokenInterface
+	 */
+	protected $persistentToken;
 	
 	/**
 	 * Constructor
@@ -25,5 +35,15 @@ class RememberMeToken extends Token
 	public function getKey()
 	{
 		return $this->key;
+	}
+	
+	public function setPersistentToken(PersistentTokenInterface $persistentToken)
+	{
+		$this->persistentToken = $persistentToken;
+	}
+	
+	public function getPersistentToken()
+	{
+		return $this->persistentToken;
 	}
 }

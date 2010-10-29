@@ -2,6 +2,7 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
