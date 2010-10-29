@@ -26,41 +26,41 @@ use Symfony\Component\HttpFoundation\Request;
  */
 interface RememberMeServicesInterface
 {
-	/**
-	 * This method will be called whenever the SecurityContext does not contain 
-	 * an TokenInterface object and the framework wishes to provide an implementation 
-	 * with an opportunity to authenticate the request using remember-me capabilities. 
-	 * 
-	 * No attempt whatsoever is made to determine whether the browser has requested
-	 * remember-me services or presented a valid cookie. Any and all such determinations
-	 * are left to the implementation of this method. 
-	 * 
-	 * If a browser has presented an unauthorised cookie for whatever reason, 
-	 * it should be silently ignored and invalidated.
-	 * 
-	 * @param Request $request
-	 * @return TokenInterface
-	 */
-	function autoLogin(Request $request);
-	
-	/**
-	 * Called whenever an authentication attempt was made, but the credentials
-	 * supplied by the user were missing or otherwise invalid.
-	 * 
-	 * This method needs to take care of invalidating the cookie.
-	 */
-	function loginFail(Request $request, Response $response);
+    /**
+     * This method will be called whenever the SecurityContext does not contain 
+     * an TokenInterface object and the framework wishes to provide an implementation 
+     * with an opportunity to authenticate the request using remember-me capabilities. 
+     * 
+     * No attempt whatsoever is made to determine whether the browser has requested
+     * remember-me services or presented a valid cookie. Any and all such determinations
+     * are left to the implementation of this method. 
+     * 
+     * If a browser has presented an unauthorised cookie for whatever reason, 
+     * it should be silently ignored and invalidated.
+     * 
+     * @param Request $request
+     * @return TokenInterface
+     */
+    function autoLogin(Request $request);
+    
+    /**
+     * Called whenever an authentication attempt was made, but the credentials
+     * supplied by the user were missing or otherwise invalid.
+     * 
+     * This method needs to take care of invalidating the cookie.
+     */
+    function loginFail(Request $request, Response $response);
 
-	/**
-	 * Called whenever an interactive authentication attempt is successful
-	 * (e.g. a form login). 
-	 * 
-	 * An implementation may always set a remember-me cookie in the Response, 
-	 * although this is not recommended. 
-	 * 
-	 * Instead, implementations should typically look for a request parameter 
-	 * (such as a HTTP POST parameter) that indicates the browser has explicitly
-	 * requested for the authentication to be remembered.
-	 */
-	function loginSuccess(Request $request, Response $response, TokenInterface $token);
+    /**
+     * Called whenever an interactive authentication attempt is successful
+     * (e.g. a form login). 
+     * 
+     * An implementation may always set a remember-me cookie in the Response, 
+     * although this is not recommended. 
+     * 
+     * Instead, implementations should typically look for a request parameter 
+     * (such as a HTTP POST parameter) that indicates the browser has explicitly
+     * requested for the authentication to be remembered.
+     */
+    function loginSuccess(Request $request, Response $response, TokenInterface $token);
 }

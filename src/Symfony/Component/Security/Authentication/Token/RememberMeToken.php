@@ -11,39 +11,39 @@ use Symfony\Component\Security\Authentication\RememberMe\PersistentTokenInterfac
  */
 class RememberMeToken extends Token
 {
-	protected $key;
-	
-	/**
-	 * The persistent token which resulted in this authentication token
-	 * 
-	 * @var PersistentTokenInterface
-	 */
-	protected $persistentToken;
-	
-	/**
-	 * Constructor
-	 * @param string $username
-	 * @param string $key
-	 */
-	public function __construct(AccountInterface $user, $key) {
-		parent::__construct($user->getRoles());
-		
-		$this->user = $user;
-		$this->key = $key;
-	}
-	
-	public function getKey()
-	{
-		return $this->key;
-	}
-	
-	public function setPersistentToken(PersistentTokenInterface $persistentToken)
-	{
-		$this->persistentToken = $persistentToken;
-	}
-	
-	public function getPersistentToken()
-	{
-		return $this->persistentToken;
-	}
+    protected $key;
+    
+    /**
+     * The persistent token which resulted in this authentication token
+     * 
+     * @var PersistentTokenInterface
+     */
+    protected $persistentToken;
+    
+    /**
+     * Constructor
+     * @param string $username
+     * @param string $key
+     */
+    public function __construct(AccountInterface $user, $key) {
+        parent::__construct($user->getRoles());
+        
+        $this->user = $user;
+        $this->key = $key;
+    }
+    
+    public function getKey()
+    {
+        return $this->key;
+    }
+    
+    public function setPersistentToken(PersistentTokenInterface $persistentToken)
+    {
+        $this->persistentToken = $persistentToken;
+    }
+    
+    public function getPersistentToken()
+    {
+        return $this->persistentToken;
+    }
 }

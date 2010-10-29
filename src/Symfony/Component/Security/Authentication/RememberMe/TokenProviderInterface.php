@@ -17,31 +17,31 @@ namespace Symfony\Component\Security\Authentication\RememberMe;
  */
 interface TokenProviderInterface
 {
-	/**
-	 * Loads the active token for the given series
-	 * @param string $series
-	 * @return PersistentTokenInterface
-	 */
-	function loadTokenBySeries($series);
-	
-	/**
-	 * Deletes all tokens belonging to username
-	 * @param string $series
-	 */
-	function deleteTokenBySeries($series);
-	
-	/**
-	 * Updates the token according to this data
-	 * 
-	 * @param string $series
-	 * @param string $tokenValue
-	 * @param DateTime $lastUsed
-	 */
-	function updateToken($series, $tokenValue, \DateTime $lastUsed);
-	
-	/**
-	 * Creates a new token
-	 * @param PersistentTokenInterface $token
-	 */
-	function createNewToken($token);
+    /**
+     * Loads the active token for the given series
+     * @param string $series
+     * @return PersistentTokenInterface
+     */
+    function loadTokenBySeries($series);
+    
+    /**
+     * Deletes all tokens belonging to username
+     * @param string $series
+     */
+    function deleteTokenBySeries($series);
+    
+    /**
+     * Updates the token according to this data
+     * 
+     * @param string $series
+     * @param string $tokenValue
+     * @param DateTime $lastUsed
+     */
+    function updateToken($series, $tokenValue, \DateTime $lastUsed);
+    
+    /**
+     * Creates a new token
+     * @param PersistentTokenInterface $token
+     */
+    function createNewToken($token);
 }

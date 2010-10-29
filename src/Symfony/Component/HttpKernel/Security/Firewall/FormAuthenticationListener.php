@@ -64,7 +64,7 @@ abstract class FormAuthenticationListener
 
     public function setRememberMeServices(RememberMeServicesInterface $rememberMeServices)
     {
-    	$this->rememberMeServices = $rememberMeServices;
+        $this->rememberMeServices = $rememberMeServices;
     }
     
     /**
@@ -158,7 +158,7 @@ abstract class FormAuthenticationListener
         $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
 
         if (null !== $this->rememberMeServices) {
-        	$this->rememberMeServices->loginSuccess($request, $response, $token);
+            $this->rememberMeServices->loginSuccess($request, $response, $token);
         }
         
         return $response;

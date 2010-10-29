@@ -46,7 +46,7 @@ class LogoutListener
     
     public function addHandler(LogoutHandlerInterface $handler)
     {
-    	$this->handlers[] = $handler;
+        $this->handlers[] = $handler;
     }
 
     /**
@@ -79,10 +79,10 @@ class LogoutListener
         $token = $this->securityContext->getToken();
         
         foreach ($this->handlers as $handler) {
-        	$handler->logout($request, $response, $token);
+            $handler->logout($request, $response, $token);
         }
         
-		$this->securityContext->setToken(null);
+        $this->securityContext->setToken(null);
         $event->setReturnValue($response);
 
         return true;

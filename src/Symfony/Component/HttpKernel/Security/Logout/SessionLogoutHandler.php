@@ -7,8 +7,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class SessionLogoutHandler implements LogoutHandlerInterface
 {
-	public function logout(Request $request, Response $response, TokenInterface $token)
-	{
+    public function logout(Request $request, Response $response, TokenInterface $token)
+    {
         $request->getSession()->invalidate();
-	}	
+    }    
 }

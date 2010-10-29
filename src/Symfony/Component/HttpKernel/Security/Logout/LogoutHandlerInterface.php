@@ -8,5 +8,5 @@ use Symfony\Component\HttpFoundation\Request;
 
 interface LogoutHandlerInterface
 {
-	function logout(Request $request, Response $response, TokenInterface $token);
+    function logout(Request $request, Response $response, TokenInterface $token);
 }
