@@ -34,8 +34,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
         list($username, $expires, $hash) = $cookieParts;
         $user = $this->userProvider->loadUserByUsername($username);
         
-        // TODO: Do we need constant-time comparison here?
-        if ($hash !== $this->generateCookieHash($username, $expires, $user->getPassword())) {
+        if ($this->compareHashes($hash, $this->generateCookieHash($username, $expires, $user->getPassword()))) {
             throw new AuthenticationException('Token has invalid hash.');
         }
         
@@ -44,6 +43,31 @@ class TokenBasedRememberMeServices extends RememberMeServices
         }
         
         return new RememberMeToken($user, $this->key);
+    }
+    
+    /**
+     * Compares two hashes using a constant-time algorithm to avoid (remote)
+     * timing attacks.
+     *
+     * This is the same implementation as used in the BasePasswordEncoder.
+     *
+     * @param string $hash1 The first hash
+     * @param string $hash2 The second hash
+     *
+     * @return Boolean true if the two hashes are the same, false otherwise
+     */
+    protected function compareHashes($hash1, $hash2)
+    {
+        if (strlen($hash1) !== strlen($hash2)) {
+            return false;
+        }
+
+        $result = 0;
+        for ($i = 0; $i < strlen($hash1); $i++) {
+            $result |= ord($hash1[$i]) ^ ord($hash2[$i]);
+        }
+
+        return 0 === $result;
     }
     
     protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token)
