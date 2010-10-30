@@ -86,8 +86,8 @@ class ContextListener
         if (HttpKernelInterface::MASTER_REQUEST !== $event->getParameter('request_type')) {
             return $response;
         }
-
-        if (null === $token = $this->context->getToken()) {
+        
+        if (!$event->getParameter('request')->hasSession() || null === $token = $this->context->getToken()) {
             return $response;
         }
 
