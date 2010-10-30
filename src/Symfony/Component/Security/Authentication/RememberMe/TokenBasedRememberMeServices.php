@@ -71,7 +71,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
     protected function generateCookieHash($username, $expires, $password)
     {
         if (0 === strlen($this->key)) {
-            throw new \InvalidArgumentException('$key must not be empty.');
+            throw new \RuntimeException('"security.rememberme.key" must not be empty.');
         }
                 
         return hash('sha256', $username.self::COOKIE_DELIMITER.$expires.self::COOKIE_DELIMITER.$password.self::COOKIE_DELIMITER.$this->key);
