@@ -35,8 +35,9 @@ interface RememberMeServicesInterface
      * remember-me services or presented a valid cookie. Any and all such determinations
      * are left to the implementation of this method. 
      * 
-     * If a browser has presented an unauthorised cookie for whatever reason, 
-     * it should be silently ignored and invalidated.
+     * If a browser has presented an unauthorised cookie for whatever reason,
+     * make sure to throw an AuthenticationException as this will consequentially 
+     * result in a call to loginFail() and therefore an invalidation of the cookie.
      * 
      * @param Request $request
      * @return TokenInterface
@@ -52,8 +53,7 @@ interface RememberMeServicesInterface
     function loginFail(Request $request, Response $response);
 
     /**
-     * Called whenever an interactive authentication attempt is successful
-     * (e.g. a form login). 
+     * Called whenever authentication attempt is successful (e.g. a form login). 
      * 
      * An implementation may always set a remember-me cookie in the Response, 
      * although this is not recommended. 
