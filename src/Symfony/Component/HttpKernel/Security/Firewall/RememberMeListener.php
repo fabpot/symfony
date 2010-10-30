@@ -1,6 +1,8 @@
 <?php
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\Security\Exception\AuthenticationException;
+use Symfony\Component\Security\Exception\CookieTheftException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
@@ -59,6 +61,8 @@ class RememberMeListener
     {
         $request = $event->getParameter('request');
 
+        $this->lastState = null;
+        
         if (null !== $this->securityContext->getToken()) {
             return;
         }
@@ -94,7 +98,14 @@ class RememberMeListener
         } catch (AuthenticationException $cookieInvalid) {
             $this->lastState = $cookieInvalid;
             
-            throw $cookieInvalid;
+            if (null !== $this->logger) {
+                $this->logger->debug('The presented cookie was invalid: '.$cookieInvalid->getMessage());
+            }
+            
+            // silently ignore everything except a cookie theft exception
+            if ($cookieInvalid instanceof CookieTheftException) {
+                throw $cookieInvalid;
+            }
         }
     }
     
