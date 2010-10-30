@@ -86,6 +86,18 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
         }
     }
     
+    public function logout(Request $request, Response $response, TokenInterface $token)
+    {
+        parent::logout($request, $response, $token);
+        
+        if (null !== $cookie = $request->cookies->get($this->options['name'])
+            && count($parts = $this->decodeCookie($cookie)) === 2
+        ) {
+            list($series, $tokenValue) = $parts;
+            $this->tokenProvider->deleteTokenBySeries($series);
+        }
+    }
+    
     protected function generateCookieValue($series, $tokenValue)
     {
         return $this->encodeCookie(array($series, $tokenValue));
