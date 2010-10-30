@@ -55,7 +55,7 @@
         <parameter key="security.authentication.rememberme.services.options.path">/</parameter>
         <parameter key="security.authentication.rememberme.services.options.domain" />
         <parameter key="security.authentication.rememberme.services.options.secure">false</parameter>
-        <parameter key="security.authentication.rememberme.services.options.httponly">false</parameter>
+        <parameter key="security.authentication.rememberme.services.options.httponly">true</parameter>
         <parameter key="security.authentication.rememberme.services.options.always_remember_me">false</parameter>
         <parameter key="security.authentication.rememberme.services.options.remember_me_parameter">_remember_me</parameter>
         
