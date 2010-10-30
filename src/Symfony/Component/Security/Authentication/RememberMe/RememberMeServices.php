@@ -92,7 +92,6 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
      */
     abstract protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
     
-    
     /**
      * @param string $rawCookie
      * @return array
@@ -125,6 +124,10 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
             }
             
             return;
+        }
+        
+        if (null !== $this->logger) {
+            $this->logger->debug('Remember-me was requested; setting cookie.');
         }
         
         $this->onLoginSuccess($request, $response, $token);
