@@ -1,6 +1,7 @@
 <?php
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Exception\AuthenticationException;
 use Symfony\Component\Security\Exception\CookieTheftException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -46,10 +47,10 @@ class RememberMeListener
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
      */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
+    public function register(EventDispatcher $dispatcher, $readPriority = 0, $writePriority = -1)
     {
-        $dispatcher->connect('core.security', array($this, 'checkCookies'), $priority);
-        $dispatcher->connect('core.response', array($this, 'updateCookies'), $priority);
+        $dispatcher->connect('core.security', array($this, 'checkCookies'), $readPriority);
+        $dispatcher->connect('core.response', array($this, 'updateCookies'), $writePriority);
     }
     
     /**
@@ -69,7 +70,7 @@ class RememberMeListener
         
         try {
             if (null === $token = $this->rememberMeServices->autoLogin($request)) {
-                   return;
+                return;
             }
 
             try {
@@ -121,7 +122,7 @@ class RememberMeListener
         
         if ($this->lastState instanceof TokenInterface) {
             $this->rememberMeServices->loginSuccess($event->getParameter('request'), $response, $this->lastState);
-        } else if ($this->lastState !== null) {
+        } else if ($this->lastState instanceof AuthenticationException) {
             $this->rememberMeServices->loginFail($event->getParameter('request'), $response);
         }
         

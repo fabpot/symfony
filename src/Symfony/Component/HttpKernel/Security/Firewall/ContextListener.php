@@ -42,10 +42,10 @@ class ContextListener
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
      */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
+    public function register(EventDispatcher $dispatcher, $readPriority = 0, $writePriority = -1)
     {
-        $dispatcher->connect('core.security', array($this, 'read'), $priority);
-        $dispatcher->connect('core.response', array($this, 'write'), $priority);
+        $dispatcher->connect('core.security', array($this, 'read'), $readPriority);
+        $dispatcher->connect('core.response', array($this, 'write'), $writePriority);
     }
 
     /**
