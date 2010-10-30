@@ -25,7 +25,7 @@ interface TokenProviderInterface
     function loadTokenBySeries($series);
     
     /**
-     * Deletes all tokens belonging to username
+     * Deletes all tokens belonging to series
      * @param string $series
      */
     function deleteTokenBySeries($series);
@@ -43,5 +43,5 @@ interface TokenProviderInterface
      * Creates a new token
      * @param PersistentTokenInterface $token
      */
-    function createNewToken($token);
+    function createNewToken(PersistentTokenInterface $token);
 }
