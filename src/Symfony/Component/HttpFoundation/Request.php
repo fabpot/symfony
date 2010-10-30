@@ -255,7 +255,9 @@ class Request
 
     public function hasSession()
     {
-        return $this->cookies->has(session_name());
+        $sessionName = null === $this->session ? 'SYMFONY_SESSION' : session_name();
+
+        return $this->cookies->has($sessionName);
     }
 
     public function setSession(Session $session)
