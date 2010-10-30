@@ -28,18 +28,18 @@ class TokenBasedRememberMeServices extends RememberMeServices
     protected function processAutoLoginCookie($cookieParts)
     {
         if (count($cookieParts) !== 3) {
-            throw new AuthenticationException('Invalid remember me token.');
+            throw new AuthenticationException('Invalid value.');
         }
         
         list($username, $expires, $hash) = $cookieParts;
         $user = $this->userProvider->loadUserByUsername($username);
         
-        if ($this->compareHashes($hash, $this->generateCookieHash($username, $expires, $user->getPassword()))) {
-            throw new AuthenticationException('Token has invalid hash.');
+        if (true !== $this->compareHashes($hash, $this->generateCookieHash($username, $expires, $user->getPassword()))) {
+            throw new AuthenticationException('Invalid hash.');
         }
         
         if ($expires < time()) {
-            throw new AuthenticationException('Token is already expired.');
+            throw new AuthenticationException('Already expired.');
         }
         
         return new RememberMeToken($user, $this->key);
@@ -90,7 +90,6 @@ class TokenBasedRememberMeServices extends RememberMeServices
         
         return $this->encodeCookie(array($username, $expires, $this->generateCookieHash($username, $expires, $password)));
     }
-    
     
     protected function generateCookieHash($username, $expires, $password)
     {

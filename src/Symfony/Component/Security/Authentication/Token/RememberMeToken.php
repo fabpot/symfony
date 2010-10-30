@@ -1,8 +1,9 @@
 <?php
 
-namespace \Symfony\Component\Security\Authentication\Token;
+namespace Symfony\Component\Security\Authentication\Token;
 
 use Symfony\Component\Security\Authentication\RememberMe\PersistentTokenInterface;
+use Symfony\Component\Security\User\AccountInterface;
 
 /**
  * Base class for "Remember Me" tokens
@@ -30,6 +31,7 @@ class RememberMeToken extends Token
         
         $this->user = $user;
         $this->key = $key;
+        $this->setAuthenticated(true);
     }
     
     public function getKey()

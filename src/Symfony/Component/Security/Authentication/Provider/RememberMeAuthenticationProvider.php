@@ -2,6 +2,7 @@
 namespace Symfony\Component\Security\Authentication\Provider;
 
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 
 class RememberMeAuthenticationProvider implements AuthenticationProviderInterface
 {

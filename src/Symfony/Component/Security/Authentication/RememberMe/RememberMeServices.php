@@ -62,24 +62,19 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
             $this->logger->debug('Remember-me cookie detected.');
         }
         
-        try {
-            $cookieParts = $this->decodeCookie($cookie);
-            $token = $this->processAutoLoginCookie($cookieParts);
-            
-            if (null !== $this->logger) {
-                $this->logger->debug('Remember-me cookie accepted.');
-            }
-            
-            return $token;
-        } catch (AuthenticationException $failed) {
-            $this->cancelCookie();
+        $cookieParts = $this->decodeCookie($cookie);
+        $token = $this->processAutoLoginCookie($cookieParts);
+        
+        if (null !== $this->logger) {
+            $this->logger->debug('Remember-me cookie accepted.');
         }
+        
+        return $token;
     }
     
     /**
-     * 
      * @param array $cookieParts
-     * @return AccountInterface
+     * @return TokenInterface
      */
     abstract protected function processAutoLoginCookie($cookieParts);
     
