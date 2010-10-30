@@ -58,7 +58,11 @@ class WebDebugToolbarListener
                 $response->headers->get('location'), $response->headers->get('location'))
             );
             $r->headers->set('X-Debug-Token', $response->headers->get('X-Debug-Token'));
-
+            
+            if ($response->headers->has('Set-Cookie')) {
+                $r->headers->set('Set-Cookie', $response->headers->get('set-cookie'));
+            }
+            
             $response = $r;
         }
 
