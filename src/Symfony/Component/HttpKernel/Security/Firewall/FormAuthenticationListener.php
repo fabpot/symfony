@@ -2,8 +2,7 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
-use Symfony\Component\Security\Authentication\RememberMe\RememberMeServicesInterface;
-
+use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;

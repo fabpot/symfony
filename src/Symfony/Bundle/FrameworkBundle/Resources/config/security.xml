@@ -48,8 +48,8 @@
         <parameter key="security.rememberme.key"></parameter>
         <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\RememberMe\Token\InMemoryTokenProvider</parameter>
         
-        <parameter key="security.authentication.rememberme.services.persistent.class">Symfony\Component\Security\Authentication\RememberMe\PersistentTokenBasedRememberMeServices</parameter>
-        <parameter key="security.authentication.rememberme.services.simplehash.class">Symfony\Component\Security\Authentication\RememberMe\TokenBasedRememberMeServices</parameter>
+        <parameter key="security.authentication.rememberme.services.persistent.class">Symfony\Component\HttpKernel\Security\RememberMe\PersistentTokenBasedRememberMeServices</parameter>
+        <parameter key="security.authentication.rememberme.services.simplehash.class">Symfony\Component\HttpKernel\Security\RememberMe\TokenBasedRememberMeServices</parameter>
         <parameter key="security.authentication.rememberme.services.options.name">SYMFONY_REMEMBERME</parameter>
         <parameter key="security.authentication.rememberme.services.options.lifetime">31536000</parameter>
         <parameter key="security.authentication.rememberme.services.options.path">/</parameter>

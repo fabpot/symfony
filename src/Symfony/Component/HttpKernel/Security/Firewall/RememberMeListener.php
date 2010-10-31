@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\SecurityContext;
-use Symfony\Component\Security\Authentication\RememberMe\RememberMeServicesInterface;
+use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesInterface;
 
 /**
  *  
