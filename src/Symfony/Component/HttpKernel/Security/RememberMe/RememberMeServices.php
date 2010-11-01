@@ -91,6 +91,10 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
         $cookieParts = $this->decodeCookie($cookie);
         $token = $this->processAutoLoginCookie($cookieParts, $request);
         
+        if (!$token instanceof TokenInterface) {
+            throw new \RuntimeException('processAutoLoginCookie() must return a TokenInterface implementation.');
+        }
+        
         if (null !== $this->logger) {
             $this->logger->debug('Remember-me cookie accepted.');
         }
