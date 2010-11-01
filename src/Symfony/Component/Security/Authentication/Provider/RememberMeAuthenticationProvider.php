@@ -1,10 +1,11 @@
 <?php
 namespace Symfony\Component\Security\Authentication\Provider;
 
+use Symfony\Component\Security\User\AccountCheckerInterface;
 use Symfony\Component\Security\User\AccountInterface;
-
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
+use Symfony\Component\Security\Exception\BadCredentialsException;
 
 class RememberMeAuthenticationProvider implements AuthenticationProviderInterface
 {
