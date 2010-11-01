@@ -158,17 +158,12 @@ class FrameworkExtension extends Extension
             }
         }
 
-        if (array_key_exists('escaping', $config)) {
-            $container->setParameter('templating.output_escaper', $config['escaping']);
-        }
-
-        if (array_key_exists('assets_version', $config)) {
-            $container->setParameter('templating.assets.version', $config['assets_version']);
-        }
-
-        if (array_key_exists('assets_base_urls', $config)) {
-            $container->setParameter('templating.assets.base_urls', $config['assets_base_urls']);
-        }
+        $map = array(
+            'escaping' => 'templating.output_escaper',
+            'assets_version' => 'templating.assets.version',
+            'assets_base_urls' => 'templating.assets.base_urls',
+        );
+        $this->remapParameters($config, $container, $map, true);
 
         // template paths
         $dirs = array('%kernel.root_dir%/views/%%bundle%%/%%controller%%/%%name%%%%format%%.%%renderer%%');
