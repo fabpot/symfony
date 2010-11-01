@@ -158,9 +158,7 @@
             </call>
         </service>
         
-        <service id="security.rememberme.token.provider.in_memory" class="%security.rembemerme.token.provider.in_memory.class%">
-            
-        </service>
+        <service id="security.rememberme.token.provider.in_memory" class="%security.rembemerme.token.provider.in_memory.class%"></service>
         
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" />
 
