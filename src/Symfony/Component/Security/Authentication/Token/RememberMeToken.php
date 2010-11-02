@@ -29,6 +29,10 @@ class RememberMeToken extends Token
     public function __construct(AccountInterface $user, $key) {
         parent::__construct($user->getRoles());
         
+        if (0 === strlen($key)) {
+            throw new \InvalidArgumentException('$key cannot be empty.');
+        }
+        
         $this->user = $user;
         $this->key = $key;
         $this->setAuthenticated(true);
