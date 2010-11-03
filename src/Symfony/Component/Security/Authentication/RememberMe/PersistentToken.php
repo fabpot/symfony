@@ -45,10 +45,6 @@ class PersistentToken implements PersistentTokenInterface
             throw new \InvalidArgumentException('$tokenValue cannot be empty.');
         }
         
-        if (null === $lastUsed) {
-            throw new \InvalidArgumentException('$lastUsed cannot be null.');
-        }
-        
         $this->username = $username;
         $this->series = $series;
         $this->tokenValue = $tokenValue;
