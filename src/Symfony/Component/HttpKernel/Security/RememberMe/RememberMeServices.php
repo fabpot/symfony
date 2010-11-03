@@ -2,6 +2,7 @@
 
 namespace Symfony\Component\HttpKernel\Security\RememberMe;
 
+use Symfony\Component\Security\Authentication\RememberMe\TokenProviderInterface;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
@@ -50,6 +51,33 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
     }
     
     /**
+     * Returns the user provider implementation
+     * @return UserProviderInterface
+     */
+    public function getUserProvider()
+    {
+        return $this->userProvider;
+    }
+    
+    /**
+     * Returns the options
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+    
+    /**
+     * Returns the logger implementation
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+    
+    /**
      * Sets the private remember-me key
      * 
      * @param string $key
@@ -61,6 +89,15 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
     }
     
     /**
+     * Returns the private remember-me key
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+    
+    /**
      * Sets the token provider
      * 
      * @param TokenProviderInterface $tokenProvider
@@ -69,6 +106,16 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
     public function setTokenProvider(TokenProviderInterface $tokenProvider)
     {
         $this->tokenProvider = $tokenProvider;
+    }
+    
+    /**
+     * Returns the token provider
+     * 
+     * @return TokenProviderInterface
+     */
+    public function getTokenProvider()
+    {
+        return $this->tokenProvider;
     }
     
     /**
@@ -90,6 +137,10 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
         
         $cookieParts = $this->decodeCookie($cookie);
         $token = $this->processAutoLoginCookie($cookieParts, $request);
+        
+        if (!$token instanceof TokenInterface) {
+            throw new \RuntimeException('processAutoLoginCookie() must return a TokenInterface implementation.');
+        }
         
         if (null !== $this->logger) {
             $this->logger->debug('Remember-me cookie accepted.');

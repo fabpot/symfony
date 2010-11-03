@@ -574,7 +574,7 @@ class SecurityExtension extends Extension
         $authenticationProvider = 'security.authentication.provider.rememberme.'.$id;
         $container
             ->register($authenticationProvider, '%security.authentication.provider.rememberme.class%')
-            ->addMethodCall('setKey', array($rememberMeKey));
+            ->setArguments(array(new Reference('security.account_checker'), $rememberMeKey))
         ;
         
         // remember me services

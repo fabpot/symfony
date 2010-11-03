@@ -61,13 +61,18 @@ abstract class FormAuthenticationListener
         $this->logger = $logger;
     }
 
+    /**
+     * Sets the RememberMeServices implementation to use
+     * 
+     * @param RememberMeServicesInterface $rememberMeServices
+     */
     public function setRememberMeServices(RememberMeServicesInterface $rememberMeServices)
     {
         $this->rememberMeServices = $rememberMeServices;
     }
-    
+
     /**
-     * 
+     * Subscribe to the core.security event
      *
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority

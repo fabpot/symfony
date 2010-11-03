@@ -33,6 +33,18 @@ class PersistentToken implements PersistentTokenInterface
      */
     public function __construct($username, $series, $tokenValue, \DateTime $lastUsed)
     {
+        if (0 === strlen($username)) {
+            throw new \InvalidArgumentException('$username cannot be empty.');
+        }
+        
+        if (0 === strlen($series)) {
+            throw new \InvalidArgumentException('$series cannot be empty.');
+        }
+        
+        if (0 === strlen($tokenValue)) {
+            throw new \InvalidArgumentException('$tokenValue cannot be empty.');
+        }
+        
         $this->username = $username;
         $this->series = $series;
         $this->tokenValue = $tokenValue;
