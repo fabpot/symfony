@@ -4,6 +4,7 @@ namespace Symfony\Bundle\DoctrineBundle\Form\ValueTransformer;
 
 use Symfony\Component\Form\ValueTransformer\BaseValueTransformer;
 use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
+use Doctrine\Common\Collections\Collection;
 
 /*
  * This file is part of the Symfony framework.
@@ -15,10 +16,10 @@ use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
  */
 
 /**
- * Transforms an instance of Doctrine\Common\Collections\Colletion into a string of unique names.
+ * Transforms an instance of Doctrine\Common\Collections\Collection into a string of unique names.
  *
  * Use-Cases for this transformer include: List of Tag-Names, List Of Group/User-Names or the like.
- * 
+ *
  * This transformer only makes sense if you know the list of related collections to be small and
  * that they have a unique identifier field that is of meaning to the user (Tag Names) and is
  * enforced to be unique in the storage.
@@ -39,15 +40,17 @@ class CollectionToStringTransformer extends BaseValueTransformer
     {
         $this->addOption('trim', true);
         $this->addOption('separator', ',');
-        $this->addOption('createInstanceCallback', null);
+        $this->addOption('explode_callback', 'explode');
+        $this->addOption('implode_callback', 'implode');
+        $this->addOption('create_instance_callback', null);
         $this->addRequiredOption('em');
-        $this->addRequiredOption('className');
-        $this->addRequiredOption('fieldName');
+        $this->addRequiredOption('class_name');
+        $this->addRequiredOption('field_name');
     }
 
     /**
-     * @param string $value
-     * @param Doctrine\Common\Collections\Collection $collection
+     * @param string     $value
+     * @param Collection $collection
      */
     public function reverseTransform($value, $collection)
     {
@@ -57,21 +60,23 @@ class CollectionToStringTransformer extends BaseValueTransformer
             return $collection;
         }
 
-        $className = $this->getOption('className');
-        $values = explode($this->getOption('separator'), $value);
+        $callback = $this->getOption('explode_callback');
+        $values = call_user_func($callback, $this->getOption('separator'), $value);
+
         if ($this->getOption('trim') === true) {
             $values = array_map('trim', $values);
         }
 
         /* @var $em Doctrine\ORM\EntityManager */
         $em = $this->getOption('em');
+        $className = $this->getOption('class_name');
         $reflField = $em->getClassMetadata($className)
-                        ->getReflectionProperty($this->getOption('fieldName'));
+                        ->getReflectionProperty($this->getOption('field_name'));
 
         // 1. removing elements that are not yet present anymore
-        foreach ($collection AS $object) {
+        foreach ($collection as $object) {
             $uniqueIdent = $reflField->getValue($object);
-            $key = \array_search($uniqueIdent, $values);
+            $key = array_search($uniqueIdent, $values);
             if ($key === false) {
                 $collection->removeElement($object);
             } else {
@@ -82,40 +87,38 @@ class CollectionToStringTransformer extends BaseValueTransformer
 
         // 2. add elements that are known to the EntityManager but newly connected, query them from the repository
         if (count($values)) {
-            $dql = "SELECT o FROM " . $className . " o WHERE o." . $this->getOption('fieldName') . " IN (";
+            $dql = sprintf('SELECT o FROM %s o WHERE o.%s IN (', $className, $this->getOption('field_name'));
             $query = $em->createQuery();
             $needles = array();
             $i = 0;
-            foreach ($values AS $val) {
+            foreach ($values as $val) {
                 $query->setParameter(++$i, $val);
-                $needles[] = "?" . $i;
+                $needles[] = '?'.$i;
             }
-            $dql .= implode(",", $needles) . ")";
+            $dql .= implode(',', $needles).')';
             $query->setDql($dql);
             $newElements = $query->getResult();
 
-            foreach ($newElements AS $object) {
+            foreach ($newElements as $object) {
                 $collection->add($object);
 
                 $uniqueIdent = $reflField->getValue($object);
-                $key = \array_search($uniqueIdent, $values);
+                $key = array_search($uniqueIdent, $values);
                 unset($values[$key]);
             }
         }
 
         // 3. new elements that are not in the repository have to be created and persisted then attached:
         if (count($values)) {
-            $callback = $this->getOption('createInstanceCallback');
-            if (!$callback || !\is_callable($callback)) {
-                throw new TransformationFailedException("Cannot transform list of identifiers, because a new ".
-                    "element was detected and it is unknown how to create an instance of this element.");
+            $callback = $this->getOption('create_instance_callback');
+            if (!$callback || !is_callable($callback)) {
+                throw new TransformationFailedException('Cannot transform list of identifiers, because a new element was detected and it is unknown how to create an instance of this element.');
             }
 
-            foreach ($values AS $newValue) {
-                $newInstance = \call_user_func($callback, $newValue);
+            foreach ($values as $newValue) {
+                $newInstance = call_user_func($callback, $newValue);
                 if (!($newInstance instanceof $className)) {
-                    throw new TransformationFailedException("Error while trying to create a new instance for ".
-                        "the identifier '" . $newValue . "'. No new instance was created.");
+                    throw new TransformationFailedException(sprintf('Error while trying to create a new instance for the identifier "%s". No new instance was created.', $newValue));
                 }
                 $collection->add($newInstance);
                 $em->persist($newInstance);
@@ -128,19 +131,21 @@ class CollectionToStringTransformer extends BaseValueTransformer
     /**
      * Transform a Doctrine Collection into a string of identifies with a separator.
      *
-     * @param  Doctrine\Common\Collections\Collection $value
+     * @param  Collection $value
      * @return string
      */
     public function transform($value)
     {
         $values = array();
         $em = $this->getOption('em');
-        $reflField = $em->getClassMetadata($this->getOption('className'))
-                        ->getReflectionProperty($this->getOption('fieldName'));
+        $reflField = $em->getClassMetadata($this->getOption('class_name'))
+                        ->getReflectionProperty($this->getOption('field_name'));
 
-        foreach ($value AS $object) {
+        foreach ($value as $object) {
             $values[] = $reflField->getValue($object);
         }
-        return implode($this->getOption('separator'), $values);
+        $callback = $this->getOption('implode_callback');
+
+        return call_user_func($callback, $this->getOption('separator'), $values);
     }
 }
