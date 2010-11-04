@@ -34,10 +34,10 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::__construct
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::getOptions
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::getUserProvider
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::getLogger
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::__construct
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::getOptions
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::getUserProvider
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::getLogger
      */
     public function testConstructor()
     {
@@ -53,8 +53,8 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::getKey
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::setKey
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::getKey
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::setKey
      */
     public function testSetKey()
     {
@@ -66,8 +66,8 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
     }
     
     /**
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::getTokenProvider
-     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeService::setTokenProvider
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::getTokenProvider
+     * @covers Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServices::setTokenProvider
      */
     public function testSetTokenProvider()
     {

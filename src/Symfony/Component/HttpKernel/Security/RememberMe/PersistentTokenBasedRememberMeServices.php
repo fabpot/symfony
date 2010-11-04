@@ -2,10 +2,12 @@
 namespace Symfony\Component\HttpKernel\Security\RememberMe;
 
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Exception\AuthenticationException;
 use Symfony\Component\Security\Exception\CookieTheftException;
+use Symfony\Component\Security\Authentication\RememberMe\PersistentToken;
 
 /*
  * This file is part of the Symfony package.
@@ -31,12 +33,11 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
     protected function processAutoLoginCookie(array $cookieParts, Request $request)
     {
         if (count($cookieParts) !== 2) {
-            throw new AuthenticationException('invalid cookie');
+            throw new AuthenticationException('The cookie is invalid.');
         }
         
         list($series, $tokenValue) = $cookieParts;
         $persistentToken = $this->tokenProvider->loadTokenBySeries($series);
-        $user = $this->userProvider->loadUserByUsername($persistentToken->getUsername());
         
         if ($persistentToken->getTokenValue() !== $tokenValue) {
             $this->tokenProvider->deleteTokenBySeries($series);
@@ -48,6 +49,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
             throw new AuthenticationException('The cookie has expired.');
         }
         
+        $user = $this->userProvider->loadUserByUsername($persistentToken->getUsername());
         $authenticationToken = new RememberMeToken($user, $this->key);
         $authenticationToken->setPersistentToken($persistentToken);
         
@@ -59,7 +61,11 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
      */
     protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token)
     {
-        if ($token instanceof RememberMeToken && null !== $persistentToken = $token->getPersistentToken()) {
+        if ($token instanceof RememberMeToken) {
+            if (null === $persistentToken = $token->getPersistentToken()) {
+                throw new \RuntimeException('RememberMeToken must contain a PersistentTokenInterface implementation when used as login.');
+            }
+            
             $newTokenValue = $this->generateRandomValue();
             $this->tokenProvider->updateToken($persistentToken->getSeries(), $newTokenValue, new \DateTime());
             
@@ -73,7 +79,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
                 $this->options['httponly']
             );
         }
-        else if ($token instanceof UsernamePasswordToken) {
+        else {
             $series = $this->generateRandomValue();
             $tokenValue = $this->generateRandomValue();
             
@@ -99,7 +105,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
     {
         parent::logout($request, $response, $token);
         
-        if (null !== $cookie = $request->cookies->get($this->options['name'])
+        if (null !== ($cookie = $request->cookies->get($this->options['name']))
             && count($parts = $this->decodeCookie($cookie)) === 2
         ) {
             list($series, $tokenValue) = $parts;
