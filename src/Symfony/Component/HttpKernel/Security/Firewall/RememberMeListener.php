@@ -1,4 +1,5 @@
 <?php
+
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
@@ -13,8 +14,18 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesInterface;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
- *  
+ * RememberMeListener implements authentication capabilities via a cookie
+ * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class RememberMeListener 
@@ -54,14 +65,48 @@ class RememberMeListener
     }
     
     /**
+     * Returns the security context
+     * @return SecurityContext
+     */
+    public function getSecurityContext()
+    {
+        return $this->securityContext;
+    }
+    
+    /**
+     * Returns the RememberMeServices implementation
+     * @return RememberMeServicesInterface
+     */
+    public function getRememberMeServices()
+    {
+        return $this->rememberMeServices;
+    }
+    
+    /**
+     * Returns the AuthenticationManagerInterface implementation
+     * @return AuthenticationManagerInterface
+     */
+    public function getAuthenticationManager()
+    {
+        return $this->authenticationManager;
+    }
+    
+    /**
+     * Returns the LoggerInterface implementation
+     * @return LoggerInterface
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+    
+    /**
      * Handles remember-me cookie based authentication.
      *
      * @param Event $event An Event instance
      */
     public function checkCookies(Event $event)
     {
-        $request = $event->getParameter('request');
-
         $this->lastState = null;
         
         if (null !== $this->securityContext->getToken()) {
@@ -69,7 +114,7 @@ class RememberMeListener
         }
         
         try {
-            if (null === $token = $this->rememberMeServices->autoLogin($request)) {
+            if (null === $token = $this->rememberMeServices->autoLogin($event->getParameter('request'))) {
                 return;
             }
 
