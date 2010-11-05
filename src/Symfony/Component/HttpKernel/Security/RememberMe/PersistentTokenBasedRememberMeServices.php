@@ -132,12 +132,14 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
      */
     protected function generateRandomValue()
     {
-        $bytes = openssl_random_pseudo_bytes(32, $strong);
-        
-        if (true === $strong && false !== $bytes) {
-            return base64_encode($bytes);
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $bytes = openssl_random_pseudo_bytes(32, $strong);
+            
+            if (true === $strong && false !== $bytes) {
+                return base64_encode($bytes);
+            }
         }
-        
+
         if (null !== $this->logger) {
             $this->logger->warn('Could not produce a cryptographically strong random value. Please install/update the OpenSSL extension.');
         }
