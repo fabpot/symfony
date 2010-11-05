@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\RememberMe;
 
+use Symfony\Component\Security\User\AccountInterface;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Exception\AuthenticationException;
@@ -31,18 +33,22 @@ class TokenBasedRememberMeServices extends RememberMeServices
     protected function processAutoLoginCookie(array $cookieParts, Request $request)
     {
         if (count($cookieParts) !== 3) {
-            throw new AuthenticationException('Invalid value.');
+            throw new AuthenticationException('The cookie is invalid.');
         }
         
         list($username, $expires, $hash) = $cookieParts;
         $user = $this->userProvider->loadUserByUsername($username);
         
+        if (!$user instanceof AccountInterface) {
+            throw new \RuntimeException(sprintf('The UserProviderInterface implementation must return an instance of AccountInterface, but returned "%s".', get_class($user)));
+        }
+        
         if (true !== $this->compareHashes($hash, $this->generateCookieHash($username, $expires, $user->getPassword()))) {
-            throw new AuthenticationException('Invalid hash.');
+            throw new AuthenticationException('The cookie\'s hash is invalid.');
         }
         
         if ($expires < time()) {
-            throw new AuthenticationException('Already expired.');
+            throw new AuthenticationException('The cookie has expired.');
         }
         
         return new RememberMeToken($user, $this->key);
@@ -78,6 +84,10 @@ class TokenBasedRememberMeServices extends RememberMeServices
      */
     protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token)
     {
+        if ($token instanceof RememberMeToken) {
+            return;
+        }
+        
         if (null === $user = $token->getUser()) {
             return;
         }
