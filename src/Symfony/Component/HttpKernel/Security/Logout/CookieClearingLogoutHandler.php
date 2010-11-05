@@ -33,6 +33,15 @@ class CookieClearingLogoutHandler implements LogoutHandlerInterface
     }
     
     /**
+     * Returns the names of the cookies to unset
+     * @return array
+     */
+    public function getCookieNames()
+    {
+        return $this->cookieNames;
+    }
+    
+    /**
      * Implementation for the LogoutHandlerInterface. Deletes all requested cookies.
      * 
      * @param Request $request
