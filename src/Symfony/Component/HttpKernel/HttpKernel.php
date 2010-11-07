@@ -47,7 +47,7 @@ class HttpKernel extends BaseHttpKernel
     {
         $currentRequest = null;
         if (HttpKernelInterface::MASTER_REQUEST === $type) {
-            $currentRequest = $this->container->get('request');
+            $currentRequest = $request;
         }
 
         $this->container->set('request', $request);
