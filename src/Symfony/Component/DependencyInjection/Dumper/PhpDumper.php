@@ -45,12 +45,54 @@ class PhpDumper extends Dumper
 
         return
             $this->startClass($options['class'], $options['base_class']).
+            $this->addSharedServices().
             $this->addConstructor().
+            $this->addSetMethod().
             $this->addServices().
             $this->addTags().
             $this->addDefaultParametersMethod().
             $this->endClass()
         ;
+    }
+
+    protected function addSharedServices()
+    {
+        $code = "\n    protected \$sharedServiceIds = array(\n";
+
+        foreach ($this->container->getDefinitions() as $id => $definition) {
+            if ($definition->isShared()) {
+                $code .= sprintf("        %s => true,\n", $this->dumpValue($id));
+            }
+        }
+
+        foreach ($this->container->getAliases() as $alias => $id) {
+            if ($definition->isShared()) {
+                $code .= sprintf("        %s => true,\n", $this->dumpValue($id));
+            }
+        }
+
+        return $code .= "    );\n";
+    }
+
+    protected function addSetMethod()
+    {
+        return <<<EOF
+
+    /**
+     * Sets a service.
+     *
+     * @param string \$id      The service identifier
+     * @param object \$service The service instance
+     */
+    public function set(\$id, \$service)
+    {
+        parent::set(\$id, \$service);
+
+        if (isset(\$this->sharedServiceIds[\$id])) {
+            \$this->shared[\$id] = \$service;
+        }
+    }
+EOF;
     }
 
     protected function addServiceInclude($id, $definition)
