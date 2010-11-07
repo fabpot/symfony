@@ -43,7 +43,7 @@ class ProfilerController extends ContainerAware
         } else {
             return $this->container->get('templating')->renderResponse('WebProfilerBundle:Profiler:index.php', array(
                 'token'     => $token,
-                'profiler'  => new SafeDecorator($profiler),
+                'profiler'  => $profiler,
                 'collector' => $profiler->get('request'),
                 'template'  => $this->getTemplate($profiler, '_panel', 'request'),
                 'panel'     => 'request',
@@ -147,7 +147,7 @@ class ProfilerController extends ContainerAware
 
         return $this->container->get('templating')->renderResponse('WebProfilerBundle:Profiler:toolbar.php', array(
             'position'  => $position,
-            'profiler'  => new SafeDecorator($profiler),
+            'profiler'  => $profiler,
             'templates' => $this->getTemplates($profiler, '_bar'),
         ));
     }
