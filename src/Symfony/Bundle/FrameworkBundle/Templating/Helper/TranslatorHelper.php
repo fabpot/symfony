@@ -40,7 +40,17 @@ class TranslatorHelper extends Helper
     {
         return $this->translator->trans($id, $parameters, $domain, $locale);
     }
-
+    
+    /**
+     * Alias for trans
+     * 
+     * @see TranslatorHelper::trans
+     */
+    public function _($id, array $parameters = array(), $domain = 'messages', $locale = null)
+    {
+        return $this->trans($id, $parameters, $domain, $locale);
+    }
+    
     /**
      * @see TranslatorInterface::transChoice()
      */
