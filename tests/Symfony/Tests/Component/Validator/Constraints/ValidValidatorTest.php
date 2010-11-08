@@ -78,6 +78,23 @@ class ValidValidatorTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->validator->isValid($array, $constraint));
     }
 
+    public function testWalkTraversable()
+    {
+        $this->context->setGroup('MyGroup');
+        $this->context->setPropertyPath('foo');
+
+        $constraint = new Valid();
+        $entity = new Entity();
+        // can only test for one object due to PHPUnit's mocking limitations
+        $traversable = new \ArrayObject( array('key' => $entity));
+
+        $this->walker->expects($this->once())
+                                 ->method('walkConstraint')
+                                 ->with($this->equalTo($constraint), $this->equalTo($entity), 'MyGroup', 'foo[key]');
+
+        $this->assertTrue($this->validator->isValid($traversable, $constraint));
+    }
+
     public function testValidateClass_Succeeds()
     {
         $metadata = $this->createClassMetadata();
