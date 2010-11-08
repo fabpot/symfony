@@ -59,15 +59,16 @@ class PhpDumper extends Dumper
     {
         $code = "\n    protected \$sharedServiceIds = array(\n";
 
-        foreach ($this->container->getDefinitions() as $id => $definition) {
+        $definitions = $this->container->getDefinitions();
+        foreach ($definitions as $id => $definition) {
             if ($definition->isShared()) {
-                $code .= sprintf("        %s => true,\n", $this->dumpValue($id));
+                $code .= sprintf("        %s => %s,\n", $this->dumpValue($id), $this->dumpValue($id));
             }
         }
 
         foreach ($this->container->getAliases() as $alias => $id) {
-            if ($definition->isShared()) {
-                $code .= sprintf("        %s => true,\n", $this->dumpValue($id));
+            if ($definitions[$id]->isShared()) {
+                $code .= sprintf("        %s => %s,\n", $this->dumpValue($alias), $this->dumpValue($id));
             }
         }
 
@@ -89,7 +90,7 @@ class PhpDumper extends Dumper
         parent::set(\$id, \$service);
 
         if (isset(\$this->sharedServiceIds[\$id])) {
-            \$this->shared[\$id] = \$service;
+            \$this->shared[\$this->sharedServiceIds[\$id]] = \$service;
         }
     }
 EOF;
