@@ -3,9 +3,11 @@
 namespace Symfony\Tests\Component\Form;
 
 require_once __DIR__ . '/Fixtures/Author.php';
+require_once __DIR__ . '/Fixtures/AuthorGetSet.php';
 
 use Symfony\Component\Form\PropertyPath;
 use Symfony\Tests\Component\Form\Fixtures\Author;
+use Symfony\Tests\Component\Form\Fixtures\AuthorGetSet;
 
 class PropertyPathTest extends \PHPUnit_Framework_TestCase
 {
@@ -135,6 +137,16 @@ class PropertyPathTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(false, $path->getValue($object));
     }
 
+    public function testGetValueReadsMagicGet()
+    {
+        $path = new PropertyPath('privateProperty');
+
+        $object = new AuthorGetSet();
+        $object->privateProperty = 'foobar';
+
+        $this->assertSame('foobar', $path->getValue($object));
+    }
+
     public function testGetValueThrowsExceptionIfIsserIsNotPublic()
     {
         $path = new PropertyPath('privateIsser');
@@ -203,6 +215,16 @@ class PropertyPathTest extends \PHPUnit_Framework_TestCase
         $path->setValue($object, 'Bernhard');
 
         $this->assertEquals('Bernhard', $object['firstName']);
+    }
+
+    public function testSetValueUpdateMagicSet()
+    {
+        $object = new AuthorGetSet();
+
+        $path = new PropertyPath('privateProperty');
+        $path->setValue($object, 'Bernhard');
+
+        $this->assertEquals('Bernhard', $object->privateProperty);
     }
 
     public function testSetValueThrowsExceptionIfArrayAccessExpected()
