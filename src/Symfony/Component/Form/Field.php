@@ -68,6 +68,7 @@ abstract class Field extends Configurable implements FieldInterface
         $this->addOption('trim', true);
         $this->addOption('required', true);
         $this->addOption('disabled', false);
+        $this->addOption('value_transformer', null);
         $this->addOption('property_path', (string)$key);
 
         $this->key = (string)$key;
@@ -83,6 +84,19 @@ abstract class Field extends Configurable implements FieldInterface
         $this->required = $this->getOption('required');
 
         $this->setPropertyPath($this->getOption('property_path'));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        parent::configure();
+
+        $transformer = $this->getOption('value_transformer') ?: $this->getDefaultValueTransformer();
+        if (null !== $transformer) {
+            $this->setValueTransformer($transformer);
+        }
     }
 
     /**
@@ -427,6 +441,16 @@ abstract class Field extends Configurable implements FieldInterface
     protected function getValueTransformer()
     {
         return $this->valueTransformer;
+    }
+
+    /**
+     * Returns the default ValueTransformer.
+     *
+     * @return ValueTransformerInterface a value transformer or null if none is required
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return null;
     }
 
     /**
