@@ -47,7 +47,7 @@ class DateTimeField extends FieldGroup
     /**
      * {@inheritDoc}
      */
-    public function configure()
+    protected function configure()
     {
         $this->addOption('years', range(date('Y') - 5, date('Y') + 5));
         $this->addOption('months', range(1, 12));
@@ -98,10 +98,18 @@ class DateTimeField extends FieldGroup
             ));
         }
 
-        $this->setValueTransformer(new DateTimeToArrayTransformer(array(
+        parent::configure();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new DateTimeToArrayTransformer(array(
             'input_timezone' => $this->getOption('data_timezone'),
             'output_timezone' => $this->getOption('user_timezone'),
-        )));
+        ));
     }
 
     /**

@@ -75,12 +75,6 @@ class TimeField extends FieldGroup
             }
         }
 
-        $fields = array('hour', 'minute');
-
-        if ($this->getOption('with_seconds')) {
-            $fields[] = 'second';
-        }
-
         if ($this->getOption('type') == self::STRING) {
             $this->setNormalizationTransformer(new ReversedTransformer(
                 new DateTimeToStringTransformer(array(
@@ -101,20 +95,41 @@ class TimeField extends FieldGroup
                 new DateTimeToArrayTransformer(array(
                     'input_timezone' => $this->getOption('data_timezone'),
                     'output_timezone' => $this->getOption('data_timezone'),
-                    'fields' => $fields,
+                    'fields' => $this->getUsedFields(),
                 ))
             ));
         }
 
-        $this->setValueTransformer(new DateTimeToArrayTransformer(array(
+        parent::configure();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new DateTimeToArrayTransformer(array(
             'input_timezone' => $this->getOption('data_timezone'),
             'output_timezone' => $this->getOption('user_timezone'),
             // if the field is rendered as choice field, the values should be trimmed
             // of trailing zeros to render the selected choices correctly
             'pad' => $this->getOption('widget') == self::INPUT,
-            'fields' => $fields,
-        )));
+            'fields' => $this->getUsedFields(),
+        ));
     }
+
+    /**
+     * @return array of fields used by this FieldGroup, depending on provided options
+     */
+    protected function getUsedFields()
+    {
+        $fields = array('hour', 'minute');
+        if ($this->getOption('with_seconds')) {
+            $fields[] = 'second';
+        }
+        return $fields;
+    }
+
 
     public function isField()
     {

@@ -29,8 +29,14 @@ abstract class ToggleField extends InputField
         $this->addOption('label');
 
         parent::configure();
+    }
 
-        $this->setValueTransformer(new BooleanToStringTransformer());
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new BooleanToStringTransformer();
     }
 
     /**

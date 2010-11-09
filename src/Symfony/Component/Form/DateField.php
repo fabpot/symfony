@@ -66,6 +66,12 @@ class DateField extends HybridField
     protected $formatter;
 
     /**
+     * The default value transformer to be used, depends on options
+     * @var ValueTransformerInterface
+     */
+    protected $defaultValueTransformer;
+
+    /**
      * Configures the text field.
      *
      * Available options:
@@ -125,24 +131,40 @@ class DateField extends HybridField
         }
 
         if ($this->getOption('widget') === self::INPUT) {
-            $this->setValueTransformer(new DateTimeToLocalizedStringTransformer(array(
-                'date_format' => $this->getOption('format'),
-                'time_format' => DateTimeToLocalizedStringTransformer::NONE,
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('user_timezone'),
-            )));
+            // only instantiate if not overriden
+            if (null === $this->getOption('value_transformer')) {
+                $this->defaultValueTransformer = new DateTimeToLocalizedStringTransformer(array(
+                    'date_format' => $this->getOption('format'),
+                    'time_format' => DateTimeToLocalizedStringTransformer::NONE,
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('user_timezone'),
+                ));
+            }
 
             $this->setFieldMode(self::FIELD);
         } else {
-            $this->setValueTransformer(new DateTimeToArrayTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('user_timezone'),
-            )));
+            // only instantiate if not overriden
+            if (null === $this->getOption('value_transformer')) {
+                $this->defaultValueTransformer = new DateTimeToArrayTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('user_timezone'),
+                ));
+            }
 
             $this->setFieldMode(self::GROUP);
 
             $this->addChoiceFields();
         }
+
+        parent::configure();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return $this->defaultValueTransformer;
     }
 
     /**

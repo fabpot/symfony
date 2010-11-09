@@ -32,10 +32,16 @@ class PercentField extends NumberField
         $this->addOption('percent_type', self::FRACTIONAL);
 
         parent::configure();
+    }
 
-        $this->setValueTransformer(new PercentToLocalizedStringTransformer(array(
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new PercentToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
             'type' => $this->getOption('percent_type'),
-        )));
+        ));
     }
 }

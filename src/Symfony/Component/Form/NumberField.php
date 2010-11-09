@@ -41,11 +41,17 @@ class NumberField extends InputField
         $this->addOption('rounding-mode', NumberToLocalizedStringTransformer::ROUND_HALFUP);
 
         parent::configure();
+    }
 
-        $this->setValueTransformer(new NumberToLocalizedStringTransformer(array(
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new NumberToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
             'grouping' => $this->getOption('grouping'),
             'rounding-mode' => $this->getOption('rounding-mode'),
-        )));
+        ));
     }
 }

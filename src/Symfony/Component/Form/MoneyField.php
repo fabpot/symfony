@@ -39,12 +39,18 @@ class MoneyField extends NumberField
         $this->addOption('currency');
 
         parent::configure();
+    }
 
-        $this->setValueTransformer(new MoneyToLocalizedStringTransformer(array(
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDefaultValueTransformer()
+    {
+        return new MoneyToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
             'grouping' => $this->getOption('grouping'),
             'divisor' => $this->getOption('divisor'),
-        )));
+        ));
     }
 
     /**
