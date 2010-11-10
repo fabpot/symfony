@@ -31,14 +31,16 @@ class IntegerField extends NumberField
     /**
      * {@inheritDoc}
      */
-    protected function configure()
+    public function __construct($key, array $options = array())
     {
-        parent::configure();
+        $options['precision'] = 0;
 
-        $this->addOption('precision', 0);
+        if (!array_key_exists('rounding-mode', $options)) {
+            // Integer cast rounds towards 0, so do the same when displaying fractions
+            $options['rounding-mode'] = NumberToLocalizedStringTransformer::ROUND_DOWN;
+        }
 
-        // Integer cast rounds towards 0, so do the same when displaying fractions
-        $this->addOption('rounding-mode', NumberToLocalizedStringTransformer::ROUND_DOWN);
+        parent::__construct($key, $options);
     }
 
     /**
