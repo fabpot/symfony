@@ -185,7 +185,7 @@ class Session implements \Serializable
      */
     public function setLocale($locale)
     {
-        if ($locale === $this->getDefaultLocale()) {
+        if ($locale === $this->getLocale()) {
             return;
         }
 
