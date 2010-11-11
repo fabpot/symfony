@@ -78,8 +78,10 @@ abstract class Field extends Configurable implements FieldInterface
 
         parent::__construct($options);
 
-        $this->normalizedData = $this->normalize($this->data);
-        $this->transformedData = $this->transform($this->normalizedData);
+        if (null !== $this->data) {
+            $this->normalizedData = $this->normalize($this->data);
+            $this->transformedData = $this->transform($this->normalizedData);
+        }
         $this->required = $this->getOption('required');
 
         $this->setPropertyPath($this->getOption('property_path'));
