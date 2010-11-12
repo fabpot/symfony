@@ -277,17 +277,25 @@ class Response
     }
 
     /**
-     * Marks the response "private".
+     * Marks the response as "private".
      *
      * It makes the response ineligible for serving other clients.
-     *
-     * @param Boolean $value Whether to set the response to be private or public.
      */
-    public function setPrivate($value)
+    public function setPrivate()
     {
-        $value = (Boolean) $value;
-        $this->headers->getCacheControl()->setPublic(!$value);
-        $this->headers->getCacheControl()->setPrivate($value);
+        $this->headers->getCacheControl()->setPublic(false);
+        $this->headers->getCacheControl()->setPrivate(true);
+    }
+
+    /**
+     * Marks the response as "public".
+     *
+     * It makes the response eligible for serving other clients.
+     */
+    public function setPublic()
+    {
+        $this->headers->getCacheControl()->setPublic(true);
+        $this->headers->getCacheControl()->setPrivate(false);
     }
 
     /**
@@ -507,6 +515,12 @@ class Response
         return $this->headers->get('ETag');
     }
 
+    /**
+     * Sets the ETag value.
+     *
+     * @param string  $etag The ETag unique identifier
+     * @param Boolean $weak Whether you want a weak ETag or not
+     */
     public function setEtag($etag = null, $weak = false)
     {
         if (null === $etag) {
@@ -517,6 +531,52 @@ class Response
             }
 
             $this->headers->set('ETag', (true === $weak ? 'W/' : '').$etag);
+        }
+    }
+
+    /**
+     * Sets Response cache headers (validation and/or expiration).
+     *
+     * Available options are: etag, last_modified, max_age, s_maxage, private, and public.
+     *
+     * @param array $options An array of cache options
+     */
+    public function setCache(array $options)
+    {
+        if ($diff = array_diff_key($options, array('etag', 'last_modified', 'max_age', 's_maxage', 'private', 'public'))) {
+            throw new \InvalidArgumentException(sprintf('Response does not support the following options: "%s".', implode('", "', array_keys($diff))));
+        }
+
+        if (isset($options['etag'])) {
+            $this->setEtag($options['etag']);
+        }
+
+        if (isset($options['last_modified'])) {
+            $this->setLastModified($options['last_modified']);
+        }
+
+        if (isset($options['max_age'])) {
+            $this->setMaxAge($options['max_age']);
+        }
+
+        if (isset($options['s_maxage'])) {
+            $this->setSharedMaxAge($options['s_maxage']);
+        }
+
+        if (isset($options['public'])) {
+            if ($options['public']) {
+                $this->setPublic();
+            } else {
+                $this->setPrivate();
+            }
+        }
+
+        if (isset($options['private'])) {
+            if ($options['private']) {
+                $this->setPrivate();
+            } else {
+                $this->setPublic();
+            }
         }
     }
 
