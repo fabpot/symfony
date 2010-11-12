@@ -10,7 +10,7 @@
                     <code><?php echo $query['sql'] ?></code>
                 </div>
                 <small>
-                    <?php echo var_export($query['params']->getRawValue()) ?>
+                    <?php var_export($query['params']->getRawValue()) ?>
                     <strong>Time</strong>: <?php echo sprintf('%0.2f', $query['executionMS']) ?> ms
                 </small>
             </li>
