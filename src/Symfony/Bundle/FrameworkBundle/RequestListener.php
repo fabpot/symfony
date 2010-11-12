@@ -100,13 +100,9 @@ class RequestListener
 
             $request->attributes->add($parameters);
 
-            if ($request->hasSession()) {
-                $session = $request->getSession();
-
-                if ($request->attributes->get('_locale') && $request->attributes->get('_locale') != $session->getLocale()) {
-                    $session->setLocale($request->attributes->get('_locale'));
-                    $session->save();
-                }
+            $session = $request->getSession();
+            if ($request->attributes->get('_locale') && $request->attributes->get('_locale') != $session->getLocale()) {
+                $session->setLocale($request->attributes->get('_locale'));
             }
         } elseif (null !== $this->logger) {
             $this->logger->err(sprintf('No route found for %s', $request->getPathInfo()));
