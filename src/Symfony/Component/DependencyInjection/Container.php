@@ -161,7 +161,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function has($id)
     {
-        return isset($this->services[$id]) || method_exists($this, 'get'.strtr($id, array('_' => '', '.' => '_')).'Service');
+        return isset($this->services[$id]) || method_exists($this, 'get'.self::camelize($id).'Service');
     }
 
     /**
@@ -189,7 +189,7 @@ class Container implements ContainerInterface, \ArrayAccess
             return $this->services[$id];
         }
 
-        if (method_exists($this, $method = 'get'.strtr($id, array('_' => '', '.' => '_')).'Service')) {
+        if (method_exists($this, $method = 'get'.self::camelize($id).'Service')) {
             return $this->$method();
         }
 
