@@ -113,6 +113,14 @@ abstract class Token implements TokenInterface
     /**
      * {@inheritdoc}
      */
+    public function setUser($user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function eraseCredentials()
     {
         if ($this->getCredentials() instanceof AccountInterface) {
@@ -145,9 +153,7 @@ abstract class Token implements TokenInterface
      */
     public function serialize()
     {
-        // FIXME: don't serialize the user object, just the username (see ContextListener)
-        //return serialize(array((string) $this, $this->credentials, $this->authenticated, $this->roles, $this->immutable));
-        return serialize(array($this->user, $this->credentials, $this->authenticated, $this->roles, $this->immutable));
+        return serialize(array((string) $this->user, $this->credentials, $this->authenticated, $this->roles, $this->immutable));
     }
 
     /**

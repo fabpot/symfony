@@ -3,6 +3,7 @@
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
 use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\User\UserProviderInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
@@ -27,11 +28,13 @@ use Symfony\Component\Security\Authentication\Token\AnonymousToken;
 class ContextListener
 {
     protected $context;
+    protected $userProvider;
     protected $logger;
 
-    public function __construct(SecurityContext $context, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $context, UserProviderInterface $userProvider, LoggerInterface $logger = null)
     {
         $this->context = $context;
+        $this->userProvider = $userProvider;
         $this->logger = $logger;
     }
 
@@ -68,11 +71,9 @@ class ContextListener
 
             $token = unserialize($token);
 
-            $this->context->setToken($token);
+            $token->setUser($this->userProvider->loadUserByUsername($token->getUser()));
 
-            // FIXME: If the user is not an object, it probably means that it is persisted with a DAO
-            // we need to load it now (that does not happen right now as the Token serialize the user
-            // even if it is an object -- see Token)
+            $this->context->setToken($token);
         }
     }
 

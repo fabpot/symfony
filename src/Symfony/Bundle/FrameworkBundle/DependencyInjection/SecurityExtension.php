@@ -148,6 +148,7 @@ class SecurityExtension extends Extension
             'security.authentication.listener.x509',
             'security.authentication.listener.basic',
             'security.authentication.listener.digest',
+            'security.context_listener',
             'security.access_listener',
             'security.exception_listener',
         );
@@ -198,7 +199,7 @@ class SecurityExtension extends Extension
 
         // Context serializer listener
         if (!isset($firewall['stateless']) || !$firewall['stateless']) {
-            $listeners[] = new Reference('security.context_listener');
+            $listeners[] = new Reference($this->createContextListener($container, $id, $defaultProvider));
         }
 
         // Logout listener
@@ -234,6 +235,17 @@ class SecurityExtension extends Extension
         $exceptionListener = new Reference($this->createExceptionListener($container, $id, $defaultEntryPoint));
 
         return array($matcher, $listeners, $exceptionListener);
+    }
+
+    protected function createContextListener($container, $id, $userProvider)
+    {
+        $listenerId = 'security.context_listener.'.$id;
+        $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.context_listener'));
+        $arguments = $listener->getArguments();
+        $arguments[1] = new Reference($userProvider);
+        $listener->setArguments($arguments);
+
+        return $listenerId;
     }
 
     protected function createAuthenticationListeners($container, $id, $firewall, $defaultProvider, $providerIds)

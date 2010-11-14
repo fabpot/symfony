@@ -145,10 +145,5 @@
             <argument type="service" id="security.firewall.map" />
         </service>
         <service id="security.firewall.map" class="%security.firewall.map.class%" />
-
-        <service id="security.context_listener" class="%security.context_listener.class%">
-            <argument type="service" id="security.context" />
-            <argument type="service" id="logger" on-invalid="null" />
-        </service>
     </services>
 </container>

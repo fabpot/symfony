@@ -54,6 +54,13 @@ interface TokenInterface extends \Serializable
     function getUser();
 
     /**
+     * Sets the user instance
+     *
+     * @param object $user The User instance
+     */
+    function setUser($user);
+
+    /**
      * Checks if the user is authenticated or not.
      *
      * @return Boolean true if the token has been authenticated, false otherwise
