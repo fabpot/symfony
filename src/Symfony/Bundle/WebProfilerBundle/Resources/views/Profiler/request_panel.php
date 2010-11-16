@@ -51,7 +51,7 @@
             <th>Value</th>
         </tr>
 
-        <?php foreach ($sessionAttributes->getRawValue() as $key => $value): ?>
+        <?php foreach ($sessionAttributes as $key => $value): ?>
             <?php echo $view->render('WebProfilerBundle:Profile:var_yaml_dump.php', compact('key', 'value')); ?>
         <?php endforeach; ?>
     </table>
