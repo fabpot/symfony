@@ -1,4 +1,4 @@
-<?php if ($value instanceof Symfony\Component\OutputEscaper\BaseEscaper): ?>
+<?php if (is_object($value) && $value instanceof Symfony\Component\OutputEscaper\BaseEscaper): ?>
     <?php $value = $value->getRawValue(); ?>
 <?php endif; ?>
 
