@@ -52,7 +52,7 @@
         </tr>
 
         <?php foreach ($sessionAttributes as $key => $value): ?>
-            <?php echo $view->render('WebProfilerBundle:Profile:var_yaml_dump.php', compact('key', 'value')); ?>
+            <?php echo $view->render('WebProfilerBundle:Profiler:var_yaml_dump.php', compact('key', 'value')); ?>
         <?php endforeach; ?>
     </table>
 <?php else: ?>
