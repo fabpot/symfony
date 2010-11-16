@@ -1,5 +1,5 @@
-<?php if (is_object($value) && get_parent_class($value) == 'Symfony\Component\OutputEscaper\BaseEscaper'): ?>
-    <?php $value = $value->getRawValue() ?>
+<?php if ($value instanceof Symfony\Component\OutputEscaper\BaseEscaper): ?>
+    <?php $value = $value->getRawValue(); ?>
 <?php endif; ?>
 
 <tr>
