@@ -28,20 +28,20 @@
     		<?php endforeach ?>
             <option disabled="disabled"><?php echo isset($separator) ? $separator : '-----------------' ?></option>
     	<?php endif ?>
-		<?php foreach ($field->getOtherChoices() as $choice => $label): ?>
-			<?php if ($label instanceof \Traversable): ?>
-				<optgroup label="<?php echo $choice ?>">
+    	<?php foreach ($field->getOtherChoices() as $choice => $label): ?>
+    		<?php if ($label instanceof \Traversable): ?>
+    			<optgroup label="<?php echo $choice ?>">
     				<?php foreach ($label as $nestedChoice => $nestedLabel): ?>
             			<option value="<?php echo $nestedChoice ?>"<?php if ($field->isChoiceSelected($nestedChoice)): ?> selected="selected"<?php endif?>>
             				<?php echo $nestedLabel ?>
             			</option>
     				<?php endforeach ?>
-				</optgroup>
-			<?php else: ?>
+    			</optgroup>
+    		<?php else: ?>
     			<option value="<?php echo $choice ?>"<?php if ($field->isChoiceSelected($choice)): ?> selected="selected"<?php endif?>>
     				<?php echo $label ?>
     			</option>
-			<?php endif ?>
-		<?php endforeach ?>
+    		<?php endif ?>
+    	<?php endforeach ?>
     </select>
 <?php endif ?>

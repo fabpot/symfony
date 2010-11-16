@@ -27,12 +27,10 @@ class FormHelper extends Helper
     static protected $cache = array();
 
     protected $engine;
-    protected $theme;
 
-    public function __construct(Engine $engine, $theme = 'table')
+    public function __construct(Engine $engine)
     {
         $this->engine = $engine;
-        $this->theme = $theme;
     }
 
     public function getName()
@@ -101,11 +99,11 @@ class FormHelper extends Helper
             }
         }
 
-        return $this->engine->render($template, array(
+        return trim($this->engine->render($template, array(
             'field'  => $field,
             'attr'   => $attributes,
             'params' => $parameters,
-        ));
+        )));
     }
 
     public function label(/*FieldInterface */$field, $label = false, array $parameters = array(), $template = null)
@@ -165,9 +163,9 @@ class FormHelper extends Helper
             $parts = explode('\\', $currentFqClassName);
             $className = array_pop($parts);
 
-            $underscore = strtolower(preg_replace(array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/'), array('\\1_\\2', '\\1_\\2'), strtr($className, '_', '.')));
+            $underscoredName = strtolower(preg_replace(array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/'), array('\\1_\\2', '\\1_\\2'), strtr($className, '_', '.')));
 
-            if ($this->engine->exists($guess = 'FrameworkBundle:Form:fields/'.$underscore.'.php')) {
+            if ($this->engine->exists($guess = 'FrameworkBundle:Form:'.$underscoredName.'.php')) {
                 $template = $guess;
             }
 
@@ -175,7 +173,7 @@ class FormHelper extends Helper
         } while (null === $template && false !== $currentFqClassName);
 
         if (null === $template && $field instanceof FieldGroupInterface) {
-            $template = sprintf('FrameworkBundle:Form:themes/%s/field_group.php', $this->theme);
+            $template = 'FrameworkBundle:Form:field_group.php';
         }
 
         self::$cache[$fqClassName] = $template;
