@@ -42,9 +42,9 @@
 
 <?php echo $view->render('WebProfilerBundle:Profiler:bag.php', array('bag' => $data->getResponseHeaders())) ?>
 
-<?php if (count($sessionAttributes = $data->getSessionAttributes())):?>
-    <h2>Response Session Attributes</h2>
+<h2>Response Session Attributes</h2>
 
+<?php if (count($sessionAttributes = $data->getSessionAttributes())):?>
     <table>
         <tr>
             <th>Key</th>
@@ -52,7 +52,9 @@
         </tr>
 
         <?php foreach ($sessionAttributes->getRawValue() as $key => $value): ?>
-            <?php echo $view->render('WebProfilerBundle:Profile:var_yaml_dump.php', compact('key', 'value'));
+            <?php echo $view->render('WebProfilerBundle:Profile:var_yaml_dump.php', compact('key', 'value')); ?>
         <?php endforeach; ?>
     </table>
+<?php else: ?>
+    <em>No request session attributes</em>
 <?php endif; ?>
