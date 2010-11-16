@@ -67,6 +67,8 @@ class ChoiceField extends HybridField
         } else {
             $this->setFieldMode(self::FIELD);
         }
+
+        parent::configure();
     }
 
     /**
@@ -127,12 +129,11 @@ class ChoiceField extends HybridField
                 'value' => $choice,
                 'label' => $label,
             ));
-        } else {
-            return new RadioField($choice, array(
-                'value' => $choice,
-                'label' => $label,
-            ));
         }
+        return new RadioField($choice, array(
+            'value' => $choice,
+            'label' => $label,
+        ));
     }
 
     /**
@@ -176,9 +177,8 @@ class ChoiceField extends HybridField
             }
 
             return $choices;
-        } else {
-            return parent::transform($value);
         }
+        return parent::transform($value);
     }
 
     /**

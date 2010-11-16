@@ -27,13 +27,15 @@ class EntityToIDTransformer extends BaseValueTransformer
     {
         $this->addRequiredOption('em');
         $this->addRequiredOption('className');
+
+        parent::configure();
     }
 
     /**
      * Reverse Transforming the selected id value to an Doctrine Entity.
      *
      * This handles NULL, the EntityManager#find method returns null if no entity was found.
-     * 
+     *
      * @param  int|string $newId
      * @param  object $oldEntity
      * @return object

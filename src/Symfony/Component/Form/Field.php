@@ -69,6 +69,8 @@ abstract class Field extends Configurable implements FieldInterface
         $this->addOption('required', true);
         $this->addOption('disabled', false);
         $this->addOption('property_path', (string)$key);
+        $this->addOption('value_transformer');
+        $this->addOption('normalization_transformer');
 
         $this->key = (string)$key;
 
@@ -77,6 +79,14 @@ abstract class Field extends Configurable implements FieldInterface
         }
 
         parent::__construct($options);
+
+        if ($this->getOption('value_transformer')) {
+            $this->setValueTransformer($this->getOption('value_transformer'));
+        }
+
+        if ($this->getOption('normalization_transformer')) {
+            $this->setNormalizationTransformer($this->getOption('normalization_transformer'));
+        }
 
         $this->normalizedData = $this->normalize($this->data);
         $this->transformedData = $this->transform($this->normalizedData);
@@ -183,9 +193,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (is_null($this->parent) || $this->parent->isRequired()) {
             return $this->required;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -195,9 +204,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (is_null($this->parent) || !$this->parent->isDisabled()) {
             return $this->getOption('disabled');
-        } else {
-            return true;
         }
+        return true;
     }
 
     /**
@@ -441,9 +449,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (null === $this->normalizationTransformer) {
             return $value;
-        } else {
-            return $this->normalizationTransformer->transform($value);
         }
+        return $this->normalizationTransformer->transform($value);
     }
 
     /**
@@ -456,9 +463,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (null === $this->normalizationTransformer) {
             return $value;
-        } else {
-            return $this->normalizationTransformer->reverseTransform($value, $this->data);
         }
+        return $this->normalizationTransformer->reverseTransform($value, $this->data);
     }
 
     /**
@@ -471,9 +477,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (null === $this->valueTransformer) {
             return $value === null ? '' : $value;
-        } else {
-            return $this->valueTransformer->transform($value);
         }
+        return $this->valueTransformer->transform($value);
     }
 
     /**
@@ -486,9 +491,8 @@ abstract class Field extends Configurable implements FieldInterface
     {
         if (null === $this->valueTransformer) {
             return $value === '' ? null : $value;
-        } else {
-            return $this->valueTransformer->reverseTransform($value, $this->data);
         }
+        return $this->valueTransformer->reverseTransform($value, $this->data);
     }
 
     /**

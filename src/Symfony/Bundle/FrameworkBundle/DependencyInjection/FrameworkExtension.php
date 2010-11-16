@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\RequestMatcher;
 
@@ -111,9 +112,7 @@ class FrameworkExtension extends Extension
             $this->registerTestConfiguration($config, $container);
         }
 
-        if (isset($config['user'])) {
-            $this->registerUserConfiguration($config, $container);
-        }
+        $this->registerSessionConfiguration($config, $container);
 
         $this->registerTranslatorConfiguration($config, $container);
 
@@ -303,14 +302,14 @@ class FrameworkExtension extends Extension
      * @param array            $config    A configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function registerUserConfiguration($config, ContainerBuilder $container)
+    protected function registerSessionConfiguration($config, ContainerBuilder $container)
     {
-        $config = $config['user'];
-
         if (!$container->hasDefinition('session')) {
             $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
             $loader->load('session.xml');
         }
+
+        $config = isset($config['session']) ? $config['session'] : array();
 
         foreach (array('default_locale', 'default-locale') as $key) {
             if (isset($config[$key])) {
@@ -322,20 +321,19 @@ class FrameworkExtension extends Extension
             $container->setParameter('session.class', $config['class']);
         }
 
+        if (isset($config['storage_id'])) {
+            $container->setAlias('session.storage', 'session.storage.'.$config['storage_id']);
+        } else {
+            $config['storage_id'] = 'native';
+        }
+
+        $options = $container->getParameter('session.storage.'.strtolower($config['storage_id']).'.options');
         foreach (array('name', 'lifetime', 'path', 'domain', 'secure', 'httponly', 'cache_limiter', 'cache-limiter', 'pdo.db_table') as $name) {
-            if (isset($config['session'][$name])) {
-                $container->setParameter('session.options.'.$name, $config['session'][$name]);
+            if (isset($config[$name])) {
+                $options[$name] = $config[$name];
             }
         }
-
-        if (isset($config['session']['class'])) {
-            $class = $config['session']['class'];
-            if (in_array($class, array('Native', 'Pdo'))) {
-                $class = 'Symfony\\Component\\HttpFoundation\\SessionStorage\\'.$class.'SessionStorage';
-            }
-
-            $container->setParameter('session.session', 'session.session.'.strtolower($class));
-        }
+        $container->setParameter('session.storage.'.strtolower($config['storage_id']).'.options', $options);
     }
 
     protected function registerRouterConfiguration($config, ContainerBuilder $container)
@@ -460,8 +458,17 @@ class FrameworkExtension extends Extension
                 $container->addResource(new FileResource($file));
             }
 
-            if (isset($config['validation']['annotations']) && $config['validation']['annotations'] === true) {
+            if (isset($config['validation']['annotations'])) {
+                if (isset($config['validation']['annotations']['namespaces']) && is_array($config['validation']['annotations']['namespaces'])) {
+                    $container->setParameter('validator.annotations.namespaces', array_merge(
+                        $container->getParameter('validator.annotations.namespaces'),
+                        $config['validation']['annotations']['namespaces']
+                    ));
+                }
+
                 $annotationLoader = new Definition($container->getParameter('validator.mapping.loader.annotation_loader.class'));
+                $annotationLoader->addArgument(new Parameter('validator.annotations.namespaces'));
+                
                 $container->setDefinition('validator.mapping.loader.annotation_loader', $annotationLoader);
 
                 $loader = $container->getDefinition('validator.mapping.loader.loader_chain');
