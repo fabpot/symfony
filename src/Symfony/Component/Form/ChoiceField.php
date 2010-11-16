@@ -108,6 +108,11 @@ class ChoiceField extends HybridField
         return isset($choices[$choice]) ? $choices[$choice] : null;
     }
 
+    public function isChoiceGroup($choice)
+    {
+        return is_array($choice) || $choice instanceof \Traversable;
+    }
+
     public function isChoiceSelected($choice)
     {
         return in_array($choice, (array) $this->getDisplayedData());
