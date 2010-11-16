@@ -42,30 +42,17 @@
 
 <?php echo $view->render('WebProfilerBundle:Profiler:bag.php', array('bag' => $data->getResponseHeaders())) ?>
 
-<h2>Response Session Attributes</h2>
+<?php if (count($sessionAttributes = $data->getSessionAttributes())):?>
+    <h2>Response Session Attributes</h2>
 
-<table>
-    <tr>
-        <th>Key</th>
-        <th>Value</th>
-    </tr>
+    <table>
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
 
-    <?php if (count($sessionAttributes = $data->getSessionAttributes())):?>
         <?php foreach ($sessionAttributes->getRawValue() as $key => $value): ?>
-            <tr>
-                <th><?php echo $key ?></th>
-                <td>
-                    <?php if (is_object($value)): ?>
-                        <em>Object</em>
-                    <?php elseif (is_resource($value)): ?>
-                        <em>Resource</em>
-                    <?php elseif (is_array($value)): ?>
-                        <em>Array</em>
-                    <?php else: ?>
-                        <?php echo $value ?>
-                    <?php endif; ?>
-                </td>
-            </tr>
+            <?php echo $view->render('WebProfilerBundle:Profile:var_yaml_dump.php', compact('key', 'value'));
         <?php endforeach; ?>
-    <?php endif; ?>
-</table>
+    </table>
+<?php endif; ?>
