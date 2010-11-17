@@ -173,6 +173,7 @@ class FormExtension extends \Twig_Extension
 
         return $this->templates['errors']->getBlock('errors', array(
             'field'  => $field,
+            'errors' => $field->getErrors(),
             'params' => $parameters,
         ));
     }
