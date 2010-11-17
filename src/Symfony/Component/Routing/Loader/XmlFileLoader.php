@@ -73,7 +73,9 @@ class XmlFileLoader extends FileLoader
      */
     public function supports($resource)
     {
-        return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION);
+        return is_string($resource) &&
+            'xml' === pathinfo($resource, PATHINFO_EXTENSION) &&
+            file_exists($this->getAbsolutePath($resource, $this->currentDir));
     }
 
     protected function parseRoute(RouteCollection $collection, $definition, $file)
