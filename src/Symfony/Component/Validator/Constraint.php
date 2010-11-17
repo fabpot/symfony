@@ -26,11 +26,11 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class Constraint
+abstract class Constraint
 {
     const DEFAULT_GROUP = 'Default';
 
-    public $groups = self::DEFAULT_GROUP;
+    public $groups = array(self::DEFAULT_GROUP);
 
     /**
      * Initializes the constraint with options.
