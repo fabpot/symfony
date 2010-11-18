@@ -56,6 +56,7 @@ class Request
      */
     public $headers;
 
+    protected $content;
     protected $languages;
     protected $charsets;
     protected $acceptableContentTypes;
@@ -106,6 +107,7 @@ class Request
         $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
         $this->headers = new HeaderBag($this->initializeHeaders());
 
+        $this->content = null;
         $this->languages = null;
         $this->charsets = null;
         $this->acceptableContentTypes = null;
@@ -491,7 +493,7 @@ class Request
     public function setMethod($method)
     {
         $this->method = null;
-        $this->server->set('REQUEST_METHOD', 'GET');
+        $this->server->set('REQUEST_METHOD', strtoupper($method));
     }
 
     /**
@@ -608,6 +610,32 @@ class Request
     public function isMethodSafe()
     {
         return in_array(strtolower($this->getMethod()), array('get', 'head'));
+    }
+
+    /**
+     * Return the request body content.
+     *
+     * @return string|array The request body content.
+     */
+    public function getContent()
+    {
+        if (strtolower($this->getMethod()) != 'put') {
+            return null;
+        }
+
+        if (null === $this->content) {
+            $fp = fopen('php://input', 'r');
+            while ($data = fread($fp, 1024)) {
+                $this->content .= $data;
+            }
+            fclose($fp);
+
+            if ($this->headers->has('content-type') && false !== strpos('application/x-www-form-urlencoded', $this->headers->get('content-type'))) {
+                parse_str($this->content, $this->content);
+            }
+        }
+
+        return $this->content;
     }
 
     public function getETags()
@@ -949,8 +977,8 @@ class Request
     {
         if (!is_array($data)) {
             return $data;
-        }    
-        
+        }
+
         $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
         $keys = array_keys($data);
         sort($keys);
