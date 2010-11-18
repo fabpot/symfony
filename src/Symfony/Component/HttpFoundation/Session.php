@@ -24,9 +24,7 @@ class Session implements \Serializable
     protected $attributes;
     protected $oldFlashes;
     protected $started;
-    protected $options = array(
-        'attribute_key' => '_symfony2', 
-    );
+    protected $options;
 
     /**
      * Constructor.
@@ -37,7 +35,11 @@ class Session implements \Serializable
     public function __construct(SessionStorageInterface $storage, array $options = array())
     {
         $this->storage = $storage;
-        $this->options = array_merge($this->options, $options);
+
+        $this->options = array_merge(array(
+            'namespace' => '_symfony2',
+        ), $options);
+
         $this->attributes = array('_flash' => array(), '_locale' => $this->getDefaultLocale());
         $this->started = false;
     }
@@ -53,7 +55,7 @@ class Session implements \Serializable
 
         $this->storage->start();
 
-        $this->attributes = $this->storage->read($this->options['attribute_key']);
+        $this->attributes = $this->storage->read($this->options['namespace']);
 
         if (!isset($this->attributes['_flash'])) {
             $this->attributes['_flash'] = array();
