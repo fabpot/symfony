@@ -25,7 +25,7 @@ class Session implements \Serializable
     protected $oldFlashes;
     protected $started;
     protected $options = array(
-        'session_name' => '_symfony2', 
+        'attribute_key' => '_symfony2', 
     );
 
     /**
@@ -53,7 +53,7 @@ class Session implements \Serializable
 
         $this->storage->start();
 
-        $this->attributes = $this->storage->read($this->options['session_name']);
+        $this->attributes = $this->storage->read($this->options['attribute_key']);
 
         if (!isset($this->attributes['_flash'])) {
             $this->attributes['_flash'] = array();
