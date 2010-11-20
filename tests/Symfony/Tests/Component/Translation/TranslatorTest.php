@@ -17,6 +17,51 @@ use Symfony\Component\Translation\Loader\ArrayLoader;
 
 class TranslatorTest extends \PHPUnit_Framework_TestCase
 {
+    public function testSetGetLocale()
+    {
+        $translator = new Translator('en', new MessageSelector());
+
+        $this->assertEquals('en', $translator->getLocale());
+
+        $translator->setLocale('fr');
+        $this->assertEquals('fr', $translator->getLocale());
+    }
+
+    public function testSetFallbackLocale()
+    {
+        $translator = new Translator('en', new MessageSelector());
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource('array', array('foo' => 'foofoo'), 'en');
+        $translator->addResource('array', array('bar' => 'foobar'), 'fr');
+
+        // force catalogue loading
+        $translator->trans('bar');
+
+        $translator->setFallbackLocale('fr');
+        $this->assertEquals('foobar', $translator->trans('bar'));
+    }
+
+    public function testTransWithFallbackLocale()
+    {
+        $translator = new Translator('en_US', new MessageSelector());
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource('array', array('foo' => 'foofoo'), 'en_US');
+        $translator->addResource('array', array('bar' => 'foobar'), 'en');
+
+        $this->assertEquals('foobar', $translator->trans('bar'));
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testWhenAResourceHasNoRegisteredLoader()
+    {
+        $translator = new Translator('en', new MessageSelector());
+        $translator->addResource('array', array('foo' => 'foofoo'), 'en');
+
+        $translator->trans('foo');
+    }
+
     /**
      * @dataProvider getTransTests
      */
@@ -27,6 +72,18 @@ class TranslatorTest extends \PHPUnit_Framework_TestCase
         $translator->addResource('array', array($id => $translation), $locale, $domain);
 
         $this->assertEquals($expected, $translator->trans($id, $parameters, $domain, $locale));
+    }
+
+    /**
+     * @dataProvider getFlattenedTransTests
+     */
+    public function testFlattenedTrans($expected, $messages, $id)
+    {
+        $translator = new Translator('en', new MessageSelector());
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource('array', $messages, 'fr', '');
+
+        $this->assertEquals($expected, $translator->trans($id, array(), '', 'fr'));
     }
 
     /**
@@ -46,6 +103,29 @@ class TranslatorTest extends \PHPUnit_Framework_TestCase
         return array(
             array('Symfony2 est super !', 'Symfony2 is great!', 'Symfony2 est super !', array(), 'fr', ''),
             array('Symfony2 est awesome !', 'Symfony2 is %what%!', 'Symfony2 est %what% !', array('%what%' => 'awesome'), 'fr', ''),
+        );
+    }
+
+    public function getFlattenedTransTests()
+    {
+        $messages = array(
+            'symfony2' => array(
+                'is' => array(
+                    'great' => 'Symfony2 est super!'
+                )
+            ),
+            'foo' => array(
+                'bar' => array(
+                    'baz' => 'Foo Bar Baz'
+                ),
+                'baz' => 'Foo Baz',
+            ),
+        );
+
+        return array(
+            array('Symfony2 est super!', $messages, 'symfony2.is.great'),
+            array('Foo Bar Baz', $messages, 'foo.bar.baz'),
+            array('Foo Baz', $messages, 'foo.baz'),
         );
     }
 

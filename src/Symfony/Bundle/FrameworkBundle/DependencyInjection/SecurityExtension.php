@@ -372,6 +372,19 @@ class SecurityExtension extends Extension
             return array($name, $encoder);
         }
 
+        // Doctrine Document DAO provider
+        if (isset($provider['document'])) {
+            $container
+                ->register($name, '%security.user.provider.document.class%')
+                ->setArguments(array(
+                    new Reference('security.user.document_manager'),
+                    $provider['document']['class'],
+                    isset($provider['document']['property']) ? $provider['document']['property'] : null,
+            ));
+
+            return array($name, $encoder);
+        }
+
         // In-memory DAO provider
         $definition = $container->register($name, '%security.user.provider.in_memory.class%');
         foreach ($this->fixConfig($provider, 'user') as $username => $user) {
@@ -379,8 +392,13 @@ class SecurityExtension extends Extension
                 $username = $user['name'];
             }
 
-            if (!isset($user['password'])) {
-                $user['password'] = '';
+            if (!array_key_exists('password', $user)) {
+                // if no password is provided explicitly, it means that
+                // the user will be used with OpenID, X.509 certificates, ...
+                // Let's generate a random password just to be sure this
+                // won't be used accidentally with other authentication schemes.
+                // If you want an empty password, just say so explicitly
+                $user['password'] = uniqid();
             }
 
             if (!isset($user['roles'])) {
@@ -449,6 +467,7 @@ class SecurityExtension extends Extension
         $options = array(
             'check_path'                     => '/login_check',
             'login_path'                     => '/login',
+            'use_forward'                    => false,
             'always_use_default_target_path' => false,
             'default_target_path'            => '/',
             'target_path_parameter'          => '_target_path',
@@ -463,6 +482,7 @@ class SecurityExtension extends Extension
         }
         $container->setParameter('security.authentication.form.options', $options);
         $container->setParameter('security.authentication.form.login_path', $options['login_path']);
+        $container->setParameter('security.authentication.form.use_forward', $options['use_forward']);
 
         return array($provider, $listenerId);
     }

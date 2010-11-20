@@ -3,6 +3,7 @@
 namespace Symfony\Component\Security;
 
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Authorization\AccessDecisionManager;
 
 /*
  * This file is part of the Symfony package.
@@ -29,12 +30,17 @@ class SecurityContext
     protected $token;
     protected $accessDecisionManager;
 
-    public function __construct($accessDecisionManager = null)
+    /**
+     * Constructor.
+     *
+     * @param AccessDecisionManager|null $accessDecisionManager An AccessDecisionManager instance
+     */
+    public function __construct(AccessDecisionManager $accessDecisionManager = null)
     {
         $this->accessDecisionManager = $accessDecisionManager;
     }
 
-    protected function getUser()
+    public function getUser()
     {
         return null === $this->token ? null : $this->token->getUser();
     }
@@ -58,7 +64,7 @@ class SecurityContext
      *
      * @return TokenInterface|null A TokenInterface instance or null if no authentication information is available
      */
-    function getToken()
+    public function getToken()
     {
         return $this->token;
     }
@@ -68,7 +74,7 @@ class SecurityContext
      *
      * @param TokenInterface $token A TokenInterface token, or null if no further authentication information should be stored
      */
-    function setToken(TokenInterface $token = null)
+    public function setToken(TokenInterface $token = null)
     {
         $this->token = $token;
     }

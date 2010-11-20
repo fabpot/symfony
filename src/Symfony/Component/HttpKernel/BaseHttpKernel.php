@@ -27,7 +27,6 @@ class BaseHttpKernel implements HttpKernelInterface
 {
     protected $dispatcher;
     protected $resolver;
-    protected $request;
 
     /**
      * Constructor
@@ -42,49 +41,20 @@ class BaseHttpKernel implements HttpKernelInterface
     }
 
     /**
-     * Gets the Request instance associated with the master request.
-     *
-     * @return Request A Request instance
+     * {@inheritdoc}
      */
-    public function getRequest()
+    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
-        return $this->request;
-    }
-
-    /**
-     * Handles a Request to convert it to a Response.
-     *
-     * All exceptions are caught, and a core.exception event is notified
-     * for user management.
-     *
-     * @param Request $request A Request instance
-     * @param integer $type The type of the request (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
-     * @param Boolean $raw Whether to catch exceptions or not
-     *
-     * @return Response A Response instance
-     *
-     * @throws \Exception When an Exception occurs during processing
-     *                    and couldn't be caught by event processing or $raw is true
-     */
-    public function handle(Request $request = null, $type = HttpKernelInterface::MASTER_REQUEST, $raw = false)
-    {
-        if (null === $request) {
-            $request = new Request();
-        }
-
-        if (HttpKernelInterface::MASTER_REQUEST === $type) {
-            $this->request = $request;
-        }
-
         try {
             return $this->handleRaw($request, $type);
         } catch (\Exception $e) {
-            if (true === $raw) {
+            if (false === $catch) {
                 throw $e;
             }
 
             // exception
-            $event = $this->dispatcher->notifyUntil(new Event($this, 'core.exception', array('request_type' => $type, 'request' => $request, 'exception' => $e)));
+            $event = new Event($this, 'core.exception', array('request_type' => $type, 'request' => $request, 'exception' => $e));
+            $this->dispatcher->notifyUntil($event);
             if ($event->isProcessed()) {
                 return $this->filterResponse($event->getReturnValue(), $request, 'A "core.exception" listener returned a non response object.', $type);
             }
@@ -109,7 +79,8 @@ class BaseHttpKernel implements HttpKernelInterface
     protected function handleRaw(Request $request, $type = self::MASTER_REQUEST)
     {
         // request
-        $event = $this->dispatcher->notifyUntil(new Event($this, 'core.request', array('request_type' => $type, 'request' => $request)));
+        $event = new Event($this, 'core.request', array('request_type' => $type, 'request' => $request));
+        $this->dispatcher->notifyUntil($event);
         if ($event->isProcessed()) {
             return $this->filterResponse($event->getReturnValue(), $request, 'A "core.request" listener returned a non response object.', $type);
         }
@@ -119,7 +90,8 @@ class BaseHttpKernel implements HttpKernelInterface
             throw new NotFoundHttpException('Unable to find the controller.');
         }
 
-        $event = $this->dispatcher->filter(new Event($this, 'core.controller', array('request_type' => $type, 'request' => $request)), $controller);
+        $event = new Event($this, 'core.controller', array('request_type' => $type, 'request' => $request));
+        $this->dispatcher->filter($event, $controller);
         $controller = $event->getReturnValue();
 
         // controller must be a callable
@@ -134,7 +106,8 @@ class BaseHttpKernel implements HttpKernelInterface
         $retval = call_user_func_array($controller, $arguments);
 
         // view
-        $event = $this->dispatcher->filter(new Event($this, 'core.view', array('request_type' => $type, 'request' => $request)), $retval);
+        $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request));
+        $this->dispatcher->filter($event, $retval);
 
         return $this->filterResponse($event->getReturnValue(), $request, sprintf('The controller must return a response (instead of %s).', is_object($event->getReturnValue()) ? 'an object of class '.get_class($event->getReturnValue()) : is_array($event->getReturnValue()) ? 'an array' : str_replace("\n", '', var_export($event->getReturnValue(), true))), $type);
     }

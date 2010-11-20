@@ -16,26 +16,20 @@ namespace Symfony\Component\Form;
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class TextField extends InputField
+class TextField extends Field
 {
     /**
      * {@inheritDoc}
      */
     protected function configure()
     {
-        parent::configure();
-
         $this->addOption('max_length');
+
+        parent::configure();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getAttributes()
+    public function getMaxLength()
     {
-        return array_merge(parent::getAttributes(), array(
-            'type'        => 'text',
-            'maxlength'   => $this->getOption('max_length'),
-        ));
+        return $this->getOption('max_length');
     }
 }

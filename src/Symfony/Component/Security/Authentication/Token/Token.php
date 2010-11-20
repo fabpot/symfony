@@ -42,6 +42,8 @@ abstract class Token implements TokenInterface
             }
             $this->addRole($role);
         }
+        $this->authenticated = false;
+        $this->immutable = false;
     }
 
     /**
@@ -69,8 +71,10 @@ abstract class Token implements TokenInterface
     {
         if (!is_object($this->user)) {
             return (string) $this->user;
-        } else {
+        } elseif ($this->user instanceof AccountInterface) {
             return $this->user->getUsername();
+        } else {
+            return 'n/a';
         }
     }
 
@@ -107,7 +111,7 @@ abstract class Token implements TokenInterface
     }
 
     /**
-     * Removes sensitive information from the token.
+     * {@inheritdoc}
      */
     public function eraseCredentials()
     {

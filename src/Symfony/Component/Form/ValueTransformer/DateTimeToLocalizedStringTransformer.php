@@ -33,8 +33,6 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      */
     protected function configure()
     {
-        parent::configure();
-
         $this->addOption('date_format', self::MEDIUM);
         $this->addOption('time_format', self::SHORT);
         $this->addOption('input_timezone', 'UTC');
@@ -47,6 +45,8 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
         if (!in_array($this->getOption('time_format'), self::$formats, true)) {
             throw new \InvalidArgumentException(sprintf('The option "time_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
         }
+
+        parent::configure();
     }
 
     /**
@@ -57,6 +57,10 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      */
     public function transform($dateTime)
     {
+        if ($dateTime === null) {
+            return '';
+        }
+
         if (!$dateTime instanceof \DateTime) {
             throw new \InvalidArgumentException('Expected value of type \DateTime');
         }
@@ -89,6 +93,10 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
 
         if (!is_string($value)) {
             throw new \InvalidArgumentException(sprintf('Expected argument of type string, %s given', gettype($value)));
+        }
+
+        if ($value === '') {
+            return null;
         }
 
         $timestamp = $this->getIntlDateFormatter()->parse($value);

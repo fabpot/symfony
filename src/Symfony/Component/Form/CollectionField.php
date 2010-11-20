@@ -47,12 +47,14 @@ class CollectionField extends FieldGroup
             $field->setRequired(false);
             $this->add($field);
         }
+
+        parent::configure();
     }
 
     public function setData($collection)
     {
         if (!is_array($collection) && !$collection instanceof \Traversable) {
-            throw new UnexpectedTypeException('The data must be an array');
+            throw new UnexpectedTypeException('The data passed to the CollectionField must be an array or a Traversable');
         }
 
         foreach ($this as $name => $field) {
@@ -70,7 +72,7 @@ class CollectionField extends FieldGroup
 
     public function bind($taintedData)
     {
-        if (is_null($taintedData)) {
+        if (null === $taintedData) {
             $taintedData = array();
         }
 

@@ -18,7 +18,7 @@ use Symfony\Component\Form\ValueTransformer\NumberToLocalizedStringTransformer;
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class NumberField extends InputField
+class NumberField extends Field
 {
     /**
      * {@inheritDoc}
@@ -30,20 +30,12 @@ class NumberField extends InputField
         $this->addOption('grouping', false);
         $this->addOption('rounding-mode', NumberToLocalizedStringTransformer::ROUND_HALFUP);
 
+        parent::configure();
+
         $this->setValueTransformer(new NumberToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
             'grouping' => $this->getOption('grouping'),
             'rounding-mode' => $this->getOption('rounding-mode'),
         )));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAttributes(array $attributes = array())
-    {
-        return array_merge(parent::getAttributes(), array(
-            'type'  => 'text',
-        ));
     }
 }

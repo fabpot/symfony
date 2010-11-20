@@ -23,7 +23,7 @@ interface TokenInterface extends \Serializable
      *
      * @return string A string representation
      */
-    public function __toString();
+    function __toString();
 
     /**
      * Returns the user roles.
@@ -66,4 +66,9 @@ interface TokenInterface extends \Serializable
      * @param Boolean $isAuthenticated The authenticated flag
      */
     function setAuthenticated($isAuthenticated);
+
+    /**
+     * Removes sensitive information from the token.
+     */
+    function eraseCredentials();
 }

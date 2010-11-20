@@ -16,7 +16,8 @@ use Symfony\Component\HttpKernel\Security\Firewall\ExceptionListener;
  */
 
 /**
- * FirewallMap allows configuration of different firewalls for specific parts of the website.
+ * FirewallMap allows configuration of different firewalls for specific parts
+ * of the website.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -24,7 +25,7 @@ class FirewallMap
 {
     protected $map = array();
 
-    public function add(RequestMatcherInterface $requestMatcher = null, array $listeners, ExceptionListener $listener = null)
+    public function add(RequestMatcherInterface $requestMatcher = null, array $listeners = array(), ExceptionListener $listener = null)
     {
         $this->map[] = array($requestMatcher, $listeners, $listener);
     }

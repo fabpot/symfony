@@ -29,11 +29,13 @@ class PercentField extends NumberField
     protected function configure()
     {
         $this->addOption('precision', 0);
-        $this->addOption('type', self::FRACTIONAL);
+        $this->addOption('percent_type', self::FRACTIONAL);
+
+        parent::configure();
 
         $this->setValueTransformer(new PercentToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
-            'type' => $this->getOption('type'),
+            'type' => $this->getOption('percent_type'),
         )));
     }
 }

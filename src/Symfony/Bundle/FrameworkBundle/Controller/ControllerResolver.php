@@ -42,7 +42,6 @@ class ControllerResolver extends BaseControllerResolver
     {
         $this->container = $container;
         $this->converter = $converter;
-        $this->esiSupport = $container->has('esi') && $container->getEsiService()->hasSurrogateEsiCapability($container->getRequestService());
 
         parent::__construct($logger);
     }
@@ -137,6 +136,10 @@ class ControllerResolver extends BaseControllerResolver
             $options['alt'] = array($options['alt']);
         }
 
+        if (null === $this->esiSupport) {
+            $this->esiSupport = $this->container->has('esi') && $this->container->getEsiService()->hasSurrogateEsiCapability($this->container->getRequestService());
+        }
+
         if ($this->esiSupport && $options['standalone']) {
             $uri = $this->generateInternalUri($controller, $options['attributes'], $options['query']);
 
@@ -145,7 +148,7 @@ class ControllerResolver extends BaseControllerResolver
                 $alt = $this->generateInternalUri($options['alt'][0], isset($options['alt'][1]) ? $options['alt'][1] : array(), isset($options['alt'][2]) ? $options['alt'][2] : array());
             }
 
-            return $this->container->getEsiService()->renderTag($uri, $alt, $options['ignore_errors'], $options['comment']);
+            return $this->container->getEsiService()->renderIncludeTag($uri, $alt, $options['ignore_errors'], $options['comment']);
         }
 
         $request = $this->container->getRequestService();

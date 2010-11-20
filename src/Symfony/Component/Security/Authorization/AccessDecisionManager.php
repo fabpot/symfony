@@ -23,9 +23,9 @@ use Symfony\Component\Security\Authentication\Token\TokenInterface;
 class AccessDecisionManager implements AccessDecisionManagerInterface
 {
     protected $voters;
+    protected $strategy;
     protected $allowIfAllAbstainDecisions;
     protected $allowIfEqualGrantedDeniedDecisions;
-    protected $strategy;
 
     /**
      * Constructor.
@@ -104,7 +104,8 @@ class AccessDecisionManager implements AccessDecisionManagerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsClass($class) {
+    public function supportsClass($class)
+    {
         foreach ($this->voters as $voter) {
             if ($voter->supportsClass($class)) {
                 return true;
@@ -149,11 +150,13 @@ class AccessDecisionManager implements AccessDecisionManagerInterface
     /**
      * Grants access if there is consensus of granted against denied responses.
      *
-     * Consensus means majority-rule (ignoring abstains) rather than unanimous agreement (ignoring abstains).
-     * If you require unanimity, see UnanimousBased.
+     * Consensus means majority-rule (ignoring abstains) rather than unanimous
+     * agreement (ignoring abstains). If you require unanimity, see
+     * UnanimousBased.
      *
-     * If there were an equal number of grant and deny votes, the decision will be based on the
-     * allowIfEqualGrantedDeniedDecisions property value (defaults to true).
+     * If there were an equal number of grant and deny votes, the decision will
+     * be based on the allowIfEqualGrantedDeniedDecisions property value
+     * (defaults to true).
      *
      * If all voters abstained from voting, the decision will be based on the
      * allowIfAllAbstainDecisions property value (defaults to false).
@@ -185,7 +188,7 @@ class AccessDecisionManager implements AccessDecisionManagerInterface
         }
 
         if ($grant > $deny) {
-            return;
+            return true;
         }
 
         if ($deny > $grant) {

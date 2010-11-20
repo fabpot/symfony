@@ -9,6 +9,7 @@ require_once __DIR__ . '/Fixtures/RequiredOptionsField.php';
 
 use Symfony\Component\Form\ValueTransformer\ValueTransformerInterface;
 use Symfony\Component\Form\PropertyPath;
+use Symfony\Component\Form\FieldError;
 use Symfony\Tests\Component\Form\Fixtures\Author;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
 use Symfony\Tests\Component\Form\Fixtures\InvalidField;
@@ -91,14 +92,14 @@ class FieldTest extends \PHPUnit_Framework_TestCase
     public function testFieldWithErrorsIsInvalid()
     {
         $this->field->bind('data');
-        $this->field->addError('Some error');
+        $this->field->addError(new FieldError('Some error'));
 
         $this->assertFalse($this->field->isValid());
     }
 
     public function testBindResetsErrors()
     {
-        $this->field->addError('Some error');
+        $this->field->addError(new FieldError('Some error'));
         $this->field->bind('data');
 
         $this->assertTrue($this->field->isValid());
@@ -133,16 +134,16 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('news_article_title', $this->field->getId());
     }
 
-    public function testLocaleIsPassedToLocalizableValueTransformer_setLocaleCalledBefore()
-    {
-        $transformer = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-        $transformer->expects($this->once())
-                         ->method('setLocale')
-                         ->with($this->equalTo('de_DE'));
-
-        $this->field->setLocale('de_DE');
-        $this->field->setValueTransformer($transformer);
-    }
+//    public function testLocaleIsPassedToLocalizableValueTransformer_setLocaleCalledBefore()
+//    {
+//        $transformer = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
+//        $transformer->expects($this->once())
+//                         ->method('setLocale')
+//                         ->with($this->equalTo('de_DE'));
+//
+//        $this->field->setLocale('de_DE');
+//        $this->field->setValueTransformer($transformer);
+//    }
 
     public function testLocaleIsPassedToValueTransformer_setLocaleCalledAfter()
     {
@@ -150,8 +151,11 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $transformer->expects($this->exactly(2))
                          ->method('setLocale'); // we can't test the params cause they differ :(
 
-        $this->field->setValueTransformer($transformer);
-        $this->field->setLocale('de_DE');
+        $field = new TestField('title', array(
+            'value_transformer' => $transformer,
+        ));
+
+        $field->setLocale('de_DE');
     }
 
     public function testIsRequiredReturnsOwnValueIfNoParent()
@@ -221,21 +225,6 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('', $this->field->getDisplayedData());
     }
 
-    public function testValuesAreTransformedCorrectlyIfNull()
-    {
-        // The value is converted to an empty string and NOT passed to the
-        // value transformer
-        $transformer = $this->createMockTransformer();
-        $transformer->expects($this->never())
-                                ->method('transform');
-
-        $this->field->setValueTransformer($transformer);
-        $this->field->setData(null);
-
-        $this->assertSame(null, $this->field->getData());
-        $this->assertSame('', $this->field->getDisplayedData());
-    }
-
     public function testValuesAreTransformedCorrectlyIfNull_noValueTransformer()
     {
         $this->field->setData(null);
@@ -246,54 +235,69 @@ class FieldTest extends \PHPUnit_Framework_TestCase
 
     public function testBoundValuesAreTransformedCorrectly()
     {
+        $valueTransformer = $this->createMockTransformer();
+        $normTransformer = $this->createMockTransformer();
+
         $field = $this->getMock(
             'Symfony\Tests\Component\Form\Fixtures\TestField',
             array('processData'), // only mock processData()
-            array('title')
+            array('title', array(
+                'value_transformer' => $valueTransformer,
+                'normalization_transformer' => $normTransformer,
+            ))
         );
 
-        // 1. The value is converted to a string and passed to the value transformer
-        $transformer = $this->createMockTransformer();
-        $transformer->expects($this->once())
+        // 1a. The value is converted to a string and passed to the value transformer
+        $valueTransformer->expects($this->once())
                                 ->method('reverseTransform')
                                 ->with($this->identicalTo('0'))
                                 ->will($this->returnValue('reverse[0]'));
 
-        $field->setValueTransformer($transformer);
-
         // 2. The output of the reverse transformation is passed to processData()
+        //    The processed data is accessible through getNormalizedData()
         $field->expects($this->once())
                     ->method('processData')
                     ->with($this->equalTo('reverse[0]'))
                     ->will($this->returnValue('processed[reverse[0]]'));
 
-        // 3. The processed data is transformed again (for displayed data)
-        $transformer->expects($this->once())
+        // 3. The processed data is denormalized and then accessible through
+        //    getData()
+        $normTransformer->expects($this->once())
+                                ->method('reverseTransform')
+                                ->with($this->identicalTo('processed[reverse[0]]'))
+                                ->will($this->returnValue('denorm[processed[reverse[0]]]'));
+
+        // 4. The processed data is transformed again and then accessible
+        //    through getDisplayedData()
+        $valueTransformer->expects($this->once())
                                 ->method('transform')
                                 ->with($this->equalTo('processed[reverse[0]]'))
                                 ->will($this->returnValue('transform[processed[reverse[0]]]'));
 
         $field->bind(0);
 
-        $this->assertEquals('processed[reverse[0]]', $field->getData());
+        $this->assertEquals('denorm[processed[reverse[0]]]', $field->getData());
+        $this->assertEquals('processed[reverse[0]]', $field->getNormalizedData());
         $this->assertEquals('transform[processed[reverse[0]]]', $field->getDisplayedData());
     }
 
     public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsValue()
     {
+        $transformer = $this->createMockTransformer();
+
         $field = $this->getMock(
             'Symfony\Tests\Component\Form\Fixtures\TestField',
             array('processData'), // only mock processData()
-            array('title')
+            array('title', array(
+                'value_transformer' => $transformer,
+            ))
         );
 
-        // 1. Empty values are always converted to NULL. They are never passed to
-        //    the value transformer
-        $transformer = $this->createMockTransformer();
-        $transformer->expects($this->never())
-                                ->method('reverseTransform');
-
-        $field->setValueTransformer($transformer);
+        // 1. Empty values are converted to NULL by convention
+        $transformer->expects($this->once())
+                                ->method('reverseTransform')
+                                ->with($this->identicalTo(''))
+                                ->will($this->returnValue(null));
 
         // 2. NULL is passed to processData()
         $field->expects($this->once())
@@ -315,23 +319,29 @@ class FieldTest extends \PHPUnit_Framework_TestCase
 
     public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull()
     {
-        // 1. Empty values are always converted to NULL. They are never passed to
-        //    the value transformer
         $transformer = $this->createMockTransformer();
-        $transformer->expects($this->never())
-                                ->method('reverseTransform');
 
-        $this->field->setValueTransformer($transformer);
+        $field = new TestField('title', array(
+            'value_transformer' => $transformer,
+        ));
+
+        // 1. Empty values are converted to NULL by convention
+        $transformer->expects($this->once())
+                                ->method('reverseTransform')
+                                ->with($this->identicalTo(''))
+                                ->will($this->returnValue(null));
 
         // 2. The processed data is NULL and therefore transformed to an empty
-        //    string. It is NOT passed to the value transformer
-        $transformer->expects($this->never())
-                                ->method('transform');
+        //    string by convention
+        $transformer->expects($this->once())
+                                ->method('transform')
+                                ->with($this->identicalTo(null))
+                                ->will($this->returnValue(''));
 
-        $this->field->bind('');
+        $field->bind('');
 
-        $this->assertSame(null, $this->field->getData());
-        $this->assertEquals('', $this->field->getDisplayedData());
+        $this->assertSame(null, $field->getData());
+        $this->assertEquals('', $field->getDisplayedData());
     }
 
     public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull_noValueTransformer()
@@ -344,18 +354,32 @@ class FieldTest extends \PHPUnit_Framework_TestCase
 
     public function testValuesAreTransformedCorrectly()
     {
-        // The value is passed to the value transformer
-        $transformer = $this->createMockTransformer();
-        $transformer->expects($this->once())
+        // The value is first passed to the normalization transformer...
+        $normTransformer = $this->createMockTransformer();
+        $normTransformer->expects($this->exactly(2))
                                 ->method('transform')
-                                ->with($this->identicalTo(0))
-                                ->will($this->returnValue('transform[0]'));
+                                // Impossible to test with PHPUnit because called twice
+                                // ->with($this->identicalTo(0))
+                                ->will($this->returnValue('norm[0]'));
 
-        $this->field->setValueTransformer($transformer);
-        $this->field->setData(0);
+        // ...and then to the value transformer
+        $valueTransformer = $this->createMockTransformer();
+        $valueTransformer->expects($this->exactly(2))
+                                ->method('transform')
+                                // Impossible to test with PHPUnit because called twice
+                                // ->with($this->identicalTo('norm[0]'))
+                                ->will($this->returnValue('transform[norm[0]]'));
 
-        $this->assertEquals(0, $this->field->getData());
-        $this->assertEquals('transform[0]', $this->field->getDisplayedData());
+        $field = new TestField('title', array(
+            'value_transformer' => $valueTransformer,
+            'normalization_transformer' => $normTransformer,
+        ));
+
+        $field->setData(0);
+
+        $this->assertEquals(0, $field->getData());
+        $this->assertEquals('norm[0]', $field->getNormalizedData());
+        $this->assertEquals('transform[norm[0]]', $field->getDisplayedData());
     }
 
     public function testBoundValuesAreTrimmedBeforeTransforming()
@@ -367,16 +391,20 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->with($this->identicalTo('a'))
                                 ->will($this->returnValue('reverse[a]'));
 
-        $transformer->expects($this->once())
+        $transformer->expects($this->exactly(2))
                                 ->method('transform')
-                                ->with($this->identicalTo('reverse[a]'))
+                                // Impossible to test with PHPUnit because called twice
+                                // ->with($this->identicalTo('reverse[a]'))
                                 ->will($this->returnValue('a'));
 
-        $this->field->setValueTransformer($transformer);
-        $this->field->bind(' a ');
+        $field = new TestField('title', array(
+            'value_transformer' => $transformer,
+        ));
 
-        $this->assertEquals('a', $this->field->getDisplayedData());
-        $this->assertEquals('reverse[a]', $this->field->getData());
+        $field->bind(' a ');
+
+        $this->assertEquals('a', $field->getDisplayedData());
+        $this->assertEquals('reverse[a]', $field->getData());
     }
 
     public function testBoundValuesAreNotTrimmedBeforeTransformingIfDisabled()
@@ -388,13 +416,17 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->with($this->identicalTo(' a '))
                                 ->will($this->returnValue('reverse[ a ]'));
 
-        $transformer->expects($this->once())
+        $transformer->expects($this->exactly(2))
                                 ->method('transform')
-                                ->with($this->identicalTo('reverse[ a ]'))
+                                // Impossible to test with PHPUnit because called twice
+                                // ->with($this->identicalTo('reverse[ a ]'))
                                 ->will($this->returnValue(' a '));
 
-        $field = new TestField('title', array('trim' => false));
-        $field->setValueTransformer($transformer);
+        $field = new TestField('title', array(
+        	'trim' => false,
+            'value_transformer' => $transformer,
+        ));
+
         $field->bind(' a ');
 
         $this->assertEquals(' a ', $field->getDisplayedData());

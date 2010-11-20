@@ -18,13 +18,4 @@ namespace Symfony\Component\Form;
  */
 class CheckboxField extends ToggleField
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function getAttributes()
-    {
-        return array_merge(parent::getAttributes(), array(
-            'type' => 'checkbox',
-        ));
-    }
 }

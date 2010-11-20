@@ -27,7 +27,6 @@ class Engine extends BaseEngine
 {
     protected $container;
     protected $escaper;
-    protected $level;
 
     /**
      * Constructor.
@@ -39,11 +38,10 @@ class Engine extends BaseEngine
      */
     public function __construct(ContainerInterface $container, LoaderInterface $loader, array $renderers = array(), $escaper = false)
     {
-        $this->level = 0;
         $this->container = $container;
         $this->escaper = $escaper;
 
-        parent::__construct($loader);
+        parent::__construct($loader, $renderers);
 
         foreach ($this->container->findTaggedServiceIds('templating.renderer') as $id => $attributes) {
             if (isset($attributes[0]['alias'])) {
@@ -61,8 +59,6 @@ class Engine extends BaseEngine
 
     public function render($name, array $parameters = array())
     {
-        ++$this->level;
-
         list(, $options) = $this->splitTemplateName($name);
 
         $renderer = $options['renderer'];
@@ -73,17 +69,10 @@ class Engine extends BaseEngine
         }
 
         if ('php' === $renderer) {
-            // escape only once
-            if (1 === $this->level && !isset($parameters['_data'])) {
-                $parameters = $this->escapeParameters($parameters);
-            }
+            $parameters = $this->escapeParameters($parameters);
         }
 
-        $content = parent::render($name, $parameters);
-
-        --$this->level;
-
-        return $content;
+        return parent::render($name, $parameters);
     }
 
     /**
@@ -167,7 +156,9 @@ class Engine extends BaseEngine
         $elements = explode('.', $parts[2]);
         if (3 === count($elements)) {
             $parts[2] = $elements[0];
-            $options['format'] = '.'.$elements[1];
+            if ('html' !== $elements[1]) {
+                $options['format'] = '.'.$elements[1];
+            }
             $options['renderer'] = $elements[2];
         } elseif (2 === count($elements)) {
             $parts[2] = $elements[0];

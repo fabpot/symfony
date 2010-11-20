@@ -87,7 +87,7 @@ abstract class ElementMetadata
     }
 
     /**
-     * Returns the constraints of the given group.
+     * Returns the constraints of the given group and global ones (* group).
      *
      * @param string $group The group name
      *

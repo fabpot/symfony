@@ -242,7 +242,7 @@ class Store
         }
 
         foreach (preg_split('/[\s,]+/', $vary) as $header) {
-            $key = HeaderBag::normalizeHeaderName($header);
+            $key = strtr(strtolower($header), '_', '-');
             $v1 = isset($env1[$key]) ? $env1[$key] : null;
             $v2 = isset($env2[$key]) ? $env2[$key] : null;
             if ($v1 !== $v2) {
@@ -275,12 +275,18 @@ class Store
      * Purges data for the given URL.
      *
      * @param string $url A URL
+     *
+     * @return Boolean true if the URL exists and has been purged, false otherwise
      */
     public function purge($url)
     {
         if (file_exists($path = $this->getPath($this->getCacheKey(Request::create($url))))) {
             unlink($path);
+
+            return true;
         }
+
+        return false;
     }
 
     /**

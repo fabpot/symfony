@@ -5,6 +5,9 @@ namespace Symfony\Bundle\TwigBundle\Extension;
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\IncludeTokenParser;
+use Symfony\Bundle\TwigBundle\TokenParser\UrlTokenParser;
+use Symfony\Bundle\TwigBundle\TokenParser\PathTokenParser;
+use Symfony\Component\Yaml\Dumper as YamlDumper;
 
 /*
  * This file is part of the Symfony package.
@@ -41,6 +44,24 @@ class TemplatingExtension extends \Twig_Extension
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getFilters()
+    {
+        return array(
+            'yaml_encode' => new \Twig_Filter_Method($this, 'yamlEncode'),
+            'dump' => new \Twig_Filter_Method($this, 'dump'),
+            'abbr_class' => new \Twig_Filter_Method($this, 'abbrClass', array('is_safe' => array('html'))),
+            'abbr_method' => new \Twig_Filter_Method($this, 'abbrMethod', array('is_safe' => array('html'))),
+            'format_args' => new \Twig_Filter_Method($this, 'formatArgs', array('is_safe' => array('html'))),
+            'format_args_as_text' => new \Twig_Filter_Method($this, 'formatArgsAsText', array('is_safe' => array('html'))),
+            'file_excerpt' => new \Twig_Filter_Method($this, 'fileExcerpt', array('is_safe' => array('html'))),
+            'format_file' => new \Twig_Filter_Method($this, 'formatFile', array('is_safe' => array('html'))),
+            'format_file_from_text' => new \Twig_Filter_Method($this, 'formatFileFromText', array('is_safe' => array('html'))),
+        );
+    }
+
+    /**
      * Returns the token parser instance to add to the existing list.
      *
      * @return array An array of Twig_TokenParser instances
@@ -63,18 +84,80 @@ class TemplatingExtension extends \Twig_Extension
             // {% asset 'css/blog.css' %}
             new HelperTokenParser('asset', '<location>', 'templating.helper.assets', 'getUrl'),
 
-            // {% route 'blog_post' with ['id': post.id] %}
-            new HelperTokenParser('route', '<route> [with <arguments:array>]', 'templating.helper.router', 'generate'),
-
             // {% render 'BlogBundle:Post:list' with ['limit': 2], ['alt': 'BlogBundle:Post:error'] %}
             new HelperTokenParser('render', '<template> [with <attributes:array>[, <options:array>]]', 'templating.helper.actions', 'render'),
 
             // {% flash 'notice' %}
             new HelperTokenParser('flash', '<name>', 'templating.helper.session', 'getFlash'),
 
+            // {% path 'blog_post' with ['id': post.id] %}
+            new PathTokenParser(),
+
+            // {% url 'blog_post' with ['id': post.id] %}
+            new UrlTokenParser(),
+
             // {% include 'sometemplate.php' with ['something' : 'something2'] %}
             new IncludeTokenParser(),
         );
+    }
+
+    public function yamlEncode($input, $inline = 0)
+    {
+        static $dumper;
+
+        if (null === $dumper) {
+            $dumper = new YamlDumper();
+        }
+
+        return $dumper->dump($input, $inline);
+    }
+
+    public function abbrClass($class)
+    {
+        return $this->templating->get('code')->abbrClass($class);
+    }
+
+    public function abbrMethod($method)
+    {
+        return $this->templating->get('code')->abbrMethod($method);
+    }
+
+    public function formatArgs($args)
+    {
+        return $this->templating->get('code')->formatArgs($args);
+    }
+
+    public function formatArgsAsText($args)
+    {
+        return $this->templating->get('code')->formatArgsAsText($args);
+    }
+
+    public function fileExcerpt($file, $line)
+    {
+        return $this->templating->get('code')->fileExcerpt($file, $line);
+    }
+
+    public function formatFile($file, $line)
+    {
+        return $this->templating->get('code')->formatFile($file, $line);
+    }
+
+    public function formatFileFromText($text)
+    {
+        return $this->templating->get('code')->formatFileFromText($text);
+    }
+
+    public function dump($value)
+    {
+        if (is_resource($value)) {
+            return '%Resource%';
+        }
+
+        if (is_array($value) || is_object($value)) {
+            return '%'.gettype($value).'% '.$this->yamlEncode($value);
+        }
+
+        return $value;
     }
 
     /**

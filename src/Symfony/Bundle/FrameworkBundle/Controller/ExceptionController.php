@@ -46,10 +46,17 @@ class ExceptionController extends ContainerAware
             $exception->setStatusCode($exception->getCode());
         }
 
-        $response = $this->container->get('templating')->renderResponse(
-            'FrameworkBundle:Exception:'.($this->container->get('kernel')->isDebug() ? 'exception.php' : 'error.php'),
+        $templating = $this->container->get('templating');
+        $template = 'FrameworkBundle:Exception:'.($this->container->get('kernel')->isDebug() ? 'exception.php' : 'error.php');
+
+        if (!$templating->exists($template)) {
+            $this->container->get('request')->setRequestFormat('html');
+        }
+
+        $response = $templating->renderResponse(
+            $template,
             array(
-                'exception'      => new SafeDecorator($exception),
+                'exception'      => $exception,
                 'logger'         => $logger,
                 'currentContent' => $currentContent,
                 'embedded'       => $embedded,

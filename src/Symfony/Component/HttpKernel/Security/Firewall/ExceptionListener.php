@@ -2,18 +2,17 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\Security\Exception\AccessDeniedException;
 use Symfony\Component\Security\Exception\AuthenticationException;
-use Symfony\Component\Security\Exception\InsufficientAuthenticationException;
-use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\Exception\AccessDeniedException;
 use Symfony\Component\Security\Authentication\Token\AnonymousToken;
-use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\Security\Exception\InsufficientAuthenticationException;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -25,16 +24,17 @@ use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPoin
  */
 
 /**
- * ExceptionListener catches authentication exception and converts them to Response instances.
+ * ExceptionListener catches authentication exception and converts them to
+ * Response instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ExceptionListener
 {
     protected $context;
-    protected $logger;
     protected $authenticationEntryPoint;
     protected $errorPage;
+    protected $logger;
 
     public function __construct(SecurityContext $context, AuthenticationEntryPointInterface $authenticationEntryPoint = null, $errorPage = null, LoggerInterface $logger = null)
     {

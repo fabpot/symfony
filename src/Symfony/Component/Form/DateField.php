@@ -12,8 +12,8 @@ namespace Symfony\Component\Form;
  */
 
 use Symfony\Component\Form\ValueTransformer\ReversedTransformer;
-use Symfony\Component\Form\ValueTransformer\StringToDateTimeTransformer;
-use Symfony\Component\Form\ValueTransformer\TimestampToDateTimeTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToStringTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToTimestampTransformer;
 use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
 use Symfony\Component\Form\ValueTransformer\DateTimeToLocalizedStringTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
@@ -99,67 +99,50 @@ class DateField extends HybridField
 
         $this->initFormatter();
 
-        $transformers = array();
-
         if ($this->getOption('type') === self::STRING) {
-            $transformers[] = new StringToDateTimeTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
-                'format' => 'Y-m-d',
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToStringTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                    'format' => 'Y-m-d',
+                ))
             ));
         } else if ($this->getOption('type') === self::TIMESTAMP) {
-            $transformers[] = new TimestampToDateTimeTransformer(array(
-                'output_timezone' => $this->getOption('data_timezone'),
-                'input_timezone' => $this->getOption('data_timezone'),
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToTimestampTransformer(array(
+                    'output_timezone' => $this->getOption('data_timezone'),
+                    'input_timezone' => $this->getOption('data_timezone'),
+                ))
             ));
         } else if ($this->getOption('type') === self::RAW) {
-            $transformers[] = new ReversedTransformer(new DateTimeToArrayTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
-                'fields' => array('year', 'month', 'day'),
-            )));
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToArrayTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                    'fields' => array('year', 'month', 'day'),
+                ))
+            ));
         }
 
         if ($this->getOption('widget') === self::INPUT) {
-            $transformers[] = new DateTimeToLocalizedStringTransformer(array(
+            $this->setValueTransformer(new DateTimeToLocalizedStringTransformer(array(
                 'date_format' => $this->getOption('format'),
                 'time_format' => DateTimeToLocalizedStringTransformer::NONE,
                 'input_timezone' => $this->getOption('data_timezone'),
                 'output_timezone' => $this->getOption('user_timezone'),
-            ));
+            )));
 
             $this->setFieldMode(self::FIELD);
         } else {
-            $transformers[] = new DateTimeToArrayTransformer(array(
+            $this->setValueTransformer(new DateTimeToArrayTransformer(array(
                 'input_timezone' => $this->getOption('data_timezone'),
                 'output_timezone' => $this->getOption('user_timezone'),
-            ));
+            )));
 
             $this->setFieldMode(self::GROUP);
 
             $this->addChoiceFields();
         }
-
-        if (count($transformers) > 0) {
-            $this->setValueTransformer(new ValueTransformerChain($transformers));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getAttributes()
-    {
-        if ($this->isField()) {
-            return array_merge(parent::getAttributes(), array(
-                'id'    => $this->getId(),
-                'name'  => $this->getName(),
-                'value' => $this->getDisplayedData(),
-                'type'  => 'text',
-            ));
-        }
-
-        return parent::getAttributes();
     }
 
     /**
@@ -270,5 +253,50 @@ class DateField extends HybridField
         $this->add(new ChoiceField('day', array(
             'choices' => $this->generatePaddedChoices($this->getOption('days'), 2),
         )));
+    }
+
+    /**
+     * Returns whether the year of the field's data is valid
+     *
+     * The year is valid if it is contained in the list passed to the field's
+     * option "years".
+     *
+     * @return boolean
+     */
+    public function isYearWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('Y'), $this->getOption('years'));
+    }
+
+    /**
+     * Returns whether the month of the field's data is valid
+     *
+     * The month is valid if it is contained in the list passed to the field's
+     * option "months".
+     *
+     * @return boolean
+     */
+    public function isMonthWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('m'), $this->getOption('months'));
+    }
+
+    /**
+     * Returns whether the day of the field's data is valid
+     *
+     * The day is valid if it is contained in the list passed to the field's
+     * option "days".
+     *
+     * @return boolean
+     */
+    public function isDayWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('d'), $this->getOption('days'));
     }
 }

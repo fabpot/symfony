@@ -83,7 +83,7 @@ class Response
         $this->setContent($content);
         $this->setStatusCode($status);
         $this->setProtocolVersion('1.0');
-        $this->headers = new HeaderBag($headers, 'response');
+        $this->headers = new ResponseHeaderBag($headers);
     }
 
     /**
@@ -244,7 +244,7 @@ class Response
             return false;
         }
 
-        if ($this->headers->getCacheControl()->isNoStore() || $this->headers->getCacheControl()->isPrivate()) {
+        if ($this->headers->hasCacheControlDirective('no-store') || $this->headers->getCacheControlDirective('private')) {
             return false;
         }
 
@@ -277,17 +277,25 @@ class Response
     }
 
     /**
-     * Marks the response "private".
+     * Marks the response as "private".
      *
      * It makes the response ineligible for serving other clients.
-     *
-     * @param Boolean $value Whether to set the response to be private or public.
      */
-    public function setPrivate($value)
+    public function setPrivate()
     {
-        $value = (Boolean) $value;
-        $this->headers->getCacheControl()->setPublic(!$value);
-        $this->headers->getCacheControl()->setPrivate($value);
+        $this->headers->removeCacheControlDirective('public');
+        $this->headers->addCacheControlDirective('private');
+    }
+
+    /**
+     * Marks the response as "public".
+     *
+     * It makes the response eligible for serving other clients.
+     */
+    public function setPublic()
+    {
+        $this->headers->addCacheControlDirective('public');
+        $this->headers->removeCacheControlDirective('private');
     }
 
     /**
@@ -302,7 +310,7 @@ class Response
      */
     public function mustRevalidate()
     {
-        return $this->headers->getCacheControl()->mustRevalidate() || $this->headers->getCacheControl()->mustProxyRevalidate();
+        return $this->headers->hasCacheControlDirective('must-revalidate') || $this->headers->has('must-proxy-revalidate');
     }
 
     /**
@@ -317,8 +325,8 @@ class Response
     public function getDate()
     {
         if (null === $date = $this->headers->getDate('Date')) {
-            $date = new \DateTime();
-            $this->headers->set('Date', $date->format(DATE_RFC2822));
+            $date = new \DateTime(null, new \DateTimeZone('UTC'));
+            $this->headers->set('Date', $date->format('D, d M Y H:i:s').' GMT');
         }
 
         return $date;
@@ -370,7 +378,9 @@ class Response
         if (null === $date) {
             $this->headers->delete('Expires');
         } else {
-            $this->headers->set('Expires', $date->format(DATE_RFC2822));
+            $date = clone $date;
+            $date->setTimezone(new \DateTimeZone('UTC'));
+            $this->headers->set('Expires', $date->format('D, d M Y H:i:s').' GMT');
         }
     }
 
@@ -385,11 +395,11 @@ class Response
      */
     public function getMaxAge()
     {
-        if ($age = $this->headers->getCacheControl()->getSharedMaxAge()) {
+        if ($age = $this->headers->getCacheControlDirective('s-maxage')) {
             return $age;
         }
 
-        if ($age = $this->headers->getCacheControl()->getMaxAge()) {
+        if ($age = $this->headers->getCacheControlDirective('max-age')) {
             return $age;
         }
 
@@ -409,7 +419,7 @@ class Response
      */
     public function setMaxAge($value)
     {
-        $this->headers->getCacheControl()->setMaxAge($value);
+        $this->headers->addCacheControlDirective('max-age', $value);
     }
 
     /**
@@ -421,7 +431,7 @@ class Response
      */
     public function setSharedMaxAge($value)
     {
-        $this->headers->getCacheControl()->setSharedMaxAge($value);
+        $this->headers->addCacheControlDirective('s-maxage', $value);
     }
 
     /**
@@ -489,7 +499,9 @@ class Response
         if (null === $date) {
             $this->headers->delete('Last-Modified');
         } else {
-            $this->headers->set('Last-Modified', $date->format(DATE_RFC2822));
+            $date = clone $date;
+            $date->setTimezone(new \DateTimeZone('UTC'));
+            $this->headers->set('Last-Modified', $date->format('D, d M Y H:i:s').' GMT');
         }
     }
 
@@ -503,6 +515,12 @@ class Response
         return $this->headers->get('ETag');
     }
 
+    /**
+     * Sets the ETag value.
+     *
+     * @param string  $etag The ETag unique identifier
+     * @param Boolean $weak Whether you want a weak ETag or not
+     */
     public function setEtag($etag = null, $weak = false)
     {
         if (null === $etag) {
@@ -513,6 +531,52 @@ class Response
             }
 
             $this->headers->set('ETag', (true === $weak ? 'W/' : '').$etag);
+        }
+    }
+
+    /**
+     * Sets Response cache headers (validation and/or expiration).
+     *
+     * Available options are: etag, last_modified, max_age, s_maxage, private, and public.
+     *
+     * @param array $options An array of cache options
+     */
+    public function setCache(array $options)
+    {
+        if ($diff = array_diff_key($options, array('etag', 'last_modified', 'max_age', 's_maxage', 'private', 'public'))) {
+            throw new \InvalidArgumentException(sprintf('Response does not support the following options: "%s".', implode('", "', array_keys($diff))));
+        }
+
+        if (isset($options['etag'])) {
+            $this->setEtag($options['etag']);
+        }
+
+        if (isset($options['last_modified'])) {
+            $this->setLastModified($options['last_modified']);
+        }
+
+        if (isset($options['max_age'])) {
+            $this->setMaxAge($options['max_age']);
+        }
+
+        if (isset($options['s_maxage'])) {
+            $this->setSharedMaxAge($options['s_maxage']);
+        }
+
+        if (isset($options['public'])) {
+            if ($options['public']) {
+                $this->setPublic();
+            } else {
+                $this->setPrivate();
+            }
+        }
+
+        if (isset($options['private'])) {
+            if ($options['private']) {
+                $this->setPrivate();
+            } else {
+                $this->setPublic();
+            }
         }
     }
 
@@ -576,7 +640,18 @@ class Response
             return array();
         }
 
-        return preg_split('/[\s,]+/', $vary);
+        return is_array($vary) ? $vary : preg_split('/[\s,]+/', $vary);
+    }
+
+    /**
+     * Sets the Vary header.
+     *
+     * @param string|array $headers
+     * @param Boolean      $replace Whether to replace the actual value of not (true by default)
+     */
+    public function setVary($headers, $replace = true)
+    {
+        $this->headers->set('Vary', $headers, $replace);
     }
 
     /**

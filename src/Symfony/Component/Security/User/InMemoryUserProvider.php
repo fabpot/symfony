@@ -18,8 +18,8 @@ use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
 /**
  * InMemoryUserProvider is a simple non persistent user provider.
  *
- * Useful for testing, demonstration, prototyping, and for
- * simple needs (a backend with a unique admin for instance)
+ * Useful for testing, demonstration, prototyping, and for simple needs
+ * (a backend with a unique admin for instance)
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -30,7 +30,7 @@ class InMemoryUserProvider implements UserProviderInterface
     /**
      * Constructor.
      *
-     * The user array is hash where the keys are usernames and the values are
+     * The user array is a hash where the keys are usernames and the values are
      * an array of attributes: 'password', 'enabled', and 'roles'.
      *
      * @param array $users An array of users

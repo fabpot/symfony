@@ -95,8 +95,7 @@ class XmlFileLoader extends FileLoader
                     $options[(string) $node->getAttribute('key')] = trim((string) $node->nodeValue);
                     break;
                 case 'requirement':
-                    $requirement = explode(',', trim((string) $node->nodeValue));
-                    $requirements[(string) $node->getAttribute('key')] = $requirement;
+                    $requirements[(string) $node->getAttribute('key')] = trim((string) $node->nodeValue);
                     break;
                 default:
                     throw new \InvalidArgumentException(sprintf('Unable to parse tag "%s"', $node->tagName));
@@ -129,11 +128,11 @@ class XmlFileLoader extends FileLoader
     /**
      * @throws \InvalidArgumentException When xml doesn't validate its xsd schema
      */
-    protected function validate($dom, $file)
+    protected function validate(\DOMDocument $dom, $file)
     {
         $parts = explode('/', str_replace('\\', '/', __DIR__.'/schema/routing/routing-1.0.xsd'));
         $drive = '\\' === DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
-        $location = 'file:///'.$drive.implode('/', array_map('rawurlencode', $parts));
+        $location = 'file:///'.$drive.implode('/', $parts);
 
         $current = libxml_use_internal_errors(true);
         if (!$dom->schemaValidate($location)) {

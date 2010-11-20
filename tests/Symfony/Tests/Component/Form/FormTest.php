@@ -20,6 +20,8 @@ class FormTest_PreconfiguredForm extends Form
     protected function configure()
     {
         $this->add(new Field('firstName'));
+
+        parent::configure();
     }
 }
 
@@ -39,6 +41,8 @@ class TestSetDataBeforeConfigureForm extends Form
     protected function configure()
     {
         $this->testCase->assertEquals($this->object, $this->getData());
+
+        parent::configure();
     }
 }
 
@@ -46,6 +50,11 @@ class FormTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;
     protected $form;
+
+    public static function setUpBeforeClass()
+    {
+        @session_start();
+    }
 
     protected function setUp()
     {
