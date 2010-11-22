@@ -66,8 +66,8 @@ class YamlFileLoader extends FileLoader
     public function supports($resource)
     {
         return is_string($resource) &&
-            'yml' === pathinfo($resource, PATHINFO_EXTENSION) &&
-            file_exists($this->getAbsolutePath($resource, $this->currentDir));
+            '(' !== mb_substr($resource, 0, 1) &&
+            'yml' === pathinfo($resource, PATHINFO_EXTENSION);
     }
 
     /**

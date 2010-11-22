@@ -48,7 +48,7 @@ class DelegatingLoaderTest extends \PHPUnit_Framework_TestCase
     public function testSupports()
     {
         $resolver = new LoaderResolver(array(
-            $ini = new XmlFileLoader(array(__DIR__ . '/../Fixtures')),
+            $ini = new XmlFileLoader(array()),
         ));
         $loader = new DelegatingLoader($resolver);
 

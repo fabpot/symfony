@@ -12,6 +12,9 @@ namespace Symfony\Tests\Component\Routing\Loader;
 
 use Symfony\Component\Routing\Loader\LoaderResolver;
 use Symfony\Component\Routing\Loader\ClosureLoader;
+use Symfony\Component\Routing\Loader\XmlFileLoader;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
+use Symfony\Component\Routing\Loader\PhpFileLoader;
 
 class LoaderResolverTest extends \PHPUnit_Framework_TestCase
 {
@@ -50,5 +53,22 @@ class LoaderResolverTest extends \PHPUnit_Framework_TestCase
         $resolver->addLoader($loader = new ClosureLoader());
 
         $this->assertEquals(array($loader), $resolver->getLoaders(), 'addLoader() adds a loader');
+    }
+
+    public function testResolveUnknownService()
+    {
+        $resolver = new LoaderResolver();
+        $resolver->addLoader($xml = new XmlFileLoader(array()));
+        $resolver->addLoader($yml = new YamlFileLoader(array()));
+        $resolver->addLoader($php = new PhpFileLoader(array()));
+
+        $this->assertSame($xml, $resolver->resolve('foo.xml'), '->resolve() finds a XML loader');
+        $this->assertSame($yml, $resolver->resolve('foo.yml'), '->resolve() finds a YAML loader');
+        $this->assertSame($php, $resolver->resolve('foo.php'), '->resolve() finds a PHP loader');
+
+        $this->assertFalse($resolver->resolve('(custom) foo.xml', '->resolve() can not finds custom XML loader'));
+        $this->assertFalse($resolver->resolve('(custom)foo.xml', '->resolve() can not finds custom XML loader'));
+        $this->assertFalse($resolver->resolve('( custom )foo.yml', '->resolve() can not finds custom YML loader'));
+        $this->assertFalse($resolver->resolve('(custom)  foo.php', '->resolve() can not finds custom PHP loader'));
     }
 }

@@ -34,7 +34,7 @@ class LoaderTest extends \PHPUnit_Framework_TestCase
     public function testResolve()
     {
         $resolver = new LoaderResolver(array(
-            $ini = new XmlFileLoader(array(__DIR__ . '/../Fixtures')),
+            $ini = new XmlFileLoader(array()),
         ));
         $loader = new ProjectLoader1();
         $loader->setResolver($resolver);
