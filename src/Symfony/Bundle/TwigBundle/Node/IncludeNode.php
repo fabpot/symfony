@@ -18,9 +18,9 @@ namespace Symfony\Bundle\TwigBundle\Node;
  */
 class IncludeNode extends \Twig_Node
 {
-    public function __construct(\Twig_Node_Expression $expr, \Twig_Node_Expression $variables = null, $lineno, $tag = null)
+    public function __construct(\Twig_Node_Expression $expr, \Twig_Node_Expression $variables = null, $only = false, $lineno, $tag = null)
     {
-        parent::__construct(array('expr' => $expr, 'variables' => $variables), array(), $lineno, $tag);
+        parent::__construct(array('expr' => $expr, 'variables' => $variables), array('only' => (Boolean) $only), $lineno, $tag);
     }
 
     /**
@@ -30,19 +30,54 @@ class IncludeNode extends \Twig_Node
      */
     public function compile($compiler)
     {
+        // template
         $compiler
             ->addDebugInfo($this)
-            ->write('echo $this->env->getExtension(\'templating\')->getTemplating()->render(')
+            ->write("\$template = ")
             ->subcompile($this->getNode('expr'))
-            ->raw(', ')
+            ->raw(";\n")
+            ->write("if (\$template instanceof Twig_Template) {\n")
+            ->indent()
         ;
 
-        if (null === $this->getNode('variables')) {
-            $compiler->raw('$context');
-        } else {
-            $compiler->subcompile($this->getNode('variables'));
-        }
+        // template is a Twig_Template instance
+        $compiler->write("\$template->display(");
+        $this->compileTemplateVariables($compiler);
+        $compiler
+            ->raw(");\n")
+            ->outdent()
+            ->write("} else {\n")
+            ->indent()
+        ;
 
-        $compiler->raw(");\n");
+        // else use the templating engine
+        $compiler->write("echo \$this->env->getExtension('templating')->getTemplating()->render(\$template, ");
+        $this->compileTemplateVariables($compiler);
+        $compiler
+            ->raw(");\n")
+            ->outdent()
+            ->write("}\n")
+        ;
+    }
+
+    protected function compileTemplateVariables($compiler)
+    {
+        if (false === $this->getAttribute('only')) {
+            if (null === $this->getNode('variables')) {
+                $compiler->raw('$context');
+            } else {
+                $compiler
+                    ->raw('array_merge($context, ')
+                    ->subcompile($this->getNode('variables'))
+                    ->raw(')')
+                ;
+            }
+        } else {
+            if (null === $this->getNode('variables')) {
+                $compiler->raw('array()');
+            } else {
+                $compiler->subcompile($this->getNode('variables'));
+            }
+        }
     }
 }

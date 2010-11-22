@@ -275,7 +275,7 @@ abstract class Field extends Configurable implements FieldInterface
         } catch (TransformationFailedException $e) {
             // TODO better text
             // TESTME
-            $this->addError('invalid (localized)');
+            $this->addError(new FieldError('invalid (localized)'));
         }
     }
 
@@ -317,9 +317,9 @@ abstract class Field extends Configurable implements FieldInterface
      *
      * @see FieldInterface
      */
-    public function addError($messageTemplate, array $messageParameters = array(), PropertyPathIterator $pathIterator = null, $type = null)
+    public function addError(FieldError $error, PropertyPathIterator $pathIterator = null, $type = null)
     {
-        $this->errors[] = array($messageTemplate, $messageParameters);
+        $this->errors[] = $error;
     }
 
     /**
@@ -349,7 +349,11 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function hasErrors()
     {
-        return $this->isBound() && !$this->isValid();
+        // Don't call isValid() here, as its semantics are slightly different
+        // Field groups are not valid if their children are invalid, but
+        // hasErrors() returns only true if a field/field group itself has
+        // errors
+        return count($this->errors) > 0;
     }
 
     /**

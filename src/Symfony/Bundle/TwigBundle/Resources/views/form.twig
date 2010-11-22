@@ -13,10 +13,10 @@
 {% endblock field_group %}
 
 {% block errors %}
-    {% if errors %}
+    {% if field.hasErrors %}
     <ul>
-        {% for error in errors %}
-            <li>{% trans error.0 with error.1 from validators %}</li>
+        {% for error in field.errors %}
+            <li>{% trans error.messageTemplate with error.messageParameters from validators %}</li>
         {% endfor %}
     </ul>
     {% endif %}
