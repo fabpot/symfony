@@ -216,7 +216,7 @@ class ProfilerController extends ContainerAware
 
         $request = $this->container->get('request');
 
-        if ($token = $request->query->get('token')) {
+        if (($token = $request->query->get('token'))) {
             $response = $this->container->get('response');
             $response->setRedirect($this->container->get('router')->generate('_profiler', array('token' => $token)));
 
@@ -241,13 +241,17 @@ class ProfilerController extends ContainerAware
     protected function getTemplateNames($profiler)
     {
         $templates = array();
-        foreach ($this->container->getParameter('data_collector.templates') as $name => $template) {
-            if ($profiler->has($name)) {
-                if (!$this->container->get('templating')->exists($template.'.twig')) {
-                    continue;
-                }
+        foreach ($this->container->findTaggedServiceIds('data_collector') as $id => $tags) {
+            if ($this->container->has($id) && isset($tags[0]['template'])) {
+                $name = $this->container->get($id)->getName();
+                $template = $tags[0]['template'];
+                if ($profiler->has($name)) {
+                    if (!$this->container->get('templating')->exists($template.'.twig')) {
+                        continue;
+                    }
 
-                $templates[$name] = $template.'.twig';
+                    $templates[$name] = $template.'.twig';
+                }
             }
         }
 
