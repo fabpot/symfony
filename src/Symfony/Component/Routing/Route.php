@@ -204,7 +204,7 @@ class Route
             } else {
                 if ($key != '_method') {
                     // create a "choice" regex from an array
-                    array_walk($regex, function(&$value){
+                    array_walk($regex, function(&$value) {
                         $value = preg_quote($value);
                     });
 
