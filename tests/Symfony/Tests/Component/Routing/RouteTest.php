@@ -91,9 +91,15 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     {
         $route = new Route('/:foo');
         $route->setRequirements(array(
-           'foo' => array('bar', 'baz', '['),
+            'foo'       => array('bar', 'baz', '['),
+            '_method'    => array('GET', 'POST'),
         ));
+
+        // normal requirements are prepared as a regular expression
         $this->assertEquals('(?:bar|baz|\[)', $route->getRequirement('foo'));
+
+        // the special "_method" requirement is left as an array
+        $this->assertEquals(array('GET', 'POST'), $route->getRequirement('_method'));
     }
 
     public function testCompile()

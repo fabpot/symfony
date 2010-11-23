@@ -202,12 +202,14 @@ class Route
                     $regex = substr($regex, 0, -1);
                 }
             } else {
-                // create a "choice" regex from an array
-                array_walk($regex, function(&$value){
-                    $value = preg_quote($value);
-                });
+                if ($key != '_method') {
+                    // create a "choice" regex from an array
+                    array_walk($regex, function(&$value){
+                        $value = preg_quote($value);
+                    });
 
-                $regex = sprintf('(?:%s)', implode($regex, '|'));
+                    $regex = sprintf('(?:%s)', implode($regex, '|'));
+                }
             }
 
             $this->requirements[$key] = $regex;
