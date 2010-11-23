@@ -81,6 +81,21 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($route, $route->setRequirements(array()), '->setRequirements() implements a fluent interface');
     }
 
+    /**
+     * Test that a requirements "array" is transformed into a regular
+     * expression requiring those choices.
+     *
+     * The individual entries should be preg_quote'd.
+     */
+    public function testArrayRequirements()
+    {
+        $route = new Route('/:foo');
+        $route->setRequirements(array(
+           'foo' => array('bar', 'baz', '['),
+        ));
+        $this->assertEquals('(?:bar|baz|\[)', $route->getRequirement('foo'));
+    }
+
     public function testCompile()
     {
         $route = new Route('/:foo');
