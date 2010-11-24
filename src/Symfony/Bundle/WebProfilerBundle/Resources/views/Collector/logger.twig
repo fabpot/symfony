@@ -15,7 +15,7 @@ Logs
     {% if collector.logs %}
         <div style="float:right;text-align:right">
             <input type="search" placeholder="Filter logs…" onsearch="search_logs(this.value)" style="width:20em"><br>
-            <small style="color:#999;">Showing <span style="color:#333;" id="logs_count"><?php echo $count = count($data->getLogs()) ?></span>/<?php echo $count ?> log messages</small>
+            <small style="color:#999;">Showing <span style="color:#333;" id="logs_count">{{ collector.logs|length }}</span>/{{ collector.logs|length }} log messages</small>
         </div>
     {% endif %}
 
