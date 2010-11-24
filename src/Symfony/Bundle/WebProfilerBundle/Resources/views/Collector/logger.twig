@@ -12,10 +12,17 @@ Logs
 {% endblock %}
 
 {% block panel %}
+    {% if collector.logs %}
+        <div style="float:right;text-align:right">
+            <input type="search" placeholder="Filter logs…" onsearch="search_logs(this.value)" style="width:20em"><br>
+            <small style="color:#999;">Showing <span style="color:#333;" id="logs_count"><?php echo $count = count($data->getLogs()) ?></span>/<?php echo $count ?> log messages</small>
+        </div>
+    {% endif %}
+
     <h2>Logs</h2>
 
     {% if collector.logs %}
-        <ul class="alt">
+        <ul class="alt" id="logs">
             {% for i, log in collector.logs %}
                 <li class="{{ i is odd ? 'odd' : 'even' }}{% if 'ERR' == log.priorityname %} error{% endif %}">
                     {{ log.priorityname }}
@@ -23,6 +30,23 @@ Logs
                 </li>
             {% endfor %}
         </ul>
+        <script>
+        function search_logs(query) {
+            var list = document.getElementById("logs"), hits = 0;
+            for (var i = 0, l = list.childNodes.length; i < l; i++) {
+                var item = list.childNodes[i];
+                if ("LI" == item.nodeName) {
+                    if (-1 < item.innerText.toLowerCase().indexOf(query.toLowerCase())) {
+                        item.style.display = "block";
+                        item.className = ++hits % 2 ? "even" : "odd";
+                    } else {
+                        item.style.display = "none";
+                    }
+                }
+            }
+            document.getElementById("logs_count").innerHTML = hits;
+        }
+        </script>
     {% else %}
         <em>No logs available.</em>
     {% endif %}
