@@ -104,7 +104,7 @@ class FrameworkExtension extends Extension
             $this->registerValidationConfiguration($config, $container);
         }
 
-        if (isset($config['templating'])) {
+        if (array_key_exists('templating', $config)) {
             $this->registerTemplatingConfiguration($config, $container);
         }
 
@@ -146,7 +146,7 @@ class FrameworkExtension extends Extension
      */
     protected function registerTemplatingConfiguration($config, ContainerBuilder $container)
     {
-        $config = $config['templating'];
+        $config = isset($config['templating']) ? $config['templating'] : array();
 
         if (!$container->hasDefinition('templating')) {
             $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
@@ -155,10 +155,6 @@ class FrameworkExtension extends Extension
             if ($container->getParameter('kernel.debug')) {
                 $loader->load('templating_debug.xml');
             }
-        }
-
-        if (array_key_exists('escaping', $config)) {
-            $container->setParameter('templating.output_escaper', $config['escaping']);
         }
 
         if (array_key_exists('assets_version', $config)) {
