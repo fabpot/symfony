@@ -313,6 +313,10 @@ class FrameworkExtension extends Extension
             }
         }
 
+        if (isset($config['auto_start']) || isset($config['auto-start'])) {
+            $container->getDefinition('session')->addMethodCall('start');
+        }
+
         if (isset($config['class'])) {
             $container->setParameter('session.class', $config['class']);
         }
