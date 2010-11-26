@@ -74,15 +74,50 @@ class Controller extends ContainerAware
     }
 
     /**
-     * Returns an HTTP redirect Response.
+     * Returns an external HTTP redirect Response.
+     *
+     * @param string $url URL to redirect to
+     * @param int $status HTTP Status code
      *
      * @return Response A Response instance
      */
-    public function redirect($url, $status = 302)
+    public function redirectToUri($url, $status = 302)
     {
-        $response = $this->container->get('response');
-        $response->setRedirect($url, $status);
-        return $response;
+        $view = $this->container->get('view');
+        $view->setRedirectUri($url, $status);
+        return $view->handle($this->container->get('request'));
+    }
+
+    /**
+     * Returns an internal HTTP redirect Response.
+     *
+     * @param string $route Route name
+     * @param array $parameters Route parameters
+     * @param int $status HTTP Status code
+     *
+     * @return Response A Response instance
+     */
+    public function redirectToRoute($route, array $parameters = array(), $status = 302)
+    {
+        $view = $this->container->get('view');
+        $view->setRedirectRoute($route, $parameters, $status);
+        return $view->handle($this->container->get('request'));
+    }
+
+    /**
+     * Handles the view layer
+     *
+     * @param array $parameters An array of parameters to pass to the view
+     * @param string $template The view name
+     *
+     * @return Response A Response instance
+     */
+    public function handle(array $parameters = array(), $template = null)
+    {
+        $view = $this->container->get('view');
+        $view->setParameters($parameters);
+        $view->setTemplate($template);
+        return $view->handle($this->container->get('request'));
     }
 
     /**
@@ -96,20 +131,6 @@ class Controller extends ContainerAware
     public function renderView($view, array $parameters = array())
     {
         return $this->container->get('templating')->render($view, $parameters);
-    }
-
-    /**
-     * Renders a view.
-     *
-     * @param string   $view The view name
-     * @param array    $parameters An array of parameters to pass to the view
-     * @param Response $response A response instance
-     *
-     * @return Response A Response instance
-     */
-    public function render($view, array $parameters = array(), Response $response = null)
-    {
-        return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
     /**
