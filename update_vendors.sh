@@ -5,6 +5,9 @@ CURRENT=`pwd`/vendor
 # Doctrine ORM
 cd $CURRENT/doctrine && git pull
 
+# Doctrine Data Fixtures Extension
+cd $CURRENT/doctrine-data-fixtures && git pull
+
 # Doctrine DBAL
 cd $CURRENT/doctrine-dbal && git pull
 
@@ -16,12 +19,6 @@ cd $CURRENT/doctrine-migrations && git pull
 
 # Doctrine MongoDB
 cd $CURRENT/doctrine-mongodb && git pull
-
-# Propel
-cd $CURRENT/propel && svn up
-
-# Phing
-cd $CURRENT/phing && svn up
 
 # Swiftmailer
 cd $CURRENT/swiftmailer && git pull

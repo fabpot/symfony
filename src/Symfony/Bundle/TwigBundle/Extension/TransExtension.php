@@ -17,7 +17,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class TransExtension extends \Twig_Extension
 {
@@ -31,6 +31,16 @@ class TransExtension extends \Twig_Extension
     public function getTranslator()
     {
         return $this->translator;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFilters()
+    {
+        return array(
+            'trans' => new \Twig_Filter_Method($this, 'trans'),
+        );
     }
 
     /**
@@ -49,6 +59,11 @@ class TransExtension extends \Twig_Extension
             // {% endtranschoice %}
             new TransChoiceTokenParser(),
         );
+    }
+
+    public function trans($message, array $arguments = array(), $domain = "messages")
+    {
+        return $this->translator->trans($message, $arguments, $domain);
     }
 
     /**

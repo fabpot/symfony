@@ -17,21 +17,21 @@ use Symfony\Component\Translation\Resource\FileResource;
 /**
  * XliffFileLoader loads translations from XLIFF files.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class XliffFileLoader implements LoaderInterface
 {
     /**
      * {@inheritdoc}
      */
-    function load($resource, $locale, $domain = 'messages')
+    public function load($resource, $locale, $domain = 'messages')
     {
         $xml = $this->parseFile($resource);
         $xml->registerXPathNamespace('xliff', 'urn:oasis:names:tc:xliff:document:1.2');
 
         $catalogue = new MessageCatalogue($locale);
         foreach ($xml->xpath('//xliff:trans-unit') as $translation) {
-            $catalogue->setMessage((string) $translation->source, (string) $translation->target, $domain);
+            $catalogue->set((string) $translation->source, (string) $translation->target, $domain);
         }
         $catalogue->addResource(new FileResource($resource));
 

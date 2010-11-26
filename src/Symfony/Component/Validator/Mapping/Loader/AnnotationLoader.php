@@ -2,19 +2,38 @@
 
 namespace Symfony\Component\Validator\Mapping\Loader;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\Validator\Constraints\Validation;
+use Symfony\Component\Validator\Constraints\GroupSequence;
+use Symfony\Component\Validator\Constraint;
 
 class AnnotationLoader implements LoaderInterface
 {
     protected $reader;
 
-    public function __construct()
+    public function __construct(array $paths = null)
     {
+        if (null === $paths) {
+            $paths = array('validation' => 'Symfony\\Component\\Validator\\Constraints\\');
+        }
+
         $this->reader = new AnnotationReader();
-        $this->reader->setDefaultAnnotationNamespace('Symfony\Component\Validator\Constraints\\');
         $this->reader->setAutoloadAnnotations(true);
+
+        foreach ($paths as $prefix => $path) {
+            $this->reader->setAnnotationNamespaceAlias($path, $prefix);
+        }
     }
 
     /**
@@ -22,12 +41,18 @@ class AnnotationLoader implements LoaderInterface
      */
     public function loadClassMetadata(ClassMetadata $metadata)
     {
-        $annotClass = 'Symfony\Component\Validator\Constraints\Validation';
         $reflClass = $metadata->getReflectionClass();
+        $className = $reflClass->getName();
         $loaded = false;
 
-        if ($annot = $this->reader->getClassAnnotation($reflClass, $annotClass)) {
-            foreach ($annot->constraints as $constraint) {
+        foreach ($this->reader->getClassAnnotations($reflClass) as $constraint) {
+            if ($constraint instanceof Validation) {
+                foreach ($constraint->constraints as $constraint) {
+                    $metadata->addConstraint($constraint);
+                }
+            } elseif ($constraint instanceof GroupSequence) {
+                $metadata->setGroupSequence($constraint->groups);
+            } elseif ($constraint instanceof Constraint) {
                 $metadata->addConstraint($constraint);
             }
 
@@ -35,25 +60,37 @@ class AnnotationLoader implements LoaderInterface
         }
 
         foreach ($reflClass->getProperties() as $property) {
-            if ($annot = $this->reader->getPropertyAnnotation($property, $annotClass)) {
-                foreach ($annot->constraints as $constraint) {
-                    $metadata->addPropertyConstraint($property->getName(), $constraint);
-                }
+            if ($property->getDeclaringClass()->getName() == $className) {
+                foreach ($this->reader->getPropertyAnnotations($property) as $constraint) {
+                    if ($constraint instanceof Validation) {
+                        foreach ($constraint->constraints as $constraint) {
+                            $metadata->addPropertyConstraint($property->getName(), $constraint);
+                        }
+                    } elseif ($constraint instanceof Constraint) {
+                        $metadata->addPropertyConstraint($property->getName(), $constraint);
+                    }
 
-                $loaded = true;
+                    $loaded = true;
+                }
             }
         }
 
         foreach ($reflClass->getMethods() as $method) {
-            if ($annot = $this->reader->getMethodAnnotation($method, $annotClass)) {
-                foreach ($annot->constraints as $constraint) {
+            if ($method->getDeclaringClass()->getName() ==  $className) {
+                foreach ($this->reader->getMethodAnnotations($method) as $constraint) {
                     // TODO: clean this up
                     $name = lcfirst(substr($method->getName(), 0, 3)=='get' ? substr($method->getName(), 3) : substr($method->getName(), 2));
 
-                    $metadata->addGetterConstraint($name, $constraint);
-                }
+                    if ($constraint instanceof Validation) {
+                        foreach ($constraint->constraints as $constraint) {
+                            $metadata->addGetterConstraint($name, $constraint);
+                        }
+                    } elseif ($constraint instanceof Constraint) {
+                        $metadata->addGetterConstraint($name, $constraint);
+                    }
 
-                $loaded = true;
+                    $loaded = true;
+                }
             }
         }
 

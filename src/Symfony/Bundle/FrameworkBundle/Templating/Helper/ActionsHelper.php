@@ -3,7 +3,6 @@
 namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
 
 use Symfony\Component\Templating\Helper\Helper;
-use Symfony\Component\OutputEscaper\Escaper;
 use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
 
 /*
@@ -18,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
 /**
  * ActionsHelper manages action inclusions.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ActionsHelper extends Helper
 {
@@ -58,11 +57,11 @@ class ActionsHelper extends Helper
      */
     public function render($controller, array $attributes = array(), array $options = array())
     {
-        $options['attributes'] = Escaper::unescape($attributes);
+        $options['attributes'] = $attributes;
 
         if (isset($options['query']))
         {
-            $options['query'] = Escaper::unescape($options['query']);
+            $options['query'] = $options['query'];
         }
 
         return $this->resolver->render($controller, $options);

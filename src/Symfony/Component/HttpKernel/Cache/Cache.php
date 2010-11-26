@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Cache provides HTTP caching.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Cache implements HttpKernelInterface
 {
@@ -49,22 +49,22 @@ class Cache implements HttpKernelInterface
      *                            public or private via a Cache-Control directive. (default: Authorization and Cookie)
      *
      *   * allow_reload           Specifies whether the client can force a cache reload by including a
-     *                            Cache-Control "no-cache" directive in the request. This is enabled by
-     *                            default for compliance with RFC 2616. (default: false)
+     *                            Cache-Control "no-cache" directive in the request. Set it to ``true``
+     *                            for compliance with RFC 2616. (default: false)
      *
      *   * allow_revalidate       Specifies whether the client can force a cache revalidate by including
-     *                            a Cache-Control "max-age=0" directive in the request. This is enabled by
-     *                            default for compliance with RFC 2616. (default: false)
+     *                            a Cache-Control "max-age=0" directive in the request. Set it to ``true``
+      *                            for compliance with RFC 2616. (default: false)
      *
      *   * stale_while_revalidate Specifies the default number of seconds (the granularity is the second as the
      *                            Response TTL precision is a second) during which the cache can immediately return
      *                            a stale response while it revalidates it in the background (default: 2).
-     *                            This setting is overriden by the stale-while-revalidate HTTP Cache-Control
+     *                            This setting is overridden by the stale-while-revalidate HTTP Cache-Control
      *                            extension (see RFC 5861).
      *
-     *   * stale_if_error         Specifies the default number of seconds (the granularit is the second) during which
-     *                            the cache can server a stale response when an error is encountered (default: 60).
-     *                            This setting is overriden by the stale-if-error HTTP Cache-Control extension
+     *   * stale_if_error         Specifies the default number of seconds (the granularity is the second) during which
+     *                            the cache can serve a stale response when an error is encountered (default: 60).
+     *                            This setting is overridden by the stale-if-error HTTP Cache-Control extension
      *                            (see RFC 5861).
      *
      * @param HttpKernelInterface $kernel An HttpKernelInterface instance
@@ -128,21 +128,11 @@ class Cache implements HttpKernelInterface
     }
 
     /**
-     * Handles a Request.
-     *
-     * @param Request $request A Request instance
-     * @param integer $type    The type of the request (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
-     * @param Boolean $raw     Whether to catch exceptions or not (this is NOT used in this context)
-     *
-     * @return Symfony\Component\HttpFoundation\Response A Response instance
+     * {@inheritdoc}
      */
-    public function handle(Request $request = null, $type = HttpKernelInterface::MASTER_REQUEST, $raw = false)
+    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
-        // FIXME: catch exceptions and implement a 500 error page here? -> in Varnish, there is a built-it error page mechanism
-        if (null === $request) {
-            $request = new Request();
-        }
-
+        // FIXME: catch exceptions and implement a 500 error page here? -> in Varnish, there is a built-in error page mechanism
         if (HttpKernelInterface::MASTER_REQUEST === $type) {
             $this->traces = array();
             $this->request = $request;
@@ -311,7 +301,7 @@ class Cache implements HttpKernelInterface
             }
 
             $entry = clone $entry;
-            $entry->headers->delete('Date');
+            $entry->headers->remove('Date');
 
             foreach (array('Date', 'Expires', 'Cache-Control', 'ETag', 'Last-Modified') as $name) {
                 if ($response->headers->has($name)) {
@@ -348,14 +338,14 @@ class Cache implements HttpKernelInterface
         $subRequest->setMethod('get');
 
         // avoid that the backend sends no content
-        $subRequest->headers->delete('if_modified_since');
-        $subRequest->headers->delete('if_none_match');
+        $subRequest->headers->remove('if_modified_since');
+        $subRequest->headers->remove('if_none_match');
 
         $response = $this->forward($subRequest);
 
-        if ($this->isPrivateRequest($request) && !$response->headers->getCacheControl()->isPublic()) {
+        if ($this->isPrivateRequest($request) && !$response->headers->hasCacheControlDirective('public')) {
             $response->setPrivate(true);
-        } elseif ($this->options['default_ttl'] > 0 && null === $response->getTtl() && !$response->headers->getCacheControl()->mustRevalidate()) {
+        } elseif ($this->options['default_ttl'] > 0 && null === $response->getTtl() && !$response->headers->getCacheControlDirective('must-revalidate')) {
             $response->setTtl($this->options['default_ttl']);
         }
 
@@ -370,24 +360,24 @@ class Cache implements HttpKernelInterface
      * Forwards the Request to the backend and returns the Response.
      *
      * @param Request  $request  A Request instance
-     * @param Boolean  $raw      Whether to catch exceptions or not
+     * @param Boolean  $catch    Whether to catch exceptions or not
      * @param Response $response A Response instance (the stale entry if present, null otherwise)
      *
      * @return Response A Response instance
      */
-    protected function forward(Request $request, $raw = false, Response $entry = null)
+    protected function forward(Request $request, $catch = false, Response $entry = null)
     {
         if ($this->esi) {
             $this->esi->addSurrogateEsiCapability($request);
         }
 
         // always a "master" request (as the real master request can be in cache)
-        $response = $this->kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, $raw);
+        $response = $this->kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, $catch);
         // FIXME: we probably need to also catch exceptions if raw === true
 
         // we don't implement the stale-if-error on Requests, which is nonetheless part of the RFC
         if (null !== $entry && in_array($response->getStatusCode(), array(500, 502, 503, 504))) {
-            if (null === $age = $entry->headers->getCacheControl()->getStaleIfError()) {
+            if (null === $age = $entry->headers->getCacheControlDirective('stale-if-error')) {
                 $age = $this->options['stale_if_error'];
             }
 
@@ -417,7 +407,7 @@ class Cache implements HttpKernelInterface
             return $this->lock($request, $entry);
         }
 
-        if ($this->options['allow_revalidate'] && null !== $maxAge = $request->headers->getCacheControl()->getMaxAge()) {
+        if ($this->options['allow_revalidate'] && null !== $maxAge = $request->headers->getCacheControlDirective('max-age')) {
             return $maxAge > 0 && $maxAge >= $entry->getAge();
         }
 
@@ -440,7 +430,7 @@ class Cache implements HttpKernelInterface
         // there is already another process calling the backend
         if (true !== $lock) {
             // check if we can serve the stale entry
-            if (null === $age = $entry->headers->getCacheControl()->getStaleWhileRevalidate()) {
+            if (null === $age = $entry->headers->getCacheControlDirective('stale-while-revalidate')) {
                 $age = $this->options['stale_while_revalidate'];
             }
 
@@ -526,14 +516,14 @@ class Cache implements HttpKernelInterface
             }
 
             $response->setContent(ob_get_clean());
-            $response->headers->delete('X-Body-Eval');
+            $response->headers->remove('X-Body-Eval');
         } elseif ($response->headers->has('X-Body-File')) {
             $response->setContent(file_get_contents($response->headers->get('X-Body-File')));
         } else {
             return;
         }
 
-        $response->headers->delete('X-Body-File');
+        $response->headers->remove('X-Body-File');
 
         if (!$response->headers->has('Transfer-Encoding')) {
             $response->headers->set('Content-Length', strlen($response->getContent()));

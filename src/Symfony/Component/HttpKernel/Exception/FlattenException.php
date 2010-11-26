@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  *
  * Basically, this class removes all objects from the trace.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class FlattenException
 {
@@ -43,6 +43,21 @@ class FlattenException
         $e->setStatusCode($exception instanceof HttpException ? $exception->getCode() : 500);
 
         return $e;
+    }
+
+    public function toArray()
+    {
+        $exceptions = array();
+        foreach (array_merge(array($this), $this->getPreviouses()) as $exception) {
+            $exceptions[] = array(
+                'code'     => $exception->getStatusCode(),
+                'message'  => $exception->getMessage(),
+                'class'    => $exception->getClass(),
+                'trace'    => $exception->getTrace(),
+            );
+        }
+
+        return $exceptions;
     }
 
     public function getStatusCode()

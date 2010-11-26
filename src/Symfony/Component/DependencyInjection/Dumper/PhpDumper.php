@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\Parameter;
 /**
  * PhpDumper dumps a service container as a PHP class.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class PhpDumper extends Dumper
 {
@@ -95,25 +95,13 @@ EOF;
         }
     }
 
-    protected function addServiceShared($id, $definition)
-    {
-        if ($definition->isShared()) {
-            return <<<EOF
-        if (isset(\$this->shared['$id'])) return \$this->shared['$id'];
-
-
-EOF;
-        }
-    }
-
     protected function addServiceReturn($id, $definition)
     {
-        return <<<EOF
+        if (!$definition->getMethodCalls() && !$definition->getConfigurator()) {
+            return "    }\n";
+        }
 
-        return \$instance;
-    }
-
-EOF;
+        return "\n        return \$instance;\n    }\n";
     }
 
     protected function addServiceInstance($id, $definition)
@@ -129,20 +117,32 @@ EOF;
             $arguments[] = $this->dumpValue($value);
         }
 
-        if (null !== $definition->getFactoryMethod()) {
-            if (null !== $definition->getFactoryService()) {
-                $code = sprintf("        \$instance = %s->%s(%s);\n", $this->getServiceCall($definition->getFactoryService()), $definition->getFactoryMethod(), implode(', ', $arguments));
-            } else {
-                $code = sprintf("        \$instance = call_user_func(array(%s, '%s')%s);\n", $class, $definition->getFactoryMethod(), $arguments ? ', '.implode(', ', $arguments) : '');
-            }
-        } elseif ($class != "'".str_replace('\\', '\\\\', $definition->getClass())."'") {
-            $code = sprintf("        \$class = %s;\n        \$instance = new \$class(%s);\n", $class, implode(', ', $arguments));
-        } else {
-            $code = sprintf("        \$instance = new %s(%s);\n", $definition->getClass(), implode(', ', $arguments));
+        $simple = !$definition->getMethodCalls() && !$definition->getConfigurator();
+
+        $instantiation = '';
+        if ($definition->isShared()) {
+            $instantiation = "\$this->services['$id'] = ".($simple ? '' : '$instance');
+        } elseif (!$simple) {
+            $instantiation = '$instance';
         }
 
-        if ($definition->isShared()) {
-            $code .= sprintf("        \$this->shared['$id'] = \$instance;\n");
+        $return = '';
+        if ($simple) {
+            $return = 'return ';
+        } else {
+            $instantiation .= ' = ';
+        }
+
+        if (null !== $definition->getFactoryMethod()) {
+            if (null !== $definition->getFactoryService()) {
+                $code = sprintf("        $return{$instantiation}%s->%s(%s);\n", $this->getServiceCall($definition->getFactoryService()), $definition->getFactoryMethod(), implode(', ', $arguments));
+            } else {
+                $code = sprintf("        $return{$instantiation}call_user_func(array(%s, '%s')%s);\n", $class, $definition->getFactoryMethod(), $arguments ? ', '.implode(', ', $arguments) : '');
+            }
+        } elseif (false !== strpos($class, '$')) {
+            $code = sprintf("        \$class = %s;\n        $return{$instantiation}new \$class(%s);\n", $class, implode(', ', $arguments));
+        } else {
+            $code = sprintf("        $return{$instantiation}new \\%s(%s);\n", substr(str_replace('\\\\', '\\', $class), 1, -1), implode(', ', $arguments));
         }
 
         return $code;
@@ -219,7 +219,6 @@ EOF;
 
         $code .=
             $this->addServiceInclude($id, $definition).
-            $this->addServiceShared($id, $definition).
             $this->addServiceInstance($id, $definition).
             $this->addServiceMethodCalls($id, $definition).
             $this->addServiceConfigurator($id, $definition).
@@ -309,6 +308,7 @@ EOF;
 <?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
@@ -320,10 +320,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\\$bagClass;
  * This class has been auto-generated
  * by the Symfony Dependency Injection Component.
  */
-class $class extends $baseClass
+class $class extends $baseClass implements TaggedContainerInterface
 {
-    protected \$shared = array();
-
 EOF;
     }
 
@@ -469,10 +467,6 @@ EOF;
         } else {
             if ($this->container->hasAlias($id)) {
                 $id = $this->container->getAlias($id);
-            }
-
-            if ($this->container->hasDefinition($id)) {
-                return sprintf('$this->get%sService()', Container::camelize($id));
             }
 
             return sprintf('$this->get(\'%s\')', $id);

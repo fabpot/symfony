@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form\ValueTransformer;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
  * Passes a value through multiple value transformers
  *
@@ -57,10 +66,10 @@ class ValueTransformerChain implements ValueTransformerInterface
      * @param  mixed $value  The transformed value
      * @return mixed         The reverse-transformed value
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value, $originalValue)
     {
         for ($i = count($this->transformers) - 1; $i >= 0; --$i) {
-            $value = $this->transformers[$i]->reverseTransform($value);
+            $value = $this->transformers[$i]->reverseTransform($value, $originalValue);
         }
 
         return $value;

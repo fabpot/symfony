@@ -24,12 +24,12 @@ use Symfony\Component\Yaml\Yaml;
  *
  * The YAML format does not support anonymous services (cf. the XML loader).
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class YamlFileLoader extends FileLoader
 {
     /**
-     * Loads an array of Yaml files.
+     * Loads a Yaml file.
      *
      * @param mixed $resource The resource
      */
@@ -225,7 +225,7 @@ class YamlFileLoader extends FileLoader
     {
         if (is_array($value)) {
             $value = array_map(array($this, 'resolveServices'), $value);
-        } else if (is_string($value) && 0 === strpos($value, '@@')) {
+        } else if (is_string($value) && 0 === strpos($value, '@?')) {
             $value = new Reference(substr($value, 2), ContainerInterface::IGNORE_ON_INVALID_REFERENCE);
         } else if (is_string($value) && 0 === strpos($value, '@')) {
             $value = new Reference(substr($value, 1));

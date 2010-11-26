@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form\ValueTransformer;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use \Symfony\Component\Form\ValueTransformer\ValueTransformerException;
 
 /**
@@ -24,8 +33,6 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      */
     protected function configure()
     {
-        parent::configure();
-
         $this->addOption('date_format', self::MEDIUM);
         $this->addOption('time_format', self::SHORT);
         $this->addOption('input_timezone', 'UTC');
@@ -38,6 +45,8 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
         if (!in_array($this->getOption('time_format'), self::$formats, true)) {
             throw new \InvalidArgumentException(sprintf('The option "time_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
         }
+
+        parent::configure();
     }
 
     /**
@@ -48,6 +57,10 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      */
     public function transform($dateTime)
     {
+        if ($dateTime === null) {
+            return '';
+        }
+
         if (!$dateTime instanceof \DateTime) {
             throw new \InvalidArgumentException('Expected value of type \DateTime');
         }
@@ -74,12 +87,16 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      * @param  string|array $value Localized date string/array
      * @return DateTime Normalized date
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value, $originalValue)
     {
         $inputTimezone = $this->getOption('input_timezone');
 
         if (!is_string($value)) {
             throw new \InvalidArgumentException(sprintf('Expected argument of type string, %s given', gettype($value)));
+        }
+
+        if ($value === '') {
+            return null;
         }
 
         $timestamp = $this->getIntlDateFormatter()->parse($value);

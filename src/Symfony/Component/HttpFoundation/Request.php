@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /**
  * Request represents an HTTP request.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Request
 {
@@ -104,7 +104,7 @@ class Request
         $this->cookies = new ParameterBag(null !== $cookies ? $cookies : $_COOKIE);
         $this->files = new ParameterBag($this->convertFileInformation(null !== $files ? $files : $_FILES));
         $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
-        $this->headers = new HeaderBag($this->initializeHeaders(), 'request');
+        $this->headers = new HeaderBag($this->initializeHeaders());
 
         $this->languages = null;
         $this->charsets = null;
@@ -200,6 +200,12 @@ class Request
         return $dup;
     }
 
+    /**
+     * Clones the current request.
+     *
+     * Note that the session is not cloned as duplicated requests
+     * are most of the time sub-requests of the main one.
+     */
     public function __clone()
     {
         $this->query      = clone $this->query;
@@ -245,11 +251,6 @@ class Request
 
     public function getSession()
     {
-        if (null === $this->session) {
-            $this->session = new Session(new NativeSessionStorage());
-        }
-        $this->session->start();
-
         return $this->session;
     }
 
@@ -293,6 +294,17 @@ class Request
         return $this->server->get('SCRIPT_NAME', $this->server->get('ORIG_SCRIPT_NAME', ''));
     }
 
+    /**
+     * Returns the path being requested relative to the executed script.
+     *
+     * Suppose this request is instantiated from /mysite on localhost:
+     *
+     *  * http://localhost/mysite              returns an empty string
+     *  * http://localhost/mysite/about        returns '/about'
+     *  * http://localhost/mysite/about?var=1  returns '/about'
+     *
+     * @return string
+     */
     public function getPathInfo()
     {
         if (null === $this->pathInfo) {
@@ -302,6 +314,17 @@ class Request
         return $this->pathInfo;
     }
 
+    /**
+     * Returns the root path from which this request is executed.
+     *
+     * Suppose that an index.php file instantiates this request object:
+     *
+     *  * http://localhost/index.php        returns an empty string
+     *  * http://localhost/index.php/page   returns an empty string
+     *  * http://localhost/web/index.php    return '/web'
+     *
+     * @return string
+     */
     public function getBasePath()
     {
         if (null === $this->basePath) {
@@ -311,6 +334,14 @@ class Request
         return $this->basePath;
     }
 
+    /**
+     * Returns the root url from which this request is executed.
+     *
+     * This is similar to getBasePath(), except that it also includes the
+     * script filename (e.g. index.php) if one exists.
+     *
+     * @return string
+     */
     public function getBaseUrl()
     {
         if (null === $this->baseUrl) {
@@ -330,6 +361,13 @@ class Request
         return $this->server->get('SERVER_PORT');
     }
 
+    /**
+     * Returns the HTTP host being requested.
+     *
+     * The port name will be appended to the host if it's non-standard.
+     *
+     * @return string
+     */
     public function getHttpHost()
     {
         $host = $this->headers->get('HOST');
@@ -339,9 +377,9 @@ class Request
 
         $scheme = $this->getScheme();
         $name   = $this->server->get('SERVER_NAME');
-        $port   = $this->server->get('SERVER_PORT');
+        $port   = $this->getPort();
 
-        if (($scheme === 'http' && $port === 80) || ($scheme === 'https' && $port === 443)) {
+        if (($scheme == 'http' && $port == 80) || ($scheme == 'https' && $port == 443)) {
             return $name;
         } else {
             return $name.':'.$port;
@@ -372,6 +410,18 @@ class Request
         }
 
         return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$this->getPathInfo().$qs;
+    }
+
+    /**
+     * Generates a normalized URI for the given path.
+     *
+     * @param string $path A path to use instead of the current one
+     *
+     * @return string The normalized URI for the path
+     */
+    public function getUriForPath($path)
+    {
+        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$path;
     }
 
     /**
@@ -427,10 +477,15 @@ class Request
         if ($host = $this->headers->get('X_FORWARDED_HOST')) {
             $elements = explode(',', $host);
 
-            return trim($elements[count($elements) - 1]);
+            $host = trim($elements[count($elements) - 1]);
         } else {
-            return $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            $host = $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
         }
+
+        // Remove port number from host
+        $elements = explode(':', $host);
+
+        return trim($elements[0]);
     }
 
     public function setMethod($method)
@@ -562,7 +617,7 @@ class Request
 
     public function isNoCache()
     {
-        return $this->headers->getCacheControl()->isNoCache() || 'no-cache' == $this->headers->get('Pragma');
+        return $this->headers->hasCacheControlDirective('no-cache') || 'no-cache' == $this->headers->get('Pragma');
     }
 
     /**
@@ -738,8 +793,6 @@ class Request
 
     protected function prepareBaseUrl()
     {
-        $baseUrl = '';
-
         $filename = basename($this->server->get('SCRIPT_FILENAME'));
 
         if (basename($this->server->get('SCRIPT_NAME')) === $filename) {
@@ -801,7 +854,6 @@ class Request
 
     protected function prepareBasePath()
     {
-        $basePath = '';
         $filename = basename($this->server->get('SCRIPT_FILENAME'));
         $baseUrl = $this->getBaseUrl();
         if (empty($baseUrl)) {
@@ -867,10 +919,12 @@ class Request
                 $keys = array_keys($data);
                 sort($keys);
 
-                if ($keys == $fileKeys) {
-                    $fixedFiles[$key] = new UploadedFile($data['tmp_name'], $data['name'], $data['type'], $data['size'], $data['error']);
-                } else {
+                if ($keys != $fileKeys) {
                     $fixedFiles[$key] = $this->convertFileInformation($data);
+                } else if ($data['error'] === UPLOAD_ERR_NO_FILE) {
+                    $fixedFiles[$key] = null;
+                } else {
+                    $fixedFiles[$key] = new UploadedFile($data['tmp_name'], $data['name'], $data['type'], $data['size'], $data['error']);
                 }
             }
         }
@@ -897,8 +951,8 @@ class Request
     {
         if (!is_array($data)) {
             return $data;
-        }    
-        
+        }
+
         $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
         $keys = array_keys($data);
         sort($keys);

@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
 /**
  * Profiler.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Profiler
 {
@@ -271,7 +271,7 @@ class Profiler
     public function set(array $collectors = array())
     {
         $this->collectors = array();
-        foreach ($collectors as $name => $collector) {
+        foreach ($collectors as $collector) {
             $this->add($collector);
         }
     }

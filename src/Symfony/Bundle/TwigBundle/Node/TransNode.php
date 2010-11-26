@@ -18,9 +18,9 @@ namespace Symfony\Bundle\TwigBundle\Node;
  */
 class TransNode extends \Twig_Node
 {
-    public function __construct(\Twig_NodeInterface $body, \Twig_NodeInterface $domain, \Twig_Node_Expression $count = null, \Twig_Node_Expression $vars = null, $lineno, $tag = null)
+    public function __construct(\Twig_NodeInterface $body, \Twig_NodeInterface $domain, \Twig_Node_Expression $count = null, \Twig_Node_Expression $vars = null, $isSimple, $lineno, $tag = null)
     {
-        parent::__construct(array('count' => $count, 'body' => $body, 'domain' => $domain, 'vars' => $vars), array(), $lineno, $tag);
+        parent::__construct(array('count' => $count, 'body' => $body, 'domain' => $domain, 'vars' => $vars), array('is_simple' => $isSimple), $lineno, $tag);
     }
 
     /**
@@ -32,14 +32,14 @@ class TransNode extends \Twig_Node
     {
         $compiler->addDebugInfo($this);
 
-        if ($this->isSimpleString($this->body)) {
-            list($msg, $vars) = $this->compileString($this->body);
+        $defaults = null;
+        if ($this->getAttribute('is_simple')) {
+            list($msg, $defaults) = $this->compileString($this->getNode('body'));
         } else {
-            $msg = $this->body;
-            $vars = $this->vars;
+            $msg = $this->getNode('body');
         }
 
-        $method = null === $this->count ? 'trans' : 'transChoice';
+        $method = null === $this->getNode('count') ? 'trans' : 'transChoice';
 
         $compiler
             ->write('echo $this->env->getExtension(\'translator\')->getTranslator()->'.$method.'(')
@@ -48,33 +48,41 @@ class TransNode extends \Twig_Node
 
         $compiler->raw(', ');
 
-        if (null !== $this->count) {
+        if (null !== $this->getNode('count')) {
             $compiler
-                ->subcompile($this->count)
+                ->subcompile($this->getNode('count'))
                 ->raw(', ')
             ;
         }
 
-        $compiler->raw('array(');
+        $compiler->raw('array_merge(');
 
-        if (is_array($vars)) {
-            foreach ($vars as $var) {
+        if (null === $defaults) {
+            $compiler->raw('array()');
+        } else {
+            $compiler->raw('array(');
+            foreach ($defaults as $default) {
                 $compiler
-                    ->string('{{ '.$var['name'].' }}')
+                    ->string('{{ '.$default->getAttribute('name').' }}')
                     ->raw(' => ')
-                    ->subcompile($var)
+                    ->subcompile($default)
                     ->raw(', ')
                 ;
             }
-        } elseif (null !== $vars) {
-            $compiler->subcompile($vars);
-        } else {
+            $compiler->raw(')');
+        }
+
+        $compiler->raw(', ');
+
+        if (null === $this->getNode('vars')) {
             $compiler->raw('array()');
+        } else {
+            $compiler->subcompile($this->getNode('vars'));
         }
 
         $compiler
-            ->raw("), ")
-            ->subcompile($this->domain)
+            ->raw('), ')
+            ->subcompile($this->getNode('domain'))
             ->raw(");\n")
         ;
     }
@@ -89,34 +97,17 @@ class TransNode extends \Twig_Node
         $vars = array();
         foreach ($body as $node) {
             if ($node instanceof \Twig_Node_Print) {
-                $n = $node->expr;
+                $n = $node->getNode('expr');
                 while ($n instanceof \Twig_Node_Expression_Filter) {
-                    $n = $n->node;
+                    $n = $n->getNode('node');
                 }
-                $msg .= sprintf('{{ %s }}', $n['name']);
-                $vars[] = new \Twig_Node_Expression_Name($n['name'], $n->getLine());
+                $msg .= sprintf('{{ %s }}', $n->getAttribute('name'));
+                $vars[] = new \Twig_Node_Expression_Name($n->getAttribute('name'), $n->getLine());
             } else {
-                $msg .= $node['data'];
+                $msg .= $node->getAttribute('data');
             }
         }
 
         return array(new \Twig_Node(array(new \Twig_Node_Expression_Constant(trim($msg), $node->getLine()))), $vars);
-    }
-
-    protected function isSimpleString(\Twig_NodeInterface $body)
-    {
-        foreach ($body as $i => $node) {
-            if (
-                $node instanceof \Twig_Node_Text
-                ||
-                ($node instanceof \Twig_Node_Print && $node->expr instanceof \Twig_Node_Expression_Name)
-            ) {
-                continue;
-            }
-
-            return false;
-        }
-
-        return true;
     }
 }

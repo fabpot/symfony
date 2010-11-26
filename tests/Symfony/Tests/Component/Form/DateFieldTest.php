@@ -84,6 +84,23 @@ class DateFieldTest extends DateTimeTestCase
         $this->assertEquals($input, $field->getDisplayedData());
     }
 
+    public function testBind_fromChoice_empty()
+    {
+        $field = new DateField('name', array('widget' => DateField::CHOICE, 'required' => false));
+
+        $input = array(
+            'day' => '',
+            'month' => '',
+            'year' => '',
+        );
+
+        $field->setLocale('de_AT');
+        $field->bind($input);
+
+        $this->assertSame(null, $field->getData());
+        $this->assertEquals($input, $field->getDisplayedData());
+    }
+
     public function testSetData_differentTimezones()
     {
         $field = new DateField('name', array(
@@ -100,118 +117,120 @@ class DateFieldTest extends DateTimeTestCase
         $this->assertEquals('01.06.2010', $field->getDisplayedData());
     }
 
-    public function testRenderAsInput()
-    {
-        $field = new DateField('name', array('widget' => 'input'));
-
-        $field->setLocale('de_AT');
-        $field->setData(new \DateTime('2010-06-02 UTC'));
-
-        $html = '<input id="name" name="name" value="02.06.2010" type="text" class="foobar" />';
-
-        $this->assertEquals($html, $field->render(array(
-            'class' => 'foobar',
-        )));
-    }
-
-    public function testRenderAsInputWithFormat()
-    {
-        $field = new DateField('name', array('widget' => 'input', 'format' => 'short'));
-
-        $field->setLocale('de_AT');
-        $field->setData(new \DateTime('2010-06-02 UTC'));
-
-        $html = '<input id="name" name="name" value="02.06.10" type="text" />';
-
-        $this->assertEquals($html, $field->render());
-    }
-
-    public function testRenderAsChoice()
+    public function testIsYearWithinRange_returnsTrueIfWithin()
     {
         $field = new DateField('name', array(
+            'widget' => 'input',
             'years' => array(2010, 2011),
-            'months' => array(6, 7),
-            'days' => array(1, 2),
-            'widget' => DateField::CHOICE,
         ));
 
         $field->setLocale('de_AT');
-        $field->setData(new \DateTime('2010-06-02 UTC'));
+        $field->bind('2.6.2010');
 
-        $html = <<<EOF
-<select id="name_day" name="name[day]" class="foobar">
-<option value="1">01</option>
-<option value="2" selected="selected">02</option>
-</select>.<select id="name_month" name="name[month]" class="foobar">
-<option value="6" selected="selected">06</option>
-<option value="7">07</option>
-</select>.<select id="name_year" name="name[year]" class="foobar">
-<option value="2010" selected="selected">2010</option>
-<option value="2011">2011</option>
-</select>
-EOF;
-
-        $this->assertEquals($html, $field->render(array(
-            'class' => 'foobar',
-        )));
+        $this->assertTrue($field->isYearWithinRange());
     }
 
-    public function testRenderAsChoiceNonRequired()
+    public function testIsYearWithinRange_returnsTrueIfEmpty()
     {
         $field = new DateField('name', array(
+            'widget' => 'input',
             'years' => array(2010, 2011),
-            'months' => array(6, 7),
-            'days' => array(1, 2),
-            'widget' => DateField::CHOICE,
         ));
 
         $field->setLocale('de_AT');
-        $field->setRequired(false);
+        $field->bind('');
 
-        $html = <<<EOF
-<select id="name_day" name="name[day]">
-<option value="" selected="selected"></option>
-<option value="1">01</option>
-<option value="2">02</option>
-</select>.<select id="name_month" name="name[month]">
-<option value="" selected="selected"></option>
-<option value="6">06</option>
-<option value="7">07</option>
-</select>.<select id="name_year" name="name[year]">
-<option value="" selected="selected"></option>
-<option value="2010">2010</option>
-<option value="2011">2011</option>
-</select>
-EOF;
-
-        $this->assertEquals($html, $field->render());
+        $this->assertTrue($field->isYearWithinRange());
     }
 
-    public function testRenderAsChoiceWithPattern()
+    public function testIsYearWithinRange_returnsFalseIfNotContained()
     {
         $field = new DateField('name', array(
-            'years' => array(2010, 2011),
-            'months' => array(6, 7),
-            'days' => array(1, 2),
-            'widget' => DateField::CHOICE,
-            'pattern' => '%day%---%month%---%year%',
+            'widget' => 'input',
+            'years' => array(2010, 2012),
         ));
 
         $field->setLocale('de_AT');
+        $field->bind('2.6.2011');
 
-        $html = <<<EOF
-<select id="name_day" name="name[day]">
-<option value="1">01</option>
-<option value="2">02</option>
-</select>---<select id="name_month" name="name[month]">
-<option value="6">06</option>
-<option value="7">07</option>
-</select>---<select id="name_year" name="name[year]">
-<option value="2010">2010</option>
-<option value="2011">2011</option>
-</select>
-EOF;
+        $this->assertFalse($field->isYearWithinRange());
+    }
 
-        $this->assertEquals($html, $field->render());
+    public function testIsMonthWithinRange_returnsTrueIfWithin()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'months' => array(6, 7),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('2.6.2010');
+
+        $this->assertTrue($field->isMonthWithinRange());
+    }
+
+    public function testIsMonthWithinRange_returnsTrueIfEmpty()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'months' => array(6, 7),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('');
+
+        $this->assertTrue($field->isMonthWithinRange());
+    }
+
+    public function testIsMonthWithinRange_returnsFalseIfNotContained()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'months' => array(6, 8),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('2.7.2010');
+
+        $this->assertFalse($field->isMonthWithinRange());
+    }
+
+    public function testIsDayWithinRange_returnsTrueIfWithin()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'days' => array(6, 7),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('6.6.2010');
+
+        $this->assertTrue($field->isDayWithinRange());
+    }
+
+    public function testIsDayWithinRange_returnsTrueIfEmpty()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'days' => array(6, 7),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('');
+
+        $this->assertTrue($field->isDayWithinRange());
+    }
+
+    public function testIsDayWithinRange_returnsFalseIfNotContained()
+    {
+        $field = new DateField('name', array(
+            'widget' => 'input',
+            'days' => array(6, 8),
+        ));
+
+        $field->setLocale('de_AT');
+        $field->bind('7.6.2010');
+
+        $this->assertFalse($field->isDayWithinRange());
     }
 }

@@ -14,6 +14,7 @@
     <parameter key="doctrine.odm.mongodb.document_manager_class">Doctrine\ODM\MongoDB\DocumentManager</parameter>
     <parameter key="doctrine.odm.mongodb.logger_class">Symfony\Bundle\DoctrineMongoDBBundle\Logger\DoctrineMongoDBLogger</parameter>
     <parameter key="doctrine.odm.mongodb.data_collector_class">Symfony\Bundle\DoctrineMongoDBBundle\DataCollector\DoctrineMongoDBDataCollector</parameter>
+    <parameter key="doctrine.odm.mongodb.event_manager_class">Symfony\Bundle\DoctrineMongoDBBundle\Event\EventManager</parameter>
 
     <!-- proxies -->
     <parameter key="doctrine.odm.mongodb.proxy_namespace">Proxies</parameter>
@@ -41,6 +42,9 @@
     <parameter key="doctrine.odm.mongodb.xml_mapping_dirs">%doctrine.odm.mongodb.mapping_dirs%</parameter>
     <parameter key="doctrine.odm.mongodb.yml_mapping_dirs">%doctrine.odm.mongodb.mapping_dirs%</parameter>
     <parameter key="doctrine.odm.mongodb.document_dirs" type="collection"></parameter>
+
+    <!-- security/user -->
+    <parameter key="security.user.provider.document.class">Symfony\Bundle\DoctrineMongoDBBundle\Security\DocumentUserProvider</parameter>
   </parameters>
 
   <services>
@@ -56,7 +60,10 @@
     </service>
     <service id="doctrine.odm.mongodb.metadata.annotation_reader" class="%doctrine.odm.mongodb.metadata.annotation_reader_class%">
       <argument type="service" id="doctrine.odm.mongodb.cache" />
-      <call method="setDefaultAnnotationNamespace"><argument>%doctrine.odm.mongodb.metadata.annotation_default_namespace%</argument></call>
+      <call method="setAnnotationNamespaceAlias">
+        <argument>Doctrine\ODM\MongoDB\Mapping\</argument>
+        <argument>mongodb</argument>
+      </call>
     </service>
     <service id="doctrine.odm.mongodb.metadata.xml" class="%doctrine.odm.mongodb.metadata.xml_class%"><argument>%doctrine.odm.mongodb.xml_mapping_dirs%</argument></service>
     <service id="doctrine.odm.mongodb.metadata.yml" class="%doctrine.odm.mongodb.metadata.yml_class%"><argument>%doctrine.odm.mongodb.yml_mapping_dirs%</argument></service>
@@ -69,8 +76,20 @@
       <argument type="service" id="logger" on-invalid="null" />
      </service>
     <service id="doctrine.odm.mongodb.data_collector" class="%doctrine.odm.mongodb.data_collector_class%">
-      <tag name="data_collector" />
+      <tag name="data_collector" template="DoctrineMongoDBBundle:Collector:mongodb" />
       <argument type="service" id="doctrine.odm.mongodb.logger" />
+    </service>
+
+    <service id="security.user.document_manager" alias="doctrine.odm.mongodb.default_document_manager" />
+
+    <!-- events -->
+    <service id="doctrine.odm.mongodb.event_manager" class="%doctrine.odm.mongodb.event_manager_class%">
+      <call method="loadTaggedEventListeners">
+        <argument type="service" id="service_container" />
+      </call>
+      <call method="loadTaggedEventSubscribers">
+        <argument type="service" id="service_container" />
+      </call>
     </service>
   </services>
 </container>

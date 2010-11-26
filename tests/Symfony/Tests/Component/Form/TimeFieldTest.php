@@ -85,7 +85,6 @@ class TimeFieldTest extends DateTimeTestCase
         $data = array(
             'hour' => '3',
             'minute' => '4',
-            'second' => '0',
         );
 
         $field->bind($input);
@@ -134,127 +133,105 @@ class TimeFieldTest extends DateTimeTestCase
         $this->assertEquals($displayedData, $field->getDisplayedData());
     }
 
-    public function testRenderAsInputs()
+    public function testIsHourWithinRange_returnsTrueIfWithin()
     {
         $field = new TimeField('name', array(
-            'widget' => TimeField::INPUT,
-            'data_timezone' => 'UTC',
-            'user_timezone' => 'UTC',
+            'hours' => array(6, 7),
         ));
 
-        $field->setData(new \DateTime('04:05 UTC'));
+        $field->bind(array('hour' => '06', 'minute' => '12'));
 
-        $html = <<<EOF
-<input id="name_hour" name="name[hour]" value="04" type="text" maxlength="2" size="1" class="foobar" />
-:
-<input id="name_minute" name="name[minute]" value="05" type="text" maxlength="2" size="1" class="foobar" />
-EOF;
-
-        $this->assertEquals(str_replace("\n", '', $html), $field->render(array('class' => 'foobar')));
+        $this->assertTrue($field->isHourWithinRange());
     }
 
-    public function testRenderAsInputs_withSeconds()
+    public function testIsHourWithinRange_returnsTrueIfEmpty()
     {
         $field = new TimeField('name', array(
-            'widget' => TimeField::INPUT,
-            'data_timezone' => 'UTC',
-            'user_timezone' => 'UTC',
+            'hours' => array(6, 7),
+        ));
+
+        $field->bind(array('hour' => '', 'minute' => ''));
+
+        $this->assertTrue($field->isHourWithinRange());
+    }
+
+    public function testIsHourWithinRange_returnsFalseIfNotContained()
+    {
+        $field = new TimeField('name', array(
+            'hours' => array(6, 7),
+        ));
+
+        $field->bind(array('hour' => '08', 'minute' => '12'));
+
+        $this->assertFalse($field->isHourWithinRange());
+    }
+
+    public function testIsMinuteWithinRange_returnsTrueIfWithin()
+    {
+        $field = new TimeField('name', array(
+            'minutes' => array(6, 7),
+        ));
+
+        $field->bind(array('hour' => '06', 'minute' => '06'));
+
+        $this->assertTrue($field->isMinuteWithinRange());
+    }
+
+    public function testIsMinuteWithinRange_returnsTrueIfEmpty()
+    {
+        $field = new TimeField('name', array(
+            'minutes' => array(6, 7),
+        ));
+
+        $field->bind(array('hour' => '', 'minute' => ''));
+
+        $this->assertTrue($field->isMinuteWithinRange());
+    }
+
+    public function testIsMinuteWithinRange_returnsFalseIfNotContained()
+    {
+        $field = new TimeField('name', array(
+            'minutes' => array(6, 7),
+        ));
+
+        $field->bind(array('hour' => '06', 'minute' => '08'));
+
+        $this->assertFalse($field->isMinuteWithinRange());
+    }
+
+    public function testIsSecondWithinRange_returnsTrueIfWithin()
+    {
+        $field = new TimeField('name', array(
+            'seconds' => array(6, 7),
             'with_seconds' => true,
         ));
 
-        $field->setData(new \DateTime('04:05:06 UTC'));
+        $field->bind(array('hour' => '04', 'minute' => '05', 'second' => '06'));
 
-        $html = <<<EOF
-<input id="name_hour" name="name[hour]" value="04" type="text" maxlength="2" size="1" class="foobar" />
-:
-<input id="name_minute" name="name[minute]" value="05" type="text" maxlength="2" size="1" class="foobar" />
-:
-<input id="name_second" name="name[second]" value="06" type="text" maxlength="2" size="1" class="foobar" />
-EOF;
-
-        $this->assertEquals(str_replace("\n", '', $html), $field->render(array('class' => 'foobar')));
+        $this->assertTrue($field->isSecondWithinRange());
     }
 
-    public function testRenderAsChoices()
+    public function testIsSecondWithinRange_returnsTrueIfEmpty()
     {
         $field = new TimeField('name', array(
-            'hours' => array(3, 4),
-            'minutes' => array(5, 6),
-            'widget' => TimeField::CHOICE,
-            'data_timezone' => 'UTC',
-            'user_timezone' => 'UTC',
-        ));
-
-        $field->setData(new \DateTime('04:05 UTC'));
-
-        $html = <<<EOF
-<select id="name_hour" name="name[hour]" class="foobar">
-<option value="3">03</option>
-<option value="4" selected="selected">04</option>
-</select>:<select id="name_minute" name="name[minute]" class="foobar">
-<option value="5" selected="selected">05</option>
-<option value="6">06</option>
-</select>
-EOF;
-
-        $this->assertEquals($html, $field->render(array('class' => 'foobar')));
-    }
-
-    public function testRenderAsChoices_withSeconds()
-    {
-        $field = new TimeField('name', array(
-            'hours' => array(3, 4),
-            'minutes' => array(5, 6),
-            'seconds' => array(7, 8),
-            'widget' => TimeField::CHOICE,
-            'data_timezone' => 'UTC',
-            'user_timezone' => 'UTC',
+            'seconds' => array(6, 7),
             'with_seconds' => true,
         ));
 
-        $field->setData(new \DateTime('04:05:07 UTC'));
+        $field->bind(array('hour' => '', 'minute' => ''));
 
-        $html = <<<EOF
-<select id="name_hour" name="name[hour]" class="foobar">
-<option value="3">03</option>
-<option value="4" selected="selected">04</option>
-</select>:<select id="name_minute" name="name[minute]" class="foobar">
-<option value="5" selected="selected">05</option>
-<option value="6">06</option>
-</select>:<select id="name_second" name="name[second]" class="foobar">
-<option value="7" selected="selected">07</option>
-<option value="8">08</option>
-</select>
-EOF;
-
-        $this->assertEquals($html, $field->render(array('class' => 'foobar')));
+        $this->assertTrue($field->isSecondWithinRange());
     }
 
-    public function testRenderAsChoices_nonRequired()
+    public function testIsSecondWithinRange_returnsFalseIfNotContained()
     {
         $field = new TimeField('name', array(
-            'hours' => array(3, 4),
-            'minutes' => array(5, 6),
-            'widget' => TimeField::CHOICE,
-            'data_timezone' => 'UTC',
-            'user_timezone' => 'UTC',
+            'seconds' => array(6, 7),
+            'with_seconds' => true,
         ));
 
-        $field->setRequired(false);
-        $field->setData(new \DateTime('04:05 UTC'));
+        $field->bind(array('hour' => '04', 'minute' => '05', 'second' => '08'));
 
-        $html = <<<EOF
-<select id="name_hour" name="name[hour]" class="foobar">
-<option value=""></option>
-<option value="3">03</option>
-<option value="4" selected="selected">04</option>
-</select>:<select id="name_minute" name="name[minute]" class="foobar">
-<option value=""></option>
-<option value="5" selected="selected">05</option>
-<option value="6">06</option>
-</select>
-EOF;
-
-        $this->assertEquals($html, $field->render(array('class' => 'foobar')));
+        $this->assertFalse($field->isSecondWithinRange());
     }
 }

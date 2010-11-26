@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Form\Exception\MissingOptionsException;
 use Symfony\Component\Form\Exception\InvalidOptionsException;
 
@@ -36,12 +45,6 @@ abstract class Configurable
      * @var array
      */
     private $requiredOptions = array();
-
-    /**
-     * The allowed values for each option
-     * @var array
-     */
-    private $allowedValues = array();
 
     /**
      * Reads, validates and stores the given options
@@ -84,7 +87,7 @@ abstract class Configurable
      */
     public function getOption($name)
     {
-        return array_key_exists($name, $this->options) ? $this->options[$name] : null;
+        return isset($this->options[$name]) ? $this->options[$name] : null;
     }
 
     /**
@@ -133,5 +136,10 @@ abstract class Configurable
     public function hasOption($name)
     {
         return isset($this->options[$name]);
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
     }
 }

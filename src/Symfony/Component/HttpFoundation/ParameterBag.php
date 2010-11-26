@@ -14,7 +14,7 @@ namespace Symfony\Component\HttpFoundation;
 /**
  * ParameterBag is a container for key/value pairs.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ParameterBag
 {
@@ -105,11 +105,11 @@ class ParameterBag
     }
 
     /**
-     * Deletes a parameter.
+     * Removes a parameter.
      *
      * @param string $key The key
      */
-    public function delete($key)
+    public function remove($key)
     {
         unset($this->parameters[$key]);
     }

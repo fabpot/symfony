@@ -2,8 +2,18 @@
 
 namespace Symfony\Component\Form;
 
-use Symfony\Component\Form\ValueTransformer\StringToDateTimeTransformer;
-use Symfony\Component\Form\ValueTransformer\TimestampToDateTimeTransformer;
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+use Symfony\Component\Form\ValueTransformer\ReversedTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToStringTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToTimestampTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
 use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
 
@@ -72,26 +82,26 @@ class DateTimeField extends FieldGroup
             'seconds' => $this->getOption('seconds'),
         )));
 
-        $transformers = array();
-
         if ($this->getOption('type') == self::STRING) {
-            $transformers[] = new StringToDateTimeTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToStringTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                ))
             ));
         } else if ($this->getOption('type') == self::TIMESTAMP) {
-            $transformers[] = new TimestampToDateTimeTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToTimestampTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                ))
             ));
         }
 
-        $transformers[] = new DateTimeToArrayTransformer(array(
+        $this->setValueTransformer(new DateTimeToArrayTransformer(array(
             'input_timezone' => $this->getOption('data_timezone'),
             'output_timezone' => $this->getOption('user_timezone'),
-        ));
-
-        $this->setValueTransformer(new ValueTransformerChain($transformers));
+        )));
     }
 
     /**
@@ -110,16 +120,5 @@ class DateTimeField extends FieldGroup
     protected function reverseTransform($value)
     {
         return parent::reverseTransform(array_merge($value['date'], $value['time']));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function render(array $attributes = array())
-    {
-        $html = $this->get('date')->render($attributes)."\n";
-        $html .= $this->get('time')->render($attributes);
-
-        return $html;
     }
 }

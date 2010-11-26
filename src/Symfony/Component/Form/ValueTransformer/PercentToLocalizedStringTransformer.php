@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form\ValueTransformer;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use \Symfony\Component\Form\ValueTransformer\ValueTransformerException;
 
 /**
@@ -43,6 +52,10 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
      */
     public function transform($value)
     {
+        if ($value === null) {
+            return '';
+        }
+
         if (!is_numeric($value)) {
             throw new \InvalidArgumentException(sprintf('Numeric argument expected, %s given', gettype($value)));
         }
@@ -68,10 +81,14 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
      * @param  number $value  Percentage value.
      * @return number         Normalized value.
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value, $originalValue)
     {
         if (!is_string($value)) {
             throw new \InvalidArgumentException(sprintf('Expected argument of type string, %s given', gettype($value)));
+        }
+
+        if ($value === '') {
+            return null;
         }
 
         $formatter = $this->getNumberFormatter();

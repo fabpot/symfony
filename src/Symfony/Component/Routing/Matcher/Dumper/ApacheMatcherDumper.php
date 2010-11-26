@@ -16,12 +16,12 @@ use Symfony\Component\Routing\Route;
 /**
  * ApacheMatcherDumper dumps a matcher in the Apache .htaccess format.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ApacheMatcherDumper extends MatcherDumper
 {
     /**
-     * Dumps a set of routes to a .htacces format.
+     * Dumps a set of routes to a .htaccess format.
      *
      * Available options:
      *
@@ -36,12 +36,12 @@ class ApacheMatcherDumper extends MatcherDumper
     public function dump(array $options = array())
     {
         $options = array_merge(array(
-            'script_name' => 'index.php',
+            'script_name' => 'app.php',
         ), $options);
 
         $regexes = array();
 
-        foreach ($this->routes->getRoutes() as $name => $route) {
+        foreach ($this->routes->all() as $name => $route) {
             $compiledRoute = $route->compile();
 
             // Apache "only" supports 9 variables

@@ -2,15 +2,16 @@
 
 namespace Symfony\Component\Form;
 
-use Symfony\Component\Form\ValueTransformer\PercentToLocalizedStringTransformer;
-
 /*
- * This file is part of the symfony package.
+ * This file is part of the Symfony framework.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
  */
+
+use Symfony\Component\Form\ValueTransformer\PercentToLocalizedStringTransformer;
 
 /**
  * A localized field for entering percentage values.
@@ -28,19 +29,13 @@ class PercentField extends NumberField
     protected function configure()
     {
         $this->addOption('precision', 0);
-        $this->addOption('type', self::FRACTIONAL);
+        $this->addOption('percent_type', self::FRACTIONAL);
+
+        parent::configure();
 
         $this->setValueTransformer(new PercentToLocalizedStringTransformer(array(
             'precision' => $this->getOption('precision'),
-            'type' => $this->getOption('type'),
+            'type' => $this->getOption('percent_type'),
         )));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function render(array $attributes = array())
-    {
-        return parent::render($attributes).' %';
     }
 }

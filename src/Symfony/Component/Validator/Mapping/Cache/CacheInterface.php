@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator\Mapping\Cache;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
 /**
@@ -16,21 +25,21 @@ interface CacheInterface
      *
      * @param string $class
      */
-    public function has($class);
+    function has($class);
 
     /**
      * Returns the metadata for the given class from the cache
      *
-     * @param string $class
+     * @param string $class Class Name
+     *
      * @return ClassMetadata
      */
-    public function read($class);
+    function read($class);
 
     /**
      * Stores a class metadata in the cache
      *
-     * @param $class
-     * @param $metadata
+     * @param ClassMetadata $metadata A Class Metadata
      */
-    public function write(ClassMetadata $metadata);
+    function write(ClassMetadata $metadata);
 }

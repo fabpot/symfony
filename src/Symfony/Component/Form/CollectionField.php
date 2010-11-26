@@ -2,20 +2,20 @@
 
 namespace Symfony\Component\Form;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Form\FieldInterface;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
-/*
- * This file is part of the symfony package.
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 /**
  * @author     Bernhard Schussek <bernhard.schussek@symfony-project.com>
- * @version    SVN: $Id: FieldGroup.php 79 2009-12-08 12:53:15Z bernhard $
  */
 class CollectionField extends FieldGroup
 {
@@ -47,12 +47,14 @@ class CollectionField extends FieldGroup
             $field->setRequired(false);
             $this->add($field);
         }
+
+        parent::configure();
     }
 
     public function setData($collection)
     {
         if (!is_array($collection) && !$collection instanceof \Traversable) {
-            throw new UnexpectedTypeException('The data must be an array');
+            throw new UnexpectedTypeException('The data passed to the CollectionField must be an array or a Traversable');
         }
 
         foreach ($this as $name => $field) {
@@ -70,7 +72,7 @@ class CollectionField extends FieldGroup
 
     public function bind($taintedData)
     {
-        if (is_null($taintedData)) {
+        if (null === $taintedData) {
             $taintedData = array();
         }
 

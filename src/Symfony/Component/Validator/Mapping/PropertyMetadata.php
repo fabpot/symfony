@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator\Mapping;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 class PropertyMetadata extends MemberMetadata
@@ -9,8 +18,8 @@ class PropertyMetadata extends MemberMetadata
     /**
      * Constructor.
      *
-     * @param string $class  The class this property is defined on
-     * @param string $name   The name of this property
+     * @param string $class The class this property is defined on
+     * @param string $name  The name of this property
      */
     public function __construct($class, $name)
     {

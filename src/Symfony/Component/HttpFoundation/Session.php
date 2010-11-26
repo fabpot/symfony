@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\SessionStorage\SessionStorageInterface;
 /**
  * Session.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Session implements \Serializable
 {
@@ -36,7 +36,7 @@ class Session implements \Serializable
     {
         $this->storage = $storage;
         $this->options = $options;
-        $this->attributes = array();
+        $this->attributes = array('_flash' => array(), '_locale' => $this->getDefaultLocale());
         $this->started = false;
     }
 
@@ -58,7 +58,7 @@ class Session implements \Serializable
         }
 
         if (!isset($this->attributes['_locale'])) {
-            $this->attributes['_locale'] = isset($this->options['default_locale']) ? $this->options['default_locale'] : 'en';
+            $this->attributes['_locale'] = $this->getDefaultLocale();
         }
 
         // flag current flash messages to be removed at shutdown
@@ -76,10 +76,6 @@ class Session implements \Serializable
      */
     public function has($name)
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return array_key_exists($name, $this->attributes);
     }
 
@@ -93,10 +89,6 @@ class Session implements \Serializable
      */
     public function get($name, $default = null)
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : $default;
     }
 
@@ -122,10 +114,6 @@ class Session implements \Serializable
      */
     public function getAttributes()
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return $this->attributes;
     }
 
@@ -153,9 +141,31 @@ class Session implements \Serializable
         if (false === $this->started) {
             $this->start();
         }
+
         if (array_key_exists($name, $this->attributes)) {
             unset($this->attributes[$name]);
         }
+    }
+
+    /**
+     * Clears all attributes.
+     */
+    public function clear()
+    {
+        if (false === $this->started) {
+            $this->start();
+        }
+
+        $this->attributes = array();
+    }
+
+    /**
+     * Invalidates the current session.
+     */
+    public function invalidate()
+    {
+        $this->clear();
+        $this->storage->regenerate();
     }
 
     /**
@@ -165,10 +175,6 @@ class Session implements \Serializable
      */
     public function getLocale()
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return $this->attributes['_locale'];
     }
 
@@ -186,16 +192,12 @@ class Session implements \Serializable
         $this->attributes['_locale'] = $locale;
     }
 
-    public function getFlashMessages()
+    public function getFlashes()
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return $this->attributes['_flash'];
     }
 
-    public function setFlashMessages($values)
+    public function setFlashes($values)
     {
         if (false === $this->started) {
             $this->start();
@@ -206,10 +208,6 @@ class Session implements \Serializable
 
     public function getFlash($name, $default = null)
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return array_key_exists($name, $this->attributes['_flash']) ? $this->attributes['_flash'][$name] : $default;
     }
 
@@ -225,17 +223,15 @@ class Session implements \Serializable
 
     public function hasFlash($name)
     {
-        if (false === $this->started) {
-            $this->start();
-        }
-
         return array_key_exists($name, $this->attributes['_flash']);
     }
 
     public function save()
     {
         if (true === $this->started) {
-            $this->attributes['_flash'] = array_diff_key($this->attributes['_flash'], $this->oldFlashes);
+            if (isset($this->attributes['_flash'])) {
+                $this->attributes['_flash'] = array_diff_key($this->attributes['_flash'], $this->oldFlashes);
+            }
             $this->storage->write('_symfony2', $this->attributes);
         }
     }
@@ -255,5 +251,10 @@ class Session implements \Serializable
         list($this->storage, $this->options) = unserialize($serialized);
         $this->attributes = array();
         $this->started = false;
+    }
+
+    protected function getDefaultLocale()
+    {
+        return isset($this->options['default_locale']) ? $this->options['default_locale'] : 'en';
     }
 }

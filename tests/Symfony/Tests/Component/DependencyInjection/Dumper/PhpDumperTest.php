@@ -78,31 +78,18 @@ class PhpDumperTest extends \PHPUnit_Framework_TestCase
         $container->set('bar', $bar = new \stdClass());
         $container->setParameter('foo_bar', 'foo_bar');
 
-        $this->assertEquals($bar, $container->getBarService(), '->set() overrides an already defined service');
         $this->assertEquals($bar, $container->get('bar'), '->set() overrides an already defined service');
     }
 
-    public function testInterfaceInjectors()
+    public function testOverrideServiceWhenUsingADumpedContainerAndServiceIsUsedFromAnotherOne()
     {
-        $interfaceInjector = new InterfaceInjector('FooClass');
-        $interfaceInjector->addMethodCall('setBar', array('someValue'));
-        $container = include self::$fixturesPath.'/containers/interfaces1.php';
-        $container->addInterfaceInjector($interfaceInjector);
+        require_once self::$fixturesPath.'/php/services9.php';
+        require_once self::$fixturesPath.'/includes/foo.php';
+        require_once self::$fixturesPath.'/includes/classes.php';
 
-        $dumper = new PhpDumper($container);
+        $container = new \ProjectServiceContainer();
+        $container->set('bar', $bar = new \stdClass());
 
-        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-2.php', $dumper->dump(), '->dump() dumps interface injectors');
-    }
-
-    public function testInterfaceInjectorsAndServiceFactories()
-    {
-        $interfaceInjector = new InterfaceInjector('BarClass');
-        $interfaceInjector->addMethodCall('setFoo', array('someValue'));
-        $container = include self::$fixturesPath.'/containers/interfaces2.php';
-        $container->addInterfaceInjector($interfaceInjector);
-
-        $dumper = new PhpDumper($container);
-
-        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-1.php', $dumper->dump(), '->dump() dumps interface injectors');
+        $this->assertSame($bar, $container->get('foo')->bar, '->set() overrides an already defined service');
     }
 }

@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
  * Marks classes that you can inject a locale into.
  *
@@ -14,5 +23,5 @@ interface Localizable
      *
      * @param string $locale
      */
-    public function setLocale($locale);
+    function setLocale($locale);
 }

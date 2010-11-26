@@ -17,7 +17,7 @@ use Symfony\Component\Form\Form;
 /**
  * Bundle.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class FrameworkBundle extends Bundle
 {
@@ -27,7 +27,7 @@ class FrameworkBundle extends Bundle
     public function boot()
     {
         if ($this->container->has('error_handler')) {
-            $this->container['error_handler'];
+            $this->container->get('error_handler');
         }
 
         if ($this->container->hasParameter('csrf_secret')) {

@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * YamlFileLoader loads Yaml routing files.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class YamlFileLoader extends FileLoader
 {
@@ -83,7 +83,7 @@ class YamlFileLoader extends FileLoader
 
         $route = new Route($config['pattern'], $defaults, $requirements, $options);
 
-        $collection->addRoute($name, $route);
+        $collection->add($name, $route);
     }
 
     protected function loadFile($file)

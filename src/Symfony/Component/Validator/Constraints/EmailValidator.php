@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator\Constraints;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -42,10 +51,12 @@ class EmailValidator extends ConstraintValidator
     }
 
     /**
-     * Check DNA Records for MX type (from Doctrine EmailValidator)
+     * Check DNA Records for MX type (from Doctrine EmailValidator).
      *
      * @param string $host Host name
+     *
      * @return boolean
+     *
      * @licence This software consists of voluntary contributions made by many individuals
      * and is licensed under the LGPL. For more information, see
      * <http://www.phpdoctrine.org>.
@@ -53,7 +64,7 @@ class EmailValidator extends ConstraintValidator
     private function checkMX($host)
     {
         // We have different behavior here depending of OS and PHP version
-        if (strtolower(substr(PHP_OS, 0, 3)) == 'win' && version_compare(PHP_VERSION, '5.3.0', '<'))  {
+        if (strtolower(substr(PHP_OS, 0, 3)) === 'win' && version_compare(PHP_VERSION, '5.3.0', '<'))  {
             $output = array();
 
             @exec('nslookup -type=MX '.escapeshellcmd($host) . ' 2>&1', $output);

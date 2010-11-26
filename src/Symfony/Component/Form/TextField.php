@@ -3,11 +3,12 @@
 namespace Symfony\Component\Form;
 
 /*
- * This file is part of the symfony package.
+ * This file is part of the Symfony framework.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
  */
 
 /**
@@ -15,26 +16,20 @@ namespace Symfony\Component\Form;
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class TextField extends InputField
+class TextField extends Field
 {
     /**
      * {@inheritDoc}
      */
     protected function configure()
     {
-        parent::configure();
-
         $this->addOption('max_length');
+
+        parent::configure();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function render(array $attributes = array())
+    public function getMaxLength()
     {
-        return parent::render(array_merge(array(
-            'type'        => 'text',
-            'maxlength'   => $this->getOption('max_length'),
-        ), $attributes));
+        return $this->getOption('max_length');
     }
 }

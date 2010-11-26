@@ -5,7 +5,6 @@ namespace Symfony\Bundle\FrameworkBundle\Controller;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\HttpKernel\Exception\FlattenException;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
-use Symfony\Component\OutputEscaper\SafeDecorator;
 
 /*
  * This file is part of the Symfony framework.
@@ -19,7 +18,7 @@ use Symfony\Component\OutputEscaper\SafeDecorator;
 /**
  * ExceptionController.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ExceptionController extends ContainerAware
 {
@@ -29,28 +28,42 @@ class ExceptionController extends ContainerAware
      * @param FlattenException     $exception A FlattenException instance
      * @param DebugLoggerInterface $logger    A DebugLoggerInterface instance
      * @param string               $format    The format to use for rendering (html, xml, ...)
-     * @param Boolean              $embedded  Whether the rendered Response will be embedded or not
      *
      * @throws \InvalidArgumentException When the exception template does not exist
      */
-    public function exceptionAction(FlattenException $exception, DebugLoggerInterface $logger = null, $format = 'html', $embedded = false)
+    public function exceptionAction(FlattenException $exception, DebugLoggerInterface $logger = null, $format = 'html')
     {
         $this->container->get('request')->setRequestFormat($format);
 
         $currentContent = '';
-        while (false !== $content = ob_get_clean()) {
-            $currentContent .= $content;
+        while (ob_get_level()) {
+            $currentContent .= ob_get_clean();
         }
 
-        $response = $this->container->get('templating')->renderResponse(
-            'FrameworkBundle:Exception:'.($this->container->get('kernel')->isDebug() ? 'exception.php' : 'error.php'),
+        if ('Symfony\Component\Security\Exception\AccessDeniedException' === $exception->getClass()) {
+            $exception->setStatusCode($exception->getCode());
+        }
+
+        $template = $this->container->get('kernel')->isDebug() ? 'exception' : 'error';
+        if ($this->container->get('kernel')->isDebug() && 'html' == $format) {
+            $template = 'exception_full';
+        }
+        $template = 'FrameworkBundle:Exception:'.$template.'.twig';
+
+        $templating = $this->container->get('templating');
+        if (!$templating->exists($template)) {
+            $this->container->get('request')->setRequestFormat('html');
+        }
+
+        $response = $templating->renderResponse(
+            $template,
             array(
-                'exception'      => new SafeDecorator($exception),
+                'exception'      => $exception,
                 'logger'         => $logger,
                 'currentContent' => $currentContent,
-                'embedded'       => $embedded,
             )
         );
+
         $response->setStatusCode($exception->getStatusCode());
 
         return $response;

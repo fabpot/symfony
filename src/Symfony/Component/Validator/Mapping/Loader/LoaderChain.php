@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator\Mapping\Loader;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
@@ -20,11 +29,11 @@ class LoaderChain implements LoaderInterface
     protected $loaders;
 
     /**
-     * Acccepts a list of LoaderInterface instances
+     * Accepts a list of LoaderInterface instances
      *
-     * @param  array $loaders    An array of LoaderInterface instances
-     * @throws MappingException  If any of the loaders does not implement
-     *                           LoaderInterface
+     * @param array $loaders An array of LoaderInterface instances
+     *
+     * @throws MappingException If any of the loaders does not implement LoaderInterface
      */
     public function __construct(array $loaders)
     {

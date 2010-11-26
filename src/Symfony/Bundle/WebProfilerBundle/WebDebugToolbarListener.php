@@ -21,7 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
 /**
  * WebDebugToolbarListener injects the Web Debug Toolbar.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class WebDebugToolbarListener
 {
@@ -47,22 +47,20 @@ class WebDebugToolbarListener
 
     public function handle(Event $event, Response $response)
     {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->getParameter('request_type')) {
+        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
             return $response;
         }
 
         if ($response->headers->has('X-Debug-Token') && $response->isRedirect() && $this->interceptRedirects) {
-            $r = new Response();
-            $r->setContent(
+            $response->setContent(
                 sprintf('<html><head></head><body><h1>This Request redirects to<br /><a href="%s">%s</a>.</h1></body></html>',
                 $response->headers->get('location'), $response->headers->get('location'))
             );
-            $r->headers->set('X-Debug-Token', $response->headers->get('X-Debug-Token'));
-
-            $response = $r;
+            $response->setStatusCode(200);
+            $response->headers->remove('Location');
         }
 
-        $request = $event->getParameter('request');
+        $request = $event->get('request');
         if (!$response->headers->has('X-Debug-Token')
             || '3' === substr($response->getStatusCode(), 0, 1)
             || ($response->headers->has('Content-Type') && false === strpos($response->headers->get('Content-Type'), 'html'))
@@ -72,7 +70,7 @@ class WebDebugToolbarListener
             return $response;
         }
 
-        $response->setContent($this->injectToolbar($request, $response));
+        $this->injectToolbar($request, $response);
 
         return $response;
     }
@@ -86,12 +84,23 @@ class WebDebugToolbarListener
      */
     protected function injectToolbar(Request $request, Response $response)
     {
-        $toolbar = "\n".str_replace("\n", '', $this->resolver->render('WebProfilerBundle:Profiler:toolbar'))."\n";
-        $content = str_ireplace('</body>', $toolbar.'</body>', $response->getContent(), $count);
-        if (!$count) {
-            $content .= $toolbar;
+        if (function_exists('mb_stripos')) {
+            $posrFunction = 'mb_strripos';
+            $substrFunction = 'mb_substr';
+        } else {
+            $posrFunction = 'strripos';
+            $substrFunction = 'substr';
         }
 
-        return $content;
+        $toolbar = "\n".str_replace("\n", '', $this->resolver->render('WebProfilerBundle:Profiler:toolbar'))."\n";
+        $content = $response->getContent();
+
+        if (false === $pos = $posrFunction($content, '</body>')) {
+            $content .= $toolbar;
+        } else {
+            $content = $substrFunction($content, 0, $pos).$toolbar.$substrFunction($content, $pos);
+        }
+
+        $response->setContent($content);
     }
 }

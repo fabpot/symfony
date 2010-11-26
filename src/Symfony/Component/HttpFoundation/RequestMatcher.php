@@ -22,6 +22,7 @@ class RequestMatcher implements RequestMatcherInterface
     protected $host;
     protected $methods;
     protected $ip;
+    protected $attributes = array();
 
     /**
      * Adds a check for the URL host name.
@@ -60,7 +61,24 @@ class RequestMatcher implements RequestMatcherInterface
      */
     public function matchMethod($method)
     {
-        $this->methods = array_map(function ($m) { return strtolower($m); }, is_array($method) ? $method : array($method));
+        $this->methods = array_map(
+            function ($m)
+            {
+                return strtolower($m);
+            },
+            is_array($method) ? $method : array($method)
+        );
+    }
+
+    /**
+     * Adds a check for request attribute.
+     *
+     * @param string $key    The request attribute name
+     * @param string $regexp A Regexp
+     */
+    public function matchAttribute($key, $regexp)
+    {
+        $this->attributes[$key] = $regexp;
     }
 
     /**
@@ -72,15 +90,21 @@ class RequestMatcher implements RequestMatcherInterface
             return false;
         }
 
-        if (null !== $this->path && !preg_match($this->path, $request->getPathInfo())) {
+        foreach ($this->attributes as $key => $pattern) {
+            if (!preg_match('#^'.$pattern.'$#', $request->attributes->get($key))) {
+                return false;
+            }
+        }
+
+        if (null !== $this->path && !preg_match('#^'.$this->path.'$#', $request->getPathInfo())) {
             return false;
         }
 
-        if (null !== $this->host && !preg_match($this->host, $request->getHost())) {
+        if (null !== $this->host && !preg_match('#^'.$this->host.'$#', $request->getHost())) {
             return false;
         }
 
-        if (null !== $this->ip && !$this->checkIp($this->host, $request->getClientIp())) {
+        if (null !== $this->ip && !$this->checkIp($request->getClientIp())) {
             return false;
         }
 
@@ -90,9 +114,9 @@ class RequestMatcher implements RequestMatcherInterface
     protected function checkIp($ip)
     {
         if (false !== strpos($this->ip, '/')) {
-            list($address, $netmask) = $this->ip;
+            list($address, $netmask) = explode('/', $this->ip);
 
-            if ($netmask <= 0) {
+            if ($netmask < 1 || $netmask > 32) {
                 return false;
             }
         } else {

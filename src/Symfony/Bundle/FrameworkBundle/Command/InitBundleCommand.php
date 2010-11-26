@@ -22,7 +22,7 @@ use Symfony\Bundle\FrameworkBundle\Util\Mustache;
 /**
  * Initializes a new bundle.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class InitBundleCommand extends Command
 {
@@ -51,14 +51,17 @@ class InitBundleCommand extends Command
             throw new \InvalidArgumentException('The namespace must end with Bundle.');
         }
 
-        $dirs = $this->container->getKernelService()->getBundleDirs();
+        $dirs = $this->container->get('kernel')->getBundleDirs();
 
         $tmp = str_replace('\\', '/', $namespace);
         $namespace = str_replace('/', '\\', dirname($tmp));
         $bundle = basename($tmp);
 
         if (!isset($dirs[$namespace])) {
-            throw new \InvalidArgumentException(sprintf('Unable to initialize the bundle (%s not defined).', $namespace));
+            throw new \InvalidArgumentException(sprintf(
+                "Unable to initialize the bundle (%s is not a defined namespace).\n" .
+                "Defined namespaces are: %s",
+                $namespace, implode(', ', array_keys($dirs))));
         }
 
         $dir = $dirs[$namespace];

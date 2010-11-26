@@ -2,10 +2,19 @@
 
 namespace Symfony\Component\Form;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Form\ValueTransformer\ReversedTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
-use Symfony\Component\Form\ValueTransformer\StringToDateTimeTransformer;
-use Symfony\Component\Form\ValueTransformer\TimestampToDateTimeTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToStringTransformer;
+use Symfony\Component\Form\ValueTransformer\DateTimeToTimestampTransformer;
 use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
 
 class TimeField extends FieldGroup
@@ -66,57 +75,55 @@ class TimeField extends FieldGroup
             }
         }
 
-        $transformers = array();
+        $fields = array('hour', 'minute');
 
-        if ($this->getOption('type') == self::STRING) {
-            $transformers[] = new StringToDateTimeTransformer(array(
-                'format' => 'H:i:s',
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
-            ));
-        } else if ($this->getOption('type') == self::TIMESTAMP) {
-            $transformers[] = new TimestampToDateTimeTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
-            ));
-        } else if ($this->getOption('type') === self::RAW) {
-            $transformers[] = new ReversedTransformer(new DateTimeToArrayTransformer(array(
-                'input_timezone' => $this->getOption('data_timezone'),
-                'output_timezone' => $this->getOption('data_timezone'),
-                'fields' => array('hour', 'minute', 'second'),
-            )));
+        if ($this->getOption('with_seconds')) {
+            $fields[] = 'second';
         }
 
-        $transformers[] = new DateTimeToArrayTransformer(array(
+        if ($this->getOption('type') == self::STRING) {
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToStringTransformer(array(
+                    'format' => 'H:i:s',
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                ))
+            ));
+        } else if ($this->getOption('type') == self::TIMESTAMP) {
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToTimestampTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                ))
+            ));
+        } else if ($this->getOption('type') === self::RAW) {
+            $this->setNormalizationTransformer(new ReversedTransformer(
+                new DateTimeToArrayTransformer(array(
+                    'input_timezone' => $this->getOption('data_timezone'),
+                    'output_timezone' => $this->getOption('data_timezone'),
+                    'fields' => $fields,
+                ))
+            ));
+        }
+
+        $this->setValueTransformer(new DateTimeToArrayTransformer(array(
             'input_timezone' => $this->getOption('data_timezone'),
             'output_timezone' => $this->getOption('user_timezone'),
             // if the field is rendered as choice field, the values should be trimmed
             // of trailing zeros to render the selected choices correctly
             'pad' => $this->getOption('widget') == self::INPUT,
-        ));
-
-        $this->setValueTransformer(new ValueTransformerChain($transformers));
+            'fields' => $fields,
+        )));
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function render(array $attributes = array())
+    public function isField()
     {
-        if ($this->getOption('widget') == self::INPUT) {
-            $attributes = array_merge(array(
-                'size' => '1',
-            ), $attributes);
-        }
+        return self::INPUT === $this->getOption('widget');
+    }
 
-        $html = $this->get('hour')->render($attributes);
-        $html .= ':' . $this->get('minute')->render($attributes);
-
-        if ($this->getOption('with_seconds')) {
-            $html .= ':' . $this->get('second')->render($attributes);
-        }
-
-        return $html;
+    public function isWithSeconds()
+    {
+        return $this->getOption('with_seconds');
     }
 
     /**
@@ -139,5 +146,50 @@ class TimeField extends FieldGroup
         }
 
         return $choices;
+    }
+
+    /**
+     * Returns whether the hour of the field's data is valid
+     *
+     * The hour is valid if it is contained in the list passed to the field's
+     * option "hours".
+     *
+     * @return boolean
+     */
+    public function isHourWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('H'), $this->getOption('hours'));
+    }
+
+    /**
+     * Returns whether the minute of the field's data is valid
+     *
+     * The minute is valid if it is contained in the list passed to the field's
+     * option "minutes".
+     *
+     * @return boolean
+     */
+    public function isMinuteWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('i'), $this->getOption('minutes'));
+    }
+
+    /**
+     * Returns whether the second of the field's data is valid
+     *
+     * The second is valid if it is contained in the list passed to the field's
+     * option "seconds".
+     *
+     * @return boolean
+     */
+    public function isSecondWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return $date === null || in_array($date->format('s'), $this->getOption('seconds'));
     }
 }

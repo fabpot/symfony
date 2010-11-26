@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Matcher\Dumper\ApacheMatcherDumper;
 /**
  * RouterDebugCommand.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class RouterDebugCommand extends Command
 {
@@ -53,7 +53,7 @@ EOF
         $router = $this->container->get('router');
 
         $routes = array();
-        foreach ($router->getRouteCollection()->getRoutes() as $name => $route) {
+        foreach ($router->getRouteCollection()->all() as $name => $route) {
             $routes[$name] = $route->compile();
         }
 

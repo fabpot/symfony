@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
@@ -28,7 +37,6 @@ class ChoiceField extends HybridField
         $this->addOption('multiple', false);
         $this->addOption('expanded', false);
         $this->addOption('empty_value', '');
-        $this->addOption('translate_choices', false);
 
         if (!is_array($this->getOption('choices'))) {
             throw new UnexpectedTypeException('The choices option must be an array');
@@ -42,7 +50,7 @@ class ChoiceField extends HybridField
             $this->preferredChoices = array_flip($this->getOption('preferred_choices'));
         }
 
-        if ($this->getOption('expanded')) {
+        if ($this->isExpanded()) {
             $this->setFieldMode(self::GROUP);
 
             $choices = $this->getOption('choices');
@@ -59,6 +67,65 @@ class ChoiceField extends HybridField
         } else {
             $this->setFieldMode(self::FIELD);
         }
+
+        parent::configure();
+    }
+
+    public function getName()
+    {
+        // TESTME
+        $name = parent::getName();
+
+        // Add "[]" to the name in case a select tag with multiple options is
+        // displayed. Otherwise only one of the selected options is sent in the
+        // POST request.
+        if ($this->isMultipleChoice() && !$this->isExpanded()) {
+            $name .= '[]';
+        }
+
+        return $name;
+    }
+
+    public function getPreferredChoices()
+    {
+        return array_intersect_key($this->getOption('choices'), $this->preferredChoices);
+    }
+
+    public function getOtherChoices()
+    {
+        return array_diff_key($this->getOption('choices'), $this->preferredChoices);
+    }
+
+    public function getEmptyValue()
+    {
+        return $this->isRequired() ? false : $this->getOption('empty_value');
+    }
+
+    public function getLabel($choice)
+    {
+        $choices = $this->getOption('choices');
+
+        return isset($choices[$choice]) ? $choices[$choice] : null;
+    }
+
+    public function isChoiceGroup($choice)
+    {
+        return is_array($choice) || $choice instanceof \Traversable;
+    }
+
+    public function isChoiceSelected($choice)
+    {
+        return in_array($choice, (array) $this->getDisplayedData());
+    }
+
+    public function isMultipleChoice()
+    {
+        return $this->getOption('multiple');
+    }
+
+    public function isExpanded()
+    {
+        return $this->getOption('expanded');
     }
 
     /**
@@ -69,17 +136,13 @@ class ChoiceField extends HybridField
      */
     protected function newChoiceField($choice, $label)
     {
-        if ($this->getOption('multiple')) {
+        if ($this->isMultipleChoice()) {
             return new CheckboxField($choice, array(
                 'value' => $choice,
-                'label' => $label,
-                'translate_label' => $this->getOption('translate_choices'),
             ));
         } else {
             return new RadioField($choice, array(
                 'value' => $choice,
-                'label' => $label,
-                'translate_label' => $this->getOption('translate_choices'),
             ));
         }
     }
@@ -92,7 +155,7 @@ class ChoiceField extends HybridField
      */
     public function bind($value)
     {
-        if (!$this->getOption('multiple') && $this->getOption('expanded')) {
+        if (!$this->isMultipleChoice() && $this->isExpanded()) {
             $value = $value === null ? array() : array($value => true);
         }
 
@@ -114,19 +177,19 @@ class ChoiceField extends HybridField
      */
     protected function transform($value)
     {
-        if ($this->getOption('expanded')) {
+        if ($this->isExpanded()) {
+            $value = parent::transform($value);
             $choices = $this->getOption('choices');
 
             foreach ($choices as $choice => $_) {
-                $choices[$choice] = $this->getOption('multiple')
+                $choices[$choice] = $this->isMultipleChoice()
                     ? in_array($choice, (array)$value, true)
                     : ($choice === $value);
             }
 
             return $choices;
-        } else {
-            return parent::transform($value);
         }
+        return parent::transform($value);
     }
 
     /**
@@ -144,7 +207,7 @@ class ChoiceField extends HybridField
      */
     protected function reverseTransform($value)
     {
-        if ($this->getOption('expanded')) {
+        if ($this->isExpanded()) {
             $choices = array();
 
             foreach ($value as $choice => $selected) {
@@ -153,100 +216,12 @@ class ChoiceField extends HybridField
                 }
             }
 
-            if ($this->getOption('multiple')) {
-                return $choices;
+            if ($this->isMultipleChoice()) {
+                $value = $choices;
             } else {
-                return count($choices) > 0 ? current($choices) : null;
-            }
-        } else {
-            return parent::reverseTransform($value);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function render(array $attributes = array())
-    {
-        if ($this->getOption('expanded')) {
-            $html = "";
-
-            foreach ($this as $field) {
-                $html .= $field->render()."\n";
-            }
-
-            return $html;
-        } else {
-            $attrs['id'] = $this->getId();
-            $attrs['name'] = $this->getName();
-            $attrs['disabled'] = $this->isDisabled();
-
-            // Add "[]" to the name in case a select tag with multiple options is
-            // displayed. Otherwise only one of the selected options is sent in the
-            // POST request.
-            if ($this->getOption('multiple') && !$this->getOption('expanded')) {
-                $attrs['name'] .= '[]';
-            }
-
-            if ($this->getOption('multiple')) {
-                $attrs['multiple'] = 'multiple';
-            }
-
-            $selected = array_flip(array_map('strval', (array)$this->getDisplayedData()));
-            $html = "\n";
-
-            if (!$this->isRequired()) {
-                $html .= $this->renderChoices(array('' => $this->getOption('empty_value')), $selected)."\n";
-            }
-
-            $choices = $this->getOption('choices');
-
-            if (count($this->preferredChoices) > 0) {
-                $html .= $this->renderChoices(array_intersect_key($choices, $this->preferredChoices), $selected)."\n";
-                $html .= $this->generator->contentTag('option', $this->getOption('separator'), array('disabled' => true))."\n";
-            }
-
-            $html .= $this->renderChoices(array_diff_key($choices, $this->preferredChoices), $selected)."\n";
-
-            return $this->generator->contentTag('select', $html, array_merge($attrs, $attributes));
-        }
-    }
-
-    /**
-     * Returns an array of option tags for the choice field
-     *
-     * @return array  An array of option tags
-     */
-    protected function renderChoices(array $choices, array $selected)
-    {
-        $options = array();
-
-        foreach ($choices as $key => $option) {
-            if (is_array($option)) {
-                $options[] = $this->generator->contentTag(
-                    'optgroup',
-                    "\n".$this->renderChoices($option, $selected)."\n",
-                    array('label' => $this->generator->escape($key))
-                );
-            } else {
-                $attributes = array('value' => $this->generator->escape($key));
-
-                if (isset($selected[strval($key)])) {
-                    $attributes['selected'] = true;
-                }
-
-                if ($this->getOption('translate_choices')) {
-                    $option = $this->translate($option);
-                }
-
-                $options[] = $this->generator->contentTag(
-                    'option',
-                    $this->generator->escape($option),
-                    $attributes
-                );
+                $value =  count($choices) > 0 ? current($choices) : null;
             }
         }
-
-        return implode("\n", $options);
+        return parent::reverseTransform($value);
     }
 }

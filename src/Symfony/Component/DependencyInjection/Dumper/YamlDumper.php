@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\Reference;
 /**
  * YamlDumper dumps a service container as a YAML string.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class YamlDumper extends Dumper
 {
@@ -176,7 +176,7 @@ class YamlDumper extends Dumper
     protected function getServiceCall($id, Reference $reference = null)
     {
         if (null !== $reference && ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE !== $reference->getInvalidBehavior()) {
-            return sprintf('@@%s', $id);
+            return sprintf('@?%s', $id);
         } else {
             return sprintf('@%s', $id);
         }

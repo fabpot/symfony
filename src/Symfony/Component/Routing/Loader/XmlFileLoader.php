@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Resource\FileResource;
 /**
  * XmlFileLoader loads XML routing files.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class XmlFileLoader extends FileLoader
 {
@@ -104,7 +104,7 @@ class XmlFileLoader extends FileLoader
 
         $route = new Route((string) $definition->getAttribute('pattern'), $defaults, $requirements, $options);
 
-        $collection->addRoute((string) $definition->getAttribute('id'), $route);
+        $collection->add((string) $definition->getAttribute('id'), $route);
     }
 
     /**
@@ -128,11 +128,11 @@ class XmlFileLoader extends FileLoader
     /**
      * @throws \InvalidArgumentException When xml doesn't validate its xsd schema
      */
-    protected function validate($dom, $file)
+    protected function validate(\DOMDocument $dom, $file)
     {
         $parts = explode('/', str_replace('\\', '/', __DIR__.'/schema/routing/routing-1.0.xsd'));
         $drive = '\\' === DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
-        $location = 'file:///'.$drive.implode('/', array_map('rawurlencode', $parts));
+        $location = 'file:///'.$drive.implode('/', $parts);
 
         $current = libxml_use_internal_errors(true);
         if (!$dom->schemaValidate($location)) {

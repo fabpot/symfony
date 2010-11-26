@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Exception\InvalidOptionsException;
 use Symfony\Component\Validator\Exception\MissingOptionsException;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
@@ -17,14 +26,14 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class Constraint
+abstract class Constraint
 {
     const DEFAULT_GROUP = 'Default';
 
-    public $groups = self::DEFAULT_GROUP;
+    public $groups = array(self::DEFAULT_GROUP);
 
     /**
-     * Initializes the constraint with options
+     * Initializes the constraint with options.
      *
      * You should pass an associative array. The keys should be the names of
      * existing properties in this class. The values should be the value for these
@@ -38,16 +47,17 @@ class Constraint
      * requiredOptions() to return the names of these options. If any
      * option is not set here, an exception is thrown.
      *
-     * @param mixed $options                  The options (as associative array)
-     *                                        or the value for the default
-     *                                        option (any other type)
-     * @throws InvalidOptionsException        When you pass the names of non-existing
-     *                                        options
-     * @throws MissingOptionsException        When you don't pass any of the options
-     *                                        returned by requiredOptions()
-     * @throws ConstraintDefinitionException  When you don't pass an associative
-     *                                        array, but defaultOption() returns
-     *                                        NULL
+     * @param mixed $options The options (as associative array)
+     *                       or the value for the default
+     *                       option (any other type)
+     *
+     * @throws InvalidOptionsException       When you pass the names of non-existing
+     *                                       options
+     * @throws MissingOptionsException       When you don't pass any of the options
+     *                                       returned by requiredOptions()
+     * @throws ConstraintDefinitionException When you don't pass an associative
+     *                                       array, but defaultOption() returns
+     *                                       NULL
      */
     public function __construct($options = null)
     {
@@ -70,7 +80,7 @@ class Constraint
         } else if ($options !== null && ! (is_array($options) && count($options) === 0)) {
             $option = $this->defaultOption();
 
-            if (is_null($option)) {
+            if (null === $option) {
                 throw new ConstraintDefinitionException(
                     sprintf('No default option is configured for constraint %s', get_class($this))
                 );

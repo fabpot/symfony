@@ -27,8 +27,8 @@ use Doctrine\ORM\Tools\ConvertDoctrine1Schema;
 /**
  * Convert a Doctrine 1 schema to Doctrine 2 mapping files
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
- * @author     Jonathan H. Wage <jonwage@gmail.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Jonathan H. Wage <jonwage@gmail.com>
  */
 class ConvertDoctrine1SchemaDoctrineCommand extends DoctrineCommand
 {
@@ -56,8 +56,8 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $bundleClass = null;
-        $bundleDirs = $this->container->getKernelService()->getBundleDirs();
-        foreach ($this->container->getKernelService()->getBundles() as $bundle) {
+        $bundleDirs = $this->container->get('kernel')->getBundleDirs();
+        foreach ($this->container->get('kernel')->getBundles() as $bundle) {
             if (strpos(get_class($bundle), $input->getArgument('bundle')) !== false) {
                 $tmp = dirname(str_replace('\\', '/', get_class($bundle)));
                 $namespace = str_replace('/', '\\', dirname($tmp));

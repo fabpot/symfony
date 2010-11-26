@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Form\ValueTransformer;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
  * Reverses a transformer
  *
@@ -33,13 +42,13 @@ class ReversedTransformer implements ValueTransformerInterface
      */
     public function transform($value)
     {
-        return $this->reversedTransformer->reverseTransform($value);
+        return $this->reversedTransformer->reverseTransform($value, null);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value, $originalValue)
     {
         return $this->reversedTransformer->transform($value);
     }

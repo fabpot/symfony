@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Test\WebTestCase as BaseWebTestCase;
 /**
  * WebTestCase is the base class for functional tests.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 abstract class WebTestCase extends BaseWebTestCase
 {
@@ -39,7 +39,7 @@ abstract class WebTestCase extends BaseWebTestCase
         $this->kernel = $this->createKernel($options);
         $this->kernel->boot();
 
-        $client = $this->kernel->getContainer()->getTest_ClientService();
+        $client = $this->kernel->getContainer()->get('test.client');
         $client->setServerParameters($server);
 
         return $client;
@@ -74,6 +74,8 @@ abstract class WebTestCase extends BaseWebTestCase
             $dir = $dir.'/'.$matches[1];
         } elseif (preg_match('/\-c +([^ ]+)/', $cli, $matches)) {
             $dir = $dir.'/'.$matches[1];
+        } elseif (file_exists(getcwd().'/phpunit.xml') || file_exists(getcwd().'/phpunit.xml.dist')) {
+            $dir = getcwd();
         } else {
             throw new \RuntimeException('Unable to guess the Kernel directory.');
         }

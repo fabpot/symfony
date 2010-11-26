@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * This implementation resolves the _controller attribute from the short notation
  * to the fully-qualified form (from a:b:c to class:method).
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class DelegatingLoader extends BaseDelegatingLoader
 {
@@ -55,7 +55,7 @@ class DelegatingLoader extends BaseDelegatingLoader
     {
         $collection = parent::load($resource);
 
-        foreach ($collection->getRoutes() as $name => $route) {
+        foreach ($collection->all() as $name => $route) {
             if ($controller = $route->getDefault('_controller')) {
                 try {
                     $controller = $this->converter->fromShortNotation($controller);

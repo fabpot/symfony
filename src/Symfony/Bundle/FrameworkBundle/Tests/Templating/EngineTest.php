@@ -13,6 +13,15 @@ namespace Symfony\Bundle\FrameworkBundle\Tests\Templating;
 
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
 use Symfony\Bundle\FrameworkBundle\Templating\Engine;
+use Symfony\Component\Templating\Storage\StringStorage;
+use Symfony\Component\Templating\Storage\Storage;
+use Symfony\Component\Templating\Renderer\PhpRenderer;
+
+// simulate the rendering of another controller
+function foo($engine)
+{
+    return $engine->render('FooBundle:Foo:tpl1.php', array('foo' => 'foo <br />'));
+}
 
 class EngineTest extends TestCase
 {
@@ -31,7 +40,7 @@ class EngineTest extends TestCase
         return array(
             array('BlogBundle:Post:index.php', array('index', array('bundle' => 'BlogBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => ''))),
             array('BlogBundle:Post:index.twig', array('index', array('bundle' => 'BlogBundle', 'controller' => 'Post', 'renderer' => 'twig', 'format' => ''))),
-            array('BlogBundle:Post:index.xml.php', array('index', array('bundle' => 'BlogBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => 'xml'))),
+            array('BlogBundle:Post:index.xml.php', array('index', array('bundle' => 'BlogBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => '.xml'))),
         );
     }
 

@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 /*
  * This file is part of the Symfony framework.
@@ -19,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * RequestDataCollector.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class RequestDataCollector extends DataCollector
 {
@@ -37,6 +38,7 @@ class RequestDataCollector extends DataCollector
             'request_headers'    => $request->headers->all(),
             'request_server'     => $request->server->all(),
             'request_cookies'    => $request->cookies->all(),
+            'request_attributes' => $request->attributes->all(),
             'response_headers'   => $response->headers->all(),
             'session_attributes' => $request->hasSession() ? $request->getSession()->getAttributes() : array(),
         );
@@ -67,9 +69,14 @@ class RequestDataCollector extends DataCollector
         return new ParameterBag($this->data['request_cookies']);
     }
 
+    public function getRequestAttributes()
+    {
+        return new ParameterBag($this->data['request_attributes']);
+    }
+
     public function getResponseHeaders()
     {
-        return new HeaderBag($this->data['response_headers']);
+        return new ResponseHeaderBag($this->data['response_headers']);
     }
 
     public function getSessionAttributes()

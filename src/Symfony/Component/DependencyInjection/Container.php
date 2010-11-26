@@ -50,9 +50,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
  *  * IGNORE_ON_INVALID_REFERENCE:    Ignores the wrapping command asking for the reference
  *                                    (for instance, ignore a setter if the service does not exist)
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class Container implements ContainerInterface, \ArrayAccess
+class Container implements ContainerInterface
 {
     protected $parameterBag;
     protected $services;
@@ -123,7 +123,7 @@ class Container implements ContainerInterface, \ArrayAccess
      *
      * @param  string $name The parameter name
      *
-     * @return boolean  The presense of parameter in container
+     * @return boolean The presence of parameter in container
      */
     public function hasParameter($name)
     {
@@ -181,9 +181,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function get($id, $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE)
     {
-        if (!is_string($id)) {
-            throw new \InvalidArgumentException(sprintf('A service id should be a string (%s given).', str_replace("\n", '', var_export($id, true))));
-        }
+        $id = (string) $id;
 
         if (isset($this->services[$id])) {
             return $this->services[$id];
@@ -195,8 +193,6 @@ class Container implements ContainerInterface, \ArrayAccess
 
         if (self::EXCEPTION_ON_INVALID_REFERENCE === $invalidBehavior) {
             throw new \InvalidArgumentException(sprintf('The service "%s" does not exist.', $id));
-        } else {
-            return null;
         }
     }
 
@@ -218,73 +214,9 @@ class Container implements ContainerInterface, \ArrayAccess
         return array_merge($ids, array_keys($this->services));
     }
 
-    /**
-     * Returns true if the service id is defined (implements the ArrayAccess interface).
-     *
-     * @param  string  $id The service id
-     *
-     * @return Boolean true if the service id is defined, false otherwise
-     */
-    public function offsetExists($id)
-    {
-        return $this->has($id);
-    }
-
-    /**
-     * Gets a service by id (implements the ArrayAccess interface).
-     *
-     * @param  string $id The service id
-     *
-     * @return mixed  The parameter value
-     */
-    public function offsetGet($id)
-    {
-        return $this->get($id);
-    }
-
-    /**
-     * Sets a service (implements the ArrayAccess interface).
-     *
-     * @param string $id    The service id
-     * @param object $value The service
-     */
-    public function offsetSet($id, $value)
-    {
-        $this->set($id, $value);
-    }
-
-    /**
-     * Removes a service (implements the ArrayAccess interface).
-     *
-     * @param string $id The service id
-     */
-    public function offsetUnset($id)
-    {
-        throw new \LogicException(sprintf('You can\'t unset a service (%s).', $id));
-    }
-
-    /**
-     * Catches unknown methods.
-     *
-     * @param string $method    The called method name
-     * @param array  $arguments The method arguments
-     *
-     * @return mixed
-     *
-     * @throws \BadMethodCallException When calling to an undefined method
-     */
-    public function __call($method, $arguments)
-    {
-        if (!preg_match('/^get(.+)Service$/', $method, $match)) {
-            throw new \BadMethodCallException(sprintf('Call to undefined method %s::%s.', get_class($this), $method));
-        }
-
-        return $this->get(self::underscore($match[1]));
-    }
-
     static public function camelize($id)
     {
-        return preg_replace(array('/(^|_)+(.)/e', '/\.(.)/e'), array("strtoupper('\\2')", "'_'.strtoupper('\\1')"), $id);
+        return preg_replace(array('/(?:^|_)+(.)/e', '/\.(.)/e'), array("strtoupper('\\1')", "'_'.strtoupper('\\1')"), $id);
     }
 
     static public function underscore($id)

@@ -33,7 +33,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testSetGetConstructor()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setFactoryMethod('foo')), '->setFactoryMethod() implements a fluent interface');
+        $this->assertSame($def, $def->setFactoryMethod('foo'), '->setFactoryMethod() implements a fluent interface');
         $this->assertEquals('foo', $def->getFactoryMethod(), '->getFactoryMethod() returns the factory method name');
     }
 
@@ -52,7 +52,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testSetGetClass()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setClass('foo')), '->setClass() implements a fluent interface');
+        $this->assertSame($def, $def->setClass('foo'), '->setClass() implements a fluent interface');
         $this->assertEquals('foo', $def->getClass(), '->getClass() returns the class name');
     }
 
@@ -64,23 +64,29 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testArguments()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setArguments(array('foo'))), '->setArguments() implements a fluent interface');
+        $this->assertSame($def, $def->setArguments(array('foo')), '->setArguments() implements a fluent interface');
         $this->assertEquals(array('foo'), $def->getArguments(), '->getArguments() returns the arguments');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->addArgument('bar')), '->addArgument() implements a fluent interface');
+        $this->assertSame($def, $def->addArgument('bar'), '->addArgument() implements a fluent interface');
         $this->assertEquals(array('foo', 'bar'), $def->getArguments(), '->addArgument() adds an argument');
     }
 
     /**
      * @covers Symfony\Component\DependencyInjection\Definition::setMethodCalls
      * @covers Symfony\Component\DependencyInjection\Definition::addMethodCall
+     * @covers Symfony\Component\DependencyInjection\Definition::hasMethodCall
+     * @covers Symfony\Component\DependencyInjection\Definition::removeMethodCall
      */
     public function testMethodCalls()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setMethodCalls(array(array('foo', array('foo'))))), '->setMethodCalls() implements a fluent interface');
+        $this->assertSame($def, $def->setMethodCalls(array(array('foo', array('foo')))), '->setMethodCalls() implements a fluent interface');
         $this->assertEquals(array(array('foo', array('foo'))), $def->getMethodCalls(), '->getMethodCalls() returns the methods to call');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->addMethodCall('bar', array('bar'))), '->addMethodCall() implements a fluent interface');
+        $this->assertSame($def, $def->addMethodCall('bar', array('bar')), '->addMethodCall() implements a fluent interface');
         $this->assertEquals(array(array('foo', array('foo')), array('bar', array('bar'))), $def->getMethodCalls(), '->addMethodCall() adds a method to call');
+        $this->assertTrue($def->hasMethodCall('bar'), '->hasMethodCall() returns true if first argument is a method to call registered');
+        $this->assertFalse($def->hasMethodCall('no_registered'), '->hasMethodCall() returns false if first argument is not a method to call registered');
+        $this->assertSame($def, $def->removeMethodCall('bar'), '->removeMethodCall() implements a fluent interface');
+        $this->assertEquals(array(array('foo', array('foo'))), $def->getMethodCalls(), '->removeMethodCall() removes a method to call');
     }
 
     /**
@@ -90,7 +96,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testSetGetFile()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setFile('foo')), '->setFile() implements a fluent interface');
+        $this->assertSame($def, $def->setFile('foo'), '->setFile() implements a fluent interface');
         $this->assertEquals('foo', $def->getFile(), '->getFile() returns the file to include');
     }
 
@@ -102,7 +108,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     {
         $def = new Definition('stdClass');
         $this->assertTrue($def->isShared(), '->isShared() returns true by default');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setShared(false)), '->setShared() implements a fluent interface');
+        $this->assertSame($def, $def->setShared(false), '->setShared() implements a fluent interface');
         $this->assertFalse($def->isShared(), '->isShared() returns false if the instance must not be shared');
     }
 
@@ -113,7 +119,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testSetGetConfigurator()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->setConfigurator('foo')), '->setConfigurator() implements a fluent interface');
+        $this->assertSame($def, $def->setConfigurator('foo'), '->setConfigurator() implements a fluent interface');
         $this->assertEquals('foo', $def->getConfigurator(), '->getConfigurator() returns the configurator');
     }
 
@@ -123,7 +129,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     public function testClearTags()
     {
         $def = new Definition('stdClass');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->clearTags()), '->clearTags() implements a fluent interface');
+        $this->assertSame($def, $def->clearTags(), '->clearTags() implements a fluent interface');
         $def->addTag('foo', array('foo' => 'bar'));
         $def->clearTags();
         $this->assertEquals(array(), $def->getTags(), '->clearTags() removes all current tags');
@@ -138,7 +144,7 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     {
         $def = new Definition('stdClass');
         $this->assertEquals(array(), $def->getTag('foo'), '->getTag() returns an empty array if the tag is not defined');
-        $this->assertEquals(spl_object_hash($def), spl_object_hash($def->addTag('foo')), '->addTag() implements a fluent interface');
+        $this->assertSame($def, $def->addTag('foo'), '->addTag() implements a fluent interface');
         $this->assertEquals(array(array()), $def->getTag('foo'), '->getTag() returns attributes for a tag name');
         $def->addTag('foo', array('foo' => 'bar'));
         $this->assertEquals(array(array(), array('foo' => 'bar')), $def->getTag('foo'), '->addTag() can adds the same tag several times');

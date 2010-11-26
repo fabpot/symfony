@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 /**
  * TwigExtension.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class TwigExtension extends Extension
 {
@@ -36,6 +36,14 @@ class TwigExtension extends Extension
         }
 
         $container->setParameter('twig.options', array_replace($container->getParameter('twig.options'), $config));
+
+        // form resources
+        foreach (array('resources', 'resource') as $key) {
+            if (isset($config['form'][$key])) {
+                $resources = (array) $config['form'][$key];
+                $container->setParameter('twig.form.resources', array_merge($container->getParameter('twig.form.resources'), $resources));
+            }
+        }
     }
 
     /**

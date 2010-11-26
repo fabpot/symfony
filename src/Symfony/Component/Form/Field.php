@@ -2,32 +2,64 @@
 
 namespace Symfony\Component\Form;
 
-use Symfony\Component\Form\Exception\InvalidPropertyException;
-use Symfony\Component\Form\Exception\PropertyAccessDeniedException;
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Form\ValueTransformer\ValueTransformerInterface;
 use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
-use Symfony\Component\I18N\TranslatorInterface;
 
-abstract class Field extends Configurable implements FieldInterface
+/**
+ * Base class for form fields
+ *
+ * To implement your own form fields, you need to have a thorough understanding
+ * of the data flow within a form field. A form field stores its data in three
+ * different representations:
+ *
+ *   (1) the format required by the form's object
+ *   (2) a normalized format for internal processing
+ *   (3) the format used for display
+ *
+ * A date field, for example, may store a date as "Y-m-d" string (1) in the
+ * object. To facilitate processing in the field, this value is normalized
+ * to a DateTime object (2). In the HTML representation of your form, a
+ * localized string (3) is presented to and modified by the user.
+ *
+ * In most cases, format (1) and format (2) will be the same. For example,
+ * a checkbox field uses a boolean value both for internal processing as for
+ * storage in the object. In these cases you simply need to set a value
+ * transformer to convert between formats (2) and (3). You can do this by
+ * calling setValueTransformer() in the configure() method.
+ *
+ * In some cases though it makes sense to make format (1) configurable. To
+ * demonstrate this, let's extend our above date field to store the value
+ * either as "Y-m-d" string or as timestamp. Internally we still want to
+ * use a DateTime object for processing. To convert the data from string/integer
+ * to DateTime you can set a normalization transformer by calling
+ * setNormalizationTransformer() in configure(). The normalized data is then
+ * converted to the displayed data as described before.
+ *
+ * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
+ */
+class Field extends Configurable implements FieldInterface
 {
-    /**
-     * The object used for generating HTML code
-     * @var HtmlGeneratorInterface
-     */
-    protected $generator = null;
-
     protected $taintedData = null;
     protected $locale = null;
-    protected $translator = null;
 
     private $errors = array();
     private $key = '';
     private $parent = null;
-    private $renderer = null;
     private $bound = false;
     private $required = null;
     private $data = null;
+    private $normalizedData = null;
     private $transformedData = null;
+    private $normalizationTransformer = null;
     private $valueTransformer = null;
     private $propertyPath = null;
 
@@ -37,9 +69,10 @@ abstract class Field extends Configurable implements FieldInterface
         $this->addOption('required', true);
         $this->addOption('disabled', false);
         $this->addOption('property_path', (string)$key);
+        $this->addOption('value_transformer');
+        $this->addOption('normalization_transformer');
 
         $this->key = (string)$key;
-        $this->generator = new HtmlGenerator();
 
         if ($this->locale === null) {
             $this->locale = class_exists('\Locale', false) ? \Locale::getDefault() : 'en';
@@ -47,7 +80,16 @@ abstract class Field extends Configurable implements FieldInterface
 
         parent::__construct($options);
 
-        $this->transformedData = $this->transform($this->data);
+        if ($this->getOption('value_transformer')) {
+            $this->setValueTransformer($this->getOption('value_transformer'));
+        }
+
+        if ($this->getOption('normalization_transformer')) {
+            $this->setNormalizationTransformer($this->getOption('normalization_transformer'));
+        }
+
+        $this->normalizedData = $this->normalize($this->data);
+        $this->transformedData = $this->transform($this->normalizedData);
         $this->required = $this->getOption('required');
 
         $this->setPropertyPath($this->getOption('property_path'));
@@ -120,7 +162,7 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function getName()
     {
-        return is_null($this->parent) ? $this->key : $this->parent->getName().'['.$this->key.']';
+        return null === $this->parent ? $this->key : $this->parent->getName().'['.$this->key.']';
     }
 
     /**
@@ -128,7 +170,7 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function getId()
     {
-        return is_null($this->parent) ? $this->key : $this->parent->getId().'_'.$this->key;
+        return null === $this->parent ? $this->key : $this->parent->getId().'_'.$this->key;
     }
 
     /**
@@ -144,11 +186,10 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function isRequired()
     {
-        if (is_null($this->parent) || $this->parent->isRequired()) {
+        if (null === $this->parent || $this->parent->isRequired()) {
             return $this->required;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -156,19 +197,10 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function isDisabled()
     {
-        if (is_null($this->parent) || !$this->parent->isDisabled()) {
+        if (null === $this->parent || !$this->parent->isDisabled()) {
             return $this->getOption('disabled');
-        } else {
-            return true;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setGenerator(HtmlGeneratorInterface $generator)
-    {
-        $this->generator = $generator;
+        return true;
     }
 
     /**
@@ -215,7 +247,8 @@ abstract class Field extends Configurable implements FieldInterface
     public function setData($data)
     {
         $this->data = $data;
-        $this->transformedData = $this->transform($data);
+        $this->normalizedData = $this->normalize($data);
+        $this->transformedData = $this->transform($this->normalizedData);
     }
 
     /**
@@ -227,7 +260,7 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function bind($taintedData)
     {
-        $this->transformedData = is_array($taintedData) || is_object($taintedData) ? $taintedData : (string)$taintedData;
+        $this->transformedData = (is_array($taintedData) || is_object($taintedData)) ? $taintedData : (string)$taintedData;
         $this->bound = true;
         $this->errors = array();
 
@@ -236,12 +269,13 @@ abstract class Field extends Configurable implements FieldInterface
         }
 
         try {
-            $this->data = $this->processData($data = $this->reverseTransform($this->transformedData));
-            $this->transformedData = $this->transform($this->data);
+            $this->normalizedData = $this->processData($this->reverseTransform($this->transformedData));
+            $this->data = $this->denormalize($this->normalizedData);
+            $this->transformedData = $this->transform($this->normalizedData);
         } catch (TransformationFailedException $e) {
             // TODO better text
             // TESTME
-            $this->addError('invalid (localized)');
+            $this->addError(new FieldError('invalid (localized)'));
         }
     }
 
@@ -273,14 +307,19 @@ abstract class Field extends Configurable implements FieldInterface
         return $this->data;
     }
 
+    protected function getNormalizedData()
+    {
+        return $this->normalizedData;
+    }
+
     /**
      * Adds an error to the field.
      *
      * @see FieldInterface
      */
-    public function addError($message, PropertyPath $path = null, $type = null)
+    public function addError(FieldError $error, PropertyPathIterator $pathIterator = null, $type = null)
     {
-        $this->errors[] = $message;
+        $this->errors[] = $error;
     }
 
     /**
@@ -310,7 +349,11 @@ abstract class Field extends Configurable implements FieldInterface
      */
     public function hasErrors()
     {
-        return $this->isBound() && !$this->isValid();
+        // Don't call isValid() here, as its semantics are slightly different
+        // Field groups are not valid if their children are invalid, but
+        // hasErrors() returns only true if a field/field group itself has
+        // errors
+        return count($this->errors) > 0;
     }
 
     /**
@@ -338,54 +381,16 @@ abstract class Field extends Configurable implements FieldInterface
     }
 
     /**
-     * Sets the translator of this field.
+     * Injects the locale into the given object, if set.
      *
-     * @see Translatable
-     */
-    public function setTranslator(TranslatorInterface $translator)
-    {
-        $this->translator = $translator;
-
-        if ($this->valueTransformer !== null && $this->valueTransformer instanceof Translatable) {
-            $this->valueTransformer->setTranslator($translator);
-        }
-    }
-
-    /**
-     * Translates the text using the associated translator, if available
-     *
-     * If no translator is available, the original text is returned without
-     * modification.
-     *
-     * @param  string $text         The text to translate
-     * @param  array $parameters    The parameters to insert in the text
-     * @return string               The translated text
-     */
-    protected function translate($text, array $parameters = array())
-    {
-        if ($this->translator !== null) {
-            $text = $this->translator->translate($text, $parameters);
-        }
-
-        return $text;
-    }
-
-    /**
-     * Injects the locale and the translator into the given object, if set.
-     *
-     * The locale is injected only if the object implements Localizable. The
-     * translator is injected only if the object implements Translatable.
+     * The locale is injected only if the object implements Localizable.
      *
      * @param object $object
      */
-    protected function injectLocaleAndTranslator($object)
+    protected function injectLocale($object)
     {
         if ($object instanceof Localizable) {
             $object->setLocale($this->locale);
-        }
-
-        if (!is_null($this->translator) && $object instanceof Translatable) {
-            $object->setTranslator($this->translator);
         }
     }
 
@@ -394,9 +399,31 @@ abstract class Field extends Configurable implements FieldInterface
      *
      * @param ValueTransformerInterface $valueTransformer
      */
-    public function setValueTransformer(ValueTransformerInterface $valueTransformer)
+    protected function setNormalizationTransformer(ValueTransformerInterface $normalizationTransformer)
     {
-        $this->injectLocaleAndTranslator($valueTransformer);
+        $this->injectLocale($normalizationTransformer);
+
+        $this->normalizationTransformer = $normalizationTransformer;
+    }
+
+    /**
+     * Returns the ValueTransformer.
+     *
+     * @return ValueTransformerInterface
+     */
+    protected function getNormalizationTransformer()
+    {
+        return $this->normalizationTransformer;
+    }
+
+    /**
+     * Sets the ValueTransformer.
+     *
+     * @param ValueTransformerInterface $valueTransformer
+     */
+    protected function setValueTransformer(ValueTransformerInterface $valueTransformer)
+    {
+        $this->injectLocale($valueTransformer);
 
         $this->valueTransformer = $valueTransformer;
     }
@@ -406,9 +433,37 @@ abstract class Field extends Configurable implements FieldInterface
      *
      * @return ValueTransformerInterface
      */
-    public function getValueTransformer()
+    protected function getValueTransformer()
     {
         return $this->valueTransformer;
+    }
+
+    /**
+     * Normalizes the value if a normalization transformer is set
+     *
+     * @param  mixed $value  The value to transform
+     * @return string
+     */
+    protected function normalize($value)
+    {
+        if (null === $this->normalizationTransformer) {
+            return $value;
+        }
+        return $this->normalizationTransformer->transform($value);
+    }
+
+    /**
+     * Reverse transforms a value if a normalization transformer is set.
+     *
+     * @param  string $value  The value to reverse transform
+     * @return mixed
+     */
+    protected function denormalize($value)
+    {
+        if (null === $this->normalizationTransformer) {
+            return $value;
+        }
+        return $this->normalizationTransformer->reverseTransform($value, $this->data);
     }
 
     /**
@@ -419,13 +474,10 @@ abstract class Field extends Configurable implements FieldInterface
      */
     protected function transform($value)
     {
-        if ($value === null) {
-            return '';
-        } else if (null === $this->valueTransformer) {
-            return $value;
-        } else {
-            return $this->valueTransformer->transform($value);
+        if (null === $this->valueTransformer) {
+            return $value === null ? '' : $value;
         }
+        return $this->valueTransformer->transform($value);
     }
 
     /**
@@ -436,13 +488,10 @@ abstract class Field extends Configurable implements FieldInterface
      */
     protected function reverseTransform($value)
     {
-        if ($value === '') {
-            return null;
-        } else if (null === $this->valueTransformer) {
-            return $value;
-        } else {
-            return $this->valueTransformer->reverseTransform($value);
+        if (null === $this->valueTransformer) {
+            return $value === '' ? null : $value;
         }
+        return $this->valueTransformer->reverseTransform($value, $this->data);
     }
 
     /**
@@ -452,8 +501,7 @@ abstract class Field extends Configurable implements FieldInterface
     {
         // TODO throw exception if not object or array
         if ($this->propertyPath !== null) {
-            $this->propertyPath->rewind();
-            $this->setData($this->readPropertyPath($objectOrArray, $this->propertyPath));
+            $this->setData($this->propertyPath->getValue($objectOrArray));
         } else {
             // pass object through if the property path is empty
             $this->setData($objectOrArray);
@@ -468,177 +516,7 @@ abstract class Field extends Configurable implements FieldInterface
         // TODO throw exception if not object or array
 
         if ($this->propertyPath !== null) {
-            $this->propertyPath->rewind();
-            $this->updatePropertyPath($objectOrArray, $this->propertyPath);
+            $this->propertyPath->setValue($objectOrArray, $this->getData());
         }
-    }
-
-    /**
-     * Recursively reads the value of the property path in the data
-     *
-     * @param array|object $objectOrArray  An object or array
-     * @param PropertyPath $propertyPath   A property path pointing to a property
-     *                                     in the object/array.
-     */
-    protected function readPropertyPath(&$objectOrArray, PropertyPath $propertyPath)
-    {
-        if (is_object($objectOrArray)) {
-            $value = $this->readProperty($objectOrArray, $propertyPath);
-        }
-        // arrays need to be treated separately (due to PHP bug?)
-        // http://bugs.php.net/bug.php?id=52133
-        else {
-            if (!array_key_exists($propertyPath->getCurrent(), $objectOrArray)) {
-                $objectOrArray[$propertyPath->getCurrent()] = array();
-            }
-
-            $value =& $objectOrArray[$propertyPath->getCurrent()];
-        }
-
-        if ($propertyPath->hasNext()) {
-            $propertyPath->next();
-
-            return $this->readPropertyPath($value, $propertyPath);
-        } else {
-            return $value;
-        }
-    }
-
-    protected function updatePropertyPath(&$objectOrArray, PropertyPath $propertyPath)
-    {
-        if ($propertyPath->hasNext()) {
-            if (is_object($objectOrArray)) {
-                $value = $this->readProperty($objectOrArray, $propertyPath);
-            }
-            // arrays need to be treated separately (due to PHP bug?)
-            // http://bugs.php.net/bug.php?id=52133
-            else {
-                if (!array_key_exists($propertyPath->getCurrent(), $objectOrArray)) {
-                    $objectOrArray[$propertyPath->getCurrent()] = array();
-                }
-
-                $value =& $objectOrArray[$propertyPath->getCurrent()];
-            }
-
-            $propertyPath->next();
-
-            $this->updatePropertyPath($value, $propertyPath);
-        } else {
-            $this->updateProperty($objectOrArray, $propertyPath);
-        }
-    }
-
-    /**
-     * Reads a specific element of the given data
-     *
-     * If the data is an array, the value at index $element is returned.
-     *
-     * If the data is an object, either the result of get{$element}(),
-     * is{$element}() or the property $element is returned. If none of these
-     * is publicly available, an exception is thrown
-     *
-     * @param  object $object  The data to read
-     * @param  string $element              The element to read from the data
-     * @return mixed                        The value of the element
-     */
-    protected function readProperty($object, PropertyPath $propertyPath)
-    {
-        $camelizer = function ($path) {
-            return preg_replace(array('/(^|_)+(.)/e', '/\.(.)/e'), array("strtoupper('\\2')", "'_'.strtoupper('\\1')"), $path);
-        };
-
-        if ($propertyPath->isIndex()) {
-            if (!$object instanceof \ArrayAccess) {
-                throw new InvalidPropertyException(sprintf('Index "%s" cannot be read from object of type "%s" because it doesn\'t implement \ArrayAccess', $propertyPath->getCurrent(), get_class($object)));
-            }
-
-            return $object[$propertyPath->getCurrent()];
-        } else {
-            $reflClass = new \ReflectionClass($object);
-            $getter = 'get'.$camelizer($propertyPath->getCurrent());
-            $isser = 'is'.$camelizer($propertyPath->getCurrent());
-            $property = $propertyPath->getCurrent();
-
-            if ($reflClass->hasMethod($getter)) {
-                if (!$reflClass->getMethod($getter)->isPublic()) {
-                    throw new PropertyAccessDeniedException(sprintf('Method "%s()" is not public in class "%s"', $getter, $reflClass->getName()));
-                }
-
-                return $object->$getter();
-            } else if ($reflClass->hasMethod($isser)) {
-                if (!$reflClass->getMethod($isser)->isPublic()) {
-                    throw new PropertyAccessDeniedException(sprintf('Method "%s()" is not public in class "%s"', $isser, $reflClass->getName()));
-                }
-
-                return $object->$isser();
-            } else if ($reflClass->hasProperty($property)) {
-                if (!$reflClass->getProperty($property)->isPublic()) {
-                    throw new PropertyAccessDeniedException(sprintf('Property "%s" is not public in class "%s". Maybe you should create the method "get%s()" or "is%s()"?', $property, $reflClass->getName(), ucfirst($property), ucfirst($property)));
-                }
-
-                return $object->$property;
-            } else if (property_exists($object, $property)) {
-                // needed to support \stdClass instances
-                return $object->$property;
-            } else {
-                throw new InvalidPropertyException(sprintf('Neither property "%s" nor method "%s()" nor method "%s()" exists in class "%s"', $property, $getter, $isser, $reflClass->getName()));
-            }
-        }
-    }
-
-    protected function updateProperty(&$objectOrArray, PropertyPath $propertyPath)
-    {
-        if (is_object($objectOrArray) && $propertyPath->isIndex()) {
-            if (!$objectOrArray instanceof \ArrayAccess) {
-                throw new InvalidPropertyException(sprintf('Index "%s" cannot be modified in object of type "%s" because it doesn\'t implement \ArrayAccess', $propertyPath->getCurrent(), get_class($objectOrArray)));
-            }
-
-            $objectOrArray[$propertyPath->getCurrent()] = $this->getData();
-        } else if (is_object($objectOrArray)) {
-            $reflClass = new \ReflectionClass($objectOrArray);
-            $setter = 'set'.ucfirst($propertyPath->getCurrent());
-            $property = $propertyPath->getCurrent();
-
-            if ($reflClass->hasMethod($setter)) {
-                if (!$reflClass->getMethod($setter)->isPublic()) {
-                    throw new PropertyAccessDeniedException(sprintf('Method "%s()" is not public in class "%s"', $setter, $reflClass->getName()));
-                }
-
-                $objectOrArray->$setter($this->getData());
-            } else if ($reflClass->hasProperty($property)) {
-                if (!$reflClass->getProperty($property)->isPublic()) {
-                    throw new PropertyAccessDeniedException(sprintf('Property "%s" is not public in class "%s". Maybe you should create the method "set%s()"?', $property, $reflClass->getName(), ucfirst($property)));
-                }
-
-                $objectOrArray->$property = $this->getData();
-            } else if (property_exists($objectOrArray, $property)) {
-                // needed to support \stdClass instances
-                $objectOrArray->$property = $this->getData();
-            } else {
-                throw new InvalidPropertyException(sprintf('Neither element "%s" nor method "%s()" exists in class "%s"', $property, $setter, $reflClass->getName()));
-            }
-        } else {
-            $objectOrArray[$propertyPath->getCurrent()] = $this->getData();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function renderErrors()
-    {
-        $html = '';
-
-        if ($this->hasErrors()) {
-            $html .= "<ul>\n";
-
-            foreach ($this->getErrors() as $error) {
-                $html .= "<li>" . $error . "</li>\n";
-            }
-
-            $html .= "</ul>\n";
-        }
-
-        return $html;
     }
 }

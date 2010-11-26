@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Validator\Mapping\Loader;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Yaml\Yaml;
@@ -19,7 +28,7 @@ class YamlFileLoader extends FileLoader
      */
     public function loadClassMetadata(ClassMetadata $metadata)
     {
-        if (is_null($this->classes)) {
+        if (null === $this->classes) {
             $this->classes = Yaml::load($this->file);
         }
 
@@ -59,8 +68,9 @@ class YamlFileLoader extends FileLoader
     /**
      * Parses a collection of YAML nodes
      *
-     * @param  array $nodes  The YAML nodes
-     * @return array         An array of values or Constraint instances
+     * @param array $nodes The YAML nodes
+     *
+     * @return array An array of values or Constraint instances
      */
     protected function parseNodes(array $nodes)
     {

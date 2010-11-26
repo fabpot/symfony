@@ -18,10 +18,6 @@ use Symfony\Component\DependencyInjection\Resource\FileResource;
  */
 class DoctrineMongoDBExtension extends Extension
 {
-    protected $resources = array(
-        'mongodb' => 'mongodb.xml',
-    );
-
     /**
      * Loads the MongoDB ODM configuration.
      *
@@ -67,7 +63,7 @@ class DoctrineMongoDBExtension extends Extension
         if (!$container->hasDefinition('doctrine.odm.mongodb.metadata.annotation')) {
             // Load DoctrineMongoDBBundle/Resources/config/mongodb.xml
             $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
-            $loader->load($this->resources['mongodb']);
+            $loader->load('mongodb.xml');
         }
 
         // Allow these application configuration options to override the defaults
@@ -135,13 +131,36 @@ class DoctrineMongoDBExtension extends Extension
             $odmConfigDef->addMethodCall($method, array($arg));
         }
 
+        // event manager
+        $eventManagerName = isset($documentManager['event_manager']) ? $documentManager['event_manager'] : $documentManager['name'];
+        $eventManagerId = sprintf('doctrine.odm.mongodb.%s_event_manager', $eventManagerName);
+        if (!$container->hasDefinition($eventManagerId)) {
+            $eventManagerDef = new Definition('%doctrine.odm.mongodb.event_manager_class%');
+            $eventManagerDef->addMethodCall('loadTaggedEventListeners', array(
+                new Reference('service_container'),
+            ));
+            $eventManagerDef->addMethodCall('loadTaggedEventListeners', array(
+                new Reference('service_container'),
+                sprintf('doctrine.odm.mongodb.%s_event_listener', $eventManagerName),
+            ));
+            $eventManagerDef->addMethodCall('loadTaggedEventSubscribers', array(
+                new Reference('service_container'),
+            ));
+            $eventManagerDef->addMethodCall('loadTaggedEventSubscribers', array(
+                new Reference('service_container'),
+                sprintf('doctrine.odm.mongodb.%s_event_subscriber', $eventManagerName),
+            ));
+            $container->setDefinition($eventManagerId, $eventManagerDef);
+        }
+
         $odmDmArgs = array(
             new Reference(sprintf('doctrine.odm.mongodb.%s_connection', isset($documentManager['connection']) ? $documentManager['connection'] : $documentManager['name'])),
-            new Reference(sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']))
+            new Reference(sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name'])),
+            new Reference($eventManagerId),
         );
         $odmDmDef = new Definition('%doctrine.odm.mongodb.document_manager_class%', $odmDmArgs);
         $odmDmDef->setFactoryMethod('create');
-        $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_document_manager', $documentManager['name']), $odmDmDef );
+        $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_document_manager', $documentManager['name']), $odmDmDef);
 
         if ($documentManager['name'] == $defaultDocumentManager) {
             $container->setAlias(

@@ -23,8 +23,8 @@ use Doctrine\ORM\Mapping\ClassMetadataInfo;
 /**
  * Initialize a new Doctrine entity inside a bundle.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
- * @author     Jonathan H. Wage <jonwage@gmail.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Jonathan H. Wage <jonwage@gmail.com>
  */
 class GenerateEntityDoctrineCommand extends DoctrineCommand
 {
@@ -60,7 +60,7 @@ EOT
             throw new \InvalidArgumentException('The bundle name must end with Bundle. Example: "Bundle\MySampleBundle".');
         }
 
-        $dirs = $this->container->getKernelService()->getBundleDirs();
+        $dirs = $this->container->get('kernel')->getBundleDirs();
 
         $tmp = str_replace('\\', '/', $bundle);
         $namespace = str_replace('/', '\\', dirname($tmp));

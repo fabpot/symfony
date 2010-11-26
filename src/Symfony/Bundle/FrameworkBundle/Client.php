@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Client as BaseClient;
 use Symfony\Component\BrowserKit\History;
 use Symfony\Component\BrowserKit\CookieJar;
-use Symfony\Component\HttpKernel\Profiler\Profiler;
+use Symfony\Component\HttpKernel\Profiler\Profiler as HttpProfiler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Client simulates a browser and makes requests to a Kernel object.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Client extends BaseClient
 {
@@ -67,7 +67,7 @@ class Client extends BaseClient
     /**
      * Gets a profiler for the current Response.
      *
-     * @return Profiler A Profiler instance
+     * @return HttpProfiler A Profiler instance
      */
     public function getProfiler()
     {
@@ -75,7 +75,7 @@ class Client extends BaseClient
             return false;
         }
 
-        return $this->container->getProfilerService()->loadFromResponse($this->response);
+        return $this->container->get('profiler')->loadFromResponse($this->response);
     }
 
     /**
@@ -87,9 +87,10 @@ class Client extends BaseClient
      */
     protected function doRequest($request)
     {
+        $returnValue = $this->kernel->handle($request);
         $this->kernel->reboot();
 
-        return $this->kernel->handle($request);
+        return $returnValue;
     }
 
     /**

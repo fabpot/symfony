@@ -15,7 +15,7 @@ namespace Symfony\Component\EventDispatcher;
  *
  * @see http://developer.apple.com/documentation/Cocoa/Conceptual/Notifications/index.html Apple's Cocoa framework
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class EventDispatcher
 {
@@ -31,6 +31,9 @@ class EventDispatcher
     public function connect($name, $listener, $priority = 0)
     {
         if (!isset($this->listeners[$name][$priority])) {
+            if (!isset($this->listeners[$name])) {
+                $this->listeners[$name] = array();
+            }
             $this->listeners[$name][$priority] = array();
         }
 
@@ -38,32 +41,19 @@ class EventDispatcher
     }
 
     /**
-     * Disconnects a listener for a given event name.
+     * Disconnects all listeners for the given event name.
      *
-     * @param string     $name      An event name
-     * @param mixed|null $listener  A PHP callable or null to disconnect all listeners
-     *
-     * @return mixed false if listener does not exist, null otherwise
+     * @param string $name An event name
      */
-    public function disconnect($name, $listener = null)
+    public function disconnect($name)
     {
-        if (!isset($this->listeners[$name])) {
-            return false;
-        }
-
-        foreach ($this->listeners[$name] as $priority => $callables) {
-            foreach ($callables as $i => $callable) {
-                if ($listener === $callable) {
-                    unset($this->listeners[$name][$priority][$i]);
-                }
-            }
-        }
+        unset($this->listeners[$name]);
     }
 
     /**
      * Notifies all listeners of a given event.
      *
-     * @param Event $event A Event instance
+     * @param Event $event An Event instance
      *
      * @return Event The Event instance
      */
@@ -79,7 +69,7 @@ class EventDispatcher
     /**
      * Notifies all listeners of a given event until one returns a non null value.
      *
-     * @param  Event $event A Event instance
+     * @param  Event $event An Event instance
      *
      * @return Event The Event instance
      */
@@ -98,8 +88,8 @@ class EventDispatcher
     /**
      * Filters a value by calling all listeners of a given event.
      *
-     * @param  Event  $event   A Event instance
-     * @param  mixed    $value   The value to be filtered
+     * @param  Event $event An Event instance
+     * @param  mixed $value The value to be filtered
      *
      * @return Event The Event instance
      */
@@ -117,7 +107,7 @@ class EventDispatcher
     /**
      * Returns true if the given event name has some listeners.
      *
-     * @param  string   $name    The event name
+     * @param  string $name The event name
      *
      * @return Boolean true if some listeners are connected, false otherwise
      */
@@ -129,7 +119,7 @@ class EventDispatcher
     /**
      * Returns all listeners associated with a given event name.
      *
-     * @param  string   $name    The event name
+     * @param  string $name The event name
      *
      * @return array  An array of listeners
      */

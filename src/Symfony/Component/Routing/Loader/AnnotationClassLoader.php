@@ -51,7 +51,7 @@ use Symfony\Component\Routing\Loader\LoaderResolver;
  *         }
  *     }
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 abstract class AnnotationClassLoader implements LoaderInterface
 {
@@ -121,7 +121,7 @@ abstract class AnnotationClassLoader implements LoaderInterface
                 $options = array_merge($globals['options'], $annot->getOptions());
 
                 $route = new Route($globals['pattern'].$annot->getPattern(), $defaults, $requirements, $options);
-                $collection->addRoute($annot->getName(), $route);
+                $collection->add($annot->getName(), $route);
             }
         }
 

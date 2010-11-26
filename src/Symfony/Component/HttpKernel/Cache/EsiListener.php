@@ -18,7 +18,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * EsiListener adds a Surrogate-Control HTTP header when the Response needs to be parsed for ESI.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class EsiListener
 {
@@ -57,7 +57,7 @@ class EsiListener
      */
     public function filter($event, Response $response)
     {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->getParameter('request_type')) {
+        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
             return $response;
         }
 

@@ -26,6 +26,7 @@ class Translator extends BaseTranslator
 {
     protected $container;
     protected $options;
+    protected $session;
 
     /**
      * Constructor.
@@ -42,10 +43,9 @@ class Translator extends BaseTranslator
      */
     public function __construct(ContainerInterface $container, MessageSelector $selector, array $options = array(), Session $session = null)
     {
-        if (null !== $session) {
-            parent::__construct($session->getLocale(), $selector);
-        }
+        parent::__construct(null, $selector);
 
+        $this->session = $session;
         $this->container = $container;
 
         $this->options = array(
@@ -59,6 +59,18 @@ class Translator extends BaseTranslator
         }
 
         $this->options = array_merge($this->options, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLocale()
+    {
+        if (null === $this->locale && null !== $this->session) {
+            $this->locale = $this->session->getLocale();
+        }
+
+        return $this->locale;
     }
 
     /**
@@ -105,7 +117,7 @@ class Translator extends BaseTranslator
         $this->writeCacheFile($this->getCacheFile($locale), sprintf(
             "<?php use Symfony\Component\Translation\MessageCatalogue; return new MessageCatalogue('%s', %s);",
             $locale,
-            var_export($this->catalogues[$locale]->getMessages(), true)
+            var_export($this->catalogues[$locale]->all(), true)
         ));
 
         if ($this->options['debug']) {

@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\InterfaceInjector;
 /**
  * ContainerBuilder is a DI container that provides an API to easily describe services.
  *
- * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class ContainerBuilder extends Container implements TaggedContainerInterface
 {
