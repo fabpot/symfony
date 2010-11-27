@@ -85,14 +85,14 @@ class InputTest extends \PHPUnit_Framework_TestCase
 
     public function testValidate()
     {
+        // Test required arguments
         $input = new ArrayInput(array());
         $input->bind(new InputDefinition(array(new InputArgument('name', InputArgument::REQUIRED))));
 
         try {
             $input->validate();
             $this->fail('->validate() throws a \RuntimeException if not enough arguments are given');
-        } catch (\Exception $e) {
-            $this->assertInstanceOf('\RuntimeException', $e, '->validate() throws a \RuntimeException if not enough arguments are given');
+        } catch (\RuntimeException $e) {
             $this->assertEquals('Not enough arguments.', $e->getMessage());
         }
 
@@ -103,6 +103,24 @@ class InputTest extends \PHPUnit_Framework_TestCase
             $input->validate();
         } catch (\RuntimeException $e) {
             $this->fail('->validate() does not throw a \RuntimeException if enough arguments are given');
+        }
+
+        // Test required options
+        $input = new ArrayInput(array());
+        $input->bind(new InputDefinition(array(new InputOption('name', null, InputOption::PARAMETER_REQUIRED))));
+
+        try {
+            $input->validate();
+            $this->fail('->validate() throws a \RuntimeException if a required option is not provided');
+        } catch (\RuntimeException $e) {
+            $this->assertEquals('Missing value for required option "name".', $e->getMessage());
+        }
+
+        $input->setOption('name', 'foo');
+        try {
+            $input->validate();
+        } catch (\RuntimeException $e) {
+            $this->fail('->validate() throws a \RuntimeException if a required option is not provided');
         }
     }
 

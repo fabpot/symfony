@@ -71,6 +71,12 @@ abstract class Input implements InputInterface
         if (count($this->arguments) < $this->definition->getArgumentRequiredCount()) {
             throw new \RuntimeException('Not enough arguments.');
         }
+
+        foreach ($this->definition->getOptions() as $name => $option) {
+            if ($this->getOption($name) === null && $option->isParameterRequired()) {
+                throw new \RuntimeException(sprintf('Missing value for required option "%s".', $name));
+            }
+        }
     }
 
     public function isInteractive()
