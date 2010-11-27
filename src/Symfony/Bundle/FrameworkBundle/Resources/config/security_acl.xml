@@ -10,15 +10,16 @@
 		<parameter key="security.acl.dbal.oid_table_name">acl_object_identities</parameter>
 		<parameter key="security.acl.dbal.oid_ancestors_table_name">acl_object_identity_ancestors</parameter>
 		<parameter key="security.acl.dbal.sid_table_name">acl_security_identities</parameter>
+		<parameter key="security.acl.dbal.provider.class">Symfony\Component\Security\Acl\Dbal\MutableAclProvider</parameter>
 		
-		<parameter key="security.acl.provider.class">Symfony\Component\Security\Acl\Dbal\MutableAclProvider</parameter>
 		<parameter key="security.acl.permission_granting_strategy.class">Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy</parameter>
+		<parameter key="security.acl.voter.basic_permissions.class">Symfony\Component\Security\Acl\Voter\BasicPermissionsVoter</parameter>
 	</parameters>
 
 	<services>
 		<service id="security.acl.dbal.connection" alias="doctrine.dbal.default_connection" />
 	
-		<service id="security.acl.provider" class="%security.acl.provider.class%">
+		<service id="security.acl.dbal.provider" class="%security.acl.dbal.provider.class%">
 			<argument type="service" id="security.acl.dbal.connection" />
 			<argument type="service" id="security.acl.permission_granting_strategy" />
 			<argument type="collection">
@@ -36,5 +37,13 @@
 				<argument type="service" id="security.acl.audit_logger" on-invalid="ignore" />
 			</call>
 		</service>
+		
+		<service id="security.acl.voter.basic_permissions" class="%security.acl.voter.basic_permissions.class%">
+			<argument type="service" id="security.acl.provider" />
+			<argument type="service" id="security.role_hierarchy" />
+            <tag name="security.voter" />
+		</service>
+		
+		<service id="security.acl.provider" alias="security.acl.dbal.provider" />
 	</services>
 </container>

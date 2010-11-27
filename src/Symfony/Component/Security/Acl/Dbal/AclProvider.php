@@ -328,13 +328,13 @@ class AclProvider implements AclProviderInterface
     
     protected function getLookupSql(array &$batch, array $sids)
     {
-        // FIXME: this adds additional complexity, but we can consider to also support this
-        //        in the default implementation
-        if (count($sids) > 0) {
-            throw new \RuntimeException('The default implementation does not support filtering by SIDs.');
-        }
+        // FIXME: add support for filtering by sids (right now we select all sids)
         
         $ancestorIds = $this->getAncestorIds($batch);
+        
+        if (0 === count($ancestorIds)) {
+            throw new AclNotFoundException('There is no ACL for the given object identity.');
+        }
         
         $sql = <<<SELECTCLAUSE
         	SELECT
@@ -420,6 +420,25 @@ SELECTCLAUSE;
 FINDCHILDREN;
 
 		return sprintf($query, $this->retrieveObjectIdentityPrimaryKey($oid));
+    }
+    
+    protected function getSelectObjectIdentityIdSql(ObjectIdentityInterface $oid)
+    {
+        $query = <<<QUERY
+        	SELECT o.id
+        	FROM %s o
+        	INNER JOIN %s c ON c.id = o.class_id
+        	WHERE o.object_identifier = %s AND c.class_type = %s
+        	LIMIT 1
+QUERY;
+
+        return sprintf(
+            $query,
+            $this->options['oid_table_name'],
+            $this->options['class_table_name'],
+            $this->connection->quote($oid->getIdentifier()),
+            $this->connection->quote($oid->getType())
+        );
     }
     
     protected function retrieveObjectIdentityPrimaryKey(ObjectIdentityInterface $oid)

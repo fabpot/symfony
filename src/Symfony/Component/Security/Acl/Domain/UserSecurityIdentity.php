@@ -14,23 +14,18 @@ class UserSecurityIdentity implements SecurityIdentityInterface
      * 
      * @param mixed $mixed Either a textual representation of the user, or an authentication token
      */
-    public function __construct($mixed)
+    public function __construct($username)
     {
-        if ($mixed instanceof TokenInterface) {
-            $username = (string) $mixed;
-        }
-        else if (is_string($mixed)) {
-            $username = $mixed;
-        }
-        else {
-            throw new \InvalidArgumentException('$mixed must either a string, or an implementation of TokenInterface.');
-        }
-        
         if (0 === strlen($username)) {
             throw new \InvalidArgumentException('$username must not be empty.');
         }
         
         $this->username = $username;
+    }
+    
+    public static function fromToken(TokenInterface $token)
+    {
+        return new self((string) $token);
     }
     
     public function getUsername()

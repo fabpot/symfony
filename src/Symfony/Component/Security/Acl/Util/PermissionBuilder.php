@@ -4,9 +4,9 @@ namespace Symfony\Component\Security\Acl\Util;
 
 class PermissionBuilder
 {
-    const MASK_READ         = 1;      // 1 << 0
+    const MASK_VIEW         = 1;      // 1 << 0
     const MASK_CREATE       = 2;      // 1 << 1
-    const MASK_WRITE        = 4;      // 1 << 2
+    const MASK_EDIT         = 4;      // 1 << 2
     const MASK_DELETE       = 8;      // 1 << 3
     const MASK_UNDELETE     = 16;     // 1 << 4
     const MASK_ADMINISTER   = 32;     // 1 << 5

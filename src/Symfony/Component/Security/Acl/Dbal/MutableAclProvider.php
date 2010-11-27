@@ -510,25 +510,6 @@ QUERY;
         );
     }
     
-    protected function getSelectObjectIdentityIdSql(ObjectIdentityInterface $oid)
-    {
-        $query = <<<QUERY
-        	SELECT o.id
-        	FROM %s o
-        	INNER JOIN %s c ON c.id = o.class_id
-        	WHERE o.object_identifier = %s AND c.class_type = %s
-        	LIMIT 1
-QUERY;
-
-        return sprintf(
-            $query,
-            $this->options['oid_table_name'],
-            $this->options['class_table_name'],
-            $this->connection->quote($oid->getIdentifier()),
-            $this->connection->quote($oid->getType())
-        );
-    }
-    
     protected function getSelectSecurityIdentityIdSql(SecurityIdentityInterface $sid)
     {
         if ($sid instanceof UserSecurityIdentity) {
