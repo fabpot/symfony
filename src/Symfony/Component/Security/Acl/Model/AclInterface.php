@@ -27,8 +27,18 @@ interface AclInterface
      * @return Boolean
      */
     function isEntriesInheriting();
-    function isFieldGranted($field, $permissions, $securityIdentities, $administrativeMode = false);
-    function isGranted($permissions, $securityIdentities, $administrativeMode = false);
+    function isFieldGranted($field, $masks, $securityIdentities, $administrativeMode = false);
+    
+    /**
+     * Determines whether access is granted
+     * 
+     * @throws NoAceFoundException when no ACE was applicable for this request
+     * @param array $masks
+     * @param array $securityIdentities
+     * @param Boolean $administrativeMode
+     * @return Boolean
+     */
+    function isGranted($masks, $securityIdentities, $administrativeMode = false);
     
     /**
      * Whether the ACL has loaded ACEs for all of the passed security identities

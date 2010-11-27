@@ -3,9 +3,7 @@
 namespace Symfony\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Acl\Model\EntryInterface;
-
 use Doctrine\Common\NotifyPropertyChanged;
-
 use Doctrine\Common\PropertyChangedListener;
 use Symfony\Component\Security\Acl\Model\AuditableAclInterface;
 use Symfony\Component\Security\Acl\Model\PermissionInterface;
@@ -28,7 +26,7 @@ use Symfony\Component\Security\Acl\Model\AclInterface;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, NotifyPropertyChanged
+class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, NotifyPropertyChanged, \Serializable
 {
     protected $parentAcl;
     protected $permissionGrantingStrategy;
@@ -198,6 +196,37 @@ class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, N
         }
         
         return true;
+    }
+    
+    public function serialize()
+    {
+        return serialize(array(
+            null === $this->parentAcl ? null : $this->parentAcl->getId(),
+            $this->objectIdentity,
+            $this->classAces,
+            $this->classFieldAces,
+            $this->objectAces,
+            $this->objectFieldAces,
+            $this->id,
+            $this->loadedSids,
+            $this->entriesInheriting,
+        ));
+    }
+    
+    public function unserialize($serialized) 
+    {
+        list($this->parentAcl, 
+             $this->objectIdentity, 
+             $this->classAces, 
+             $this->classFieldAces, 
+             $this->objectAces,
+             $this->objectFieldAces,
+             $this->id,
+             $this->loadedSids,
+             $this->entriesInheriting
+        ) = unserialize($serialized);
+        
+        $this->listeners = array();
     }
     
     public function setEntriesInheriting($boolean)

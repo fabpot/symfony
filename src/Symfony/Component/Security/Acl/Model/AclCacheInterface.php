@@ -28,15 +28,32 @@ interface AclCacheInterface
     function evictFromCacheByIdentity(ObjectIdentityInterface $oid);
     
     /**
-     * Removes all ACLs for identities of a certain type from the cache
+     * Retrieves an ACL for the given object identity primary key from the cache
      * 
-     * @param string $classType
+     * @param integer $primaryKey
+     * @return AclInterface
+     */
+    function getFromCacheById($primaryKey);
+    
+    /**
+     * Retrieves an ACL for the given object identity from the cache
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return AclInterface
+     */
+    function getFromCacheByIdentity(ObjectIdentityInterface $oid);
+    
+    /**
+     * Stores a new ACL in the cache
+     * 
+     * @param AclInterface $acl
      * @return void
      */
-    function evictFromCacheByType($classType);
-    
-    function getFromCacheById($primaryKey);
-    function getFromCacheByIdentity(ObjectIdentityInterface $oid);
     function putInCache(AclInterface $acl);
+    
+    /**
+     * Removes all ACLs from the cache
+     * @return void
+     */
     function clearCache();
 }

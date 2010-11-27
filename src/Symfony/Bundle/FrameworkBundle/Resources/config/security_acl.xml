@@ -14,6 +14,9 @@
 		
 		<parameter key="security.acl.permission_granting_strategy.class">Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy</parameter>
 		<parameter key="security.acl.voter.basic_permissions.class">Symfony\Component\Security\Acl\Voter\BasicPermissionsVoter</parameter>
+		
+		<parameter key="security.acl.cache.doctrine.class">Symfony\Component\Security\Acl\Domain\DoctrineAclCache</parameter>
+		<parameter key="security.acl.cache.doctrine.prefix">sf2_acl_</parameter>
 	</parameters>
 
 	<services>
@@ -31,6 +34,8 @@
 			</argument>
 			<argument type="service" id="security.acl.cache" on-invalid="null" />
 		</service>
+
+		<service id="security.acl.provider" alias="security.acl.dbal.provider" />
 		
 		<service id="security.acl.permission_granting_strategy" class="%security.acl.permission_granting_strategy.class%">
 			<call method="setAuditLogger">
@@ -38,12 +43,18 @@
 			</call>
 		</service>
 		
+		<service id="security.acl.cache.doctrine" class="%security.acl.cache.doctrine.class%">
+			<argument type="service" id="security.acl.cache.doctrine_cache_impl" />
+			<argument type="service" id="security.acl.permission_granting_strategy" />		
+			<argument>%security.acl.cache.doctrine.prefix%</argument>
+		</service>
+		
+		<service id="security.acl.cache.doctrine.cache_impl" alias="doctrine.orm.default_result_cache" />
+		
 		<service id="security.acl.voter.basic_permissions" class="%security.acl.voter.basic_permissions.class%">
 			<argument type="service" id="security.acl.provider" />
 			<argument type="service" id="security.role_hierarchy" />
             <tag name="security.voter" />
 		</service>
-		
-		<service id="security.acl.provider" alias="security.acl.dbal.provider" />
 	</services>
 </container>

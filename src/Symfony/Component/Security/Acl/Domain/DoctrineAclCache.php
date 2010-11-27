@@ -1,0 +1,141 @@
+<?php
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
+
+use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
+
+use Doctrine\Common\Cache\Cache;
+use Symfony\Component\Security\Acl\Model\AclCacheInterface;
+use Symfony\Component\Security\Acl\Model\AclInterface;
+
+/**
+ * This class is a wrapper around the actual cache implementation.
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
+class DoctrineAclCache implements AclCacheInterface
+{
+    const PREFIX = 'sf2_acl_';
+    
+    protected $cache;
+    protected $prefix;
+    protected $permissionGrantingStrategy;
+    
+    public function __construct(Cache $cache, PermissionGrantingStrategyInterface $permissionGrantingStrategy, $prefix = self::PREFIX)
+    {
+        if (0 === strlen($prefix)) {
+            throw new \InvalidArgumentException('$prefix cannot be empty.');
+        }
+        
+        $this->cache = $cache;
+        $this->permissionGrantingStrategy = $permissionGrantingStrategy;
+        $this->prefix = $prefix;
+    }
+    
+    public function clearCache()
+    {
+        $this->cache->deleteByPrefix($this->prefix);
+    }
+    
+    public function evictFromCacheById($aclId)
+    {
+        $lookupKey = $this->getAliasKeyForIdentity($aclId);
+        if (!$this->cache->contains($lookupKey)) {
+            return;
+        }
+        
+        $key = $this->cache->fetch($lookupKey);
+        if ($this->cache->contains($key)) {
+            $this->cache->delete($key);
+        }
+        
+        $this->cache->delete($lookupKey);
+    }
+    
+    public function evictFromCacheByIdentity(ObjectIdentityInterface $oid)
+    {
+        $key = $this->getDataKeyByIdentity($oid);
+        if (!$this->cache->contains($key)) {
+            return;
+        }
+        
+        $this->cache->delete($key);
+    }
+    
+    public function getFromCacheById($aclId)
+    {
+        $lookupKey = $this->getAliasKeyForIdentity($aclId);
+        if (!$this->cache->contains($lookupKey)) {
+            return null;
+        }
+        
+        $key = $this->cache->fetch($lookupKey);
+        if (!$this->cache->contains($key)) {
+            $this->cache->delete($lookupKey);
+            
+            return null;
+        }
+        
+        return $this->unserializeAcl($this->cache->fetch($key));
+    }
+    
+    public function getFromCacheByIdentity(ObjectIdentityInterface $oid)
+    {
+        $key = $this->getDataKeyByIdentity($oid);
+        if (!$this->cache->contains($key)) {
+            return null;
+        }
+        
+        return $this->unserializeAcl($this->cache->fetch($key));
+    }
+
+    public function putInCache(AclInterface $acl)
+    {
+        if (null === $acl->getId()) {
+            throw new \InvalidArgumentException('Transient ACLs cannot be cached.');
+        }
+        
+        if (null !== $parentAcl = $acl->getParentAcl()) {
+            $this->putInCache($parentAcl);
+        }
+        
+        $key = $this->getDataKeyByIdentity($acl->getObjectIdentity());
+        $this->cache->save($key, serialize($acl));
+        $this->cache->save($this->getAliasKeyForIdentity($acl->getId()), $key);
+    }
+    
+    protected function unserializeAcl($serialized)
+    {
+        $acl = unserialize($serialized);
+        
+        if (null !== $parentId = $acl->getParentAcl()) {
+            $parentAcl = $this->getFromCacheById($parentId);
+            
+            if (null === $parentAcl) {
+                return null;
+            }
+            
+            $acl->setParentAcl($parentAcl);
+        }
+        
+        $reflectionProperty = new \ReflectionProperty($acl, 'permissionGrantingStrategy');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($acl, $this->permissionGrantingStrategy);
+        $reflectionProperty->setAccessible(false);
+        
+        return $acl;
+    }
+    
+    protected function getDataKeyByIdentity(ObjectIdentityInterface $oid)
+    {
+        return $this->prefix.md5($oid->getType()).sha1($oid->getType())
+               .'_'.md5($oid->getIdentifier()).sha1($oid->getIdentifier());
+    }
+    
+    protected function getAliasKeyForIdentity($aclId)
+    {
+        return $this->prefix.$aclId;
+    }
+}

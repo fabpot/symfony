@@ -13,8 +13,8 @@ namespace Symfony\Component\Security\Acl\Util;
  *   		->add('create')
  *   		->add('edit')
  *   	;
- *   	var_dump($builder->get()); // int(7)
- *   	var_dump($builder->pattern()); // string(32) ".............................ECV"
+ *   	var_dump($builder->getMask()); // int(7)
+ *   	var_dump($builder->getPattern()); // string(32) ".............................ECV"
  * </code>
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
@@ -100,7 +100,7 @@ class PermissionBuilder
         return $pattern;
     }
     
-    public function get()
+    public function mask()
     {
         return $this->mask;
     }

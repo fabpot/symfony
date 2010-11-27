@@ -8,7 +8,7 @@ use Symfony\Component\Security\Acl\Model\AclInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
 use Symfony\Component\Security\Acl\Model\EntryInterface;
 
-class Entry implements EntryInterface, AuditableEntryInterface
+class Entry implements EntryInterface, AuditableEntryInterface, \Serializable
 {
     protected $acl;
     protected $mask;
@@ -89,5 +89,30 @@ class Entry implements EntryInterface, AuditableEntryInterface
     public function setStrategy($strategy)
     {
         $this->strategy = $strategy;
+    }
+    
+    public function serialize()
+    {
+        return serialize(array(
+            $this->mask,
+            $this->id,
+            $this->securityIdentity,
+            $this->strategy,
+            $this->auditFailure,
+            $this->auditSuccess,
+            $this->granting,
+        ));
+    }
+    
+    public function unserialize($serialized)
+    {
+        list($this->mask,
+             $this->id,
+             $this->securityIdentity,
+             $this->strategy,
+             $this->auditFailure,
+             $this->auditSuccess,
+             $this->granting
+        ) = unserialize($serialized);
     }
 }

@@ -100,12 +100,33 @@ class AclProvider implements AclProviderInterface
                 
                 if (null !== $acl) {
                     if ($acl->isSidLoaded($sids)) {
+                        // check if any of the parents has been loaded since we need to 
+                        // ensure that there is only ever one ACL per object identity
+                        $parentAcl = $acl->getParentAcl();
+                        while (null !== $parentAcl) {
+                            $parentOid = $parentAcl->getObjectIdentity();
+                            
+                            if (isset($this->loadedAcls[$parentOid->getType()][$parentOid->getIdentifier()])) {
+                                $acl->setParentAcl($this->loadedAcls[$parentOid->getType()][$parentOid->getIdentifier()]);
+                                break;
+                            }
+                            else {
+                                $this->loadedAcls[$parentOid->getType()][$parentOid->getIdentifier()] = $parentAcl;
+                            }
+                            
+                            $parentAcl = $parentAcl->getParentAcl();
+                        }
+                        
                         $this->loadedAcls[$oid->getType()][$oid->getIdentifier()] = $acl;
                         $result->attach($oid, $acl);
                         $aclFound = true;
                     }
                     else {
                         $this->aclCache->evictFromCacheByIdentity($oid);
+                        
+                        foreach ($this->findChildren($oid) as $childOid) {
+                            $this->aclCache->evictFromCacheByIdentity($childOid);
+                        }
                     }
                 }
             }

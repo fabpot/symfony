@@ -61,7 +61,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         $this->connection->beginTransaction();
         try {
             foreach ($this->findChildren($oid) as $childAcl) {
-                $this->deleteAcl($childAcl, true);
+                $this->deleteAcl($childAcl);
             }
             
             $oidPK = $this->retrieveObjectIdentityPrimaryKey($oid);
@@ -215,17 +215,17 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
      */
     public function updateAcl(MutableAclInterface $acl)
     {
-        if (null === $acl->getId()) {
-            throw new \InvalidArgumentException('ACL must have an ID.');
-        }
-        
-        // check if any changes were made to this ACL
-        if (false === $this->propertyChanges->contains($acl)) {
-            return;
+        if (!$this->propertyChanges->contains($acl)) {
+            throw new \InvalidArgumentException('$acl is not tracked by this provider.');
         }
         
         $propertyChanges = $this->propertyChanges->offsetGet($acl);
-        $sets = array();
+        // check if any changes were made to this ACL
+        if (0 === count($propertyChanges)) {
+            return;
+        }
+        
+        $sets = $sharedPropertyChanges = array();
         
         $this->connection->beginTransaction();
         try {
@@ -251,7 +251,7 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
                 $this->updateAces($propertyChanges['aces']);
             }
         
-            $sharedPropertyChanges = array();
+            // check properties for deleted, and created ACEs
             if (isset($propertyChanges['classAces'])) {
                 $this->updateAceProperty('classAces', $propertyChanges['classAces']);
                 $sharedPropertyChanges['classAces'] = $propertyChanges['classAces'][1];
@@ -284,10 +284,6 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
                         $classFieldAcesProperty->setValue($sameTypeAcl, $sharedPropertyChanges['classFieldAces']);
                     }
                 }
-                
-                if (null !== $this->aclCache) {
-                    $this->aclCache->evictFromCacheByType($acl->getObjectIdentity()->getType());
-                }
             }
             
             // persist any changes to the acl_object_identities table
@@ -306,10 +302,21 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         $this->propertyChanges->offsetSet($acl, array());
         
         if (null !== $this->aclCache) {
-            $this->aclCache->evictFromCacheByIdentity($acl->getObjectIdentity());
-            
-            foreach ($this->findChildren($acl->getObjectIdentity()) as $childOid) {
-                $this->aclCache->evictFromCacheByIdentity($childOid);
+            if (count($sharedPropertyChanges) > 0) {
+                // FIXME: Currently, there is no easy way to clear the cache for ACLs
+                //        of a certain type. The problem here is that we need to make
+                //        sure to clear the cache of all child ACLs as well, and these
+                //        child ACLs might be of a different class type.
+                $this->aclCache->clearCache();
+            }
+            else {
+                // if there are no shared property changes, it's sufficient to just delete
+                // the cache for this ACL
+                $this->aclCache->evictFromCacheByIdentity($acl->getObjectIdentity());
+                
+                foreach ($this->findChildren($acl->getObjectIdentity()) as $childOid) {
+                    $this->aclCache->evictFromCacheByIdentity($childOid);
+                }
             }
         }
     }
