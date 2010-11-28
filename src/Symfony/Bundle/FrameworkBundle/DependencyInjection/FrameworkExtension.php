@@ -112,9 +112,13 @@ class FrameworkExtension extends Extension
             $this->registerTestConfiguration($config, $container);
         }
 
-        $this->registerSessionConfiguration($config, $container);
+        if (array_key_exists('session', $config)) {
+            $this->registerSessionConfiguration($config, $container);
+        }
 
-        $this->registerTranslatorConfiguration($config, $container);
+        if (array_key_exists('translator', $config)) {
+            $this->registerTranslatorConfiguration($config, $container);
+        }
 
         $this->addCompiledClasses($container, array(
             'Symfony\\Component\\HttpFoundation\\ParameterBag',
