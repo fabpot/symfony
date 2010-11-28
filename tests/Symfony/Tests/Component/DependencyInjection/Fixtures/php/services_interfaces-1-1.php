@@ -5,7 +5,7 @@ use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
 
 /**
  * ProjectServiceContainer
@@ -20,7 +20,7 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
      */
     public function __construct()
     {
-        parent::__construct(new ParameterBag($this->getDefaultParameters()));
+        parent::__construct(new FrozenParameterBag($this->getDefaultParameters()));
     }
 
     /**
@@ -29,14 +29,14 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
      * This service is shared.
      * This method always returns the same instance of the service.
      *
-     * @return Object A %cla%o%ss% instance.
+     * @return FooClass A FooClass instance.
      */
     protected function getFooService()
     {
-        $class = $this->getParameter('cla').'o'.$this->getParameter('ss');
-        return $this->services['foo'] = new $class();
+        $this->services['foo'] = $instance = new \FooClass();
+        $instance->setBar('someValue');
 
-        $this->applyInterfaceInjection($instance);
+        return $instance;
     }
 
     /**
@@ -65,17 +65,5 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
             'cla' => 'Fo',
             'ss' => 'Class',
         );
-    }
-
-    /**
-     * Applies all known interface injection calls
-     *
-     * @param Object $instance
-     */
-    protected function applyIntrefaceInjectors($instance)
-    {
-        if ($instance instanceof \FooClass) {
-            $instance->setBar('someValue');
-        }
     }
 }

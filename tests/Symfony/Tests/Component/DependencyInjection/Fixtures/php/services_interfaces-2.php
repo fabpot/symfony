@@ -1,6 +1,7 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
@@ -12,10 +13,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
  * This class has been auto-generated
  * by the Symfony Dependency Injection Component.
  */
-class ProjectServiceContainer extends Container
+class ProjectServiceContainer extends Container implements TaggedContainerInterface
 {
-    protected $shared = array();
-
     /**
      * Constructor.
      */
@@ -25,24 +24,33 @@ class ProjectServiceContainer extends Container
     }
 
     /**
-     * Gets the 'foo' service.
+     * Gets the 'barFactory' service.
      *
      * This service is shared.
      * This method always returns the same instance of the service.
      *
-     * @return Object A %cla%o%ss% instance.
+     * @return BarClassFactory A BarClassFactory instance.
      */
-    protected function getFooService()
+    protected function getBarFactoryService()
     {
-        if (isset($this->shared['foo'])) return $this->shared['foo'];
-
-        $class = $this->getParameter('cla').'o'.$this->getParameter('ss');
-        $instance = new $class();
-        $this->shared['foo'] = $instance;
+        return $this->services['barFactory'] = new \BarClassFactory();
 
         $this->applyInterfaceInjection($instance);
+    }
 
-        return $instance;
+    /**
+     * Gets the 'bar' service.
+     *
+     * This service is shared.
+     * This method always returns the same instance of the service.
+     *
+     * @return Object An instance returned by barFactory::createBarClass().
+     */
+    protected function getBarService()
+    {
+        return $this->services['bar'] = $this->get('barFactory')->createBarClass();
+
+        $this->applyInterfaceInjection($instance);
     }
 
     /**
@@ -61,27 +69,14 @@ class ProjectServiceContainer extends Container
     }
 
     /**
-     * Gets the default parameters.
-     *
-     * @return array An array of the default parameters
-     */
-    protected function getDefaultParameters()
-    {
-        return array(
-            'cla' => 'Fo',
-            'ss' => 'Class',
-        );
-    }
-
-    /**
      * Applies all known interface injection calls
-     * 
+     *
      * @param Object $instance
      */
     protected function applyIntrefaceInjectors($instance)
     {
-        if ($instance instanceof \FooClass) {
-            $instance->setBar('someValue');
+        if ($instance instanceof \BarClass) {
+            $instance->setFoo('someValue');
         }
     }
 }

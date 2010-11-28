@@ -56,7 +56,7 @@ class PhpDumper extends Dumper
 
     protected function addInterfaceInjectors()
     {
-        if (0 === count($this->container->getInterfaceInjectors())) {
+        if ($this->container->isFrozen() || 0 === count($this->container->getInterfaceInjectors())) {
             return;
         }
 
@@ -64,7 +64,7 @@ class PhpDumper extends Dumper
 
     /**
      * Applies all known interface injection calls
-     * 
+     *
      * @param Object \$instance
      */
     protected function applyIntrefaceInjectors(\$instance)
@@ -160,7 +160,7 @@ EOF;
             $calls .= $this->wrapServiceConditionals($call[1], sprintf("        \$instance->%s(%s);\n", $call[0], implode(', ', $arguments)));
         }
 
-        if (count($this->container->getInterfaceInjectors()) > 0) {
+        if ( ! $this->container->isFrozen() && count($this->container->getInterfaceInjectors()) > 0) {
             $calls = sprintf("\n        \$this->applyInterfaceInjection(\$instance);\n");
         }
 
