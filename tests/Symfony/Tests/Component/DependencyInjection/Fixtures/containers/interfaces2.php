@@ -5,7 +5,7 @@ use Symfony\Component\DependencyInjection\Definition;
 
 $container = new ContainerBuilder();
 
-$factoryDefinition = new Definition();
+$factoryDefinition = new Definition('BarClassFactory');
 $container->setDefinition('barFactory', $factoryDefinition);
 
 $definition = new Definition();
