@@ -132,9 +132,15 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $id      The service identifier
      * @param object $service The service instance
+     *
+     * @throws BadMethodCallException
      */
     public function set($id, $service)
     {
+        if ($this->isFrozen()) {
+            throw new \BadMethodCallException('Setting service on a frozen container is not allowed');
+        }
+
         unset($this->definitions[$id]);
         unset($this->aliases[$id]);
 
@@ -289,11 +295,24 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
 
             $this->merge($container);
         }
-        $this->extensionConfigs = array();
 
+        $this->extensionConfigs = array();
         $this->addDefinitions($definitions);
         $this->addAliases($aliases);
         $this->parameterBag->add($parameters);
+
+        foreach ($this->definitions as $definition) {
+            foreach ($this->injectors as $injector) {
+                if (null !== $definition->getFactoryService()) {
+                    continue;
+                }
+                $defClass = $this->parameterBag->resolveValue($definition->getClass());
+                $definition->setClass($defClass);
+                if ($injector->supports($defClass)) {
+                    $injector->processDefinition($definition);
+                }
+            }
+        }
 
         parent::freeze();
     }
@@ -394,6 +413,13 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return $this->aliases[$id];
     }
 
+    public function addInterfaceInjectors(array $injectors)
+    {
+        foreach ($injectors as $injector) {
+            $this->addInterfaceInjector($injector);
+        }
+    }
+
     public function addInterfaceInjector(InterfaceInjector $injector)
     {
         $class = $injector->getClass();
@@ -467,9 +493,15 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param  string     $id         The service identifier
      * @param  Definition $definition A Definition instance
+     *
+     * @throws BadMethodCallException
      */
     public function setDefinition($id, Definition $definition)
     {
+        if ($this->isFrozen()) {
+            throw new \BadMethodCallException('Adding definition to a frozen container is not allowed');
+        }
+
         unset($this->aliases[$id]);
 
         return $this->definitions[$id] = $definition;
@@ -557,7 +589,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs($arguments);
         }
 
-        
+
         foreach ($this->getInterfaceInjectors($service) as $injector) {
             $injector->processDefinition($definition, $service);
         }

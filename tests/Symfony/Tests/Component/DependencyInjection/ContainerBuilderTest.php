@@ -429,6 +429,26 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException BadMethodCallException
+     */
+    public function testThrowsExceptionWhenSetServiceOnAFrozenContainer()
+    {
+        $container = new ContainerBuilder();
+        $container->freeze();
+        $container->set('a', new \stdClass());
+    }
+
+    /**
+     * @expectedException BadMethodCallException
+     */
+    public function testThrowsExceptionWhenSetDefinitionOnAFrozenContainer()
+    {
+        $container = new ContainerBuilder();
+        $container->freeze();
+        $container->setDefinition('a', new Definition());
+    }
+
+    /**
      * @param string $class
      * @param int $methodCallsCount
      * @return Symfony\Component\DependencyInjection\InterfaceInjector
