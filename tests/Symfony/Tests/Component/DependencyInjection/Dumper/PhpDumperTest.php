@@ -92,4 +92,43 @@ class PhpDumperTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($bar, $container->get('foo')->bar, '->set() overrides an already defined service');
     }
+
+    public function testInterfaceInjectors()
+    {
+        $interfaceInjector = new InterfaceInjector('FooClass');
+        $interfaceInjector->addMethodCall('setBar', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces1.php';
+        $container->addInterfaceInjector($interfaceInjector);
+
+        $dumper = new PhpDumper($container);
+
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-1.php', $dumper->dump(), '->dump() dumps interface injectors');
+    }
+
+    public function testInterfaceInjectorsAndServiceFactories()
+    {
+        $interfaceInjector = new InterfaceInjector('BarClass');
+        $interfaceInjector->addMethodCall('setFoo', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces2.php';
+        $container->addInterfaceInjector($interfaceInjector);
+
+        $dumper = new PhpDumper($container);
+
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-2.php', $dumper->dump(), '->dump() dumps interface injectors');
+    }
+
+    public function testFrozenContainerInterfaceInjectors()
+    {
+        $interfaceInjector = new InterfaceInjector('FooClass');
+        $interfaceInjector->addMethodCall('setBar', array('someValue'));
+        $container = include self::$fixturesPath.'/containers/interfaces1.php';
+        $container->addInterfaceInjector($interfaceInjector);
+        $container->freeze();
+
+        $dumper = new PhpDumper($container);
+
+        file_put_contents(self::$fixturesPath.'/php/services_interfaces-1-1.php', $dumper->dump());
+
+        $this->assertStringEqualsFile(self::$fixturesPath.'/php/services_interfaces-1-1.php', $dumper->dump(), '->dump() dumps interface injectors');
+    }
 }
