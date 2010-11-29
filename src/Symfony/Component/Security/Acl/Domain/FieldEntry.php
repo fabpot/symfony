@@ -4,8 +4,9 @@ namespace Symfony\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Acl\Model\AclInterface;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
+use Symfony\Component\Security\Acl\Model\FieldAwareEntryInterface;
 
-class FieldEntry extends Entry
+class FieldEntry extends Entry implements FieldAwareEntryInterface
 {
     protected $field;
     

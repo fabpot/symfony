@@ -12,7 +12,7 @@ namespace Symfony\Component\Security\Acl\Model;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-interface AclInterface
+interface AclInterface extends \Serializable
 {
     function getClassAces();
     function getClassFieldAces($field);
