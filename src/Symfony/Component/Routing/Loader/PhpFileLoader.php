@@ -50,7 +50,7 @@ class PhpFileLoader extends FileLoader
     public function supports($resource)
     {
         return is_string($resource) &&
-            '(' !== mb_substr($resource, 0, 1) &&
+            '(' !== substr($resource, 0, 1) &&
             'php' === pathinfo($resource, PATHINFO_EXTENSION);
     }
 }
