@@ -18,6 +18,11 @@ use Symfony\Component\Security\Acl\Exception\Exception;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Model\MutableAclProviderInterface;
 
+/**
+ * An implementation of the MutableAclProviderInterface using Doctrine DBAL.
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
 class MutableAclProvider extends AclProvider implements MutableAclProviderInterface, PropertyChangedListener
 {
     protected $propertyChanges;
@@ -32,6 +37,14 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
         $this->propertyChanges = new \SplObjectStorage();
     }
     
+    /**
+     * Creates a new ACL for the given object identity. 
+     * 
+     * @throws AclAlreadyExistsException when there already is an ACL for the given
+     *                                   object identity
+     * @param ObjectIdentityInterface $oid
+     * @return AclInterface
+     */
     public function createAcl(ObjectIdentityInterface $oid)
     {
         if (false !== $this->retrieveObjectIdentityPrimaryKey($oid)) {
@@ -53,15 +66,25 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
             throw $failed;
         }
             
+        // re-read the ACL from the database to ensure proper caching, etc.
         return $this->findAcl($oid);
     }
     
+    /**
+     * Deletes the ACL for a given object identity.
+     * 
+     * This will automatically trigger a delete for any child ACLs. If you don't
+     * want child ACLs to be deleted, you will have to set their parent ACL to null.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return void
+     */
     public function deleteAcl(ObjectIdentityInterface $oid)
     {
         $this->connection->beginTransaction();
         try {
-            foreach ($this->findChildren($oid) as $childAcl) {
-                $this->deleteAcl($childAcl);
+            foreach ($this->findChildren($oid, true) as $childOid) {
+                $this->deleteAcl($childOid);
             }
             
             $oidPK = $this->retrieveObjectIdentityPrimaryKey($oid);
@@ -78,8 +101,8 @@ class MutableAclProvider extends AclProvider implements MutableAclProviderInterf
             throw $failed;
         }
         
+        // evict the ACL from any caches
         unset($this->loadedAcls[$oid->getIdentifier()][$oid->getType()]);
-        
         if (null !== $this->aclCache) {
             $this->aclCache->evictFromCacheByIdentity($oid);
         }

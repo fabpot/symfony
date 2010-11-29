@@ -34,6 +34,14 @@ class AclProvider implements AclProviderInterface
     protected $options;
     protected $permissionGrantingStrategy;
     
+    /**
+     * Constructor
+     * 
+     * @param Connection $connection
+     * @param PermissionGrantingStrategyInterface $permissionGrantingStrategy
+     * @param array $options
+     * @param AclCacheInterface $aclCache
+     */
     public function __construct(Connection $connection, PermissionGrantingStrategyInterface $permissionGrantingStrategy, array $options, AclCacheInterface $aclCache = null)
     {
         $this->aclCache = $aclCache;
@@ -44,9 +52,12 @@ class AclProvider implements AclProviderInterface
         $this->permissionGrantingStrategy = $permissionGrantingStrategy;
     }
     
-    public function findChildren(ObjectIdentityInterface $parentOid)
+    /**
+     * {@inheritDoc}
+     */
+    public function findChildren(ObjectIdentityInterface $parentOid, $directChildrenOnly = false)
     {
-        $sql = $this->getFindChildrenSql($parentOid);
+        $sql = $this->getFindChildrenSql($parentOid, $directChildrenOnly);
         
         $children = array();
         foreach ($this->connection->executeQuery($sql)->fetchAll() as $data) {
@@ -56,11 +67,17 @@ class AclProvider implements AclProviderInterface
         return $children;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function findAcl(ObjectIdentityInterface $oid, array $sids = array())
     {
         return $this->findAcls(array($oid), $sids)->offsetGet($oid);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function findAcls(array $oids, array $sids = array())
     {
         $result = new \SplObjectStorage();
@@ -142,10 +159,10 @@ class AclProvider implements AclProviderInterface
                 $result->addAll($loadedBatch);
                 
                 if (null !== $this->aclCache) {
-                    foreach ($loadedBatch as $loadedAcl) {
-                        $loadedOId = $loadedAcl->getObjectIdentity();
+                    foreach ($loadedBatch as $loadedOid) {
+                        $loadedAcl = $loadedBatch->offsetGet($loadedOid);
                         $this->aclCache->putInCache($loadedAcl);
-                    }   
+                    }
                 }
                     
                 $currentBatch = array();
@@ -428,17 +445,27 @@ SELECTCLAUSE;
         return $ancestorIds;
     }
     
-    protected function getFindChildrenSql(ObjectIdentityInterface $oid)
+    protected function getFindChildrenSql(ObjectIdentityInterface $oid, $directChildrenOnly)
     {
-        $query = <<<FINDCHILDREN
-			SELECT o.object_identifier, c.class_type 
-			FROM 
-				{$this->options['oid_table_name']} as o
-			INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
-			INNER JOIN {$this->options['oid_ancestors_table_name']} as a ON a.object_identity_id = o.id
-			WHERE 
-				a.ancestor_id = %d AND a.object_identity_id != a.ancestor_id
+        if (false === $directChildrenOnly) {
+            $query = <<<FINDCHILDREN
+    			SELECT o.object_identifier, c.class_type 
+    			FROM 
+    				{$this->options['oid_table_name']} as o
+    			INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
+    			INNER JOIN {$this->options['oid_ancestors_table_name']} as a ON a.object_identity_id = o.id
+    			WHERE 
+    				a.ancestor_id = %d AND a.object_identity_id != a.ancestor_id
 FINDCHILDREN;
+        }
+        else {
+            $query = <<<FINDCHILDREN
+            	SELECT o.object_identifier, c.class_type
+            	FROM {$this->options['oid_table_name']} as o
+            	INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
+            	WHERE o.parent_object_identity_id = %d
+FINDCHILDREN;
+        }
 
 		return sprintf($query, $this->retrieveObjectIdentityPrimaryKey($oid));
     }
