@@ -10,7 +10,7 @@ namespace Symfony\Component\Security\Acl\Model;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-interface EntryInterface
+interface EntryInterface extends \Serializable
 {
     function getAcl();
     function getId();

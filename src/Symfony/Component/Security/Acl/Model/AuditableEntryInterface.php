@@ -2,7 +2,7 @@
 
 namespace Symfony\Component\Security\Acl\Model;
 
-interface AuditableEntryInterface
+interface AuditableEntryInterface extends EntryInterface
 {
     function isAuditFailure();
     function isAuditSuccess();

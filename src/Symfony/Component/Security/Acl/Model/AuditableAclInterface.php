@@ -7,7 +7,10 @@ namespace Symfony\Component\Security\Acl\Model;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-interface AuditableAclInterface
+interface AuditableAclInterface extends MutableAclInterface
 {
-    function updateAuditing($index, $auditSuccess, $auditFailure);
+    function updateClassAuditing($index, $auditSuccess, $auditFailure);
+    function updateClassFieldAuditing($index, $field, $auditSuccess, $auditFailure);
+    function updateObjectAuditing($index, $auditSuccess, $auditFailure);
+    function updateObjectFieldAuditing($index, $field, $auditSuccess, $auditFailure);
 }

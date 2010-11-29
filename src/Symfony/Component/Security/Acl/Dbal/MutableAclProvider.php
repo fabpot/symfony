@@ -2,7 +2,6 @@
 
 namespace Symfony\Component\Security\Acl\Dbal;
 
-use Symfony\Component\Security\Acl\Model\FieldEntryInterface;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
@@ -744,6 +743,12 @@ QUERY;
             if (isset($propertyChanges['aceOrder'])) {
                 $sets[] = 'ace_order = '.intval($propertyChanges['aceOrder'][1]);
             }
+            if (isset($propertyChanges['auditSuccess'])) {
+                $sets[] = 'audit_success = '.($propertyChanges['auditSuccess'][1] ? '1' : '0');
+            }
+            if (isset($propertyChanges['auditFailure'])) {
+                $sets[] = 'audit_failure = '.($propertyChanges['auditFailure'][1] ? '1' : '0'); 
+            }            
             
             $this->connection->executeQuery($this->getUpdateAccessControlEntrySql($ace->getId(), $sets));
         }

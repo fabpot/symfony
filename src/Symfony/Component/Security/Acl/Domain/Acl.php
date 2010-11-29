@@ -3,7 +3,6 @@
 namespace Symfony\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Acl\Model\EntryInterface;
-use Doctrine\Common\NotifyPropertyChanged;
 use Doctrine\Common\PropertyChangedListener;
 use Symfony\Component\Security\Acl\Model\AuditableAclInterface;
 use Symfony\Component\Security\Acl\Model\PermissionInterface;
@@ -26,7 +25,7 @@ use Symfony\Component\Security\Acl\Model\AclInterface;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, NotifyPropertyChanged, \Serializable
+class Acl implements AuditableAclInterface
 {
     protected $parentAcl;
     protected $permissionGrantingStrategy;
@@ -271,14 +270,32 @@ class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, N
         $this->updateObjectFieldAce($index, $field, $mask, $strategy);
     }
     
-    public function updateAuditing($index, $auditSuccess, $auditFailure)
+    public function updateClassAuditing($index, $auditSuccess, $auditFailure)
     {
-        if (!isset($this->aces[$index])) {
-            throw new \OutOfBoundsException(sprintf('The index "%d" does not exist.', $index));
+        $this->updateAuditing($this->classAces, $index, $auditSuccess, $auditFailure);
+    }
+    
+    public function updateClassFieldAuditing($index, $field, $auditSuccess, $auditFailure)
+    {
+        if (!isset($this->classFieldAces[$field])) {
+            throw new \InvalidArgumentException(sprintf('There are no ACEs for field "%s".', $field));
         }
-        
-        $this->aces[$index]->setAuditFailure($auditFailure);
-        $this->aces[$index]->setAuditSuccess($auditSuccess);
+      
+        $this->updateAuditing($this->classFieldAces[$field], $index, $auditSuccess, $auditFailure);
+    }
+    
+    public function updateObjectAuditing($index, $auditSuccess, $auditFailure)
+    {
+        $this->updateAuditing($this->objectAces, $index, $auditSuccess, $auditFailure); 
+    }
+    
+    public function updateObjectFieldAuditing($index, $field, $auditSuccess, $auditFailure)
+    {
+        if (!isset($this->objectFieldAces[$field])) {
+            throw new \InvalidArgumentException(sprintf('There are no ACEs for field "%s".', $field));
+        }
+      
+        $this->updateAuditing($this->objectFieldAces[$field], $index, $auditSuccess, $auditFailure);
     }
     
     protected function deleteAce($property, $index)
@@ -408,6 +425,23 @@ class Acl implements AclInterface, MutableAclInterface, AuditableAclInterface, N
         if ($strategy !== $oldStrategy = $ace->getStrategy()) {
             $this->onEntryPropertyChanged($ace, 'strategy', $oldStrategy, $strategy);
             $ace->setStrategy($strategy);
+        }
+    }
+    
+    protected function updateAuditing(array &$aces, $index, $auditSuccess, $auditFailure)
+    {
+        if (!isset($aces[$index])) {
+            throw new \OutOfBoundsException(sprintf('The index "%d" does not exist.', $index));
+        }
+        
+        if ($auditSuccess !== $aces[$index]->isAuditSuccess()) {
+            $this->onEntryPropertyChanged($aces[$index], 'auditSuccess', !$auditSuccess, $auditSuccess);
+            $aces[$index]->setAuditSuccess($auditSuccess);
+        }
+        
+        if ($auditFailure !== $aces[$index]->isAuditFailure()) {
+            $this->onEntryPropertyChanged($aces[$index], 'auditFailure', !$auditFailure, $auditFailure);
+            $aces[$index]->setAuditFailure($auditFailure);
         }
     }
     

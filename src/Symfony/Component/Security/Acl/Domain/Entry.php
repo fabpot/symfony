@@ -8,7 +8,7 @@ use Symfony\Component\Security\Acl\Model\AclInterface;
 use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
 use Symfony\Component\Security\Acl\Model\EntryInterface;
 
-class Entry implements EntryInterface, AuditableEntryInterface, \Serializable
+class Entry implements AuditableEntryInterface
 {
     protected $acl;
     protected $mask;
