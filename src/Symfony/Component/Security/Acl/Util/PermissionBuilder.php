@@ -80,7 +80,7 @@ class PermissionBuilder
         return $this;
     }
     
-    public function pattern()
+    public function getPattern()
     {
         $pattern = self::ALL_OFF;
         $length = strlen($pattern);
@@ -100,7 +100,7 @@ class PermissionBuilder
         return $pattern;
     }
     
-    public function mask()
+    public function getMask()
     {
         return $this->mask;
     }

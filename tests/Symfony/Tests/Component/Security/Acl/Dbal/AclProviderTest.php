@@ -17,133 +17,133 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
     protected $insertOidAncestorStmt;
     protected $insertSidStmt;
     
-    public function testFindAclById()
-    {
-        $oid = new ObjectIdentity('1', 'foo');
-        $provider = $this->getProvider();
-        
-        $acl = $provider->findAcl($oid);
-        
-        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl);
-        $this->assertEquals(4, $acl->getId());
-        $this->assertEquals(0, count($acl->getClassAces()));
-        $this->assertEquals(0, count($acl->getClassFieldAces()));
-        $this->assertEquals(1, count($acl->getObjectAces()));
-        $this->assertEquals(0, count($acl->getObjectFieldAces()));
-        
-        $aces = $acl->getObjectAces();
-        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Entry', $aces[0]);
-        $this->assertTrue($aces[0]->isGranting());
-        $this->assertTrue($aces[0]->isAuditSuccess());
-        $this->assertTrue($aces[0]->isAuditFailure());
-        $this->assertEquals('all', $aces[0]->getStrategy());
-        $this->assertSame(2, $aces[0]->getMask());
-        
-        $sid = $aces[0]->getSecurityIdentity();
-        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\UserSecurityIdentity', $sid);
-        $this->assertEquals('john.doe', $sid->getUsername());
-    }
-    
-//    public function testBenchmarks()
+//    public function testFindAclById()
 //    {
-//        $this->generateTestData();
+//        $oid = new ObjectIdentity('1', 'foo');
+//        $provider = $this->getProvider();
 //        
-//        // get some identities
-//        $oids = array();
-//        foreach ($this->con->query('SELECT object_identifier, class_type FROM acl_object_identities o INNER JOIN acl_classes c ON c.id = o.class_id LIMIT '.rand(0, 10000).', 5')->fetchAll() as $data) {
-//            $ancestors = array();
-//            
-//            // this query takes 5ms on average
-//            $startTime = microtime(true);
-//            foreach ($this->con->query(sprintf('
-//            	SELECT a.ancestor_id FROM acl_object_identities o
-//            	INNER JOIN acl_classes c ON c.id = o.class_id
-//            	INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = o.id
-//            	WHERE o.object_identifier = %s AND c.class_type = %s
-//            ', $this->con->quote($data['object_identifier']), $this->con->quote($data['class_type'])))
-//                 as $subData) 
-//            {
-//                $ancestors[] = $subData['ancestor_id'];
-//            }
-//            $ancestorTime = microtime(true) - $startTime;
-//            
-//            // inlined query using IN()
-//            $startTime = microtime(true);
-//            $this->con->query('
-//            	SELECT o.object_identifier, c.class_type, e.id, s.id
-//            	FROM acl_object_identities o
-//            	INNER JOIN acl_classes c ON c.id = o.class_id
-//            	LEFT JOIN acl_entries e ON (
-//            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
-//            	)
-//            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
-//            	WHERE o.id IN ('.implode(',', $ancestors).')
-//            ');
-//            $inlineInTime = microtime(true) - $startTime + $ancestorTime;
-//            $inlinedInTimes[] = $inlineInTime; 
-//            
-//            // inlined query using OR
-//            $startTime = microtime(true);
-//            $orSql = '
-//            	SELECT o.object_identifier, c.class_type, e.id, s.id
-//            	FROM acl_object_identities o
-//            	INNER JOIN acl_classes c ON c.id = o.class_id
-//            	LEFT JOIN acl_entries e ON (
-//            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
-//            	)
-//            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
-//            	WHERE o.id = '.implode(' OR o.id = ', $ancestors).'
-//            ';
-//            $this->con->query($orSql);
-//            $inlineOrTime = microtime(true) - $startTime + $ancestorTime;
-//            $inlinedOrTimes[] = $inlineOrTime;
-//            
-//            // with subquery
-//            $startTime = microtime(true);
-//            $subSql = sprintf('
-//            	SELECT o.object_identifier, c.class_type, e.id, s.id
-//            	FROM acl_object_identities o            	
-//            	INNER JOIN acl_classes c ON c.id = o.class_id
-//            	LEFT JOIN acl_entries e ON (
-//            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
-//         		)
-//            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
-//            	WHERE o.id IN (
-//            		SELECT a.ancestor_id FROM acl_object_identities so
-//            		INNER JOIN acl_classes sc ON sc.id = so.class_id
-//            		INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = so.id
-//            		WHERE so.object_identifier = %s AND sc.class_type = %s
-//            	)
-//            ', $this->con->quote($data['object_identifier']), $this->con->quote($data['class_type']));
-//            $this->con->query($subSql);
-//            $subQueryTime = microtime(true) - $startTime;
-//            $subQueryTimes[] = $subQueryTime;
-//            
-//            echo "InlineIn: ".$inlineInTime."s, InlineOr: ".$inlineOrTime."s, SubQuery: ".$subQueryTime."s\n";
-//        }
+//        $acl = $provider->findAcl($oid);
 //        
-//        echo "InlineIn AVG: ".(array_sum($inlinedInTimes)/count($inlinedInTimes))."s\n";
-//        echo "InlineOr AVG: ".(array_sum($inlinedOrTimes)/count($inlinedOrTimes))."s\n";
-//        echo "SubQuery AVG: ".(array_sum($subQueryTimes)/count($subQueryTimes))."s\n";
+//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl);
+//        $this->assertEquals(4, $acl->getId());
+//        $this->assertEquals(0, count($acl->getClassAces()));
+//        $this->assertEquals(0, count($acl->getClassFieldAces()));
+//        $this->assertEquals(1, count($acl->getObjectAces()));
+//        $this->assertEquals(0, count($acl->getObjectFieldAces()));
+//        
+//        $aces = $acl->getObjectAces();
+//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Entry', $aces[0]);
+//        $this->assertTrue($aces[0]->isGranting());
+//        $this->assertTrue($aces[0]->isAuditSuccess());
+//        $this->assertTrue($aces[0]->isAuditFailure());
+//        $this->assertEquals('all', $aces[0]->getStrategy());
+//        $this->assertSame(2, $aces[0]->getMask());
+//        
+//        $sid = $aces[0]->getSecurityIdentity();
+//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\UserSecurityIdentity', $sid);
+//        $this->assertEquals('john.doe', $sid->getUsername());
 //    }
+    
+    public function testBenchmarks()
+    {
+        $this->generateTestData();
+        
+        // get some identities
+        $oids = array();
+        foreach ($this->con->query('SELECT object_identifier, class_type FROM acl_object_identities o INNER JOIN acl_classes c ON c.id = o.class_id LIMIT '.rand(0, 10000).', 5')->fetchAll() as $data) {
+            $ancestors = array();
+            
+            // this query takes 5ms on average
+            $startTime = microtime(true);
+            foreach ($this->con->query(sprintf('
+            	SELECT a.ancestor_id FROM acl_object_identities o
+            	INNER JOIN acl_classes c ON c.id = o.class_id
+            	INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = o.id
+            	WHERE o.object_identifier = %s AND c.class_type = %s
+            ', $this->con->quote($data['object_identifier']), $this->con->quote($data['class_type'])))
+                 as $subData) 
+            {
+                $ancestors[] = $subData['ancestor_id'];
+            }
+            $ancestorTime = microtime(true) - $startTime;
+            
+            // inlined query using IN()
+            $startTime = microtime(true);
+            $this->con->query('
+            	SELECT o.object_identifier, c.class_type, e.id, s.id
+            	FROM acl_object_identities o
+            	INNER JOIN acl_classes c ON c.id = o.class_id
+            	LEFT JOIN acl_entries e ON (
+            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
+            	)
+            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
+            	WHERE o.id IN ('.implode(',', $ancestors).')
+            ');
+            $inlineInTime = microtime(true) - $startTime + $ancestorTime;
+            $inlinedInTimes[] = $inlineInTime; 
+            
+            // inlined query using OR
+            $startTime = microtime(true);
+            $orSql = '
+            	SELECT o.object_identifier, c.class_type, e.id, s.id
+            	FROM acl_object_identities o
+            	INNER JOIN acl_classes c ON c.id = o.class_id
+            	LEFT JOIN acl_entries e ON (
+            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
+            	)
+            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
+            	WHERE o.id = '.implode(' OR o.id = ', $ancestors).'
+            ';
+            $this->con->query($orSql);
+            $inlineOrTime = microtime(true) - $startTime + $ancestorTime;
+            $inlinedOrTimes[] = $inlineOrTime;
+            
+            // with subquery
+            $startTime = microtime(true);
+            $subSql = sprintf('
+            	SELECT o.object_identifier, c.class_type, e.id, s.id
+            	FROM acl_object_identities o            	
+            	INNER JOIN acl_classes c ON c.id = o.class_id
+            	LEFT JOIN acl_entries e ON (
+            		e.class_id = o.class_id AND (e.object_identity_id = o.id OR e.object_identity_id IS NULL)
+         		)
+            	LEFT JOIN acl_security_identities s ON s.id = e.security_identity_id
+            	WHERE o.id IN (
+            		SELECT a.ancestor_id FROM acl_object_identities so
+            		INNER JOIN acl_classes sc ON sc.id = so.class_id
+            		INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = so.id
+            		WHERE so.object_identifier = %s AND sc.class_type = %s
+            	)
+            ', $this->con->quote($data['object_identifier']), $this->con->quote($data['class_type']));
+            $this->con->query($subSql);
+            $subQueryTime = microtime(true) - $startTime;
+            $subQueryTimes[] = $subQueryTime;
+            
+            echo "InlineIn: ".$inlineInTime."s, InlineOr: ".$inlineOrTime."s, SubQuery: ".$subQueryTime."s\n";
+        }
+        
+        echo "InlineIn AVG: ".(array_sum($inlinedInTimes)/count($inlinedInTimes))."s\n";
+        echo "InlineOr AVG: ".(array_sum($inlinedOrTimes)/count($inlinedOrTimes))."s\n";
+        echo "SubQuery AVG: ".(array_sum($subQueryTimes)/count($subQueryTimes))."s\n";
+    }
     
     
     public function setUp()
     {
-        $this->con = DriverManager::getConnection(array(
-            'driver' => 'pdo_sqlite',
-            'memory' => true,
-        ));
 //        $this->con = DriverManager::getConnection(array(
-//            'driver' => 'pdo_mysql',
-//            'host' => 'localhost',
-//            'user' => 'root',
-//            'dbname' => 'testdb',
+//            'driver' => 'pdo_sqlite',
+//            'memory' => true,
 //        ));
-//        
-//        $sm = $this->con->getSchemaManager();
-//        $sm->dropAndCreateDatabase('testdb');
-//        $this->con->exec("USE testdb");
+        $this->con = DriverManager::getConnection(array(
+            'driver' => 'pdo_mysql',
+            'host' => 'localhost',
+            'user' => 'root',
+            'dbname' => 'testdb',
+        ));
+        
+        $sm = $this->con->getSchemaManager();
+        $sm->dropAndCreateDatabase('testdb');
+        $this->con->exec("USE testdb");
         
         // import the schema
         $schema = new Schema($options = $this->getOptions());

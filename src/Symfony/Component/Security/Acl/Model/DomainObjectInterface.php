@@ -14,7 +14,7 @@ interface DomainObjectInterface
     /**
      * Returns a unique identifier for this domain object.
      * 
-     * @return integer 
+     * @return string 
      */
     function getObjectIdentifier();
 }
