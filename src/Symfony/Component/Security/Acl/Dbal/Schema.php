@@ -4,10 +4,30 @@ namespace Symfony\Component\Security\Acl\Dbal;
 
 use Doctrine\DBAL\Schema\Schema as BaseSchema;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+/**
+ * The schema used for the ACL system.
+ * 
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ */
 class Schema extends BaseSchema
 {
     protected $options;
     
+    /**
+     * Constructor
+     * 
+     * @param array $options the names for tables
+     * @return void
+     */
     public function __construct(array $options)
     {
         parent::__construct();
@@ -21,6 +41,11 @@ class Schema extends BaseSchema
         $this->addEntryTable();
     }
     
+    /**
+     * Adds the class table to the schema
+     * 
+     * @return void
+     */
     protected function addClassTable()
     {
         $table = $this->createTable($this->options['class_table_name']);
@@ -30,6 +55,11 @@ class Schema extends BaseSchema
         $table->addUniqueIndex(array('class_type'));
     }
     
+    /**
+     * Adds the entry table to the schema
+     * 
+     * @return void
+     */
     protected function addEntryTable()
     {
         $table = $this->createTable($this->options['entry_table_name']);
@@ -55,6 +85,11 @@ class Schema extends BaseSchema
         $table->addForeignKeyConstraint($this->getTable($this->options['sid_table_name']), array('security_identity_id'), array('id'), array('onDelete' => 'CASCADE', 'onUpdate' => 'CASCADE'));
     }
     
+    /**
+     * Adds the object identity table to the schema
+     * 
+     * @return void
+     */
     protected function addObjectIdentitiesTable()
     {
         $table = $this->createTable($this->options['oid_table_name']);
@@ -72,6 +107,11 @@ class Schema extends BaseSchema
         $table->addForeignKeyConstraint($table, array('parent_object_identity_id'), array('id'), array('onDelete' => 'RESTRICT', 'onUpdate' => 'RESTRICT'));
     }
     
+    /**
+     * Adds the object identity relation table to the schema
+     * 
+     * @return void
+     */
     protected function addObjectIdentityAncestorsTable()
     {
         $table = $this->createTable($this->options['oid_ancestors_table_name']);
@@ -86,6 +126,11 @@ class Schema extends BaseSchema
         $table->addForeignKeyConstraint($oidTable, array('ancestor_id'), array('id'), array('onDelete' => 'CASCADE', 'onUpdate' => 'CASCADE'));
     }
     
+    /**
+     * Adds the security identity table to the schema
+     * 
+     * @return void
+     */
     protected function addSecurityIdentitiesTable()
     {
         $table = $this->createTable($this->options['sid_table_name']);

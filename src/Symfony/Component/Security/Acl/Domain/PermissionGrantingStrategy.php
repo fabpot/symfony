@@ -95,8 +95,10 @@ class PermissionGrantingStrategy implements PermissionGrantingStrategyInterface
     /**
      * Makes an authorization decision.
      * 
-     * The order of aces is significant; the order of permissions/security
-     * identities not so much.
+     * The order of ACEs, and SIDs is significant; the order of permission masks
+     * not so much. It is important to note that the more specific security
+     * identities should be at the beginning of the SIDs array in order for this
+     * strategy to produce intuitive authorization decisions.
      * 
      * First, we will iterate over permissions, then over security identities.
      * For each combination of permission, and identity we will test the
@@ -114,17 +116,18 @@ class PermissionGrantingStrategy implements PermissionGrantingStrategyInterface
      * access finally.
      * 
      * @param AclInterface $acl
-     * @param mixed $masks a permission mask, or an array thereof
-     * @param mixed $sids a SecurityIdentityInterface implementation, or an array thereof
+     * @param array $aces an array of ACE to check against
+     * @param array $masks an array of permission masks
+     * @param array $sids an array of SecurityIdentityInterface implementations
      * @param Boolean $administrativeMode true turns off audit logging
      * @return Boolean true, or false; either granting, or denying access respectively.
      */
-    protected function hasSufficientPermissions(AclInterface $acl, $aces, $masks, $sids, $administrativeMode)
+    protected function hasSufficientPermissions(AclInterface $acl, array &$aces, array &$masks, array &$sids, $administrativeMode)
     {
         $firstRejectedAce  = null;
         
-        foreach ((array) $masks as $requiredMask) {
-            foreach ((array) $sids as $sid) {
+        foreach ($masks as $requiredMask) {
+            foreach ($sids as $sid) {
                 foreach ($aces as $ace) {
                     if ($this->isAceApplicable($requiredMask, $sid, $ace)) {
                         if ($ace->isGranting()) {

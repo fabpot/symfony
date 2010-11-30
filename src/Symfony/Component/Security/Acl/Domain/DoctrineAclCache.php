@@ -2,13 +2,20 @@
 
 namespace Symfony\Component\Security\Acl\Domain;
 
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-
-use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
-
 use Doctrine\Common\Cache\Cache;
 use Symfony\Component\Security\Acl\Model\AclCacheInterface;
 use Symfony\Component\Security\Acl\Model\AclInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
+use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
+
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * This class is a wrapper around the actual cache implementation.
@@ -23,6 +30,14 @@ class DoctrineAclCache implements AclCacheInterface
     protected $prefix;
     protected $permissionGrantingStrategy;
     
+    /**
+     * Constructor
+     * 
+     * @param Cache $cache
+     * @param PermissionGrantingStrategyInterface $permissionGrantingStrategy
+     * @param string $prefix
+     * @return void
+     */
     public function __construct(Cache $cache, PermissionGrantingStrategyInterface $permissionGrantingStrategy, $prefix = self::PREFIX)
     {
         if (0 === strlen($prefix)) {
@@ -34,11 +49,17 @@ class DoctrineAclCache implements AclCacheInterface
         $this->prefix = $prefix;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function clearCache()
     {
         $this->cache->deleteByPrefix($this->prefix);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function evictFromCacheById($aclId)
     {
         $lookupKey = $this->getAliasKeyForIdentity($aclId);
@@ -54,6 +75,9 @@ class DoctrineAclCache implements AclCacheInterface
         $this->cache->delete($lookupKey);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function evictFromCacheByIdentity(ObjectIdentityInterface $oid)
     {
         $key = $this->getDataKeyByIdentity($oid);
@@ -64,6 +88,9 @@ class DoctrineAclCache implements AclCacheInterface
         $this->cache->delete($key);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function getFromCacheById($aclId)
     {
         $lookupKey = $this->getAliasKeyForIdentity($aclId);
@@ -81,6 +108,9 @@ class DoctrineAclCache implements AclCacheInterface
         return $this->unserializeAcl($this->cache->fetch($key));
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function getFromCacheByIdentity(ObjectIdentityInterface $oid)
     {
         $key = $this->getDataKeyByIdentity($oid);
@@ -91,6 +121,9 @@ class DoctrineAclCache implements AclCacheInterface
         return $this->unserializeAcl($this->cache->fetch($key));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function putInCache(AclInterface $acl)
     {
         if (null === $acl->getId()) {
@@ -106,6 +139,12 @@ class DoctrineAclCache implements AclCacheInterface
         $this->cache->save($this->getAliasKeyForIdentity($acl->getId()), $key);
     }
     
+    /**
+     * Unserializes the ACL.
+     * 
+     * @param string $serialized
+     * @return AclInterface
+     */
     protected function unserializeAcl($serialized)
     {
         $acl = unserialize($serialized);
@@ -125,15 +164,57 @@ class DoctrineAclCache implements AclCacheInterface
         $reflectionProperty->setValue($acl, $this->permissionGrantingStrategy);
         $reflectionProperty->setAccessible(false);
         
+        $aceAclProperty = new \ReflectionProperty('Symfony\Component\Security\Acl\Domain\Entry', 'id');
+        $aceAclProperty->setAccessible(true);
+        
+        foreach ($acl->getObjectAces() as $ace) {
+            $aceAclProperty->setValue($ace, $acl);
+        }
+        foreach ($acl->getClassAces() as $ace) {
+            $aceAclProperty->setValue($ace, $acl);
+        }
+        
+        $aceClassFieldProperty = new \ReflectionProperty($acl, 'classFieldAces');
+        $aceClassFieldProperty->setAccessible(true);
+        foreach ($aceClassFieldProperty->getValue($acl) as $field => $aces) {
+            foreach ($aces as $ace) {
+                $aceAclProperty->setValue($ace, $acl);
+            }
+        }
+        $aceClassFieldProperty->setAccessible(false);
+        
+        $aceObjectFieldProperty = new \ReflectionProperty($acl, 'objectFieldAces');
+        $aceObjectFieldProperty->setAccessible(true);
+        foreach ($aceObjectFieldProperty->getValue($acl) as $field => $aces) {
+            foreach ($aces as $ace) {
+                $aceAclProperty->setValue($ace, $acl);
+            }
+        }
+        $aceObjectFieldProperty->setAccessible(false);
+        
+        $aceAclProperty->setAccessible(false);
+        
         return $acl;
     }
     
+    /**
+     * Returns the key for the object identity 
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return string
+     */
     protected function getDataKeyByIdentity(ObjectIdentityInterface $oid)
     {
         return $this->prefix.md5($oid->getType()).sha1($oid->getType())
                .'_'.md5($oid->getIdentifier()).sha1($oid->getIdentifier());
     }
     
+    /**
+     * Returns the alias key for the object identity key
+     * 
+     * @param string $aclId
+     * @return string
+     */
     protected function getAliasKeyForIdentity($aclId)
     {
         return $this->prefix.$aclId;

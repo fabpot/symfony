@@ -2,19 +2,28 @@
 
 namespace Symfony\Component\Security\Acl\Dbal;
 
-use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
-use Symfony\Component\Security\Acl\Model\AclCacheInterface;
+use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Statement;
+use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Domain\Entry;
 use Symfony\Component\Security\Acl\Domain\FieldEntry;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
-use Symfony\Component\Security\Acl\Domain\Acl;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-use Doctrine\DBAL\Driver\Connection;
+use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
+use Symfony\Component\Security\Acl\Model\AclCacheInterface;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
+use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
+
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * An ACL provider implementation.
@@ -34,6 +43,14 @@ class AclProvider implements AclProviderInterface
     protected $options;
     protected $permissionGrantingStrategy;
     
+    /**
+     * Constructor
+     * 
+     * @param Connection $connection
+     * @param PermissionGrantingStrategyInterface $permissionGrantingStrategy
+     * @param array $options
+     * @param AclCacheInterface $aclCache
+     */
     public function __construct(Connection $connection, PermissionGrantingStrategyInterface $permissionGrantingStrategy, array $options, AclCacheInterface $aclCache = null)
     {
         $this->aclCache = $aclCache;
@@ -44,9 +61,12 @@ class AclProvider implements AclProviderInterface
         $this->permissionGrantingStrategy = $permissionGrantingStrategy;
     }
     
-    public function findChildren(ObjectIdentityInterface $parentOid)
+    /**
+     * {@inheritDoc}
+     */
+    public function findChildren(ObjectIdentityInterface $parentOid, $directChildrenOnly = false)
     {
-        $sql = $this->getFindChildrenSql($parentOid);
+        $sql = $this->getFindChildrenSql($parentOid, $directChildrenOnly);
         
         $children = array();
         foreach ($this->connection->executeQuery($sql)->fetchAll() as $data) {
@@ -56,11 +76,17 @@ class AclProvider implements AclProviderInterface
         return $children;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function findAcl(ObjectIdentityInterface $oid, array $sids = array())
     {
         return $this->findAcls(array($oid), $sids)->offsetGet($oid);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function findAcls(array $oids, array $sids = array())
     {
         $result = new \SplObjectStorage();
@@ -142,10 +168,10 @@ class AclProvider implements AclProviderInterface
                 $result->addAll($loadedBatch);
                 
                 if (null !== $this->aclCache) {
-                    foreach ($loadedBatch as $loadedAcl) {
-                        $loadedOId = $loadedAcl->getObjectIdentity();
+                    foreach ($loadedBatch as $loadedOid) {
+                        $loadedAcl = $loadedBatch->offsetGet($loadedOid);
                         $this->aclCache->putInCache($loadedAcl);
-                    }   
+                    }
                 }
                     
                 $currentBatch = array();
@@ -162,6 +188,15 @@ class AclProvider implements AclProviderInterface
         return $result;
     }
     
+    /**
+     * This method is called for object identities which could not be retrieved 
+     * from the cache, and for which thus a database query is required.
+     * 
+     * @param array $batch
+     * @param array $sids
+     * @param array $oidLookup
+     * @return \SplObjectStorage mapping object identites to ACL instances
+     */
     protected function lookupObjectIdentities(array &$batch, array $sids, array &$oidLookup)
     {
         $sql = $this->getLookupSql($batch, $sids);
@@ -174,11 +209,12 @@ class AclProvider implements AclProviderInterface
      * This method is called to hydrate ACLs and ACEs.
      * 
      * This method was designed for performance; thus, a lot of code has been
-     * inlined at the cost of readability.
+     * inlined at the cost of readability, and maintainability.
      * 
      * @param Statement $stmt
      * @param array $oidLookup
      * @throws \RuntimeException
+     * @return \SplObjectStorage
      */
     protected function hydrateObjectIdentities(Statement $stmt, array &$oidLookup) {
         $parentIdToFill = new \SplObjectStorage();
@@ -188,8 +224,6 @@ class AclProvider implements AclProviderInterface
         
         // we need these to set protected properties on hydrated objects
         $aclReflection = new \ReflectionClass('Symfony\Component\Security\Acl\Domain\Acl');
-        $aclIdProperty = $aclReflection->getProperty('id');
-        $aclIdProperty->setAccessible(true);
         $aclClassAcesProperty = $aclReflection->getProperty('classAces');
         $aclClassAcesProperty->setAccessible(true);
         $aclClassFieldAcesProperty = $aclReflection->getProperty('classFieldAces');
@@ -201,6 +235,8 @@ class AclProvider implements AclProviderInterface
         $aclParentAclProperty = $aclReflection->getProperty('parentAcl');
         $aclParentAclProperty->setAccessible(true);
         
+        // fetchAll() consumes more memory than consecutive calls to fetch(),
+        // but it is faster
         foreach ($stmt->fetchAll() as $data) {
             $aclId = $data['acl_id'];
             $aceId = $data['ace_id'];
@@ -209,6 +245,7 @@ class AclProvider implements AclProviderInterface
             if (isset($acls[$aclId])) {
                 $acl = $acls[$aclId];
             }
+            
             // has the ACL been hydrated during any previous cycle, or was possibly loaded
             // from cache?
             else if (isset($this->loadedAcls[$data['class_type']][$data['object_identifier']])) {
@@ -225,6 +262,7 @@ class AclProvider implements AclProviderInterface
                 }
                 $result->attach($oidCache[$data['object_identifier'].$data['class_type']], $acl);
             }
+            
             // so, this hasn't been hydrated yet
             else {
                 // create object identity if we haven't done so yet
@@ -233,14 +271,20 @@ class AclProvider implements AclProviderInterface
                     $oidCache[$oidLookupKey] = new ObjectIdentity($data['object_identifier'], $data['class_type']);
                 }
                 
-                $acl = new Acl($oidCache[$oidLookupKey], $this->permissionGrantingStrategy, array(), !!$data['entries_inheriting']);
+                $acl = new Acl(intval($data['acl_id']), $oidCache[$oidLookupKey], $this->permissionGrantingStrategy, array(), !!$data['entries_inheriting']);
+                
+                // keep a local, and global reference to this ACL
                 $this->loadedAcls[$data['class_type']][$data['object_identifier']] = $acl;
                 $acls[$aclId] = $acl;
                 
-                $aclIdProperty->setValue($acl, intval($data['acl_id']));
-                
+                // try to fill in parent ACL, or defer until all ACLs have been hydrated
                 if (null !== $data['parent_object_identity_id']) {
-                    $parentIdToFill->attach($acl, $data['parent_object_identity_id']);   
+                    if (isset($acls[$data['parent_object_identity_id']])) {
+                        $acl->setParentAcl($data['parent_object_identity_id']);
+                    }
+                    else {
+                        $parentIdToFill->attach($acl, $data['parent_object_identity_id']);
+                    } 
                 }
                 
                 $result->attach($oidCache[$oidLookupKey], $acl);
@@ -299,7 +343,7 @@ class AclProvider implements AclProviderInterface
         
         // We do not sort on database level since we only want certain subsets to be sorted,
         // and we are going to read the entire result set anyway.
-        // Sorting on DB level increases query time by an order of magnitude while it is 
+        // Sorting on DB level increases query time by an order of magnitude while it is
         // almost negligible when we use PHPs array sort functions.
         foreach ($aces as $aclId => $aceData) {
             $acl = $acls[$aclId];
@@ -324,7 +368,7 @@ class AclProvider implements AclProviderInterface
         }
         
         // fill-in parent ACLs where this hasn't been done yet cause the parent ACL was not
-        // yet hydrated
+        // yet available
         $processed = 0;
         foreach ($parentIdToFill as $acl)
         {
@@ -347,45 +391,53 @@ class AclProvider implements AclProviderInterface
         return $result;
     }
     
+    /**
+     * Constructs the query used for looking up object identites and associated
+     * ACEs, and security identities.
+     * 
+     * @param array $batch
+     * @param array $sids
+     * @throws AclNotFoundException
+     * @return string
+     */
     protected function getLookupSql(array &$batch, array $sids)
     {
         // FIXME: add support for filtering by sids (right now we select all sids)
         
         $ancestorIds = $this->getAncestorIds($batch);
-        
         if (0 === count($ancestorIds)) {
             throw new AclNotFoundException('There is no ACL for the given object identity.');
         }
         
         $sql = <<<SELECTCLAUSE
-        	SELECT
-        		o.id as acl_id,
-        		o.object_identifier,
-        		o.parent_object_identity_id,
-        		o.entries_inheriting,
-        		c.class_type,
-        		e.id as ace_id,
-        		e.object_identity_id,
-        		e.field_name,
-        		e.ace_order,
-        		e.mask,
-        		e.granting,
-        		e.granting_strategy,
-        		e.audit_success,
-        		e.audit_failure,
-        		s.username,
-        		s.identifier as security_identifier
-        	FROM
-        		{$this->options['oid_table_name']} o
-        	INNER JOIN {$this->options['class_table_name']} c ON c.id = o.class_id
-        	LEFT JOIN {$this->options['entry_table_name']} e ON (
-        		e.class_id = o.class_id AND (e.object_identity_id = o.id OR {$this->connection->getDatabasePlatform()->getIsNullExpression('e.object_identity_id')})
-        	)
-        	LEFT JOIN {$this->options['sid_table_name']} s ON (
-        		s.id = e.security_identity_id
-        	)
-        	
-        	WHERE (o.id = 
+            SELECT
+                o.id as acl_id,
+                o.object_identifier,
+                o.parent_object_identity_id,
+                o.entries_inheriting,
+                c.class_type,
+                e.id as ace_id,
+                e.object_identity_id,
+                e.field_name,
+                e.ace_order,
+                e.mask,
+                e.granting,
+                e.granting_strategy,
+                e.audit_success,
+                e.audit_failure,
+                s.username,
+                s.identifier as security_identifier
+            FROM
+                {$this->options['oid_table_name']} o
+            INNER JOIN {$this->options['class_table_name']} c ON c.id = o.class_id
+            LEFT JOIN {$this->options['entry_table_name']} e ON (
+                e.class_id = o.class_id AND (e.object_identity_id = o.id OR {$this->connection->getDatabasePlatform()->getIsNullExpression('e.object_identity_id')})
+            )
+            LEFT JOIN {$this->options['sid_table_name']} s ON (
+                s.id = e.security_identity_id
+            )
+            
+            WHERE (o.id = 
 SELECTCLAUSE;
 
         $sql .= implode(' OR o.id = ', $ancestorIds).')';
@@ -393,14 +445,21 @@ SELECTCLAUSE;
         return $sql;
     }
     
+    /**
+     * Retrieves all the ids which need to be queried from the database
+     * including the ids of parent ACLs. 
+     * 
+     * @param array $batch
+     * @return array
+     */
     protected function getAncestorIds(array &$batch)
     {
         $sql = <<<SELECTCLAUSE
-        	SELECT a.ancestor_id
-        	FROM acl_object_identities o
-        	INNER JOIN acl_classes c ON c.id = o.class_id
-        	INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = o.id
-       		WHERE (
+            SELECT a.ancestor_id
+            FROM acl_object_identities o
+            INNER JOIN acl_classes c ON c.id = o.class_id
+            INNER JOIN acl_object_identity_ancestors a ON a.object_identity_id = o.id
+               WHERE (
 SELECTCLAUSE;
         
         $where = '(o.object_identifier = %s AND c.class_type = %s)';
@@ -428,29 +487,54 @@ SELECTCLAUSE;
         return $ancestorIds;
     }
     
-    protected function getFindChildrenSql(ObjectIdentityInterface $oid)
+    /**
+     * Constructs the SQL for retrieving child object identities for the given
+     * object identities.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @param Boolean $directChildrenOnly
+     * @return string
+     */
+    protected function getFindChildrenSql(ObjectIdentityInterface $oid, $directChildrenOnly)
     {
-        $query = <<<FINDCHILDREN
-			SELECT o.object_identifier, c.class_type 
-			FROM 
-				{$this->options['oid_table_name']} as o
-			INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
-			INNER JOIN {$this->options['oid_ancestors_table_name']} as a ON a.object_identity_id = o.id
-			WHERE 
-				a.ancestor_id = %d AND a.object_identity_id != a.ancestor_id
+        if (false === $directChildrenOnly) {
+            $query = <<<FINDCHILDREN
+                SELECT o.object_identifier, c.class_type 
+                FROM 
+                    {$this->options['oid_table_name']} as o
+                INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
+                INNER JOIN {$this->options['oid_ancestors_table_name']} as a ON a.object_identity_id = o.id
+                WHERE 
+                    a.ancestor_id = %d AND a.object_identity_id != a.ancestor_id
 FINDCHILDREN;
+        }
+        else {
+            $query = <<<FINDCHILDREN
+                SELECT o.object_identifier, c.class_type
+                FROM {$this->options['oid_table_name']} as o
+                INNER JOIN {$this->options['class_table_name']} as c ON c.id = o.class_id
+                WHERE o.parent_object_identity_id = %d
+FINDCHILDREN;
+        }
 
-		return sprintf($query, $this->retrieveObjectIdentityPrimaryKey($oid));
+        return sprintf($query, $this->retrieveObjectIdentityPrimaryKey($oid));
     }
     
+    /**
+     * Constructs the SQL for retrieving the primary key of the given object
+     * identity.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return string
+     */
     protected function getSelectObjectIdentityIdSql(ObjectIdentityInterface $oid)
     {
         $query = <<<QUERY
-        	SELECT o.id
-        	FROM %s o
-        	INNER JOIN %s c ON c.id = o.class_id
-        	WHERE o.object_identifier = %s AND c.class_type = %s
-        	LIMIT 1
+            SELECT o.id
+            FROM %s o
+            INNER JOIN %s c ON c.id = o.class_id
+            WHERE o.object_identifier = %s AND c.class_type = %s
+            LIMIT 1
 QUERY;
 
         return sprintf(
@@ -462,6 +546,12 @@ QUERY;
         );
     }
     
+    /**
+     * Returns the primary key of the passed object identity.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return integer
+     */
     protected function retrieveObjectIdentityPrimaryKey(ObjectIdentityInterface $oid)
     {
         return $this->connection->executeQuery($this->getSelectObjectIdentityIdSql($oid))->fetchColumn();
