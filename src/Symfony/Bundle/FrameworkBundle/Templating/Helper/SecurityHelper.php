@@ -42,6 +42,15 @@ class SecurityHelper extends Helper
         return $this->context->vote($role, $object);
     }
 
+    public function getUser()
+    {
+        if (null === $this->context) {
+            return false;
+        }
+
+        return $this->context->getUser();
+    }
+
     /**
      * Returns the canonical name of this helper.
      *
