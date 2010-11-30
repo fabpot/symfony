@@ -2,19 +2,28 @@
 
 namespace Symfony\Component\Security\Acl\Dbal;
 
-use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
-use Symfony\Component\Security\Acl\Model\AclCacheInterface;
+use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Statement;
+use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Domain\Entry;
 use Symfony\Component\Security\Acl\Domain\FieldEntry;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
-use Symfony\Component\Security\Acl\Domain\Acl;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-use Doctrine\DBAL\Driver\Connection;
+use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
+use Symfony\Component\Security\Acl\Model\AclCacheInterface;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
+use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
+
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * An ACL provider implementation.
@@ -179,6 +188,15 @@ class AclProvider implements AclProviderInterface
         return $result;
     }
     
+    /**
+     * This method is called for object identities which could not be retrieved 
+     * from the cache, and for which thus a database query is required.
+     * 
+     * @param array $batch
+     * @param array $sids
+     * @param array $oidLookup
+     * @return \SplObjectStorage mapping object identites to ACL instances
+     */
     protected function lookupObjectIdentities(array &$batch, array $sids, array &$oidLookup)
     {
         $sql = $this->getLookupSql($batch, $sids);
@@ -191,11 +209,12 @@ class AclProvider implements AclProviderInterface
      * This method is called to hydrate ACLs and ACEs.
      * 
      * This method was designed for performance; thus, a lot of code has been
-     * inlined at the cost of readability.
+     * inlined at the cost of readability, and maintainability.
      * 
      * @param Statement $stmt
      * @param array $oidLookup
      * @throws \RuntimeException
+     * @return \SplObjectStorage
      */
     protected function hydrateObjectIdentities(Statement $stmt, array &$oidLookup) {
         $parentIdToFill = new \SplObjectStorage();
@@ -364,6 +383,15 @@ class AclProvider implements AclProviderInterface
         return $result;
     }
     
+    /**
+     * Constructs the query used for looking up object identites and associated
+     * ACEs, and security identities.
+     * 
+     * @param array $batch
+     * @param array $sids
+     * @throws AclNotFoundException
+     * @return string
+     */
     protected function getLookupSql(array &$batch, array $sids)
     {
         // FIXME: add support for filtering by sids (right now we select all sids)
@@ -410,6 +438,13 @@ SELECTCLAUSE;
         return $sql;
     }
     
+    /**
+     * Retrieves all the ids which need to be queried from the database
+     * including the ids of parent ACLs. 
+     * 
+     * @param array $batch
+     * @return array
+     */
     protected function getAncestorIds(array &$batch)
     {
         $sql = <<<SELECTCLAUSE
@@ -445,6 +480,14 @@ SELECTCLAUSE;
         return $ancestorIds;
     }
     
+    /**
+     * Constructs the SQL for retrieving child object identities for the given
+     * object identities.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @param Boolean $directChildrenOnly
+     * @return string
+     */
     protected function getFindChildrenSql(ObjectIdentityInterface $oid, $directChildrenOnly)
     {
         if (false === $directChildrenOnly) {
@@ -470,6 +513,13 @@ FINDCHILDREN;
 		return sprintf($query, $this->retrieveObjectIdentityPrimaryKey($oid));
     }
     
+    /**
+     * Constructs the SQL for retrieving the primary key of the given object
+     * identity.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return string
+     */
     protected function getSelectObjectIdentityIdSql(ObjectIdentityInterface $oid)
     {
         $query = <<<QUERY
@@ -489,6 +539,12 @@ QUERY;
         );
     }
     
+    /**
+     * Returns the primary key of the passed object identity.
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return integer
+     */
     protected function retrieveObjectIdentityPrimaryKey(ObjectIdentityInterface $oid)
     {
         return $this->connection->executeQuery($this->getSelectObjectIdentityIdSql($oid))->fetchColumn();

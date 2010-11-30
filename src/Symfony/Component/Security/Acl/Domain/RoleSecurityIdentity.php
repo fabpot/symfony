@@ -3,7 +3,6 @@
 namespace Symfony\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Role\Role;
-
 use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 class RoleSecurityIdentity implements SecurityIdentityInterface

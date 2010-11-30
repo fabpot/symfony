@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Security\Acl\Util;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
  * This class allows you to build cumulative permissions easily, or convert
  * masks to a human-readable format.
@@ -43,6 +52,12 @@ class PermissionBuilder
     
     protected $mask;
     
+    /**
+     * Constructor
+     * 
+     * @param integer $mask optional
+     * @return void
+     */
     public function __construct($mask = 0)
     {
         if (!is_int($mask)) {
@@ -52,6 +67,12 @@ class PermissionBuilder
         $this->mask = $mask;
     }
     
+    /**
+     * Adds a mask to the permission
+     * 
+     * @param integer $mask
+     * @return PermissionBuilder
+     */
     public function add($mask)
     {
         if (is_string($mask) && defined($name = 'self::MASK_'.strtoupper($mask))) {
@@ -66,6 +87,12 @@ class PermissionBuilder
         return $this;
     }
     
+    /**
+     * Removes a mask from the permission
+     * 
+     * @param integer $mask
+     * @return PermissionBuilder
+     */
     public function remove($mask)
     {
         if (is_string($mask) && defined($name = 'self::MASK_'.strtoupper($mask))) {
@@ -80,7 +107,12 @@ class PermissionBuilder
         return $this;
     }
     
-    public function pattern()
+    /**
+     * Returns a human-readable representation of the permission
+     * 
+     * @return string
+     */
+    public function getPattern()
     {
         $pattern = self::ALL_OFF;
         $length = strlen($pattern);
@@ -89,7 +121,7 @@ class PermissionBuilder
         for ($i=$length-1; $i>=0; $i--) {
             if ('1' === $bitmask[$i]) {
                 try {
-                    $pattern[$i] = self::getCode(1 << ($length - $i));
+                    $pattern[$i] = self::getCode(1 << ($length - $i - 1));
                 }
                 catch (\Exception $notPredefined) {
                     $pattern[$i] = self::ON;
@@ -100,11 +132,21 @@ class PermissionBuilder
         return $pattern;
     }
     
-    public function mask()
+    /**
+     * Returns the mask of this permission
+     * 
+     * @return integer
+     */
+    public function getMask()
     {
         return $this->mask;
     }
     
+    /**
+     * Resets the PermissionBuilder
+     * 
+     * @return PermissionBuilder
+     */
     public function reset()
     {
         $this->mask = 0;
@@ -112,6 +154,14 @@ class PermissionBuilder
         return $this;
     }
     
+    /**
+     * Returns the code for the passed mask
+     * 
+     * @param integer $mask
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @return string
+     */
     public static function getCode($mask)
     {
         if (!is_int($mask)) {

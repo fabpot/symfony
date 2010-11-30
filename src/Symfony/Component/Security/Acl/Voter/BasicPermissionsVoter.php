@@ -2,10 +2,18 @@
 
 namespace Symfony\Component\Security\Acl\Voter;
 
-use Symfony\Component\Security\Acl\Util\PermissionBuilder;
-
-use Symfony\Component\Security\Role\RoleHierarchyInterface;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
+use Symfony\Component\Security\Acl\Util\PermissionBuilder;
+use Symfony\Component\Security\Role\RoleHierarchyInterface;
+
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * This voter provides support for the already built-in masks.
