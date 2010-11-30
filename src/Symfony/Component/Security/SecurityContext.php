@@ -60,6 +60,26 @@ class SecurityContext
     }
 
     /**
+     * Checks if the user is anonymous or not.
+     *
+     * @return Boolean true if the user is anonymous, false otherwise
+     */
+    public function isAnonymous()
+    {
+        return $this->getUser() === 'anon.';
+    }
+
+    /**
+     * Checks if the user is an actual user or not.
+     *
+     * @return Boolean true if the user is authenticated and not anonymous, false otherwise
+     */
+    public function isActual()
+    {
+        return $this->isAuthenticated() && !$this->isAnonymous();
+    }
+
+    /**
      * Gets the currently authenticated token.
      *
      * @return TokenInterface|null A TokenInterface instance or null if no authentication information is available
