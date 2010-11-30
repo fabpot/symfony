@@ -18,7 +18,27 @@ namespace Symfony\Component\Security\Acl\Model;
  */
 interface MutableAclProviderInterface extends AclProviderInterface
 {
+    /**
+     * Creates an ACL for the passed object identity
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return MutableAclInterface
+     */
     function createAcl(ObjectIdentityInterface $oid);
+    
+    /**
+     * Deletes the ACL for the passed object identity
+     * 
+     * @param ObjectIdentityInterface $oid
+     * @return void
+     */
     function deleteAcl(ObjectIdentityInterface $oid);
+    
+    /**
+     * Persists any changes which were made to the passed ACL
+     * 
+     * @param MutableAclInterface $acl
+     * @return void
+     */
     function updateAcl(MutableAclInterface $acl);
 }

@@ -20,19 +20,144 @@ use Doctrine\Common\NotifyPropertyChanged;
  */
 interface MutableAclInterface extends AclInterface, NotifyPropertyChanged
 {
+    /**
+     * Deletes a class-based ACE
+     * 
+     * @param integer $index
+     * @return void
+     */
     function deleteClassAce($index);
+    
+    /**
+     * Deletes a class-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @return void
+     */
     function deleteClassFieldAce($index, $field);
+    
+    /**
+     * Deletes an object-based ACE
+     * 
+     * @param integer $index
+     * @return void
+     */
     function deleteObjectAce($index);
+    
+    /**
+     * Deletes an object-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @return void
+     */
     function deleteObjectFieldAce($index, $field);
+    
+    /**
+     * Returns the primary key of this ACL
+     * 
+     * @return integer
+     */
     function getId();
+    
+    /**
+     * Inserts a class-based ACE
+     * 
+     * @param integer $index
+     * @param integer $mask
+     * @param SecurityIdentityInterface $sid
+     * @param Boolean $granting
+     * @return void
+     */
     function insertClassAce($index, $mask, SecurityIdentityInterface $sid, $granting);
+    
+    /**
+     * Inserts a class-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @param integer $mask
+     * @param SecurityIdentityInterface $sid
+     * @param Boolean $granting
+     * @return void
+     */
     function insertClassFieldAce($index, $field, $mask, SecurityIdentityInterface $sid, $granting);
+    
+    /**
+     * Inserts an object-based ACE
+     * 
+     * @param integer $index
+     * @param integer $mask
+     * @param SecurityIdentityInterface $sid
+     * @param Boolean $granting
+     * @return void
+     */
     function insertObjectAce($index, $mask, SecurityIdentityInterface $sid, $granting);
+    
+    /**
+     * Inserts an object-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @param integer $mask
+     * @param SecurityIdentityInterface $sid
+     * @param Boolean $granting
+     * @return void
+     */
     function insertObjectFieldAce($index, $field, $mask, SecurityIdentityInterface $sid, $granting);
+    
+    /**
+     * Sets whether entries are inherited
+     * 
+     * @param Boolean $boolean
+     * @return void
+     */
     function setEntriesInheriting($boolean);
+    
+    /**
+     * Sets the parent ACL
+     * 
+     * @param AclInterface $acl
+     * @return void
+     */
     function setParentAcl(AclInterface $acl);
+    
+    /**
+     * Updates a class-based ACE
+     * 
+     * @param integer $index
+     * @param integer $mask
+     * @return void
+     */
     function updateClassAce($index, $mask);
+    
+    /**
+     * Updates a class-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @param integer $mask
+     * @return void
+     */
     function updateClassFieldAce($index, $field, $mask);
+    
+    /**
+     * Updates an object-based ACE
+     * 
+     * @param integer $index
+     * @param integer $mask
+     * @return void
+     */
     function updateObjectAce($index, $mask);
+    
+    /**
+     * Updates an object-field-based ACE
+     * 
+     * @param integer $index
+     * @param string $field
+     * @param integer $mask
+     * @return void
+     */
     function updateObjectFieldAce($index, $field, $mask);
 }

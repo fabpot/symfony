@@ -4,11 +4,20 @@ namespace Symfony\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Acl\Model\AclInterface;
-use Symfony\Component\Security\Acl\Model\EntryInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
-use Symfony\Component\Security\Acl\Model\PermissionInterface;
 use Symfony\Component\Security\Acl\Model\AuditLoggerInterface;
+use Symfony\Component\Security\Acl\Model\EntryInterface;
 use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
+use Symfony\Component\Security\Acl\Model\PermissionInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
+
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
 
 /**
  * The permission granting strategy to apply to the access control list.
@@ -23,16 +32,30 @@ class PermissionGrantingStrategy implements PermissionGrantingStrategyInterface
     
     protected $auditLogger;
     
+    /**
+     * Sets the audit logger
+     * 
+     * @param AuditLoggerInterface $auditLogger
+     * @return void
+     */
     public function setAuditLogger(AuditLoggerInterface $auditLogger)
     {
         $this->auditLogger = $auditLogger;
     }
     
+    /**
+     * Returns the audit logger
+     * 
+     * @return AuditLoggerInterface
+     */
     public function getAuditLogger()
     {
         return $this->auditLogger;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function isGranted(AclInterface $acl, $permissions, $sids, $administrativeMode = false)
     {
         try {
@@ -64,6 +87,9 @@ class PermissionGrantingStrategy implements PermissionGrantingStrategyInterface
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function isFieldGranted(AclInterface $acl, $field, $permissions, $sids, $administrativeMode = false)
     {
         try {
