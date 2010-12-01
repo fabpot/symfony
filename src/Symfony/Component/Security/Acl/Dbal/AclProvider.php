@@ -280,11 +280,11 @@ class AclProvider implements AclProviderInterface
                 // try to fill in parent ACL, or defer until all ACLs have been hydrated
                 if (null !== $data['parent_object_identity_id']) {
                     if (isset($acls[$data['parent_object_identity_id']])) {
-                        $acl->setParentAcl($data['parent_object_identity_id']);
+                        $aclParentAclProperty->setValue($acl, $acls[$data['parent_object_identity_id']]);
                     }
                     else {
                         $parentIdToFill->attach($acl, $data['parent_object_identity_id']);
-                    } 
+                    }
                 }
                 
                 $result->attach($oidCache[$oidLookupKey], $acl);
@@ -292,7 +292,7 @@ class AclProvider implements AclProviderInterface
             
             // check if this row contains an ACE record
             if (null !== $aceId) {
-                // have we already hydrated ACEs for this ACL
+                // have we already hydrated ACEs for this ACL?
                 if (!isset($aces[$aclId])) {
                     $aces[$aclId] = array(
                         'class' => array(),

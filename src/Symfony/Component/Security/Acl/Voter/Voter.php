@@ -8,6 +8,8 @@ use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategy;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategy;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Role\RoleHierarchyInterface;
@@ -29,14 +31,16 @@ use Symfony\Component\Security\Role\RoleHierarchyInterface;
 class Voter implements VoterInterface
 {
     protected $aclProvider;
-    protected $roleHierarchy;
     protected $processMap;
+    protected $objectIdentityRetrievalStrategy;
+    protected $securityIdentityRetrievalStrategy;
     
-    public function __construct(AclProviderInterface $aclProvider, RoleHierarchyInterface $roleHierarchy, array $processMap)
+    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategy $oidRetrievalStrategy, SecurityIdentityRetrievalStrategy $sidRetrievalStrategy, array $processMap)
     {
         $this->aclProvider = $aclProvider;
-        $this->roleHierarchy = $roleHierarchy;
         $this->processMap = $processMap;
+        $this->objectIdentityRetrievalStrategy = $oidRetrievalStrategy;
+        $this->securityIdentityRetrievalStrategy = $sidRetrievalStrategy;
     }
     
     public function supportsAttribute($attribute)
@@ -57,10 +61,10 @@ class Voter implements VoterInterface
             $field = null;
         }
         
-        if (null === $oid = $this->retrieveObjectIdentity($object)) {
+        if (null === $oid = $this->objectIdentityRetrievalStrategy->getObjectIdentity($object)) {
             return self::ACCESS_ABSTAIN;
-        } 
-        $sids = $this->retrieveSecurityIdentities($token);
+        }
+        $sids = $this->securityIdentityRetrievalStrategy->getSecurityIdentities($token);
         
         foreach ($attributes as $attribute) {
             if (!$this->supportsAttribute($attribute)) {
@@ -91,40 +95,6 @@ class Voter implements VoterInterface
         }
         
         return self::ACCESS_ABSTAIN;
-    }
-    
-    /**
-     * Retrieves an object identity from the domain object
-     * 
-     * @param object $object
-     * @return ObjectIdentityInterface
-     */
-    protected function retrieveObjectIdentity($object)
-    {
-        try {
-            return ObjectIdentity::from($object);
-        } 
-        catch (\InvalidArgumentException $invalidObject) {
-            return null;    
-        }
-    }
-    
-    /**
-     * Retrieves all security identities available to the authenticated user
-     * 
-     * @param TokenInterface $token
-     * @return array
-     */
-    protected function retrieveSecurityIdentities(TokenInterface $token)
-    {
-        $sids = array();
-        $sids[] = UserSecurityIdentity::fromToken($token);
-        
-        foreach ($this->roleHierarchy->getReachableRoles($token->getRoles()) as $role) {
-            $sids[] = new RoleSecurityIdentity($role);
-        }
-        
-        return $sids;
     }
     
     /**

@@ -4,7 +4,8 @@ namespace Symfony\Component\Security\Acl\Voter;
 
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
 use Symfony\Component\Security\Acl\Util\PermissionBuilder;
-use Symfony\Component\Security\Role\RoleHierarchyInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategy;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategy;
 
 /*
  * This file is part of the Symfony framework.
@@ -38,9 +39,9 @@ class BasicPermissionsVoter extends Voter
      * @param RoleHierarchyInterface $roleHierarchy
      * @return void
      */
-    public function __construct(AclProviderInterface $aclProvider, RoleHierarchyInterface $roleHierarchy)
+    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategy $oidRetrievalStrategy, SecurityIdentityRetrievalStrategy $sidRetrievalStrategy)
     {
-        parent::__construct($aclProvider, $roleHierarchy, $this->getProcessMap());
+        parent::__construct($aclProvider, $oidRetrievalStrategy, $sidRetrievalStrategy, $this->getProcessMap());
     }
     
     /**

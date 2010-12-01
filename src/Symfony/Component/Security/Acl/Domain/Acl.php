@@ -403,7 +403,7 @@ class Acl implements AuditableAclInterface
      */
     public function setParentAcl(AclInterface $acl)
     {
-        if (null !== $acl->getId()) {
+        if (null === $acl->getId()) {
             throw new \InvalidArgumentException('$acl must have an ID.');
         }
         

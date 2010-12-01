@@ -6,8 +6,17 @@ use Symfony\Component\Security\Acl\Exception\InvalidDomainObjectException;
 use Symfony\Component\Security\Acl\Model\DomainObjectInterface;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 /**
- * Represents a resource identity
+ * ObjectIdentity implementation
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
@@ -18,6 +27,10 @@ class ObjectIdentity implements ObjectIdentityInterface
     
     /**
      * Constructor
+     * 
+     * @param string $identifier
+     * @param string $type
+     * @return void
      */
     public function __construct($identifier, $type)
     {
@@ -25,6 +38,13 @@ class ObjectIdentity implements ObjectIdentityInterface
         $this->type = $type;
     }
     
+    /**
+     * Constructs an ObjectIdentity for the given domain object
+     * 
+     * @param object $domainObject
+     * @throws \InvalidArgumentException
+     * @return ObjectIdentity
+     */
     public static function fromDomainObject($domainObject)
     {
         if (!is_object($domainObject)) {
@@ -41,21 +61,35 @@ class ObjectIdentity implements ObjectIdentityInterface
         throw new InvalidDomainObjectException('$domainObject must either implement the DomainObjectInterface, or have a method named "getId".');
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function getIdentifier()
     {
         return $this->identifier;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function getType()
     {
         return $this->type;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     public function equals(ObjectIdentityInterface $identity)
     {
         return $this->identifier == $identity->getIdentifier() && $this->type == $identity->getType();
     }
     
+    /**
+     * Returns a textual representation of this object identity
+     * 
+     * @return string
+     */
     public function __toString()
     {
         return sprintf('ObjectIdentity(%s, %s)', $this->identifier, $this->type);
