@@ -38,7 +38,7 @@ abstract class Token implements TokenInterface
         $this->roles = array();
         foreach ($roles as $role) {
             if (is_string($role)) {
-                $role = new Role((string) $role);
+                $role = new Role($role);
             }
             $this->addRole($role);
         }
