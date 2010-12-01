@@ -36,7 +36,7 @@ class YamlFileLoader extends FileLoader
     {
         $path = $this->findFile($file);
 
-        $config = $this->loadFile($path);
+        $config = (array) $this->loadFile($path);
 
         $collection = new RouteCollection();
         $collection->addResource(new FileResource($path));

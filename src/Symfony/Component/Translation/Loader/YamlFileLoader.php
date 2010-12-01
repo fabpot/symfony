@@ -26,7 +26,7 @@ class YamlFileLoader extends ArrayLoader implements LoaderInterface
      */
     public function load($resource, $locale, $domain = 'messages')
     {
-        $messages = Yaml::load($resource);
+        $messages = (array) Yaml::load($resource);
 
         $catalogue = parent::load($messages, $locale, $domain);
         $catalogue->addResource(new FileResource($resource));
