@@ -2,6 +2,7 @@
 
 namespace Symfony\Component\Security\Acl\Domain;
 
+use Symfony\Component\Security\Acl\Exception\InvalidDomainObjectException;
 use Symfony\Component\Security\Acl\Model\DomainObjectInterface;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 
@@ -24,10 +25,10 @@ class ObjectIdentity implements ObjectIdentityInterface
         $this->type = $type;
     }
     
-    public static function from($domainObject)
+    public static function fromDomainObject($domainObject)
     {
         if (!is_object($domainObject)) {
-            throw new \InvalidArgumentException('$domainObject must be an object.');
+            throw new InvalidDomainObjectException('$domainObject must be an object.');
         }
         
         if ($domainObject instanceof DomainObjectInterface) {
@@ -37,7 +38,7 @@ class ObjectIdentity implements ObjectIdentityInterface
             return new self($domainObject->getId(), get_class($domainObject));
         }
         
-        throw new \InvalidArgumentException('$domainObject must either implement the DomainObjectInterface, or have a method named "getId".');
+        throw new InvalidDomainObjectException('$domainObject must either implement the DomainObjectInterface, or have a method named "getId".');
     }
     
     public function getIdentifier()
