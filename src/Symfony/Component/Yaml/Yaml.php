@@ -92,7 +92,7 @@ class Yaml
             throw new \InvalidArgumentException(sprintf('Unable to parse %s: %s', $file ? sprintf('file "%s"', $file) : 'string', $e->getMessage()), 0, $e);
         }
 
-        return $ret;
+        return (array) $ret;
     }
 
     /**
