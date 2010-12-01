@@ -280,7 +280,7 @@ class AclProvider implements AclProviderInterface
                 // try to fill in parent ACL, or defer until all ACLs have been hydrated
                 if (null !== $data['parent_object_identity_id']) {
                     if (isset($acls[$data['parent_object_identity_id']])) {
-                        $acl->setParentAcl($data['parent_object_identity_id']);
+                        $acl->setParentAcl($acls[$data['parent_object_identity_id']]);
                     }
                     else {
                         $parentIdToFill->attach($acl, $data['parent_object_identity_id']);

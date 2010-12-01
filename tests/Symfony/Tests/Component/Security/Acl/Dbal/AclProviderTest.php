@@ -17,35 +17,36 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
     protected $insertOidAncestorStmt;
     protected $insertSidStmt;
     
-//    public function testFindAclById()
-//    {
-//        $oid = new ObjectIdentity('1', 'foo');
-//        $provider = $this->getProvider();
-//        
-//        $acl = $provider->findAcl($oid);
-//        
-//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl);
-//        $this->assertEquals(4, $acl->getId());
-//        $this->assertEquals(0, count($acl->getClassAces()));
-//        $this->assertEquals(0, count($acl->getClassFieldAces()));
-//        $this->assertEquals(1, count($acl->getObjectAces()));
-//        $this->assertEquals(0, count($acl->getObjectFieldAces()));
-//        
-//        $aces = $acl->getObjectAces();
-//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Entry', $aces[0]);
-//        $this->assertTrue($aces[0]->isGranting());
-//        $this->assertTrue($aces[0]->isAuditSuccess());
-//        $this->assertTrue($aces[0]->isAuditFailure());
-//        $this->assertEquals('all', $aces[0]->getStrategy());
-//        $this->assertSame(2, $aces[0]->getMask());
-//        
-//        $sid = $aces[0]->getSecurityIdentity();
-//        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\UserSecurityIdentity', $sid);
-//        $this->assertEquals('john.doe', $sid->getUsername());
-//    }
+    public function testFindAclById()
+    {
+        $oid = new ObjectIdentity('1', 'foo');
+        $provider = $this->getProvider();
+        
+        $acl = $provider->findAcl($oid);
+        
+        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl);
+        $this->assertEquals(4, $acl->getId());
+        $this->assertEquals(0, count($acl->getClassAces()));
+        $this->assertEquals(0, count($this->getField($acl, 'classFieldAces')));
+        $this->assertEquals(1, count($acl->getObjectAces()));
+        $this->assertEquals(0, count($this->getField($acl, 'objectFieldAces')));
+        
+        $aces = $acl->getObjectAces();
+        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Entry', $aces[0]);
+        $this->assertTrue($aces[0]->isGranting());
+        $this->assertTrue($aces[0]->isAuditSuccess());
+        $this->assertTrue($aces[0]->isAuditFailure());
+        $this->assertEquals('all', $aces[0]->getStrategy());
+        $this->assertSame(2, $aces[0]->getMask());
+        
+        $sid = $aces[0]->getSecurityIdentity();
+        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\UserSecurityIdentity', $sid);
+        $this->assertEquals('john.doe', $sid->getUsername());
+    }
     
     public function testBenchmarks()
     {
+        $this->markTestSkipped();
         $this->generateTestData();
         
         // get some identities
@@ -130,20 +131,20 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
     
     public function setUp()
     {
-//        $this->con = DriverManager::getConnection(array(
-//            'driver' => 'pdo_sqlite',
-//            'memory' => true,
-//        ));
         $this->con = DriverManager::getConnection(array(
-            'driver' => 'pdo_mysql',
-            'host' => 'localhost',
-            'user' => 'root',
-            'dbname' => 'testdb',
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
         ));
-        
-        $sm = $this->con->getSchemaManager();
-        $sm->dropAndCreateDatabase('testdb');
-        $this->con->exec("USE testdb");
+//        $this->con = DriverManager::getConnection(array(
+//            'driver' => 'pdo_mysql',
+//            'host' => 'localhost',
+//            'user' => 'root',
+//            'dbname' => 'testdb',
+//        ));
+//        
+//        $sm = $this->con->getSchemaManager();
+//        $sm->dropAndCreateDatabase('testdb');
+//        $this->con->exec("USE testdb");
         
         // import the schema
         $schema = new Schema($options = $this->getOptions());
@@ -181,6 +182,14 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         $this->con = null;
+    }
+    
+    protected function getField($object, $field)
+    {
+        $reflection = new \ReflectionProperty($object, $field);
+        $reflection->setAccessible(true);
+        
+        return $reflection->getValue($object);
     }
     
     /**

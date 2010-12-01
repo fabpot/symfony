@@ -94,7 +94,7 @@ interface AclInterface extends \Serializable
      * @param Boolean $administrativeMode
      * @return Boolean
      */
-    function isGranted($masks, array $securityIdentities, $administrativeMode = false);
+    function isGranted(array $masks, array $securityIdentities, $administrativeMode = false);
     
     /**
      * Whether the ACL has loaded ACEs for all of the passed security identities
