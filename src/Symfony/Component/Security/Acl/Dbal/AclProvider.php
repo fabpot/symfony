@@ -165,15 +165,19 @@ class AclProvider implements AclProviderInterface
             // Is it time to load the current batch?
             if ((self::MAX_BATCH_SIZE === count($currentBatch) || ($i + 1) === $c) && count($currentBatch) > 0) {
                 $loadedBatch = $this->lookupObjectIdentities($currentBatch, $sids, $oidLookup);
-                $result->addAll($loadedBatch);
                 
-                if (null !== $this->aclCache) {
-                    foreach ($loadedBatch as $loadedOid) {
-                        $loadedAcl = $loadedBatch->offsetGet($loadedOid);
+                foreach ($loadedBatch as $loadedOid) {
+                    $loadedAcl = $loadedBatch->offsetGet($loadedOid);
+                    
+                    if (null !== $this->aclCache) {
                         $this->aclCache->putInCache($loadedAcl);
                     }
-                }
                     
+                    if (isset($oidLookup[$loadedOid->getIdentifier().$loadedOid->getType()])) {
+                        $result->attach($loadedOid, $loadedAcl);
+                    }
+                }
+                
                 $currentBatch = array();
             }
         }

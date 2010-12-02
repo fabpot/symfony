@@ -17,7 +17,59 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
     protected $insertOidAncestorStmt;
     protected $insertSidStmt;
     
-    public function testFindAclById()
+    /**
+     * @expectedException Symfony\Component\Security\Acl\Exception\AclNotFoundException
+     * @expectedMessage There is no ACL for the given object identity.
+     */
+    public function testFindAclThrowsExceptionWhenNoAclExists()
+    {
+        $this->getProvider()->findAcl(new ObjectIdentity('foo', 'foo'));
+    }
+    
+    /**
+     * @expectedException Symfony\Component\Security\Acl\Exception\AclNotFoundException
+     */
+    public function testFindAclsThrowsExceptionUnlessAnACLIsFoundForEveryOID()
+    {
+        $oids = array();
+        $oids[] = new ObjectIdentity('1', 'foo');
+        $oids[] = new ObjectIdentity('foo', 'foo');
+        
+        $this->getProvider()->findAcls($oids);
+    }
+    
+    public function testFindAcls()
+    {
+        $oids = array();
+        $oids[] = new ObjectIdentity('1', 'foo');
+        $oids[] = new ObjectIdentity('2', 'foo');
+        
+        $provider = $this->getProvider();
+        
+        $acls = $provider->findAcls($oids);
+        $this->assertInstanceOf('SplObjectStorage', $acls);
+        $this->assertEquals(2, count($acls));
+        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl0 = $acls->offsetGet($oids[0]));
+        $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl1 = $acls->offsetGet($oids[1]));
+        $this->assertTrue($oids[0]->equals($acl0->getObjectIdentity()));
+        $this->assertTrue($oids[1]->equals($acl1->getObjectIdentity()));
+    }
+    
+    public function testFindAclCachesAclInMemory()
+    {
+        $oid = new ObjectIdentity('1', 'foo');
+        $provider = $this->getProvider();
+        
+        $acl = $provider->findAcl($oid);
+        $this->assertSame($acl, $cAcl = $provider->findAcl($oid));
+        
+        $cAces = $cAcl->getObjectAces();
+        foreach ($acl->getObjectAces() as $index => $ace) {
+            $this->assertSame($ace, $cAces[$index]);
+        }
+    }
+    
+    public function testFindAcl()
     {
         $oid = new ObjectIdentity('1', 'foo');
         $provider = $this->getProvider();
@@ -25,10 +77,11 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
         $acl = $provider->findAcl($oid);
         
         $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\Acl', $acl);
+        $this->assertTrue($oid->equals($acl->getObjectIdentity()));
         $this->assertEquals(4, $acl->getId());
         $this->assertEquals(0, count($acl->getClassAces()));
         $this->assertEquals(0, count($this->getField($acl, 'classFieldAces')));
-        $this->assertEquals(1, count($acl->getObjectAces()));
+        $this->assertEquals(3, count($acl->getObjectAces()));
         $this->assertEquals(0, count($this->getField($acl, 'objectFieldAces')));
         
         $aces = $acl->getObjectAces();
@@ -38,6 +91,13 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($aces[0]->isAuditFailure());
         $this->assertEquals('all', $aces[0]->getStrategy());
         $this->assertSame(2, $aces[0]->getMask());
+        
+        // check ACE are in correct order
+        $i = 0;
+        foreach ($aces as $index => $ace) {
+            $this->assertEquals($i, $index);
+            $i++;
+        }
         
         $sid = $aces[0]->getSecurityIdentity();
         $this->assertInstanceOf('Symfony\Component\Security\Acl\Domain\UserSecurityIdentity', $sid);
@@ -362,16 +422,20 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
             array(1, 1, 1, null, 0, 1, 1, 1, 'all', 1, 1),
             array(2, 1, 1, null, 1, 2, 1 << 2 | 1 << 1, 0, 'any', 0, 0),
             array(3, 3, 4, null, 0, 1, 2, 1, 'all', 1, 1),
+            array(4, 3, 4, null, 2, 2, 1, 1, 'all', 1, 1),
+            array(5, 3, 4, null, 1, 3, 1, 1, 'all', 1, 1),
         );
     }
     
     protected function getOidData()
     {
+        // id, cid, oid, parent_oid, entries_inheriting
         return array(
             array(1, 1, '123', null, 1),
             array(2, 2, '123', 1, 1),
             array(3, 2, 'i:3:123', 1, 1),
             array(4, 3, '1', 2, 1),
+            array(5, 3, '2', 2, 1),
         );
     }
     
@@ -386,6 +450,9 @@ class AclProviderTest extends \PHPUnit_Framework_TestCase
             array(4, 2),
             array(4, 1),
             array(4, 4),
+            array(5, 2),
+            array(5, 1),
+            array(5, 5),
         );
     }
     
