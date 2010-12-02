@@ -9,10 +9,11 @@
         name="<?php echo $field->getName() ?>"
         <?php if ($field->isDisabled()): ?> disabled="disabled"<?php endif ?>
         <?php if ($field->isMultipleChoice()): ?> multiple="multiple"<?php endif ?>
+        <?php echo $view['form']->attributes($attr) ?>
     >
         <?php if (count($field->getPreferredChoices()) > 0): ?>
             <?php foreach ($field->getPreferredChoices() as $choice => $label): ?>
-                <?php if ($label instanceof \Traversable): ?>
+                <?php if ($label instanceof \Traversable || is_array($label)): ?>
                     <optgroup label="<?php echo $choice ?>">
                         <?php foreach ($label as $nestedChoice => $nestedLabel): ?>
                             <option value="<?php echo $nestedChoice ?>"<?php if ($field->isChoiceSelected($nestedChoice)): ?> selected="selected"<?php endif?>>
@@ -29,7 +30,7 @@
             <option disabled="disabled"><?php echo isset($separator) ? $separator : '-----------------' ?></option>
         <?php endif ?>
         <?php foreach ($field->getOtherChoices() as $choice => $label): ?>
-            <?php if ($label instanceof \Traversable): ?>
+            <?php if ($label instanceof \Traversable || is_array($label)): ?>
                 <optgroup label="<?php echo $choice ?>">
                     <?php foreach ($label as $nestedChoice => $nestedLabel): ?>
                         <option value="<?php echo $nestedChoice ?>"<?php if ($field->isChoiceSelected($nestedChoice)): ?> selected="selected"<?php endif?>>
