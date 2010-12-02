@@ -387,6 +387,13 @@ class AclProvider implements AclProviderInterface
             }
         }
         
+        // reset reflection changes
+        $aclClassAcesProperty->setAccessible(false);
+        $aclClassFieldAcesProperty->setAccessible(false);
+        $aclObjectAcesProperty->setAccessible(false);
+        $aclObjectFieldAcesProperty->setAccessible(false);
+        $aclParentAclProperty->setAccessible(false);        
+        
         // this should never be true if the database integrity hasn't been compromised
         if ($processed < count($parentIdToFill)) {
             throw new \RuntimeException('Not all parent ids were populated. This implies an integrity problem.');
