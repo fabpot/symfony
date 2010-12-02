@@ -121,6 +121,7 @@ class FrameworkExtension extends Extension
             'Symfony\\Component\\HttpFoundation\\HeaderBag',
             'Symfony\\Component\\HttpFoundation\\Request',
             'Symfony\\Component\\HttpFoundation\\Response',
+            'Symfony\\Component\\HttpFoundation\\ResponseHeaderBag',
 
             'Symfony\\Component\\HttpKernel\\BaseHttpKernel',
             'Symfony\\Component\\HttpKernel\\HttpKernel',
@@ -131,12 +132,13 @@ class FrameworkExtension extends Extension
             'Symfony\\Bundle\\FrameworkBundle\\RequestListener',
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerNameConverter',
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerResolver',
+            'Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller',
 
             'Symfony\\Component\\EventDispatcher\\Event',
             'Symfony\\Component\\EventDispatcher\\EventDispatcher',
             'Symfony\\Bundle\\FrameworkBundle\\EventDispatcher',
 
-            'Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller',
+            'Symfony\\Component\\Form\\FormConfiguration',
         ));
     }
 
@@ -313,6 +315,10 @@ class FrameworkExtension extends Extension
             if (isset($config[$key])) {
                 $container->setParameter('session.default_locale', $config[$key]);
             }
+        }
+
+        if (isset($config['auto_start']) || isset($config['auto-start'])) {
+            $container->getDefinition('session')->addMethodCall('start');
         }
 
         if (isset($config['class'])) {
