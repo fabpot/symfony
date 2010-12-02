@@ -591,6 +591,16 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $service = null === $r->getConstructor() ? $r->newInstance() : $r->newInstanceArgs($arguments);
         }
 
+        return $this->doConfigureService($id, $definition, $service);
+    }
+
+    public function configureService($id, $service)
+    {
+        return $this->doConfigureService($id, $this->getDefinition($id), $service);
+    }
+
+    protected function doConfigureService($id, Definition $definition, $service)
+    {
         foreach ($this->getInterfaceInjectors($service) as $injector) {
             $injector->processDefinition($definition, $service);
         }

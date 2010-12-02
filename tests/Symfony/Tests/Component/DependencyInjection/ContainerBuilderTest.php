@@ -393,6 +393,26 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::configureService
+     */
+    public function testConfiguringService()
+    {
+        $builder = new ContainerBuilder();
+
+        $service = $this->getMock('stdClass', array('setFoo'));
+        $service->expects($this->once())->method('setFoo');
+        $configuratorCalled = false;
+        $builder
+            ->register('foo1', 'stdClass')->setConfigurator(function($s) use($service,&$configuratorCalled) {
+                $configuratorCalled = $s === $service;
+            })
+            ->addMethodCall('setFoo')
+        ;
+        $builder->configureService('foo1', $service);
+        $this->assertTrue($configuratorCalled);
+    }
+
+    /**
      * @covers Symfony\Component\DependencyInjection\ContainerBuilder::registerExtension
      * @covers Symfony\Component\DependencyInjection\ContainerBuilder::getExtension
      */
