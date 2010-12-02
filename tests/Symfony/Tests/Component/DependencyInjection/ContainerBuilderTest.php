@@ -395,7 +395,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Symfony\Component\DependencyInjection\ContainerBuilder::configureService
      */
-    public function testConfiguringService()
+    public function testConfiguring()
     {
         $builder = new ContainerBuilder();
 
@@ -408,8 +408,20 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
             })
             ->addMethodCall('setFoo')
         ;
-        $builder->configureService('foo1', $service);
+        $builder->configure('foo1', $service);
         $this->assertTrue($configuratorCalled);
+    }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\ContainerBuilder::configure
+     */
+    public function testConfiguringServiceRegistersService()
+    {
+        $builder = new ContainerBuilder();
+        $service = new \stdClass();
+        $builder->register('foo1', 'stdClass');
+        $builder->configure('foo1', $service);
+        $this->assertSame($service, $builder->get('foo1'));
     }
 
     /**

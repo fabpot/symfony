@@ -594,12 +594,12 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return $this->doConfigureService($id, $definition, $service);
     }
 
-    public function configureService($id, $service)
+    public function configure($id, $service)
     {
-        return $this->doConfigureService($id, $this->getDefinition($id), $service);
+        return $this->configureService($id, $this->getDefinition($id), $service);
     }
 
-    protected function doConfigureService($id, Definition $definition, $service)
+    protected function configureService($id, Definition $definition, $service)
     {
         foreach ($this->getInterfaceInjectors($service) as $injector) {
             $injector->processDefinition($definition, $service);
