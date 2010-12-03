@@ -82,7 +82,10 @@ class ObjectIdentity implements ObjectIdentityInterface
      */
     public function equals(ObjectIdentityInterface $identity)
     {
-        return $this->identifier == $identity->getIdentifier() && $this->type == $identity->getType();
+        // comparing the identifier with === might lead to problems, so we
+        // waive this restriction
+        return $this->identifier == $identity->getIdentifier() 
+               && $this->type === $identity->getType();
     }
     
     /**

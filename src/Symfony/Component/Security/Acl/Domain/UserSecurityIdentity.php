@@ -26,27 +26,21 @@ class UserSecurityIdentity implements SecurityIdentityInterface
     /**
      * Constructor
      * 
-     * @param string $username the username representation
+     * @param mixed $username the username representation, or a TokenInterface
+     * 						  implementation
      * @return void
      */
     public function __construct($username)
     {
+        if ($username instanceof TokenInterface) {
+            $username = (string) $username;
+        }
+        
         if (0 === strlen($username)) {
             throw new \InvalidArgumentException('$username must not be empty.');
         }
         
         $this->username = $username;
-    }
-    
-    /**
-     * Constructs a UserSecurityIdentity from a authentication token
-     * 
-     * @param TokenInterface $token
-     * @return UserSecurityIdentity
-     */
-    public static function fromToken(TokenInterface $token)
-    {
-        return new self((string) $token);
     }
     
     /**

@@ -34,7 +34,7 @@ use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
  */
 class AclProvider implements AclProviderInterface
 {
-    const MAX_BATCH_SIZE = 20;
+    const MAX_BATCH_SIZE = 30;
     
     protected $aclCache;
     protected $connection;
@@ -138,12 +138,14 @@ class AclProvider implements AclProviderInterface
                             }
                             else {
                                 $this->loadedAcls[$parentOid->getType()][$parentOid->getIdentifier()] = $parentAcl;
+                                $this->updateAceIdentityMap($parentAcl);
                             }
                             
                             $parentAcl = $parentAcl->getParentAcl();
                         }
                         
                         $this->loadedAcls[$oid->getType()][$oid->getIdentifier()] = $acl;
+                        $this->updateAceIdentityMap($acl);
                         $result->attach($oid, $acl);
                         $aclFound = true;
                     }
@@ -190,6 +192,52 @@ class AclProvider implements AclProviderInterface
         }
         
         return $result;
+    }
+    
+    /**
+     * This method is called when an ACL instance is retrieved from the cache.
+     * 
+     * @param AclInterface $acl
+     * @return void
+     */
+    protected function updateAceIdentityMap(AclInterface $acl)
+    {
+        foreach (array('classAces', 'classFieldAces', 'objectAces', 'objectFieldAces') as $property) {
+            $reflection = new \ReflectionProperty($acl, $property);
+            $reflection->setAccessible(true);
+            $value = $reflection->getValue($acl);
+            
+            if ('classAces' === $property || 'objectAces' === $property) {
+                $this->doUpdateAceIdentityMap($value);
+            }
+            else {
+                foreach ($value as $field => $aces) {
+                    $this->doUpdateAceIdentityMap($value[$field]);
+                }
+            }
+            
+            $reflection->setValue($acl, $value);
+            $reflection->setAccessible(false);
+        }
+    }
+    
+    /**
+     * Does either overwrite the passed ACE, or saves it in the global identity
+     * map to ensure every ACE only gets instantiated once.
+     * 
+     * @param array $aces
+     * @return void
+     */
+    protected function doUpdateAceIdentityMap(array &$aces)
+    {
+        foreach ($aces as $index => $ace) {
+            if (isset($this->loadedAces[$ace->getId()])) {
+                $aces[$index] = $this->loadedAces[$ace->getId()];
+            }
+            else {
+                $this->loadedAces[$ace->getId()] = $ace;
+            }
+        }
     }
     
     /**

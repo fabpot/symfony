@@ -53,7 +53,7 @@ class PermissionBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(PermissionBuilder::MASK_VIEW, $mask & PermissionBuilder::MASK_VIEW);
         $this->assertEquals(PermissionBuilder::MASK_EDIT, $mask & PermissionBuilder::MASK_EDIT);
         $this->assertEquals(PermissionBuilder::MASK_OWNER, $mask & PermissionBuilder::MASK_OWNER);
-        $this->assertEquals(0, $mask & PermissionBuilder::MASK_ADMINISTER);
+        $this->assertEquals(0, $mask & PermissionBuilder::MASK_MASTER);
         $this->assertEquals(0, $mask & PermissionBuilder::MASK_CREATE);
         $this->assertEquals(0, $mask & PermissionBuilder::MASK_DELETE);
         $this->assertEquals(0, $mask & PermissionBuilder::MASK_UNDELETE);
@@ -74,10 +74,10 @@ class PermissionBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(str_repeat('.', 31).'V', $builder->getPattern());
         
         $builder->add('owner');
-        $this->assertEquals(str_repeat('.', 25).'O.....V', $builder->getPattern());
+        $this->assertEquals(str_repeat('.', 24).'N......V', $builder->getPattern());
         
         $builder->add(1 << 10);
-        $this->assertEquals(str_repeat('.', 21).PermissionBuilder::ON.'...O.....V', $builder->getPattern());
+        $this->assertEquals(str_repeat('.', 21).PermissionBuilder::ON.'..N......V', $builder->getPattern());
     }
     
     public function testReset()
