@@ -28,10 +28,12 @@ class ContextListener
 {
     protected $context;
     protected $logger;
+    protected $dispatcher;
 
-    public function __construct(SecurityContext $context, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $context, EventDispatcher $dispatcher, LoggerInterface $logger = null)
     {
         $this->context = $context;
+        $this->dispatcher = $dispatcher;
         $this->logger = $logger;
     }
 
@@ -68,11 +70,10 @@ class ContextListener
 
             $token = unserialize($token);
 
-            $this->context->setToken($token);
+            $event = new Event($token, 'security.token.unserialize', array());
+            $this->dispatcher->notify($event);
 
-            // FIXME: If the user is not an object, it probably means that it is persisted with a DAO
-            // we need to load it now (that does not happen right now as the Token serialize the user
-            // even if it is an object -- see Token)
+            $this->context->setToken($token);
         }
     }
 

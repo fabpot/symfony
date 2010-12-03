@@ -148,6 +148,7 @@
 
         <service id="security.context_listener" class="%security.context_listener.class%">
             <argument type="service" id="security.context" />
+            <argument type="service" id="event_dispatcher" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>
     </services>
