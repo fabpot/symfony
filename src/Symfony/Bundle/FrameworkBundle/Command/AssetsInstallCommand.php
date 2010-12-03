@@ -52,6 +52,9 @@ class AssetsInstallCommand extends Command
 
         $filesystem = new Filesystem();
 
+        // Create the bundles directory otherwise symlink will fail.
+        mkdir($input->getArgument('target').'/bundles/', 0777, true);
+
         foreach ($this->container->get('kernel')->getBundles() as $bundle) {
             if (is_dir($originDir = $bundle->getPath().'/Resources/public')) {
                 $output->writeln(sprintf('Installing assets for <comment>%s\\%s</comment>', $bundle->getNamespacePrefix(), $bundle->getName()));
