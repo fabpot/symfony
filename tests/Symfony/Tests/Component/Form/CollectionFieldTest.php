@@ -129,7 +129,8 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
             'email_1@example.com', 
             'email_2@example.com', 
             'email_3@example.com', 
-            'email_4@example.com');
+            'email_4@example.com',
+            );
         $dataToBind = array(
             'email_5@example.com', 
             'email_6@example.com', 
