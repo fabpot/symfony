@@ -122,4 +122,24 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo@foo.com', $field[0]->getData());
         $this->assertEquals('bar@bar.com', $field[1]->getData());
     }
+    
+    public function testDeleteSubFields()
+    {
+        $dataToSet = array(
+            'email_1@example.com', 
+            'email_2@example.com', 
+            'email_3@example.com', 
+            'email_4@example.com');
+        $dataToBind = array(
+            'email_5@example.com', 
+            'email_6@example.com', 
+            );
+        
+        $collection = new CollectionField(new TestField('emails'));
+        $collection->setData($dataToSet);
+        $this->assertEquals(count($collection->getFields()), count($dataToSet));
+        
+        $collection->bind($dataToBind);
+        $this->assertEquals(count($collection->getFields()), count($dataToBind));
+    }
 }
