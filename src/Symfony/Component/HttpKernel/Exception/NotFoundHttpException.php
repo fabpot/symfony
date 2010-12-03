@@ -16,14 +16,14 @@ namespace Symfony\Component\HttpKernel\Exception;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class NotFoundHttpException extends HttpException
+class NotFoundHttpException extends \Exception implements HttpExceptionInterface
 {
-    public function __construct($message = '', $code = 0, \Exception $previous = null)
+    public function __construct($message = '', $code = 404, \Exception $previous = null)
     {
         if (!$message) {
             $message = 'Not Found';
         }
 
-        parent::__construct($message, 404, $previous);
+        parent::__construct($message, $code, $previous);
     }
 }

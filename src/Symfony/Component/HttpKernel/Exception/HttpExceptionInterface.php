@@ -12,12 +12,14 @@ namespace Symfony\Component\HttpKernel\Exception;
  */
 
 /**
- * HttpException.
+ * An interface that defines an exception as an HTTP exception.
  *
- * By convention, exception code == response status code.
+ * By convention, exception code == response status code. If an Exception
+ * is thrown that implements HttpExceptionInterface, the final response
+ * will respect this convention.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class HttpException extends \Exception
+interface HttpExceptionInterface
 {
 }

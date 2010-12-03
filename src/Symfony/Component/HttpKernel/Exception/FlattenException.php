@@ -3,7 +3,7 @@
 namespace Symfony\Component\HttpKernel\Exception;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -40,7 +40,7 @@ class FlattenException
         if ($exception->getPrevious()) {
             $e->setPrevious(static::create($exception->getPrevious()));
         }
-        $e->setStatusCode($exception instanceof HttpException ? $exception->getCode() : 500);
+        $e->setStatusCode($exception instanceof HttpExceptionInterface ? $exception->getCode() : 500);
 
         return $e;
     }

@@ -16,14 +16,14 @@ namespace Symfony\Component\HttpKernel\Exception;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class ForbiddenHttpException extends HttpException
+class ForbiddenHttpException extends \Exception implements HttpExceptionInterface
 {
-    public function __construct($message = '', $code = 0, \Exception $previous = null)
+    public function __construct($message = '', $code = 403, \Exception $previous = null)
     {
         if (!$message) {
             $message = 'Forbidden';
         }
 
-        parent::__construct($message, 403, $previous);
+        parent::__construct($message, $code, $previous);
     }
 }
