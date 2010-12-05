@@ -84,7 +84,7 @@ class Controller extends ContainerAware
     public function redirectToUri($url, $status = 302)
     {
         $view = $this->container->get('view');
-        $view->setRedirectUri($url, $status);
+        $view->setUriRedirect($url, $status);
         return $view->handle($this->container->get('request'));
     }
 
@@ -100,7 +100,7 @@ class Controller extends ContainerAware
     public function redirectToRoute($route, array $parameters = array(), $status = 302)
     {
         $view = $this->container->get('view');
-        $view->setRedirectRoute($route, $parameters, $status);
+        $view->setRouteRedirect($route, $parameters, $status);
         return $view->handle($this->container->get('request'));
     }
 
