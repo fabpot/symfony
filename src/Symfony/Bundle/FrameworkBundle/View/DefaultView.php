@@ -321,6 +321,8 @@ class DefaultView
         foreach ($parameters as $key => $value) {
             if (is_object($value) && method_exists($value, 'toArray')) {
                 $parameters[$key] = $this->parametersToArray($value->toArray());
+            } elseif (is_array($value)) {
+                $parameters[$key] = $this->parametersToArray($value);
             }
         }
         return $parameters;
