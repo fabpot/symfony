@@ -370,6 +370,10 @@ class DefaultView
                         $nodeObj = $domdoc->createTextNode($node);
                     } elseif (!is_object($node)) {
                         $nodeObj = $domdoc->createTextNode($node);
+                    } elseif ($node instanceof \DateTime) {
+                        $nodeObj = $domdoc->createTextNode($node->format(DATE_ISO8601));
+                    } else {
+                        $nodeObj = $domdoc->createTextNode('');
                     }
 
                     if (isset($nodeObj) && $nodeObj instanceof \DOMNode) {
