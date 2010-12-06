@@ -144,7 +144,7 @@ class Cache implements HttpKernelInterface
         }
         $this->traces[$request->getMethod().' '.$path] = array();
 
-        if (!$request->isMethodSafe($request)) {
+        if (!$request->isMethodSafe($request) && 'PURGE' !== $request->getMethod()) {
             $response = $this->invalidate($request);
         } elseif ($request->headers->has('expect')) {
             $response = $this->pass($request);
