@@ -138,6 +138,7 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
         
         $collection = new CollectionField(new TestField('emails'), array('modifiable' => true));
         $collection->setData($dataToSet);
+        $collection->remove('$$key$$');
         $this->assertEquals(count($collection->getFields()), count($dataToSet));
         
         $collection->bind($dataToBind);
