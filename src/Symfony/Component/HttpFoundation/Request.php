@@ -512,21 +512,17 @@ class Request
     public function getMethod()
     {
         if (null === $this->method) {
-            switch ($this->server->get('REQUEST_METHOD', 'GET')) {
+            switch ($method = $this->server->get('REQUEST_METHOD', 'GET')) {
                 case 'POST':
                     $this->method = strtoupper($this->request->get('_method', 'POST'));
                     break;
 
+                case 'GET':
                 case 'PUT':
-                    $this->method = 'PUT';
-                    break;
-
                 case 'DELETE':
-                    $this->method = 'DELETE';
-                    break;
-
                 case 'HEAD':
-                    $this->method = 'HEAD';
+                case 'PURGE':
+                    $this->method = $method;
                     break;
 
                 default:
