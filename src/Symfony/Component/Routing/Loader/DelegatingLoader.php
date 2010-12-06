@@ -41,36 +41,47 @@ class DelegatingLoader extends Loader
     /**
      * Loads a resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return RouteCollection A RouteCollection instance
      */
-    public function load($resource)
+    public function load($resource, $type = null)
     {
-        $loader = $this->resolver->resolve($resource);
+        $loader = $this->resolver->resolve($resource, $type);
 
         if (false === $loader) {
             throw new \InvalidArgumentException(sprintf('Unable to load the "%s" routing resource.', is_string($resource) ? $resource : (is_object($resource) ? get_class($resource) : 'RESOURCE')));
         }
 
-        return $loader->load($resource);
+        return $loader->load($resource, $type);
     }
 
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
         foreach ($this->resolver->getLoaders() as $loader) {
-            if ($loader->supports($resource)) {
+            if ($loader->supports($resource, $type)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    public function getType()
+    {
     }
 }

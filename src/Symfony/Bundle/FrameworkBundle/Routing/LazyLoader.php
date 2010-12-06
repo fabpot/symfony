@@ -33,17 +33,17 @@ class LazyLoader implements LoaderInterface
     /**
      * {@inheritdoc}
      */
-    public function load($resource)
+    public function load($resource, $type = null)
     {
-        return $this->container->get($this->service)->load($resource);
+        return $this->container->get($this->service)->load($resource, $type);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
-        return $this->container->get($this->service)->supports($resource);
+        return $this->container->get($this->service)->supports($resource, $type);
     }
 
     /**
@@ -60,5 +60,12 @@ class LazyLoader implements LoaderInterface
     public function setResolver(LoaderResolver $resolver)
     {
         $this->container->get($this->service)->setResolver($resolver);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getType()
+    {
     }
 }

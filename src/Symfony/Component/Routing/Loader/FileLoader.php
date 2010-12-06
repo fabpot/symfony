@@ -39,19 +39,20 @@ abstract class FileLoader extends Loader
     /**
      * Adds routes from a resource.
      *
-     * @param mixed $resource A Resource
+     * @param mixed  $resource A Resource
+     * @param string $type     The resource type
      *
      * @return RouteCollection A RouteCollection instance
      */
-    public function import($resource)
+    public function import($resource, $type = null)
     {
-        $loader = $this->resolve($resource);
+        $loader = $this->resolve($resource, $type);
 
         if ($loader instanceof FileLoader && null !== $this->currentDir) {
             $resource = $this->getAbsolutePath($resource, $this->currentDir);
         }
 
-        return $loader->load($resource);
+        return $loader->load($resource, $type);
     }
 
     /**

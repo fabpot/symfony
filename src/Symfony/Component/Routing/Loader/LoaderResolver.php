@@ -37,13 +37,14 @@ class LoaderResolver implements LoaderResolverInterface
      * Returns a loader able to load the resource.
      *
      * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return LoaderInterface|false A LoaderInterface instance
      */
-    public function resolve($resource)
+    public function resolve($resource, $type = null)
     {
         foreach ($this->loaders as $loader) {
-            if ($loader->supports($resource)) {
+            if ($loader->supports($resource, $type)) {
                 return $loader;
             }
         }

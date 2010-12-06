@@ -68,13 +68,14 @@ abstract class AnnotationClassLoader implements LoaderInterface
     /**
      * Loads from annotations from a class.
      *
-     * @param  string $class A class name
+     * @param string $class A class name
+     * @param string $type  The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
      * @throws \InvalidArgumentException When route can't be parsed
      */
-    public function load($class)
+    public function load($class, $type = null)
     {
         if (!class_exists($class)) {
             throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $class));
@@ -139,13 +140,14 @@ abstract class AnnotationClassLoader implements LoaderInterface
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
-        return is_string($resource) && class_exists($resource);
+        return is_string($resource) && class_exists($resource) && (!$type || $type === $this->getType());
     }
 
     /**
@@ -164,6 +166,16 @@ abstract class AnnotationClassLoader implements LoaderInterface
      */
     public function getResolver()
     {
+    }
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    public function getType()
+    {
+        return 'annotation';
     }
 
     abstract protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method);

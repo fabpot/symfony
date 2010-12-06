@@ -25,13 +25,14 @@ class XmlFileLoader extends FileLoader
     /**
      * Loads an XML file.
      *
-     * @param  string $file A XML file path
+     * @param string $file A XML file path
+     * @param string $type The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
      * @throws \InvalidArgumentException When a tag can't be parsed
      */
-    public function load($file)
+    public function load($file, $type = null)
     {
         $path = $this->findFile($file);
 
@@ -52,9 +53,10 @@ class XmlFileLoader extends FileLoader
                     break;
                 case 'import':
                     $resource = (string) $node->getAttribute('resource');
+                    $type = (string) $node->getAttribute('type');
                     $prefix = (string) $node->getAttribute('prefix');
                     $this->currentDir = dirname($path);
-                    $collection->addCollection($this->import($resource), $prefix);
+                    $collection->addCollection($this->import($resource, $type), $prefix);
                     break;
                 default:
                     throw new \InvalidArgumentException(sprintf('Unable to parse tag "%s"', $node->tagName));
@@ -67,13 +69,24 @@ class XmlFileLoader extends FileLoader
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
-        return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION);
+        return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || $type === $this->getType());
+    }
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    public function getType()
+    {
+        return 'xml';
     }
 
     protected function parseRoute(RouteCollection $collection, $definition, $file)

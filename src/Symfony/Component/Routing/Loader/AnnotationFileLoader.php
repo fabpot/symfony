@@ -43,15 +43,16 @@ class AnnotationFileLoader extends FileLoader
     /**
      * Loads from annotations from a file.
      *
-     * @param  string $resource A directory prefixed with annotations:
+     * @param string $resource A file path
+     * @param string $type     The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
      * @throws \InvalidArgumentException When route can't be parsed
      */
-    public function load($resource)
+    public function load($resource, $type = null)
     {
-        $path = $this->getAbsolutePath(substr($resource, 12));
+        $path = $this->getAbsolutePath($resource);
         if (!file_exists($path)) {
             throw new \InvalidArgumentException(sprintf('The file "%s" cannot be found (in: %s).', $resource, implode(', ', $this->paths)));
         }
@@ -59,7 +60,7 @@ class AnnotationFileLoader extends FileLoader
         $collection = new RouteCollection();
         if ($class = $this->findClass($path)) {
             $collection->addResource(new FileResource($path));
-            $collection->addCollection($this->loader->load($class));
+            $collection->addCollection($this->loader->load($class, $type));
         }
 
         return $collection;
@@ -68,13 +69,24 @@ class AnnotationFileLoader extends FileLoader
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
-        return 0 === strpos($resource, 'annotations:') && is_file($this->getAbsolutePath(substr($resource, 12)));
+        return is_string($resource) && is_file($this->getAbsolutePath($resource)) && (!$type || $type === $this->getType());
+    }
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    public function getType()
+    {
+        return 'annotation';
     }
 
     protected function findClass($file)

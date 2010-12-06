@@ -26,13 +26,14 @@ class YamlFileLoader extends FileLoader
     /**
      * Loads a Yaml file.
      *
-     * @param  string $file A Yaml file path
+     * @param string $file A Yaml file path
+     * @param string $type The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
      * @throws \InvalidArgumentException When route can't be parsed
      */
-    public function load($file)
+    public function load($file, $type = null)
     {
         $path = $this->findFile($file);
 
@@ -43,9 +44,10 @@ class YamlFileLoader extends FileLoader
 
         foreach ($config as $name => $config) {
             if (isset($config['resource'])) {
+                $type = isset($config['type']) ? $config['type'] : null;
                 $prefix = isset($config['prefix']) ? $config['prefix'] : null;
                 $this->currentDir = dirname($path);
-                $collection->addCollection($this->import($config['resource']), $prefix);
+                $collection->addCollection($this->import($config['resource'], $type), $prefix);
             } elseif (isset($config['pattern'])) {
                 $this->parseRoute($collection, $name, $config, $path);
             } else {
@@ -59,13 +61,24 @@ class YamlFileLoader extends FileLoader
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
-        return is_string($resource) && 'yml' === pathinfo($resource, PATHINFO_EXTENSION);
+        return is_string($resource) && 'yml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || $type === $this->getType());
+    }
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    public function getType()
+    {
+        return 'yaml';
     }
 
     /**

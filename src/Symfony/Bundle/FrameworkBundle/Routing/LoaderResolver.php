@@ -48,10 +48,11 @@ class LoaderResolver extends BaseLoaderResolver
      * Returns a loader able to load the resource.
      *
      * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return LoaderInterface A LoaderInterface instance
      */
-    public function resolve($resource)
+    public function resolve($resource, $type = null)
     {
         if (count($this->services)) {
             while ($id = array_shift($this->services)) {
@@ -59,6 +60,6 @@ class LoaderResolver extends BaseLoaderResolver
             }
         }
 
-        return parent::resolve($resource);
+        return parent::resolve($resource, $type);
     }
 }

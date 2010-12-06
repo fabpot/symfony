@@ -23,20 +23,22 @@ interface LoaderInterface
     /**
      * Loads a resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return RouteCollection A RouteCollection instance
      */
-    function load($resource);
+    function load($resource, $type = null);
 
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    function supports($resource);
+    function supports($resource, $type = null);
 
     /**
      * Gets the loader resolver.
@@ -51,4 +53,11 @@ interface LoaderInterface
      * @param LoaderResolver $resolver A LoaderResolver instance
      */
     function setResolver(LoaderResolver $resolver);
+
+    /**
+     * Returns the resource type supported by this loader.
+     *
+     * @return string The type
+     */
+    function getType();
 }
