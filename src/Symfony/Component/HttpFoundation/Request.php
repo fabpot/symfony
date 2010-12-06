@@ -517,16 +517,8 @@ class Request
                     $this->method = strtoupper($this->request->get('_method', 'POST'));
                     break;
 
-                case 'GET':
-                case 'PUT':
-                case 'DELETE':
-                case 'HEAD':
-                case 'PURGE':
-                    $this->method = $method;
-                    break;
-
                 default:
-                    $this->method = 'GET';
+                    $this->method = strtoupper($method);
             }
         }
 
