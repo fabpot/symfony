@@ -409,7 +409,7 @@ class Request
             $qs = '?'.$qs;
         }
 
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$this->getPathInfo().$qs;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$this->getPathInfo().$qs;
     }
 
     /**
@@ -421,7 +421,7 @@ class Request
      */
     public function getUriForPath($path)
     {
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$path;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$path;
     }
 
     /**
