@@ -59,7 +59,7 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
             throw new BadCredentialsException('Bad credentials');
         }
 
-        if (!$this->passwordEncoder->isPasswordValid($account->getPassword(), $presentedPassword, $account->getSalt())) {
+        if (!$this->passwordEncoder->isPasswordValid($presentedPassword, $account)) {
             throw new BadCredentialsException('Bad credentials');
         }
     }

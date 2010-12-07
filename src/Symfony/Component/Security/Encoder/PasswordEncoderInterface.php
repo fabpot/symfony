@@ -11,6 +11,8 @@ namespace Symfony\Component\Security\Encoder;
  * file that was distributed with this source code.
  */
 
+use Symfony\Component\Security\User\AccountInterface;
+
 /**
  * PasswordEncoderInterface is the interface for all encoders.
  *
@@ -22,20 +24,19 @@ interface PasswordEncoderInterface
      * Encodes the raw password.
      *
      * @param string $raw  The password to encode
-     * @param string $salt The salt
+     * @param AccountInterface $account The salt
      *
      * @return string The encoded password
      */
-    function encodePassword($raw, $salt);
+    function encodePassword($raw, AccountInterface $account);
 
     /**
      * Checks a raw password against an encoded password.
      *
-     * @param string $encoded An encoded password
      * @param string $raw     A raw password
-     * @param string $salt    The salt
+     * @param AccountInterface $account
      *
      * @return Boolean true if the password is valid, false otherwise
      */
-    function isPasswordValid($encoded, $raw, $salt);
+    function isPasswordValid($raw, AccountInterface $account);
 }

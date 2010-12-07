@@ -17,20 +17,24 @@ class MessageDigestPasswordEncoderTest extends \PHPUnit_Framework_TestCase
     public function testIsPasswordValid()
     {
         $encoder = new MessageDigestPasswordEncoder();
+        $account = $this->getAccount(hash('sha256', 'password'), '');
 
-        $this->assertTrue($encoder->isPasswordValid(hash('sha256', 'password'), 'password', ''));
+        $this->assertTrue($encoder->isPasswordValid('password', $account));
     }
 
     public function testEncodePassword()
     {
         $encoder = new MessageDigestPasswordEncoder();
-        $this->assertSame(hash('sha256', 'password'), $encoder->encodePassword('password', ''));
+        $account = $this->getAccount(null, '');
+        $this->assertSame(hash('sha256', 'password'), $encoder->encodePassword('password', $account));
 
         $encoder = new MessageDigestPasswordEncoder('sha256', true);
-        $this->assertSame(base64_encode(hash('sha256', 'password', true)), $encoder->encodePassword('password', ''));
+        $account = $this->getAccount(null, '');
+        $this->assertSame(base64_encode(hash('sha256', 'password', true)), $encoder->encodePassword('password', $account));
 
         $encoder = new MessageDigestPasswordEncoder('sha256', false, 2);
-        $this->assertSame(hash('sha256', hash('sha256', 'password', true)), $encoder->encodePassword('password', ''));
+        $account = $this->getAccount(null, '');
+        $this->assertSame(hash('sha256', hash('sha256', 'password', true)), $encoder->encodePassword('password', $account));
     }
 
     /**
@@ -39,6 +43,42 @@ class MessageDigestPasswordEncoderTest extends \PHPUnit_Framework_TestCase
     public function testEncodePasswordAlgorithmDoesNotExist()
     {
         $encoder = new MessageDigestPasswordEncoder('foobar');
-        $encoder->encodePassword('password', '');
+        $account = $this->getAccount(null, null);
+        $encoder->encodePassword('password', $account);
+    }
+    
+    protected function getAccount($password = null, $salt = null)
+    {
+    	$mock = $this->getMock('Symfony\Component\Security\User\AccountInterface');
+    	
+    	if (null === $password) {
+    		$mock
+    			->expects($this->never())
+    			->method('getPassword')
+    		;
+    	}
+    	else {
+    		$mock
+    			->expects($this->once())
+    			->method('getPassword')
+    			->will($this->returnValue($password))
+    		;
+    	}
+    	
+    	if (null === $salt) {
+    		$mock
+    			->expects($this->never())
+    			->method('getSalt')
+    		;
+    	}
+    	else {
+    		$mock
+    			->expects($this->once())
+    			->method('getSalt')
+    			->will($this->returnValue($salt))
+    		;
+    	}
+    	
+    	return $mock;
     }
 }

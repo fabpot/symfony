@@ -10,19 +10,6 @@
 
 namespace Symfony\Tests\Component\Security\Encoder;
 
-use Symfony\Component\Security\Encoder\BasePasswordEncoder;
-
-class PasswordEncoder extends BasePasswordEncoder
-{
-    public function encodePassword($raw, $salt)
-    {
-    }
-
-    public function isPasswordValid($encoded, $raw, $salt)
-    {
-    }
-}
-
 class BasePasswordEncoderTest extends \PHPUnit_Framework_TestCase
 {
     public function testComparePassword()
@@ -54,7 +41,7 @@ class BasePasswordEncoderTest extends \PHPUnit_Framework_TestCase
 
     protected function invokeDemergePasswordAndSalt($password)
     {
-        $encoder = new PasswordEncoder();
+        $encoder = $this->getEncoder();
         $r = new \ReflectionObject($encoder);
         $m = $r->getMethod('demergePasswordAndSalt');
         $m->setAccessible(true);
@@ -64,7 +51,7 @@ class BasePasswordEncoderTest extends \PHPUnit_Framework_TestCase
 
     protected function invokeMergePasswordAndSalt($password, $salt)
     {
-        $encoder = new PasswordEncoder();
+        $encoder = $this->getEncoder();
         $r = new \ReflectionObject($encoder);
         $m = $r->getMethod('mergePasswordAndSalt');
         $m->setAccessible(true);
@@ -74,11 +61,16 @@ class BasePasswordEncoderTest extends \PHPUnit_Framework_TestCase
 
     protected function invokeComparePasswords($p1, $p2)
     {
-        $encoder = new PasswordEncoder();
+        $encoder = $this->getEncoder();
         $r = new \ReflectionObject($encoder);
         $m = $r->getMethod('comparePasswords');
         $m->setAccessible(true);
 
         return $m->invoke($encoder, $p1, $p2);
+    }
+    
+    protected function getEncoder()
+    {
+    	return $this->getMockForAbstractClass('Symfony\Component\Security\Encoder\BasePasswordEncoder');
     }
 }

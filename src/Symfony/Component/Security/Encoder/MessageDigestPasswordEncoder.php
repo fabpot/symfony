@@ -16,6 +16,8 @@ namespace Symfony\Component\Security\Encoder;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
+use Symfony\Component\Security\User\AccountInterface;
+
 class MessageDigestPasswordEncoder extends BasePasswordEncoder
 {
     protected $algorithm;
@@ -38,13 +40,13 @@ class MessageDigestPasswordEncoder extends BasePasswordEncoder
     /**
      * {@inheritdoc}
      */
-    public function encodePassword($raw, $salt)
+    public function encodePassword($raw, AccountInterface $account)
     {
         if (!in_array($this->algorithm, hash_algos(), true)) {
             throw new \LogicException(sprintf('The algorithm "%s" is not supported.', $this->algorithm));
         }
 
-        $salted = $this->mergePasswordAndSalt($raw, $salt);
+        $salted = $this->mergePasswordAndSalt($raw, $account->getSalt());
         $digest = hash($this->algorithm, $salted, true);
 
         // "stretch" hash
@@ -58,8 +60,8 @@ class MessageDigestPasswordEncoder extends BasePasswordEncoder
     /**
      * {@inheritdoc}
      */
-    public function isPasswordValid($encoded, $raw, $salt)
+    public function isPasswordValid($raw, AccountInterface $account)
     {
-        return $this->comparePasswords($encoded, $this->encodePassword($raw, $salt));
+        return $this->comparePasswords($account->getPassword(), $this->encodePassword($raw, $account));
     }
 }
