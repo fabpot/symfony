@@ -2,8 +2,6 @@
 
 namespace Symfony\Component\Security\User;
 
-use Symfony\Component\Security\Exception\UsernameNotFoundException;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -29,9 +27,19 @@ interface UserProviderInterface
      *
      * @param  string $username The username
      *
-     * @return AccountInterface A user instance
+     * @return array of the form: array(AccountInterface, string) with the
+     *               implementation of AccountInterface, and the name of the provider
+     *               that was used to retrieve it
      *
      * @throws UsernameNotFoundException if the user is not found
      */
      function loadUserByUsername($username);
+
+     /**
+      * Determines whether this provider supports the given provider name
+      *
+      * @param string $providerName
+      * @return Boolean
+      */
+     function supports($providerName);
 }
