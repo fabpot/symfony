@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\Security\User\AccountInterface;
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -28,10 +30,12 @@ class ContextListener implements ListenerInterface
 {
     protected $context;
     protected $logger;
+    protected $userProviders;
 
-    public function __construct(SecurityContext $context, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $context, array $userProviders, LoggerInterface $logger = null)
     {
         $this->context = $context;
+        $this->userProviders = $userProviders;
         $this->logger = $logger;
     }
 
@@ -75,12 +79,12 @@ class ContextListener implements ListenerInterface
             }
 
             $token = unserialize($token);
+            
+            if (false === $token->isImmutable()) {
+                $token = $this->refreshUser($token);
+            }
 
             $this->context->setToken($token);
-
-            // FIXME: If the user is not an object, it probably means that it is persisted with a DAO
-            // we need to load it now (that does not happen right now as the Token serialize the user
-            // even if it is an object -- see Token)
         }
     }
 
@@ -110,5 +114,44 @@ class ContextListener implements ListenerInterface
         $event->get('request')->getSession()->set('_security', serialize($token));
 
         return $response;
+    }
+    
+    protected function refreshUser(TokenInterface $token)
+    {
+        $user = $token->getUser();
+        if (!$user instanceof AccountInterface) {
+            return $token;
+        }
+        else if (0 === strlen($username = (string) $token)) {
+            return $token;
+        }
+        else if (null === $providerName = $token->getUserProviderName()) {
+            return $token;
+        }
+        
+        if (null !== $this->logger) {
+            $this->logger->debug(sprintf('Reloading user from user provider "%s".', $providerName));
+        }
+        
+        foreach ($this->userProviders as $provider) {
+            if ($provider->supports($providerName)) {
+                list($cUser, $cProviderName) = $provider->loadUserByUsername($username);
+                
+                if ($providerName !== $cProviderName) {
+                    throw new \RuntimeException(sprintf('User was loaded from different provider. Requested "%s", Used: "%s"', $providerName, $cProviderName));
+                }
+                
+                $token->setRoles($user->getRoles());
+                $token->setUser($cUser);
+                
+                if (false === $cUser->equals($user)) {
+                    $token->setAuthenticated(false);
+                }
+                
+                return $token;
+            }
+        }
+        
+        throw new \RuntimeException(sprintf('There is no user provider named "%s".', $providerName));
     }
 }
