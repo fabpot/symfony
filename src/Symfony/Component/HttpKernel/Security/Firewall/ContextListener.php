@@ -25,6 +25,7 @@ use Symfony\Component\Security\Authentication\Token\AnonymousToken;
  * ContextListener manages the SecurityContext persistence through a session.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class ContextListener implements ListenerInterface
 {
@@ -135,7 +136,22 @@ class ContextListener implements ListenerInterface
         
         foreach ($this->userProviders as $provider) {
             if ($provider->supports($providerName)) {
-                list($cUser, $cProviderName) = $provider->loadUserByUsername($username);
+                try {
+                    $result = $provider->loadUserByUsername($username);
+                    
+                    if (!is_array($result) || 2 !== count($result)) {
+                        throw new \RuntimeException('Provider returned an invalid result.');
+                    }
+                    
+                    list($cUser, $cProviderName) = $result;
+                }
+                catch (\Exception $ex) {
+                    if (null !== $this->logger) {
+                        $this->logger->debug(sprintf('An exception occurred while reloading the user: '.$ex->getMessage()));
+                    }
+                    
+                    return null;
+                }
                 
                 if ($providerName !== $cProviderName) {
                     throw new \RuntimeException(sprintf('User was loaded from different provider. Requested "%s", Used: "%s"', $providerName, $cProviderName));

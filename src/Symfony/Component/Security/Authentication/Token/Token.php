@@ -19,6 +19,7 @@ use Symfony\Component\Security\User\AccountInterface;
  * Base class for Token instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 abstract class Token implements TokenInterface
 {
@@ -185,13 +186,9 @@ abstract class Token implements TokenInterface
     /**
      * {@inheritdoc}
      */
-    public function setImmutable($value)
+    public function setImmutable()
     {
-        if ($this->immutable) {
-            throw new \LogicException('This token is considered immutable.');
-        }
-        
-        $this->immutable = (Boolean) $value;
+        $this->immutable = true;
     }
 
     /**

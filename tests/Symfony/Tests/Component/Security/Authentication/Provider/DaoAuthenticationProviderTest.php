@@ -69,14 +69,14 @@ class DaoAuthenticationProviderTest extends \PHPUnit_Framework_TestCase
         $userProvider = $this->getMock('Symfony\Component\Security\User\UserProviderInterface');
         $userProvider->expects($this->once())
                      ->method('loadUserByUsername')
-                     ->will($this->returnValue($user))
+                     ->will($this->returnValue($result = array($user, 'foo')))
         ;
 
         $provider = new DaoAuthenticationProvider($userProvider, $this->getMock('Symfony\Component\Security\User\AccountCheckerInterface'));
         $method = new \ReflectionMethod($provider, 'retrieveUser');
         $method->setAccessible(true);
 
-        $this->assertSame($user, $method->invoke($provider, 'fabien', $this->getSupportedToken()));
+        $this->assertSame($result, $method->invoke($provider, 'fabien', $this->getSupportedToken()));
     }
 
     /**

@@ -16,8 +16,6 @@ use Symfony\Component\Security\User\AccountInterface;
 /**
  * TokenInterface is the interface for the user authentication information.
  *
- * Tokens which implement this interface must be immutable.
- *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 interface TokenInterface extends \Serializable
@@ -95,12 +93,13 @@ interface TokenInterface extends \Serializable
     function isImmutable();
     
     /**
-     * Sets whether this token is considered immutable
+     * Marks this token as immutable. This change cannot be reversed.
      * 
-     * @param Boolean $boolean
+     * You'll need to create a new token if you want a mutable token again.
+     * 
      * @return void
      */
-    function setImmutable($boolean);
+    function setImmutable();
     
     /**
      * Removes sensitive information from the token.
