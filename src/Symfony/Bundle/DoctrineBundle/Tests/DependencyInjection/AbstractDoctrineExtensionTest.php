@@ -99,7 +99,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loader = new DoctrineExtension();
 
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('YamlBundle' => array())), $container);
 
         $this->assertEquals('Doctrine\DBAL\Connection', $container->getParameter('doctrine.dbal.connection_class'));
         $this->assertEquals('Doctrine\ORM\Configuration', $container->getParameter('doctrine.orm.configuration_class'));
@@ -123,6 +123,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $config = array(
             'proxy_namespace' => 'MyProxies',
             'auto_generate_proxy_classes' => true,
+            'bundles' => array('YamlBundle' => array()),
         );
         
         $loader->dbalLoad(array(), $container);
@@ -329,7 +330,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loader = new DoctrineExtension();
 
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('YamlBundle' => array())), $container);
 
         $definition = $container->getDefinition('doctrine.orm.default_configuration');
         $calls = $definition->getMethodCalls();
@@ -343,15 +344,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loader = new DoctrineExtension();
 
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('YamlBundle' => array())), $container);
 
         $this->assertEquals(array(__DIR__.'/Fixtures/Bundles/YamlBundle/Resources/config/doctrine/metadata/orm'), $container->getParameter('doctrine.orm.metadata_driver.mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.xml_mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.yml_mapping_dirs'));
         $this->assertEquals(array(__DIR__.'/Fixtures/Bundles/YamlBundle/Entity'), $container->getParameter('doctrine.orm.metadata_driver.entity_dirs'));
 
-        $calls = $container->getDefinition('doctrine.orm.metadata_driver')->getMethodCalls();
-        $this->assertEquals('doctrine.orm.metadata_driver.yml', (string) $calls[0][1][0]);
+        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
+        $this->assertEquals('doctrine.orm.default_yml_metadata_driver', (string) $calls[0][1][0]);
         $this->assertEquals('DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\YamlBundle\Entity', $calls[0][1][1]);
     }
 
@@ -361,15 +362,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loader = new DoctrineExtension();
 
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('XmlBundle' => array())), $container);
 
         $this->assertEquals(array(__DIR__.'/Fixtures/Bundles/XmlBundle/Resources/config/doctrine/metadata/orm'), $container->getParameter('doctrine.orm.metadata_driver.mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.xml_mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.yml_mapping_dirs'));
         $this->assertEquals(array(__DIR__.'/Fixtures/Bundles/XmlBundle/Entity'), $container->getParameter('doctrine.orm.metadata_driver.entity_dirs'));
 
-        $calls = $container->getDefinition('doctrine.orm.metadata_driver')->getMethodCalls();
-        $this->assertEquals('doctrine.orm.metadata_driver.xml', (string) $calls[0][1][0]);
+        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
+        $this->assertEquals('doctrine.orm.default_xml_metadata_driver', (string) $calls[0][1][0]);
         $this->assertEquals('DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle\Entity', $calls[0][1][1]);
     }
 
@@ -379,15 +380,15 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $loader = new DoctrineExtension();
 
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('AnnotationsBundle' => array())), $container);
 
         $this->assertEquals(array(), $container->getParameter('doctrine.orm.metadata_driver.mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.xml_mapping_dirs'));
         $this->assertEquals('%doctrine.orm.metadata_driver.mapping_dirs%', $container->getParameter('doctrine.orm.yml_mapping_dirs'));
         $this->assertEquals(array(__DIR__.'/Fixtures/Bundles/AnnotationsBundle/Entity'), $container->getParameter('doctrine.orm.metadata_driver.entity_dirs'));
 
-        $calls = $container->getDefinition('doctrine.orm.metadata_driver')->getMethodCalls();
-        $this->assertEquals('doctrine.orm.metadata_driver.annotation', (string) $calls[0][1][0]);
+        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
+        $this->assertEquals('doctrine.orm.default_annotation_metadata_driver', (string) $calls[0][1][0]);
         $this->assertEquals('DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\AnnotationsBundle\Entity', $calls[0][1][1]);
     }
 

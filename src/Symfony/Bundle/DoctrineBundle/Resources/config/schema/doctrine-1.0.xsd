@@ -52,6 +52,32 @@
 
   <xsd:element name="orm" type="orm" />
 
+  <xsd:complexType name="bundles">
+      <xsd:sequence>
+          <xsd:element name="bundle" type="bundle" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="bundle">
+      <xsd:attribute name="name" type="xsd:string" use="required" />
+      <xsd:attribute name="dir" type="xsd:string" />
+      <xsd:attribute name="alias" type="xsd:string" />
+      <xsd:attribute name="prefix" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="mappings">
+      <xsd:sequence>
+          <xsd:element name="mapping" type="mapping" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="mapping">
+      <xsd:attribute name="name" type="xsd:string" use="required" />
+      <xsd:attribute name="dir" type="xsd:string" use="required" />
+      <xsd:attribute name="alias" type="xsd:string" use="required" />
+      <xsd:attribute name="prefix" type="xsd:string" />
+  </xsd:complexType>
+
   <xsd:complexType name="orm">
     <xsd:sequence>
       <xsd:element name="entity_managers" type="entity_managers" minOccurs="0" maxOccurs="1" />

@@ -262,7 +262,7 @@ class DoctrineExtension extends Extension
             'setMetadataCacheImpl' => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
             'setQueryCacheImpl' => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
             'setResultCacheImpl' => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
-            'setMetadataDriverImpl' => new Reference('doctrine.orm.metadata_driver'),
+            'setMetadataDriverImpl' => new Reference('doctrine.orm.'.$entityManager['name'].'_metadata_driver'),
             'setProxyDir' => $container->getParameter('doctrine.orm.proxy_dir'),
             'setProxyNamespace' => $container->getParameter('doctrine.orm.proxy_namespace'),
             'setAutoGenerateProxyClasses' => $container->getParameter('doctrine.orm.auto_generate_proxy_classes')
@@ -316,45 +316,153 @@ class DoctrineExtension extends Extension
     /**
      * Loads an ORM entity managers bundle mapping information.
      *
+     * There are two distinct configuration possibilities for mapping information:
+     *
+     * 1. Specifiy a bundle and optionally details where the entity and mapping information reside.
+     * 2. Specifiy an arbitrary mapping location.
+     *
+     * @example
+     *
+     *  doctrine.orm:
+     *     bundles:
+     *         MyBundle1: ~
+     *         MyBundle2: yml
+     *         MyBundle3: { type: annotation, dir: Entities/ }
+     *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
+     *         MyBundle5:
+     *             type: yml
+     *             dir: [bundle-mappings1/, bundle-mappings2/]
+     *             alias: BundleAlias
+     *     mappings:
+     *         arbitrary_key:
+     *             type: xml
+     *             dir: src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
+     *             prefix: DoctrineExtensions\Entities\
+     *             alias: DExt
+     *
+     * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
+     * in the mappings key everything except alias is a required argument.
+     *
      * @param array $entityManager A configured ORM entity manager.
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
     protected function loadOrmEntityManagerBundlesMappingInformation(array $entityManager, Definition $ormConfigDef, ContainerBuilder $container)
     {
-        // configure metadata driver for each bundle based on the type of mapping files found
-        $mappingDriverDef = new Definition('%doctrine.orm.metadata.driver_chain_class%');
-        $bundleEntityMappings = array();
         $bundleDirs = $container->getParameter('kernel.bundle_dirs');
+        $drivers = array();
         $aliasMap = array();
-        foreach ($container->getParameter('kernel.bundles') as $className) {
-            $tmp = dirname(str_replace('\\', '/', $className));
-            $namespace = str_replace('/', '\\', dirname($tmp));
-            $class = basename($tmp);
+        if (isset($entityManager['bundles'])) {
+            foreach ($entityManager['bundles'] AS $bundleName => $bundleConfig) {
+                $namespace = null;
+                foreach ($container->getParameter('kernel.bundles') AS $bundleClassName) {
+                    $tmp = dirname(str_replace('\\', '/', $bundleClassName));
+                    $namespace = str_replace('/', '\\', dirname($tmp));
+                    $actualBundleName = basename($tmp);
 
-            if (!isset($bundleDirs[$namespace])) {
-                continue;
-            }
-
-            $type = $this->detectMetadataDriver($bundleDirs[$namespace].'/'.$class, $container);
-
-            if (is_dir($dir = $bundleDirs[$namespace].'/'.$class.'/Entity')) {
-                if ($type === null) {
-                    $type = 'annotation';
+                    if ($actualBundleName == $bundleName) {
+                        break;
+                    }
                 }
-                $aliasMap[$class] = $namespace.'\\'.$class.'\\Entity';
-            }
+                if (!isset($bundleDirs[$namespace])) {
+                    // skif this bundle if we cannot find its location, it must be misspelled or something.
+                    continue;
+                }
 
-            if ($type !== null) {
-                $mappingDriverDef->addMethodCall('addDriver', array(
-                        new Reference(sprintf('doctrine.orm.metadata_driver.%s', $type)),
-                        $namespace.'\\'.$class.'\\Entity'
-                    )
-                );
+                if (!isset($bundleConfig['type'])) {
+                    $bundleConfig['type'] = $this->detectMetadataDriver($bundleDirs[$namespace].'/'.$bundleName, $container);
+                    if ($bundleConfig['type'] === null) {
+                        if (is_dir($bundleDirs[$namespace].'/'.$bundleName.'/Entity')) {
+                            $bundleConfig['type'] = 'annotation';
+                        } else {
+                            // skip this bundle if autodetection didn't yield anything.
+                            continue;
+                        }
+                    }
+                }
+                if (!isset($bundleConfig['dir'])) {
+                    $bundleConfig['dir'] = $bundleDirs[$namespace].'/'.$bundleName.'/Entity';
+                }
+                if (!isset($bundleConfig['prefix'])) {
+                    $bundleConfig['prefix'] = $namespace.'\\'. $bundleName . '\Entity';
+                }
+
+                if (!in_array($bundleConfig['type'], array('xml', 'yml', 'annotation', 'php', 'staticphp'))) {
+                    throw new \InvalidArgumentException("Can only configure 'xml', 'yml', 'annotation', 'php' or ".
+                        "'static-php' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
+                        "You can register them by adding a a new driver to the ".
+                        "'doctrine.orm." . $entityManager['name'] . ".metadata_driver' service definition."
+                    );
+                }
+
+                if (is_dir($bundleConfig['dir'])) {
+                    if (!isset($drivers[$bundleConfig['type']])) {
+                        $drivers[$bundleConfig['type']] = array();
+                    }
+                    $drivers[$bundleConfig['type']][$bundleConfig['prefix']] = $bundleConfig['dir'];
+                } else {
+                    throw new \InvalidArgumentException("Invalid mapping/entity path given. ".
+                        "Cannot load bundle '" . $bundleName . "' entities.");
+                }
+
+                if (isset($bundleConfig['alias'])) {
+                    $aliasMap[$bundleConfig['alias']] = $bundleConfig['prefix'];
+                } else {
+                    $aliasMap[$bundleName] = $bundleConfig['prefix'];
+                }
+            }
+        }
+
+        if (isset($entityManager['mappings'])) {
+            foreach ($entityManager['mappings'] as $mappingName => $mappingConfig) {
+                if (!isset($mappingConfig['type']) || !isset($mappingConfig['dir']) || !isset($mappingConfig['prefix'])) {
+                    throw new \InvalidArgumentException("Mapping definitions require at least 'type', 'dir' and 'prefix' options.");
+                }
+
+                if (!in_array($mappingConfig['type'], array('xml', 'yml', 'annotation', 'php', 'staticphp'))) {
+                    throw new \InvalidArgumentException("Can only configure 'xml', 'yml', 'annotation', 'php' or ".
+                        "'static-php' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
+                        "You can register them by adding a a new driver to the ".
+                        "'doctrine.orm." . $entityManager['name'] . ".metadata_driver' service definition."
+                    );
+                }
+
+                if (is_dir($mappingConfig['dir'])) {
+                    if (!isset($drivers[$mappingConfig['type']])) {
+                        $drivers[$mappingConfig['type']] = array();
+                    }
+                    $drivers[$mappingConfig['type']][$mappingConfig['prefix']] = $mappingConfig['dir'];
+                } else {
+                    throw new \InvalidArgumentException("Invalid mapping/entity path given. ".
+                        "Cannot load mapping '" . $mappingName . "' entities.");
+                }
+
+                if (isset($mappingConfig['alias'])) {
+                    $aliasMap[$mappingConfig['alias']] = $mappingConfig['prefix'];
+                }
+            }
+        }
+
+        // configure metadata driver for each bundle based on the type of mapping files found
+        $chainDriverDef = new Definition('%doctrine.orm.metadata.driver_chain_class%');
+        foreach ($drivers as $driverType => $driverPaths) {
+            if ($driverType == 'annotation') {
+                $mappingDriverDef = new Definition('%doctrine.orm.metadata.' . $driverType . '_class%', array(
+                    new Reference('doctrine.orm.metadata_driver.annotation.reader'),
+                    array_values($driverPaths)
+                ));
+            } else {
+                $mappingDriverDef = new Definition('%doctrine.orm.metadata.' . $driverType . '_class%', array($driverPaths));
+            }
+            $mappingService = 'doctrine.orm.' . $entityManager['name'] . '_'.$driverType.'_metadata_driver';
+            $container->setDefinition($mappingService, $mappingDriverDef);
+
+            foreach ($driverPaths as $prefix => $driverPath) {
+                $chainDriverDef->addMethodCall('addDriver', array(new Reference($mappingService), $prefix));
             }
         }
         $ormConfigDef->addMethodCall('setEntityNamespaces', array($aliasMap));
 
-        $container->setDefinition('doctrine.orm.metadata_driver', $mappingDriverDef);
+        $container->setDefinition('doctrine.orm.' . $entityManager['name'] . '_metadata_driver', $chainDriverDef);
     }
 
     /**
