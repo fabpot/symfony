@@ -11,6 +11,7 @@ use Symfony\Component\Form\FieldError;
 use Symfony\Component\Form\FieldInterface;
 use Symfony\Component\Form\FieldGroup;
 use Symfony\Component\Form\PropertyPath;
+use Symfony\Component\Form\CollectionField;
 use Symfony\Tests\Component\Form\Fixtures\Author;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
 use Symfony\Tests\Component\Form\Fixtures\TestFieldGroup;
@@ -687,6 +688,29 @@ class FieldGroupTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(array($group['visibleField']), $visibleFields);
     }
+    
+    public function testSubCollectionsModify()
+    {
+        $dataToSet = array('entry_1', 'entry_2', 'entry_3', 'entry_4');
+        $collectionDataToBind = array('book_1', 'book_2');
+        
+        $group = new TestFieldGroup('author');
+        $group->add(new TestField('firstName'));
+        $group->add($this->createCollectionFieldModifiableTrue('books', $dataToSet));
+        $group->bind(array('firstName' => 'Bernhard', 'books' => $collectionDataToBind));
+        
+        $this->assertEquals($group->get('firstName'), $group['firstName']);
+        $this->assertEquals('Bernhard', $group->get('firstName')->getData());
+        $this->assertEquals('Bernhard', $group['firstName']->getData());
+        
+        $this->assertEquals($group->get('books'), $group['books']);
+        
+        $this->assertEquals(count($collectionDataToBind), count($group->get('books')->getData())); //FAIL
+        $this->assertEquals(count($collectionDataToBind), count($group['books']->getData())); //FAIL
+        
+        $this->assertEquals($collectionDataToBind, $group->get('books')->getData()); //FAIL
+        $this->assertEquals($collectionDataToBind, $group['books']->getData()); //FAIL
+    }
 
     /**
      * Create a group containing two fields, "visibleField" and "hiddenField"
@@ -775,5 +799,14 @@ class FieldGroupTest extends \PHPUnit_Framework_TestCase
     protected function createMockTransformer()
     {
         return $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface', array(), array(), '', false, false);
+    }
+    
+    protected function createCollectionFieldModifiableTrue($key, $dataToSet)
+    {
+        $field = new CollectionField(new TestField($key), array('modifiable' => true));
+        $field->setData($dataToSet);
+        $field->remove('$$key$$');
+        
+        return $field;
     }
 }
