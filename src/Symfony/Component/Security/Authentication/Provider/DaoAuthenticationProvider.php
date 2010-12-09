@@ -77,11 +77,11 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
      */
     protected function retrieveUser($username, UsernamePasswordToken $token)
     {
-    	$user = $token->getUser();
-    	if ($user instanceof AccountInterface) {
-    		return array($user, $token->getUserProviderName());
-    	}
-    	
+        $user = $token->getUser();
+        if ($user instanceof AccountInterface) {
+            return array($user, $token->getUserProviderName());
+        }
+        
         $result = null;
         try {
             $result = $this->userProvider->loadUserByUsername($username);
@@ -92,13 +92,13 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
         }
         
         if (!is_array($result) || 2 !== count($result)) {
-        	throw new AuthenticationServiceException('User provider did not return an array, or array had invalid format.');
+            throw new AuthenticationServiceException('User provider did not return an array, or array had invalid format.');
         }
         if (!$result[0] instanceof AccountInterface) {
             throw new AuthenticationServiceException('The user provider must return an AccountInterface object.');
         }
         if (empty($result[1])) {
-        	throw new AuthenticationServiceException('The user provider must return a non-empty user provider name.');
+            throw new AuthenticationServiceException('The user provider must return a non-empty user provider name.');
         }
 
         return $result;

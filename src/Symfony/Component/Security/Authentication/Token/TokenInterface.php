@@ -55,7 +55,7 @@ interface TokenInterface extends \Serializable
      * Returns a user representation.
      * 
      * @return mixed either returns an object which implements __toString(), or
-     * 				 a primitive string is returned.
+     *                  a primitive string is returned.
      */
     function getUser();
     
@@ -63,7 +63,7 @@ interface TokenInterface extends \Serializable
      * Sets the user. 
      * 
      * @param mixed $user can either be an object which implements __toString(), or
-     * 					  only a primitive string
+     *                       only a primitive string
      */
     function setUser($user);
 

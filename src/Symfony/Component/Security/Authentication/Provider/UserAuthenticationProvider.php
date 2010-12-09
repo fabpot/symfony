@@ -64,7 +64,7 @@ abstract class UserAuthenticationProvider implements AuthenticationProviderInter
         }
         
         if (!is_array($result) || 2 !== count($result)) {
-        	throw new AuthenticationServiceException('retrieveUser() did not return an array, or array had invalid format.'); 
+            throw new AuthenticationServiceException('retrieveUser() did not return an array, or array had invalid format.'); 
         }
         list($user, $userProviderName) = $result;
 

@@ -45,6 +45,6 @@ class DocumentUserProvider implements UserProviderInterface
      */
     public function supports($providerName)
     {
-    	return $this->name === $providerName;
+        return $this->name === $providerName;
     }
 }
