@@ -117,6 +117,12 @@ class ContextListener implements ListenerInterface
         return $response;
     }
     
+    /**
+     * Refreshes the user by reloading it from the user provider
+     * 
+     * @param TokenInterface $token
+     * @return TokenInterface|null
+     */
     protected function refreshUser(TokenInterface $token)
     {
         $user = $token->getUser();
