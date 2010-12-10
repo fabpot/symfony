@@ -64,7 +64,7 @@ class YamlFileLoader extends FileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
@@ -72,6 +72,13 @@ class YamlFileLoader extends FileLoader
     }
 
     /**
+     * Parses a route and adds it to the RouteCollection.
+     *
+     * @param RouteCollection $collection A RouteCollection instance
+     * @param string          $name       Route name
+     * @param array           $config     Route definition
+     * @param string          $file       A Yaml file path
+     *
      * @throws \InvalidArgumentException When config pattern is not defined for the given route
      */
     protected function parseRoute(RouteCollection $collection, $name, $config, $file)
@@ -89,6 +96,13 @@ class YamlFileLoader extends FileLoader
         $collection->add($name, $route);
     }
 
+    /**
+     * Loads a Yaml file.
+     *
+     * @param string $file A Yaml file path
+     *
+     * @return array
+     */
     protected function loadFile($file)
     {
         return Yaml::load($file);

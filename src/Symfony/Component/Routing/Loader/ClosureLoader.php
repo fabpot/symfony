@@ -23,8 +23,8 @@ class ClosureLoader extends Loader
     /**
      * Loads a Closure.
      *
-     * @param \Closure $resource The resource
-     * @param string   $type     The resource type
+     * @param \Closure $closure A Closure
+     * @param string   $type    The resource type
      */
     public function load($closure, $type = null)
     {
@@ -37,7 +37,7 @@ class ClosureLoader extends Loader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {

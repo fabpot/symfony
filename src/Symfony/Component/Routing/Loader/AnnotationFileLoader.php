@@ -27,12 +27,13 @@ class AnnotationFileLoader extends FileLoader
     /**
      * Constructor.
      *
-     * @param string|array $paths A path or an array of paths where to look for resources
+     * @param AnnotationClassLoader $loader An AnnotationClassLoader instance
+     * @param string|array          $paths  A path or an array of paths where to look for resources
      */
     public function __construct(AnnotationClassLoader $loader, $paths = array())
     {
         if (!function_exists('token_get_all')) {
-            throw new \RuntimeException('The Tokenizer extension is needed for the routing annotation loaders.');
+            throw new \RuntimeException('The Tokenizer extension is required for the routing annotation loaders.');
         }
 
         parent::__construct($paths);
@@ -43,18 +44,18 @@ class AnnotationFileLoader extends FileLoader
     /**
      * Loads from annotations from a file.
      *
-     * @param string $resource A file path
-     * @param string $type     The resource type
+     * @param string $file A PHP file path
+     * @param string $type The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
-     * @throws \InvalidArgumentException When route can't be parsed
+     * @throws \InvalidArgumentException When the file does not exist or its routes cannot be parsed
      */
-    public function load($resource, $type = null)
+    public function load($file, $type = null)
     {
-        $path = $this->getAbsolutePath($resource);
+        $path = $this->getAbsolutePath($file);
         if (!file_exists($path)) {
-            throw new \InvalidArgumentException(sprintf('The file "%s" cannot be found (in: %s).', $resource, implode(', ', $this->paths)));
+            throw new \InvalidArgumentException(sprintf('The file "%s" cannot be found (in: %s).', $file, implode(', ', $this->paths)));
         }
 
         $collection = new RouteCollection();
@@ -72,13 +73,20 @@ class AnnotationFileLoader extends FileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
         return is_string($resource) && is_file($this->getAbsolutePath($resource)) && (!$type || 'annotation' === $type);
     }
 
+    /**
+     * Returns the full class name for the first class in the file.
+     *
+     * @param string $file A PHP file path
+     *
+     * @return string|false Full class name if found, false otherwise 
+     */
     protected function findClass($file)
     {
         $class = false;

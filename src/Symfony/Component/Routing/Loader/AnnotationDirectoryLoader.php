@@ -24,16 +24,16 @@ class AnnotationDirectoryLoader extends AnnotationFileLoader
     /**
      * Loads from annotations from a directory.
      *
-     * @param string $resource A directory path
-     * @param string $type     The resource type
+     * @param string $path A directory path
+     * @param string $type The resource type
      *
      * @return RouteCollection A RouteCollection instance
      *
-     * @throws \InvalidArgumentException When route can't be parsed
+     * @throws \InvalidArgumentException When the directory does not exist or its routes cannot be parsed
      */
-    public function load($resource, $type = null)
+    public function load($path, $type = null)
     {
-        $dir = $this->getAbsolutePath($resource);
+        $dir = $this->getAbsolutePath($path);
         if (!file_exists($dir)) {
             throw new \InvalidArgumentException(sprintf('The directory "%s" does not exist (in: %s).', $dir, implode(', ', $this->paths)));
         }
@@ -58,7 +58,7 @@ class AnnotationDirectoryLoader extends AnnotationFileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {

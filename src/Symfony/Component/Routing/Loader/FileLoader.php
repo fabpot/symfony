@@ -56,6 +56,12 @@ abstract class FileLoader extends Loader
     }
 
     /**
+     * Returns a full path for a given file.
+     *
+     * @param string $file A file path
+     *
+     * @return string The full path for the file
+     *
      * @throws \InvalidArgumentException When file is not found
      */
     protected function findFile($file)
@@ -68,6 +74,14 @@ abstract class FileLoader extends Loader
         return $path;
     }
 
+    /**
+     * Gets the absolute path for the file path if possible.
+     *
+     * @param string $file        A file path
+     * @param string $currentPath The current path
+     *
+     * @return string
+     */
     protected function getAbsolutePath($file, $currentPath = null)
     {
         if (self::isAbsolutePath($file)) {
@@ -85,6 +99,13 @@ abstract class FileLoader extends Loader
         return $file;
     }
 
+    /**
+     * Returns whether the file path is an absolute path.
+     *
+     * @param string $file A file path
+     *
+     * @return boolean
+     */
     static protected function isAbsolutePath($file)
     {
         if ($file[0] == '/' || $file[0] == '\\' 

@@ -45,6 +45,8 @@ class DelegatingLoader extends Loader
      * @param string $type     The resource type
      *
      * @return RouteCollection A RouteCollection instance
+     *
+     * @throws \InvalidArgumentException When the resource cannot be loaded
      */
     public function load($resource, $type = null)
     {
@@ -63,7 +65,7 @@ class DelegatingLoader extends Loader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
