@@ -62,6 +62,6 @@ class AnnotationDirectoryLoader extends AnnotationFileLoader
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && is_dir($this->getAbsolutePath($resource)) && (!$type || $type === $this->getType());
+        return is_string($resource) && is_dir($this->getAbsolutePath($resource)) && (!$type || 'annotation' === $type);
     }
 }

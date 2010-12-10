@@ -51,7 +51,7 @@ class AnnotationGlobLoader extends AnnotationDirectoryLoader
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && false !== strpos($resource, '*') && (!$type || $type === $this->getType());
+        return is_string($resource) && false !== strpos($resource, '*') && (!$type || 'annotation' === $type);
     }
 
     protected function getAbsolutePaths($glob)

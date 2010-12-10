@@ -75,13 +75,4 @@ class DelegatingLoader extends Loader
 
         return false;
     }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-    }
 }

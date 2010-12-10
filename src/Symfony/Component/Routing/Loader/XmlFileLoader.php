@@ -76,17 +76,7 @@ class XmlFileLoader extends FileLoader
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || $type === $this->getType());
-    }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-        return 'xml';
+        return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || 'xml' === $type);
     }
 
     protected function parseRoute(RouteCollection $collection, $definition, $file)

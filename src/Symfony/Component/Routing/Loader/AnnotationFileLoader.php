@@ -76,17 +76,7 @@ class AnnotationFileLoader extends FileLoader
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && is_file($this->getAbsolutePath($resource)) && (!$type || $type === $this->getType());
-    }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-        return 'annotation';
+        return is_string($resource) && is_file($this->getAbsolutePath($resource)) && (!$type || 'annotation' === $type);
     }
 
     protected function findClass($file)

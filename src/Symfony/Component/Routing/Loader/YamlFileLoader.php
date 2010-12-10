@@ -68,17 +68,7 @@ class YamlFileLoader extends FileLoader
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && 'yml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || $type === $this->getType());
-    }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-        return 'yaml';
+        return is_string($resource) && 'yml' === pathinfo($resource, PATHINFO_EXTENSION) && (!$type || 'yaml' === $type);
     }
 
     /**

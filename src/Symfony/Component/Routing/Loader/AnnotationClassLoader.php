@@ -147,7 +147,7 @@ abstract class AnnotationClassLoader implements LoaderInterface
      */
     public function supports($resource, $type = null)
     {
-        return is_string($resource) && class_exists($resource) && (!$type || $type === $this->getType());
+        return is_string($resource) && class_exists($resource) && (!$type || 'annotation' === $type);
     }
 
     /**
@@ -166,16 +166,6 @@ abstract class AnnotationClassLoader implements LoaderInterface
      */
     public function getResolver()
     {
-    }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-        return 'annotation';
     }
 
     abstract protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method);

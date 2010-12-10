@@ -41,16 +41,6 @@ class ClosureLoader extends Loader
      */
     public function supports($resource, $type = null)
     {
-        return $resource instanceof \Closure;
-    }
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    public function getType()
-    {
-        return 'closure';
+        return $resource instanceof \Closure && (!$type || 'closure' === $type);
     }
 }

@@ -53,11 +53,4 @@ interface LoaderInterface
      * @param LoaderResolver $resolver A LoaderResolver instance
      */
     function setResolver(LoaderResolver $resolver);
-
-    /**
-     * Returns the resource type supported by this loader.
-     *
-     * @return string The type
-     */
-    function getType();
 }
