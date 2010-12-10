@@ -32,7 +32,7 @@ class LoaderResolver extends BaseLoaderResolver
      * Constructor.
      *
      * @param ContainerInterface $container A ContainerInterface instance
-     * @param LoaderInterface[]  $loaders An array of loaders
+     * @param array              $loaders   An array of LoaderInterface instances to add
      */
     public function __construct(ContainerInterface $container, array $loaders = array())
     {

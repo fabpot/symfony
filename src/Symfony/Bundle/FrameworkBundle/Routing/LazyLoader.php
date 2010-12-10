@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Loader\LoaderResolver;
  */
 
 /**
+ * LazyLoader facilitate lazy loading of loader services.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -24,6 +25,12 @@ class LazyLoader implements LoaderInterface
     protected $container;
     protected $service;
 
+    /**
+     * Constructor.
+     *
+     * @param ContainerInterface $container The container
+     * @param string             $service   The loader service
+     */
     public function __construct(ContainerInterface $container, $service)
     {
         $this->container = $container;
@@ -31,7 +38,12 @@ class LazyLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Loads a resource.
+     *
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
+     *
+     * @return RouteCollection A RouteCollection instance
      */
     public function load($resource, $type = null)
     {
@@ -39,7 +51,12 @@ class LazyLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Returns true if this class supports the given resource.
+     *
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
+     *
+     * @return boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
@@ -47,7 +64,9 @@ class LazyLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Gets the loader resolver.
+     *
+     * @return LoaderResolver A LoaderResolver instance
      */
     public function getResolver()
     {
@@ -55,17 +74,12 @@ class LazyLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Sets the loader resolver.
+     *
+     * @param LoaderResolver $resolver A LoaderResolver instance
      */
     public function setResolver(LoaderResolver $resolver)
     {
         $this->container->get($this->service)->setResolver($resolver);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getType()
-    {
     }
 }
