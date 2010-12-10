@@ -9,7 +9,7 @@ class MinLengthValidatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->validator = new MinLengthValidator();
     }
@@ -17,6 +17,11 @@ class MinLengthValidatorTest extends \PHPUnit_Framework_TestCase
     public function testNullIsValid()
     {
         $this->assertTrue($this->validator->isValid(null, new MinLength(array('limit' => 6))));
+    }
+
+    public function testEmptyStringIsValid()
+    {
+        $this->assertTrue($this->validator->isValid('', new MinLength(array('limit' => 6))));
     }
 
     public function testExpectsStringCompatibleType()

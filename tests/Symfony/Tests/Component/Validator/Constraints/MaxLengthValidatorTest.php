@@ -9,7 +9,7 @@ class MaxLengthValidatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->validator = new MaxLengthValidator();
     }
@@ -17,6 +17,11 @@ class MaxLengthValidatorTest extends \PHPUnit_Framework_TestCase
     public function testNullIsValid()
     {
         $this->assertTrue($this->validator->isValid(null, new MaxLength(array('limit' => 5))));
+    }
+
+    public function testEmptyStringIsValid()
+    {
+        $this->assertTrue($this->validator->isValid('', new MaxLength(array('limit' => 5))));
     }
 
     public function testExpectsStringCompatibleType()

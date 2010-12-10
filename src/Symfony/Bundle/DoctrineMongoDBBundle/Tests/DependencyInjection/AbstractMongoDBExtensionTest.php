@@ -29,7 +29,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
 
         $loader->mongodbLoad(array(), $container);
 
-        $this->assertEquals('Doctrine\ODM\MongoDB\Mongo', $container->getParameter('doctrine.odm.mongodb.connection_class'));
+        $this->assertEquals('Doctrine\MongoDB\Connection', $container->getParameter('doctrine.odm.mongodb.connection_class'));
         $this->assertEquals('Doctrine\ODM\MongoDB\Configuration', $container->getParameter('doctrine.odm.mongodb.configuration_class'));
         $this->assertEquals('Doctrine\ODM\MongoDB\DocumentManager', $container->getParameter('doctrine.odm.mongodb.document_manager_class'));
         $this->assertEquals('Proxies', $container->getParameter('doctrine.odm.mongodb.proxy_namespace'));
@@ -64,6 +64,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.default_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -90,6 +91,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.default_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -121,6 +123,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.default_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -146,6 +149,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.default_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -173,6 +177,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.dm1_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
@@ -187,6 +192,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $definition = $container->getDefinition('doctrine.odm.mongodb.dm2_document_manager');
         $this->assertEquals('%doctrine.odm.mongodb.document_manager_class%', $definition->getClass());
         $this->assertEquals('create', $definition->getFactoryMethod());
+        $this->assertArrayHasKey('doctrine.odm.mongodb.document_manager', $definition->getTags());
 
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);

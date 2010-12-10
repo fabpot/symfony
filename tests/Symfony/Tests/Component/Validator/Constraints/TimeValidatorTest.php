@@ -9,7 +9,7 @@ class TimeValidatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->validator = new TimeValidator();
     }
@@ -17,6 +17,11 @@ class TimeValidatorTest extends \PHPUnit_Framework_TestCase
     public function testNullIsValid()
     {
         $this->assertTrue($this->validator->isValid(null, new Time()));
+    }
+
+    public function testEmptyStringIsValid()
+    {
+        $this->assertTrue($this->validator->isValid('', new Time()));
     }
 
     public function testExpectsStringCompatibleType()

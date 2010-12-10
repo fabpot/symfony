@@ -215,6 +215,7 @@ class DoctrineExtension extends Extension
             'query_cache_driver',
             'result_cache_driver',
             'proxy_namespace',
+            'proxy_dir',
             'auto_generate_proxy_classes'
         );
         foreach ($options as $key) {
@@ -250,7 +251,6 @@ class DoctrineExtension extends Extension
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
         $defaultEntityManager = $container->getParameter('doctrine.orm.default_entity_manager');
-        $proxyCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/orm/Proxies';
 
         $ormConfigDef = new Definition('Doctrine\ORM\Configuration');
         $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), $ormConfigDef);
@@ -263,7 +263,7 @@ class DoctrineExtension extends Extension
             'setQueryCacheImpl' => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
             'setResultCacheImpl' => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
             'setMetadataDriverImpl' => new Reference('doctrine.orm.metadata_driver'),
-            'setProxyDir' => $proxyCacheDir,
+            'setProxyDir' => $container->getParameter('doctrine.orm.proxy_dir'),
             'setProxyNamespace' => $container->getParameter('doctrine.orm.proxy_namespace'),
             'setAutoGenerateProxyClasses' => $container->getParameter('doctrine.orm.auto_generate_proxy_classes')
         );
@@ -277,6 +277,7 @@ class DoctrineExtension extends Extension
         );
         $ormEmDef = new Definition('%doctrine.orm.entity_manager_class%', $ormEmArgs);
         $ormEmDef->setFactoryMethod('create');
+        $ormEmDef->addTag('doctrine.orm.entity_manager');
         $container->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), $ormEmDef);
 
         if ($entityManager['name'] == $defaultEntityManager) {
@@ -414,8 +415,8 @@ class DoctrineExtension extends Extension
     /**
      * Gets an entity manager cache driver definition for metadata, query and result caches.
      *
-     * @param array $entityManager
-     * @param string $cacheDriver
+     * @param array $entityManager The array configuring an entity manager.
+     * @param string|array $cacheDriver The cache driver configuration.
      * @param ContainerBuilder $container
      * @return Definition $cacheDef
      */
@@ -425,9 +426,9 @@ class DoctrineExtension extends Extension
         if ($type === 'memcache') {
             $memcacheClass = isset($cacheDriver['class']) ? $cacheDriver['class'] : '%'.sprintf('doctrine.orm.cache.%s_class', $type).'%';
             $cacheDef = new Definition($memcacheClass);
-            $memcacheHost = isset($cacheDriver['host']) ? $cacheDriver['host'] : '%doctrine.orm.cache.memcache_host%';
-            $memcachePort = isset($cacheDriver['port']) ? $cacheDriver['port'] : '%doctrine.orm.cache.memcache_port%';
-            $memcacheInstanceClass = isset($cacheDriver['instance_class']) ? $cacheDriver['instance_class'] : '%doctrine.orm.cache.memcache_instance_class%';
+            $memcacheHost = is_array($cacheDriver) && isset($cacheDriver['host']) ? $cacheDriver['host'] : '%doctrine.orm.cache.memcache_host%';
+            $memcachePort = is_array($cacheDriver) && isset($cacheDriver['port']) ? $cacheDriver['port'] : '%doctrine.orm.cache.memcache_port%';
+            $memcacheInstanceClass = is_array($cacheDriver) && isset($cacheDriver['instance_class']) ? $cacheDriver['instance_class'] : '%doctrine.orm.cache.memcache_instance_class%';
             $memcacheInstance = new Definition($memcacheInstanceClass);
             $memcacheInstance->addMethodCall('connect', array($memcacheHost, $memcachePort));
             $container->setDefinition(sprintf('doctrine.orm.%s_memcache_instance', $entityManager['name']), $memcacheInstance);

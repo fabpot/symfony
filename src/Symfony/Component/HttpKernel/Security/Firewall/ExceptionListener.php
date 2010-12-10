@@ -29,7 +29,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class ExceptionListener
+class ExceptionListener implements ListenerInterface
 {
     protected $context;
     protected $authenticationEntryPoint;
@@ -50,9 +50,17 @@ class ExceptionListener
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
      */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
+    public function register(EventDispatcher $dispatcher)
     {
-        $dispatcher->connect('core.exception', array($this, 'handleException'), $priority);
+        $dispatcher->connect('core.exception', array($this, 'handleException'), 0);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function unregister(EventDispatcher $dispatcher)
+    {
+        $dispatcher->disconnect('core.exception', array($this, 'handleException'));
     }
 
     /**
@@ -137,7 +145,7 @@ class ExceptionListener
             $this->logger->debug('Calling Authentication entry point');
         }
 
-        $request->getSession()->set('_security.target_url', $request->getUri());
+        $request->getSession()->set('_security.target_path', $request->getUri());
 
         return $this->authenticationEntryPoint->start($request, $reason);
     }

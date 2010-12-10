@@ -9,7 +9,7 @@ class RegexValidatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->validator = new RegexValidator();
     }
@@ -17,6 +17,11 @@ class RegexValidatorTest extends \PHPUnit_Framework_TestCase
     public function testNullIsValid()
     {
         $this->assertTrue($this->validator->isValid(null, new Regex(array('pattern' => '/^[0-9]+$/'))));
+    }
+
+    public function testEmptyStringIsValid()
+    {
+        $this->assertTrue($this->validator->isValid('', new Regex(array('pattern' => '/^[0-9]+$/'))));
     }
 
     public function testExpectsStringCompatibleType()
