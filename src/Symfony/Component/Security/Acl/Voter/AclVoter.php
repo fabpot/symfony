@@ -10,6 +10,7 @@ use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategy;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategy;
+use Symfony\Component\Security\Acl\Permission\PermissionMapInterface;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Role\RoleHierarchyInterface;
@@ -31,21 +32,21 @@ use Symfony\Component\Security\Role\RoleHierarchyInterface;
 class Voter implements VoterInterface
 {
     protected $aclProvider;
-    protected $processMap;
+    protected $permissionMap;
     protected $objectIdentityRetrievalStrategy;
     protected $securityIdentityRetrievalStrategy;
     
-    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategy $oidRetrievalStrategy, SecurityIdentityRetrievalStrategy $sidRetrievalStrategy, array $processMap)
+    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategy $oidRetrievalStrategy, SecurityIdentityRetrievalStrategy $sidRetrievalStrategy, PermissionMapInterface $permissionMap)
     {
         $this->aclProvider = $aclProvider;
-        $this->processMap = $processMap;
+        $this->permissionMap = $permissionMap;
         $this->objectIdentityRetrievalStrategy = $oidRetrievalStrategy;
         $this->securityIdentityRetrievalStrategy = $sidRetrievalStrategy;
     }
     
     public function supportsAttribute($attribute)
     {
-        return isset($this->processMap[$attribute]);
+        return $this->permissionMap->contains($attribute);
     }
     
     public function vote(TokenInterface $token, $object, array $attributes)
@@ -79,10 +80,10 @@ class Voter implements VoterInterface
             }
             
             try {
-                if (null === $field && $acl->isGranted($this->processMap[$attribute], $sids, false)) {
+                if (null === $field && $acl->isGranted($this->permissionMap->getMasks($attribute), $sids, false)) {
                     return self::ACCESS_GRANTED;    
                 }
-                else if (null !== $field && $acl->isFieldGranted($field, $this->processMap[$attribute], $sids, false)) {
+                else if (null !== $field && $acl->isFieldGranted($field, $this->permissionMap->getMasks($attribute), $sids, false)) {
                     return self::ACCESS_GRANTED;
                 }
                 else {

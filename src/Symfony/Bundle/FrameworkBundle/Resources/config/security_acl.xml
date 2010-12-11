@@ -13,7 +13,9 @@
         <parameter key="security.acl.dbal.provider.class">Symfony\Component\Security\Acl\Dbal\MutableAclProvider</parameter>
         
         <parameter key="security.acl.permission_granting_strategy.class">Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy</parameter>
-        <parameter key="security.acl.voter.basic_permissions.class">Symfony\Component\Security\Acl\Voter\BasicPermissionsVoter</parameter>
+        
+        <parameter key="security.acl.voter.class">Symfony\Component\Security\Acl\Voter\AclVoter</parameter>
+        <parameter key="security.acl.permission.map.class">Symfony\Component\Security\Acl\Permission\BasicPermissionMap</parameter>
         
         <parameter key="security.acl.object_identity_retrieval_strategy.class">Symfony\Component\Security\Acl\Domain\ObjectIdentityRetrievalStrategy</parameter>
         <parameter key="security.acl.security_identity_retrieval_strategy.class">Symfony\Component\Security\Acl\Domain\SecurityIdentityRetrievalStrategy</parameter>
@@ -61,10 +63,13 @@
         
         <service id="security.acl.cache.doctrine.cache_impl" alias="doctrine.orm.default_result_cache" />
         
-        <service id="security.acl.voter.basic_permissions" class="%security.acl.voter.basic_permissions.class%">
+        <service id="security.acl.permission.map" class="%security.acl.permission.map.class%"></service>
+        
+        <service id="security.acl.voter.basic_permissions" class="%security.acl.voter.class%">
             <argument type="service" id="security.acl.provider" />
             <argument type="service" id="security.acl.object_identity_retrieval_strategy" />
             <argument type="service" id="security.acl.security_identity_retrieval_strategy" />
+            <argument type="service" id="security.acl.permission.map" />
             <tag name="security.voter" />
         </service>
     </services>
