@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Security\Acl\Model;
 
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+
 /**
  * Interface for retrieving security identities from tokens
  * 

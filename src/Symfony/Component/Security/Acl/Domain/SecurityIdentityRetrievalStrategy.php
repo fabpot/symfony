@@ -2,6 +2,7 @@
 
 namespace Symfony\Component\Security\Acl\Domain;
 
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
 use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
 use Symfony\Component\Security\Role\RoleHierarchyInterface;

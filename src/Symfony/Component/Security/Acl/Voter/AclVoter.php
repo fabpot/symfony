@@ -8,9 +8,9 @@ use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
 use Symfony\Component\Security\Acl\Exception\NoAceFoundException;
 use Symfony\Component\Security\Acl\Exception\AclNotFoundException;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategy;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategy;
 use Symfony\Component\Security\Acl\Permission\PermissionMapInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategyInterface;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Role\RoleHierarchyInterface;
@@ -36,7 +36,7 @@ class Voter implements VoterInterface
     protected $objectIdentityRetrievalStrategy;
     protected $securityIdentityRetrievalStrategy;
     
-    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategy $oidRetrievalStrategy, SecurityIdentityRetrievalStrategy $sidRetrievalStrategy, PermissionMapInterface $permissionMap)
+    public function __construct(AclProviderInterface $aclProvider, ObjectIdentityRetrievalStrategyInterface $oidRetrievalStrategy, SecurityIdentityRetrievalStrategyInterface $sidRetrievalStrategy, PermissionMapInterface $permissionMap)
     {
         $this->aclProvider = $aclProvider;
         $this->permissionMap = $permissionMap;
