@@ -30,54 +30,54 @@ class BasicPermissionMap implements PermissionMapInterface
     
     protected $map = array(
         self::PERMISSION_VIEW => array(
-            PermissionBuilder::MASK_VIEW,
-            PermissionBuilder::MASK_EDIT,
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_VIEW,
+            MaskBuilder::MASK_EDIT,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_EDIT => array(
-            PermissionBuilder::MASK_EDIT,
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_EDIT,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_CREATE => array(
-            PermissionBuilder::MASK_CREATE,
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_CREATE,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_DELETE => array(
-            PermissionBuilder::MASK_DELETE,
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_DELETE,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_UNDELETE => array(
-            PermissionBuilder::MASK_UNDELETE,
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_UNDELETE,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_OPERATOR => array(
-            PermissionBuilder::MASK_OPERATOR,
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_OPERATOR,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_MASTER => array(
-            PermissionBuilder::MASK_MASTER,
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_MASTER,
+            MaskBuilder::MASK_OWNER,
         ),
         
         self::PERMISSION_OWNER => array(
-            PermissionBuilder::MASK_OWNER,
+            MaskBuilder::MASK_OWNER,
         ),
     );
     
