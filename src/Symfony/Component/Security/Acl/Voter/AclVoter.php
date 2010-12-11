@@ -29,7 +29,7 @@ use Symfony\Component\Security\Role\RoleHierarchyInterface;
  * 
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class Voter implements VoterInterface
+class AclVoter implements VoterInterface
 {
     protected $aclProvider;
     protected $permissionMap;
