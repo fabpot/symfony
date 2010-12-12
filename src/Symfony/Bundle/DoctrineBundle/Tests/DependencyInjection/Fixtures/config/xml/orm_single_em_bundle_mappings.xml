@@ -7,5 +7,16 @@
                         http://www.symfony-project.org/schema/dic/doctrine/orm http://www.symfony-project.org/schema/dic/doctrine/orm/doctrine-1.0.xsd
                         http://www.symfony-project.org/schema/dic/doctrine/dbal http://www.symfony-project.org/schema/dic/doctrine/dbal/doctrine-1.0.xsd">
 
-    <doctrine:orm auto_generate_proxy_classes="false" metadata_cache_driver="apc" />
+    <doctrine:orm>
+        <bundles>
+            <bundle name="AnnotationsBundle" />
+            <bundle name="YamlBundle" dir="Resources/config/doctrine/metadata" alias="yml" />
+        </bundles>
+        <mappings>
+            <mapping name="manual" type="xml" prefix="DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle"
+                dir="%kernel.root_dir%/../src/Symfony/Bundle/DoctrineBundle/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine/metadata"
+                alias="TestAlias"
+            />
+        </mappings>
+    </doctrine:orm>
 </container>

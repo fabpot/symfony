@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://www.symfony-project.org/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:doctrine="http://www.symfony-project.org/schema/dic/doctrine"
+    xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd
+                        http://www.symfony-project.org/schema/dic/doctrine/orm http://www.symfony-project.org/schema/dic/doctrine/orm/doctrine-1.0.xsd
+                        http://www.symfony-project.org/schema/dic/doctrine/dbal http://www.symfony-project.org/schema/dic/doctrine/dbal/doctrine-1.0.xsd">
+
+    <doctrine:orm>
+        <doctrine:entity_managers>
+            <doctrine:entity_manager id="em1">
+                <bundles>
+                    <bundle name="AnnotationsBundle" />
+                </bundles>
+            </doctrine:entity_manager>
+            <doctrine:entity_manager id="em2">
+                <bundles>
+                    <bundle name="YamlBundle" dir="Resources/config/doctrine/metadata" alias="yml" />
+                </bundles>
+                <mappings>
+                    <mapping name="manual" type="xml" prefix="DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle"
+                        dir="%kernel.root_dir%/../src/Symfony/Bundle/DoctrineBundle/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine/metadata"
+                        alias="TestAlias"
+                    />
+                </mappings>
+            </doctrine:entity_manager>
+        </doctrine:entity_managers>
+    </doctrine:orm>
+</container>

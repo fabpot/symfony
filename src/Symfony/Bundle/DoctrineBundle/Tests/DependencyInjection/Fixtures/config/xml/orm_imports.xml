@@ -11,8 +11,5 @@
         <import resource="orm_imports_import.xml" />
     </imports>
 
-    <doctrine:orm
-        auto_generate_proxy_classes="true"
-    >
-    </doctrine:orm>
+    <doctrine:orm auto_generate_proxy_classes="true" />
 </container>

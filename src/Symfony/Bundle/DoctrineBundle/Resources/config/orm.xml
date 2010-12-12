@@ -36,12 +36,6 @@
         <parameter key="doctrine.orm.metadata.php_class">Doctrine\ORM\Mapping\Driver\PHPDriver</parameter>
         <parameter key="doctrine.orm.metadata.staticphp_class">Doctrine\ORM\Mapping\Driver\StaticPHPDriver</parameter>
 
-        <!-- directories -->
-        <parameter key="doctrine.orm.metadata_driver.mapping_dirs" type="collection"></parameter>
-        <parameter key="doctrine.orm.xml_mapping_dirs">%doctrine.orm.metadata_driver.mapping_dirs%</parameter>
-        <parameter key="doctrine.orm.yml_mapping_dirs">%doctrine.orm.metadata_driver.mapping_dirs%</parameter>
-        <parameter key="doctrine.orm.metadata_driver.entity_dirs" type="collection"></parameter>
-
         <!-- security/user -->
         <parameter key="security.user.provider.entity.class">Symfony\Bundle\DoctrineBundle\Security\EntityUserProvider</parameter>
     </parameters>
