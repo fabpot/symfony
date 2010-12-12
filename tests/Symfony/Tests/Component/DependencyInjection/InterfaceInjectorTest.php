@@ -56,7 +56,7 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Symfony\Component\DependencyInjection\InterfaceInjector::supported
+     * @covers Symfony\Component\DependencyInjection\InterfaceInjector::supports
      *
      * @dataProvider getInjectorsAndClasses
      *
@@ -64,7 +64,7 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
      * @param string $class
      * @param string $expectedResult
      */
-    public function testSupported(InterfaceInjector $injector, $class, $expectedResult)
+    public function testSupports(InterfaceInjector $injector, $class, $expectedResult)
     {
         $this->assertEquals($expectedResult, $injector->supports($class), '->supports() must return true if injector is to be used on a class, false otherwise');
     }
@@ -146,6 +146,9 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
             array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\SubService'), 'Symfony\Tests\Component\DependencyInjection\Service', false),
             array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\Service'), 'Symfony\Tests\Component\DependencyInjection\SubService', true),
             array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\SubService'), 'Symfony\Tests\Component\DependencyInjection\SubService', true),
+            array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\FooInterface'), 'Symfony\Tests\Component\DependencyInjection\SubService', true),
+            array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\FooInterface'), 'Symfony\Tests\Component\DependencyInjection\Service', false),
+            array(new InterfaceInjector('Symfony\Tests\Component\DependencyInjection\FooInterface'), 'Symfony\Tests\Component\DependencyInjection\ServiceWithConstructor', false),
         );
     }
 
@@ -168,5 +171,7 @@ class InterfaceInjectorTest extends \PHPUnit_Framework_TestCase
     }
 }
 
+class ServiceWithConstructor { public function __construct(\DateTime $required) {} }
 class Service {}
-class SubService extends Service {}
+class SubService extends Service implements FooInterface {}
+interface FooInterface {}

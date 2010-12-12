@@ -50,7 +50,6 @@ class PhpGeneratorDumper extends GeneratorDumper
     protected function addGenerator()
     {
         $methods = array();
-        $routes  = array();
         foreach ($this->routes->all() as $name => $route) {
             $compiledRoute = $route->compile();
 
@@ -59,34 +58,31 @@ class PhpGeneratorDumper extends GeneratorDumper
             $requirements = str_replace("\n", '', var_export($compiledRoute->getRequirements(), true));
             $tokens = str_replace("\n", '', var_export($compiledRoute->getTokens(), true));
 
+            $escapedName = str_replace('.', '__', $name);
+
             $methods[] = <<<EOF
-    protected function get{$name}RouteInfo()
+    protected function get{$escapedName}RouteInfo()
     {
         return array($variables, array_merge(\$this->defaults, $defaults), $requirements, $tokens);
     }
 
 EOF
             ;
-
-            $routes[] = "            '$name' => true,";
         }
 
         $methods = implode("\n", $methods);
-        $routes  = implode("\n", $routes);
 
         return <<<EOF
 
     public function generate(\$name, array \$parameters, \$absolute = false)
     {
-        static \$routes = array(
-$routes
-        );
-
-        if (!isset(\$routes[\$name])) {
+        if (!isset(self::\$declaredRouteNames[\$name])) {
             throw new \InvalidArgumentException(sprintf('Route "%s" does not exist.', \$name));
         }
 
-        list(\$variables, \$defaults, \$requirements, \$tokens) = \$this->{'get'.\$name.'RouteInfo'}();
+        \$escapedName = str_replace('.', '__', \$name);
+
+        list(\$variables, \$defaults, \$requirements, \$tokens) = \$this->{'get'.\$escapedName.'RouteInfo'}();
 
         return \$this->doGenerate(\$variables, \$defaults, \$requirements, \$tokens, \$parameters, \$name, \$absolute);
     }
@@ -97,6 +93,12 @@ EOF;
 
     protected function startClass($class, $baseClass)
     {
+        $routes = array();
+        foreach ($this->routes->all() as $name => $route) {
+            $routes[] = "       '$name' => true,";
+        }
+        $routes  = implode("\n", $routes);
+
         return <<<EOF
 <?php
 
@@ -108,6 +110,10 @@ EOF;
  */
 class $class extends $baseClass
 {
+    static protected \$declaredRouteNames = array(
+$routes
+    );
+
 
 EOF;
     }

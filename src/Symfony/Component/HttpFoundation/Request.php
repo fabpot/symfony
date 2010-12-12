@@ -56,6 +56,7 @@ class Request
      */
     public $headers;
 
+    protected $content;
     protected $languages;
     protected $charsets;
     protected $acceptableContentTypes;
@@ -106,6 +107,7 @@ class Request
         $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
         $this->headers = new HeaderBag($this->initializeHeaders());
 
+        $this->content = null;
         $this->languages = null;
         $this->charsets = null;
         $this->acceptableContentTypes = null;
@@ -129,7 +131,7 @@ class Request
      *
      * @return Request A Request instance
      */
-    static public function create($uri, $method = 'get', $parameters = array(), $cookies = array(), $files = array(), $server = array())
+    static public function create($uri, $method = 'GET', $parameters = array(), $cookies = array(), $files = array(), $server = array())
     {
         $defaults = array(
             'SERVER_NAME'          => 'localhost',
@@ -144,7 +146,15 @@ class Request
             'SCRIPT_FILENAME'      => '',
         );
 
-        if (in_array(strtolower($method), array('post', 'put', 'delete'))) {
+        $components = parse_url($uri);
+        if (isset($components['host'])) {
+            $defaults['HTTP_HOST'] = $components['host'];
+        }
+        if (isset($components['port'])) {
+            $defaults['SERVER_PORT'] = $components['port'];
+        }
+
+        if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
             $request = $parameters;
             $query = array();
             $defaults['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
@@ -159,11 +169,13 @@ class Request
             }
         }
 
-        $queryString = false !== ($pos = strpos($uri, '?')) ? html_entity_decode(substr($uri, $pos + 1)) : '';
+        $queryString = isset($components['query']) ? html_entity_decode($components['query']) : '';
         parse_str($queryString, $qs);
         if (is_array($qs)) {
             $query = array_replace($qs, $query);
         }
+
+        $uri = $components['path'] . ($queryString ? '?'.$queryString : '');
 
         $server = array_replace($defaults, $server, array(
             'REQUEST_METHOD'       => strtoupper($method),
@@ -491,7 +503,7 @@ class Request
     public function setMethod($method)
     {
         $this->method = null;
-        $this->server->set('REQUEST_METHOD', 'GET');
+        $this->server->set('REQUEST_METHOD', $method);
     }
 
     /**
@@ -502,25 +514,9 @@ class Request
     public function getMethod()
     {
         if (null === $this->method) {
-            switch ($this->server->get('REQUEST_METHOD', 'GET')) {
-                case 'POST':
-                    $this->method = strtoupper($this->request->get('_method', 'POST'));
-                    break;
-
-                case 'PUT':
-                    $this->method = 'PUT';
-                    break;
-
-                case 'DELETE':
-                    $this->method = 'DELETE';
-                    break;
-
-                case 'HEAD':
-                    $this->method = 'HEAD';
-                    break;
-
-                default:
-                    $this->method = 'GET';
+            $this->method = strtoupper($this->server->get('REQUEST_METHOD', 'GET'));
+            if ('POST' === $this->method) {
+                $this->method = strtoupper($this->request->get('_method', 'POST'));
             }
         }
 
@@ -607,7 +603,21 @@ class Request
 
     public function isMethodSafe()
     {
-        return in_array(strtolower($this->getMethod()), array('get', 'head'));
+        return in_array($this->getMethod(), array('GET', 'HEAD'));
+    }
+
+    /**
+     * Return the request body content.
+     *
+     * @return string The request body content.
+     */
+    public function getContent()
+    {
+        if (null === $this->content) {
+            $this->content = file_get_contents('php://input');
+        }
+
+        return $this->content;
     }
 
     public function getETags()
