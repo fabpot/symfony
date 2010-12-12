@@ -81,7 +81,7 @@ class ContextListener implements ListenerInterface
 
             $token = unserialize($token);
 
-            if (false === $token->isImmutable()) {
+            if (null !== $token && false === $token->isImmutable()) {
                 $token = $this->refreshUser($token);
             }
 
