@@ -12,11 +12,12 @@ namespace Symfony\Bundle\TwigBundle\Templating;
  */
 
 /**
- * HelperInterface is the interface implemented by all Templating\Helper\HelperInterface classes.
+ * TwigHelperInterface is the interface implemented by all
+ * Templating\Helper\HelperInterface classes that wish to provide Twig tags.
  *
  * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-interface HelperInterface
+interface TwigHelperInterface
 {
     /**
      * Creates a Twig token parser

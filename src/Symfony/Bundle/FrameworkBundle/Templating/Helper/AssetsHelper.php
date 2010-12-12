@@ -4,7 +4,7 @@ namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Templating\Helper\AssetsHelper as BaseAssetsHelper;
-use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
+use Symfony\Bundle\TwigBundle\Templating\TwigHelperInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 
 /*
@@ -21,7 +21,7 @@ use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class AssetsHelper extends BaseAssetsHelper implements HelperInterface
+class AssetsHelper extends BaseAssetsHelper implements TwigHelperInterface
 {
     /**
      * Constructor.

@@ -2,7 +2,7 @@
 
 namespace Symfony\Component\Templating\Helper;
 
-use Symfony\Bundle\TwigBundle\Templating\HelperInterface as TwigHelperInterface;
+use Symfony\Bundle\TwigBundle\Templating\TwigHelperInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 
 /*

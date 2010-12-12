@@ -3,7 +3,7 @@
 namespace Symfony\Bundle\TwigBundle\Extension;
 
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
-use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
+use Symfony\Bundle\TwigBundle\Templating\TwigHelperInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\IncludeTokenParser;
 use Symfony\Bundle\TwigBundle\TokenParser\UrlTokenParser;
@@ -100,7 +100,7 @@ class TemplatingExtension extends \Twig_Extension
 
         foreach ($this->container->findTaggedServiceIds('templating.helper') as $id => $attributes) {
             $service = $this->container->get($id);
-            if (!$service instanceof HelperInterface) {
+            if (!$service instanceof TwigHelperInterface) {
                 continue;
             }
             $parsers = array_merge($parsers, $service->getTwigTokenParsers());

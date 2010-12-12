@@ -4,7 +4,7 @@ namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
 
 use Symfony\Component\Templating\Helper\Helper;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\TwigBundle\Templating\HelperInterface;
+use Symfony\Bundle\TwigBundle\Templating\TwigHelperInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 
 /*
@@ -21,7 +21,7 @@ use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class SessionHelper extends Helper implements HelperInterface
+class SessionHelper extends Helper implements TwigHelperInterface
 {
     protected $session;
 
