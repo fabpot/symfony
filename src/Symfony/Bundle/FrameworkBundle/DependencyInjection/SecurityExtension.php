@@ -214,7 +214,7 @@ class SecurityExtension extends Extension
         // Logout listener
         if (array_key_exists('logout', $firewall)) {
             $listenerId = 'security.logout_listener.'.$id;
-            $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.logout_listener'));          
+            $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.logout_listener'));
 
             $listeners[] = new Reference($listenerId);
 
@@ -362,9 +362,7 @@ class SecurityExtension extends Extension
 
         // Existing DAO service provider
         if (isset($provider['id'])) {
-            $container->setAlias($name, $provider['id']);
-
-            return array($name, $encoder);
+            return array($provider['id'], $encoder);
         }
 
         // Chain provider
