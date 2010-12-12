@@ -11,7 +11,6 @@
 namespace Symfony\Tests\Component\Security\Authorization\Voter;
 
 use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
-
 use Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter;
 use Symfony\Component\Security\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Role\Role;

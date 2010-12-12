@@ -4,8 +4,6 @@ namespace Symfony\Component\Security\Authorization\Voter;
 
 use Symfony\Component\Security\Authentication\AuthenticationTrustResolverInterface;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Authentication\Token\AnonymousToken;
-use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 
 /*
  * This file is part of the Symfony package.
