@@ -81,6 +81,94 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Symfony\Component\HttpFoundation\Request::getUri
+     */
+    public function testGetUri()
+    {
+        $server = array();
+
+        // Standard Request on non default PORT
+        // http://hostname:8080/index.php/path/info?query=string
+
+        $server['HTTP_HOST'] = 'hostname:8080';
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '8080';
+
+        $server['QUERY_STRING'] = 'query=string';
+        $server['REQUEST_URI'] = '/index.php/path/info?query=string';
+        $server['SCRIPT_NAME'] = '/index.php';
+        $server['PATH_INFO'] = '/path/info';
+        $server['PATH_TRANSLATED'] = 'redirect:/index.php/path/info';
+        $server['PHP_SELF'] = '/index_dev.php/path/info';
+        $server['SCRIPT_FILENAME'] = '/some/where/index.php';
+
+        $request = new Request();
+
+        $request->initialize(null, null, null, null, null,$server);
+
+        $this->assertEquals('http://hostname:8080/index.php/path/info?query=string', $request->getUri(), '->getUri() with non default port');
+
+        // Use std port number
+        $server['HTTP_HOST'] = 'hostname';
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '80';
+
+        $request->initialize(null, null, null, null, null, $server);
+
+        $this->assertEquals('http://hostname/index.php/path/info?query=string', $request->getUri(), '->getUri() with default port');
+
+        // Without HOST HEADER
+        unset($server['HTTP_HOST']);
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '80';
+
+        $request->initialize(null, null, null, null, null, $server);
+
+        $this->assertEquals('http://hostname/index.php/path/info?query=string', $request->getUri(), '->getUri() with default port without HOST_HEADER');
+
+        // Request with URL REWRITING (hide index.php)
+        //   RewriteCond %{REQUEST_FILENAME} !-f
+        //   RewriteRule ^(.*)$ index.php [QSA,L]
+        // http://hostname:8080/path/info?query=string
+        $server = array();
+        $server['HTTP_HOST'] = 'hostname:8080';
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '8080';
+
+        $server['REDIRECT_QUERY_STRING'] = 'query=string';
+        $server['REDIRECT_URL'] = '/path/info';
+        $server['SCRIPT_NAME'] = '/index.php';
+        $server['QUERY_STRING'] = 'query=string';
+        $server['REQUEST_URI'] = '/path/info?toto=test&1=1';
+        $server['SCRIPT_NAME'] = '/index.php';
+        $server['PHP_SELF'] = '/index.php';
+        $server['SCRIPT_FILENAME'] = '/some/where/index.php';
+
+        $request->initialize(null, null, null, null, null, $server);
+        $this->assertEquals('http://hostname:8080/path/info?query=string', $request->getUri(), '->getUri() with rewrite');
+
+
+        // Use std port number
+        //  http://hostname/path/info?query=string
+        $server['HTTP_HOST'] = 'hostname';
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '80';
+
+        $request->initialize(null, null, null, null, null, $server);
+
+        $this->assertEquals('http://hostname/path/info?query=string', $request->getUri(), '->getUri() with rewrite and default port');
+
+        // Without HOST HEADER
+        unset($server['HTTP_HOST']);
+        $server['SERVER_NAME'] = 'hostname';
+        $server['SERVER_PORT'] = '80';
+
+        $request->initialize(null, null, null, null, null, $server);
+
+        $this->assertEquals('http://hostname/path/info?query=string', $request->getUri(), '->getUri() with rewrite, default port without HOST_HEADER');
+   }
+
+    /**
      * @covers Symfony\Component\HttpFoundation\Request::getQueryString
      */
     public function testGetQueryString()
