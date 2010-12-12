@@ -20,6 +20,13 @@ namespace Symfony\Component\Security\User;
 interface UserProviderInterface
 {
     /**
+     * Whether this provider is an aggregate of user providers
+     *
+     * @return Boolean
+     */
+    function isAggregate();
+
+    /**
      * Loads the user for the given username.
      *
      * This method must throw UsernameNotFoundException if the user is not

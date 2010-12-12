@@ -66,6 +66,14 @@ class InMemoryUserProvider implements UserProviderInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function isAggregate()
+    {
+        return false;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function loadUserByUsername($username)

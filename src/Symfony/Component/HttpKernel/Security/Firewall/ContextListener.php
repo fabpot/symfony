@@ -139,7 +139,7 @@ class ContextListener implements ListenerInterface
         }
 
         foreach ($this->userProviders as $provider) {
-            if ($provider->supports($providerName)) {
+            if (!$provider->isAggregate() && $provider->supports($providerName)) {
                 try {
                     $result = $provider->loadUserByUsername($username);
 
