@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
@@ -31,6 +33,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     protected $resources        = array();
     protected $extensionConfigs = array();
     protected $injectors        = array();
+    protected $compilerPassConfig;
 
     /**
      * Registers an extension.
@@ -63,6 +66,13 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return isset(static::$extensions[$name]);
     }
 
+    public function __construct(ParameterBagInterface $parameterBag = null)
+    {
+        parent::__construct($parameterBag);
+
+        $this->compilerPassConfig = new PassConfig();
+    }
+    
     /**
      * Returns an array of resources loaded to build this configuration.
      *
@@ -125,6 +135,27 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         $this->extensionConfigs[$namespace.':'.$tag][] = $this->getParameterBag()->resolveValue($values);
 
         return $this;
+    }
+
+    /**
+     * Returns the pass config to use
+     *
+     * @return PassConfig
+     */
+    public function getCompilerPassConfig()
+    {
+        return $this->compilerPassConfig;
+    }
+
+    /**
+     * Sets the compiler pass config to use
+     *
+     * @param PassConfig $config
+     * @return void
+     */
+    public function setCompilerPassConfig(PassConfig $config)
+    {
+        $this->compilerPassConfig($config);
     }
 
     /**
@@ -268,6 +299,17 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
+     * Sets the extension configs array
+     *
+     * @param array $config
+     * @return void
+     */
+    public function setExtensionConfigs(array $config)
+    {
+        $this->extensionConfigs = $config;
+    }
+
+    /**
      * Freezes the container.
      *
      * This method does four things:
@@ -279,40 +321,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function freeze()
     {
-        $parameters = $this->parameterBag->all();
-        $definitions = $this->definitions;
-        $aliases = $this->aliases;
-
-        foreach ($this->extensionConfigs as $name => $configs) {
-            list($namespace, $tag) = explode(':', $name);
-
-            $extension = $this->getExtension($namespace);
-
-            $container = new self($this->parameterBag);
-            $container->addObjectResource($extension);
-            foreach ($configs as $config) {
-                $extension->load($tag, $config, $container);
-            }
-
-            $this->merge($container);
-        }
-
-        $this->extensionConfigs = array();
-        $this->addDefinitions($definitions);
-        $this->addAliases($aliases);
-        $this->parameterBag->add($parameters);
-
-        foreach ($this->definitions as $definition) {
-            foreach ($this->injectors as $injector) {
-                if (null !== $definition->getFactoryService()) {
-                    continue;
-                }
-                $defClass = $this->parameterBag->resolveValue($definition->getClass());
-                $definition->setClass($defClass);
-                if ($injector->supports($defClass)) {
-                    $injector->processDefinition($definition);
-                }
-            }
+        foreach ($this->compilerPassConfig->getPasses() as $pass) {
+            $pass->process($this);
         }
 
         parent::freeze();
