@@ -27,6 +27,7 @@ use Symfony\Component\BrowserKit\CookieJar;
 class Client extends BaseClient
 {
     protected $kernel;
+    protected $sessionId;
 
     /**
      * Constructor.
@@ -39,6 +40,12 @@ class Client extends BaseClient
     public function __construct(HttpKernelInterface $kernel, array $server = array(), History $history = null, CookieJar $cookieJar = null)
     {
         $this->kernel = $kernel;
+
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+        session_regenerate_id();
+        $this->sessionId = session_id();
 
         parent::__construct($server, $history, $cookieJar);
 
@@ -54,6 +61,8 @@ class Client extends BaseClient
      */
     protected function doRequest($request)
     {
+        session_id($this->sessionId);
+
         return $this->kernel->handle($request);
     }
 

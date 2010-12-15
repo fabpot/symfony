@@ -34,4 +34,12 @@ class FrameworkBundle extends Bundle
             FormConfiguration::enableDefaultCsrfProtection();
         }
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function shutdown()
+    {
+        $this->container->get('session')->save();
+    }
 }

@@ -19,7 +19,6 @@ namespace Symfony\Component\HttpFoundation\SessionStorage;
 class NativeSessionStorage implements SessionStorageInterface
 {
     static protected $sessionIdRegenerated = false;
-    static protected $sessionStarted       = false;
 
     protected $options;
 
@@ -59,7 +58,7 @@ class NativeSessionStorage implements SessionStorageInterface
      */
     public function start()
     {
-        if (self::$sessionStarted) {
+        if (isset($_SESSION)) {
             return;
         }
 
@@ -79,8 +78,6 @@ class NativeSessionStorage implements SessionStorageInterface
         }
 
         session_start();
-
-        self::$sessionStarted = true;
     }
 
     /**

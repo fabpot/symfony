@@ -87,10 +87,12 @@ class Client extends BaseClient
      */
     protected function doRequest($request)
     {
-        $returnValue = $this->kernel->handle($request);
+        $response = parent::doRequest($request);
         $this->kernel->reboot();
 
-        return $returnValue;
+        session_regenerate_id();
+
+        return $response;
     }
 
     /**
