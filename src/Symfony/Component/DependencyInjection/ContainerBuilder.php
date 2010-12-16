@@ -3,11 +3,11 @@
 namespace Symfony\Component\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
-
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
-use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -66,6 +66,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         return isset(static::$extensions[$name]);
     }
 
+    /**
+     * Constructor
+     * @param ParameterBagInterface $parameterBag
+     */
     public function __construct(ParameterBagInterface $parameterBag = null)
     {
         parent::__construct($parameterBag);
@@ -145,17 +149,6 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function getCompilerPassConfig()
     {
         return $this->compilerPassConfig;
-    }
-
-    /**
-     * Sets the compiler pass config to use
-     *
-     * @param PassConfig $config
-     * @return void
-     */
-    public function setCompilerPassConfig(PassConfig $config)
-    {
-        $this->compilerPassConfig($config);
     }
 
     /**
