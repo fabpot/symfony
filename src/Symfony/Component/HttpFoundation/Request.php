@@ -148,10 +148,20 @@ class Request
 
         $components = parse_url($uri);
         if (isset($components['host'])) {
+            $defaults['SERVER_NAME'] = $components['host'];
             $defaults['HTTP_HOST'] = $components['host'];
         }
+
+        if (isset($components['scheme'])) {
+            if ('https' === $components['scheme']) {
+                $defaults['HTTPS'] = 'on';
+                $defaults['SERVER_PORT'] = 443;
+            }
+        }
+
         if (isset($components['port'])) {
             $defaults['SERVER_PORT'] = $components['port'];
+            $defaults['HTTP_HOST'] = $defaults['HTTP_HOST'].':'.$components['port'];
         }
 
         if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
@@ -421,7 +431,7 @@ class Request
             $qs = '?'.$qs;
         }
 
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$this->getPathInfo().$qs;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$this->getPathInfo().$qs;
     }
 
     /**
@@ -433,7 +443,7 @@ class Request
      */
     public function getUriForPath($path)
     {
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$path;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$path;
     }
 
     /**
@@ -607,12 +617,24 @@ class Request
     }
 
     /**
-     * Return the request body content.
+     * Returns the request body content.
      *
-     * @return string The request body content.
+     * @param  bool $asResource If true, a resource will be returned
+     *
+     * @return string|resource The request body content or a resource to read the body stream.
      */
-    public function getContent()
+    public function getContent($asResource = false)
     {
+        if (false === $this->content || (true === $asResource && null !== $this->content)) {
+            throw new \LogicException('getContent() can only be called once when using the resource return type.');
+        }
+
+        if (true === $asResource) {
+            $this->content = false;
+
+            return fopen('php://input', 'rb');
+        }
+
         if (null === $this->content) {
             $this->content = file_get_contents('php://input');
         }

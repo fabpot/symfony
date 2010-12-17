@@ -92,62 +92,16 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
         $this->fields[$field->getKey()] = $field;
 
         $field->setParent($this);
-        $field->setLocale($this->locale);
 
         $data = $this->getTransformedData();
 
         // if the property "data" is NULL, getTransformedData() returns an empty
         // string
-        if (!empty($data) && $field->getPropertyPath() !== null) {
+        if (!empty($data)) {
             $field->updateFromProperty($data);
         }
 
         return $field;
-    }
-
-    /**
-     * Merges a field group into this group. The group must have a unique name
-     * within the group. Otherwise the existing field is overwritten.
-     *
-     * Contrary to added groups, merged groups operate on the same object as
-     * the group they are merged into.
-     *
-     * <code>
-     * class Entity
-     * {
-     *   public $longitude;
-     *   public $latitude;
-     * }
-     *
-     * $entity = new Entity();
-     *
-     * $form = new Form('entity', $entity, $validator);
-     *
-     * $locationGroup = new FieldGroup('location');
-     * $locationGroup->add(new TextField('longitude'));
-     * $locationGroup->add(new TextField('latitude'));
-     *
-     * $form->merge($locationGroup);
-     * </code>
-     *
-     * @param FieldGroup $group
-     */
-    public function merge(FieldGroup $group)
-    {
-        if ($group->isBound()) {
-            throw new AlreadyBoundException('A bound form group cannot be merged');
-        }
-
-        foreach ($group as $field) {
-            $group->remove($field->getKey());
-            $this->add($field);
-
-            if (($path = $group->getPropertyPath()) !== null) {
-                $field->setPropertyPath($path.'.'.$field->getPropertyPath());
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -558,19 +512,5 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
     public function count()
     {
         return count($this->fields);
-    }
-
-    /**
-     * Sets the locale of this field.
-     *
-     * @see Localizable
-     */
-    public function setLocale($locale)
-    {
-        parent::setLocale($locale);
-
-        foreach ($this->fields as $field) {
-            $field->setLocale($locale);
-        }
     }
 }
