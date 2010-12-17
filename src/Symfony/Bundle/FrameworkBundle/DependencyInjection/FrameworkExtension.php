@@ -178,9 +178,22 @@ class FrameworkExtension extends Extension
 
         // template paths
         $dirs = array('%kernel.root_dir%/views/%%bundle%%/%%controller%%/%%name%%%%format%%.%%renderer%%');
+
+        $scanSubDirs = function ($dir) use (&$scanSubDirs, &$dirs)
+        {
+            $finder = new Finder();
+            $finder->directories()->notName('*Bundle')->depth('< 1')->followLinks();
+            foreach ($finder->in($dir) as $d) {
+                $dirs[] = $d.'/%%bundle%%/Resources/views/%%controller%%/%%name%%%%format%%.%%renderer%%';
+                $scanSubDirs($d);
+            }
+        };
+
         foreach ($container->getParameter('kernel.bundle_dirs') as $dir) {
             $dirs[] = $dir.'/%%bundle%%/Resources/views/%%controller%%/%%name%%%%format%%.%%renderer%%';
+            $scanSubDirs($dir);
         }
+
         $container->setParameter('templating.loader.filesystem.path', $dirs);
 
         // path for the filesystem loader
@@ -490,7 +503,7 @@ class FrameworkExtension extends Extension
 
                 $annotationLoader = new Definition($container->getParameter('validator.mapping.loader.annotation_loader.class'));
                 $annotationLoader->addArgument(new Parameter('validator.annotations.namespaces'));
-                
+
                 $container->setDefinition('validator.mapping.loader.annotation_loader', $annotationLoader);
 
                 $loader = $container->getDefinition('validator.mapping.loader.loader_chain');
