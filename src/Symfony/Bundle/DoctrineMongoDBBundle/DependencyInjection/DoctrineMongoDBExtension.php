@@ -30,7 +30,7 @@ class DoctrineMongoDBExtension extends Extension
      */
     public function mongodbLoad($config, ContainerBuilder $container)
     {
-        $this->createProxyDirectory($container->getParameter('kernel.cache_dir'));
+        $this->createProxyAndHydratorDirectory($container->getParameter('kernel.cache_dir'));
         $this->loadDefaults($config, $container);
         $this->loadConnections($config, $container);
         $this->loadDocumentManagers($config, $container);
@@ -39,16 +39,24 @@ class DoctrineMongoDBExtension extends Extension
     /**
      * Create the Doctrine MongoDB ODM Document proxy directory
      */
-    protected function createProxyDirectory($tmpDir)
+    protected function createProxyAndHydratorDirectory($tmpDir)
     {
         // Create document proxy directory
-        $proxyCacheDir = $tmpDir.'/doctrine/odm/mongodb/Proxies';
-        if (!is_dir($proxyCacheDir)) {
-            if (false === @mkdir($proxyCacheDir, 0777, true)) {
-                die(sprintf('Unable to create the Doctrine Proxy directory (%s)', dirname($proxyCacheDir)));
+        $cacheSuffixes = array(
+            'Hydrators',
+            'Proxies',
+        );
+
+        $cacheDir = $tmpDir.'/doctrine/odm/mongodb/';
+        foreach ($cacheSuffixes as $cacheSuffix) {
+            $dir = $cacheDir . $cacheSuffix;
+            if (!is_dir($dir)) {
+                if (false === @mkdir($dir, 0777, true)) {
+                    die(sprintf('Unable to create the Doctrine Cache directory (%s)', dirname($dir)));
+                }
+            } elseif (!is_writable($dir)) {
+                die(sprintf('Unable to write in the Doctrine Cache directory (%s)', $dir));
             }
-        } elseif (!is_writable($proxyCacheDir)) {
-            die(sprintf('Unable to write in the Doctrine Proxy directory (%s)', $proxyCacheDir));
         }
     }
 
@@ -116,6 +124,7 @@ class DoctrineMongoDBExtension extends Extension
         $defaultDocumentManager = $container->getParameter('doctrine.odm.mongodb.default_document_manager');
         $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : $container->getParameter('doctrine.odm.mongodb.default_database');
         $proxyCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Proxies';
+        $hydratorCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Hydrators';
 
         $odmConfigDef = new Definition('%doctrine.odm.mongodb.configuration_class%');
         $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']), $odmConfigDef);
@@ -131,6 +140,8 @@ class DoctrineMongoDBExtension extends Extension
             'setAutoGenerateProxyClasses' => $container->getParameter('doctrine.odm.mongodb.auto_generate_proxy_classes'),
             'setDefaultDB' => $defaultDatabase,
             'setLoggerCallable' => array(new Reference('doctrine.odm.mongodb.logger'), 'logQuery'),
+            'setHydratorDir' => $hydratorCacheDir,
+            'setHydratorNamespace' => $container->getParameter('doctrine.odm.mongodb.hydrator_namespace'),
         );
         foreach ($methods as $method => $arg) {
             $odmConfigDef->addMethodCall($method, array($arg));
