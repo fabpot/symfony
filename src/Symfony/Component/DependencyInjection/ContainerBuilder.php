@@ -2,7 +2,9 @@
 
 namespace Symfony\Component\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\Compiler\ResolveInterfaceInjectorsPass;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -33,7 +35,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     protected $resources        = array();
     protected $extensionConfigs = array();
     protected $injectors        = array();
-    protected $compilerPassConfig;
+    protected $compilerPasses;
 
     /**
      * Registers an extension.
@@ -74,9 +76,12 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     {
         parent::__construct($parameterBag);
 
-        $this->compilerPassConfig = new PassConfig();
+        $passes = array();
+        $passes[] = new MergeExtensionConfigurationPass();
+        $passes[] = new ResolveInterfaceInjectorsPass();
+        $this->compilerPasses = $passes;
     }
-    
+
     /**
      * Returns an array of resources loaded to build this configuration.
      *
@@ -142,13 +147,35 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
-     * Returns the pass config to use
+     * Adds a compiler pass at the end of the current passes
      *
-     * @return PassConfig
+     * @param CompilerPassInterface $pass
+     * @return void
      */
-    public function getCompilerPassConfig()
+    public function addCompilerPass(CompilerPassInterface $pass)
     {
-        return $this->compilerPassConfig;
+        $this->compilerPasses[] = $pass;
+    }
+
+    /**
+     * Returns the currently registered compiler passes
+     *
+     * @return array
+     */
+    public function getCompilerPasses()
+    {
+        return $this->compilerPasses;
+    }
+
+    /**
+     * Overwrites all existing passes
+     *
+     * @param array $passes
+     * @return void
+     */
+    public function setCompilerPasses(array $passes)
+    {
+        $this->compilerPasses = $passes;
     }
 
     /**
@@ -314,7 +341,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function freeze()
     {
-        foreach ($this->compilerPassConfig->getPasses() as $pass) {
+        foreach ($this->compilerPasses as $pass) {
             $pass->process($this);
         }
 
