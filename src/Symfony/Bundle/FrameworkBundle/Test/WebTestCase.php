@@ -36,13 +36,40 @@ abstract class WebTestCase extends BaseWebTestCase
      */
     public function createClient(array $options = array(), array $server = array())
     {
-        $this->kernel = $this->createKernel($options);
-        $this->kernel->boot();
+        $kernel = $this->getKernel();
 
-        $client = $this->kernel->getContainer()->get('test.client');
+        $client = $kernel->getContainer()->get('test.client');
         $client->setServerParameters($server);
 
         return $client;
+    }
+
+    /**
+     * Set a kernel.
+     *
+     * @param HttpKernelInterface A HttpKernelInterface instance
+     */
+    public function setKernel($kernel)
+    {
+        $this->kernel = $kernel;
+    }
+
+    /**
+     * Gets a Kernel and boots it if necessary.
+     *
+     * @param array $options An array of options
+     *
+     * @return HttpKernelInterface A HttpKernelInterface instance
+     */
+    public function getKernel(array $options = array())
+    {
+        if (empty($this->kernel)) {
+            $this->kernel = $this->createKernel($options);
+        }
+        if (!$this->kernel->isBooted()) {
+            $this->kernel->boot();
+        }
+        return $this->kernel;
     }
 
     /**
