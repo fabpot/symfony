@@ -120,7 +120,7 @@ class ParameterBag implements ParameterBagInterface
      *
      * @throws \RuntimeException if a placeholder references a parameter that does not exist
      */
-    public function resolveValue($value)
+    public function resolveValue($value, $previous_value = null)
     {
         if (is_array($value)) {
             $args = array();
@@ -138,7 +138,11 @@ class ParameterBag implements ParameterBagInterface
         if (preg_match('/^%([^%]+)%$/', $value, $match)) {
             // we do this to deal with non string values (boolean, integer, ...)
             // the preg_replace_callback converts them to strings
-            return $this->get(strtolower($match[1]));
+            $resolved = $this->get($match[1]);
+            if (is_string($resolved) && $value !== $previous_value && substr_count($resolved, '%') >= 2) {
+                $resolved = $this->resolveValue($resolved, $value);
+            }
+            return $resolved;
         }
 
         return str_replace('%%', '%', preg_replace_callback(array('/(?<!%)%([^%]+)%/'), array($this, 'resolveValueCallback'), $value));

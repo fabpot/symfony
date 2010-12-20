@@ -309,6 +309,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
                 }
                 $defClass = $this->parameterBag->resolveValue($definition->getClass());
                 $definition->setClass($defClass);
+                if (null !== $definition->getFile()) {
+                    require_once $this->parameterBag->resolveValue($definition->getFile());
+                }
                 if ($injector->supports($defClass)) {
                     $injector->processDefinition($definition);
                 }
