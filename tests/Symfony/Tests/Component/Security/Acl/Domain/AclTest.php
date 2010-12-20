@@ -305,7 +305,8 @@ class AclTest extends \PHPUnit_Framework_TestCase
         ));
         $acl->addPropertyChangedListener($listener);
 
-        $ace = reset($acl->{'get'.$type.'s'}());
+        $aces = $acl->{'get'.$type.'s'}();
+        $ace = reset($aces);
         $this->assertEquals(1, $ace->getMask());
         $this->assertEquals('all', $ace->getStrategy());
 
@@ -349,7 +350,8 @@ class AclTest extends \PHPUnit_Framework_TestCase
         ));
         $acl->addPropertyChangedListener($listener);
 
-        $ace = reset($acl->{'get'.$type.'s'}('foo'));
+        $aces = $acl->{'get'.$type.'s'}('foo');
+        $ace = reset($aces);
         $this->assertEquals(1, $ace->getMask());
         $this->assertEquals('all', $ace->getStrategy());
 
@@ -393,7 +395,8 @@ class AclTest extends \PHPUnit_Framework_TestCase
         ));
         $acl->addPropertyChangedListener($listener);
 
-        $ace = reset($acl->{'get'.$type.'Aces'}());
+        $aces = $acl->{'get'.$type.'Aces'}();
+        $ace = reset($aces);
         $this->assertFalse($ace->isAuditSuccess());
         $this->assertFalse($ace->isAuditFailure());
 
@@ -448,7 +451,8 @@ class AclTest extends \PHPUnit_Framework_TestCase
         ));
         $acl->addPropertyChangedListener($listener);
 
-        $ace = reset($acl->{'get'.$type.'Aces'}('foo'));
+        $aces = $acl->{'get'.$type.'Aces'}('foo');
+        $ace = reset($aces);
         $this->assertFalse($ace->isAuditSuccess());
         $this->assertFalse($ace->isAuditFailure());
 
