@@ -37,9 +37,9 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testDeleteAce($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type.'Ace'}(0, 1, new RoleSecurityIdentity('foo'), true);
-        $acl->{'insert'.$type.'Ace'}(1, 2, new RoleSecurityIdentity('foo'), true);
-        $acl->{'insert'.$type.'Ace'}(2, 3, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type.'Ace'}(new RoleSecurityIdentity('foo'), 1);
+        $acl->{'insert'.$type.'Ace'}(new RoleSecurityIdentity('foo'), 2, 1);
+        $acl->{'insert'.$type.'Ace'}(new RoleSecurityIdentity('foo'), 3, 2);
 
         $listener = $this->getListener(array(
             $type.'Aces', 'aceOrder', 'aceOrder', $type.'Aces',
@@ -82,9 +82,9 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testDeleteFieldAce($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type.'Ace'}(0, 'foo', 1, new RoleSecurityIdentity('foo'), true);
-        $acl->{'insert'.$type.'Ace'}(1, 'foo', 2, new RoleSecurityIdentity('foo'), true);
-        $acl->{'insert'.$type.'Ace'}(2, 'foo', 3, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type.'Ace'}('foo', new RoleSecurityIdentity('foo'), 1, 0);
+        $acl->{'insert'.$type.'Ace'}('foo', new RoleSecurityIdentity('foo'), 2, 1);
+        $acl->{'insert'.$type.'Ace'}('foo', new RoleSecurityIdentity('foo'), 3, 2);
 
         $listener = $this->getListener(array(
             $type.'Aces', 'aceOrder', 'aceOrder', $type.'Aces',
@@ -124,9 +124,9 @@ class AclTest extends \PHPUnit_Framework_TestCase
         $acl->addPropertyChangedListener($listener);
 
         $sid = new RoleSecurityIdentity('foo');
-        $acl->$method(0, 1, $sid, true);
-        $acl->$method(0, 2, $sid, true);
-        $acl->$method(1, 3, $sid, false);
+        $acl->$method($sid, 1);
+        $acl->$method($sid, 2);
+        $acl->$method($sid, 3, 1, false);
 
         $this->assertEquals(3, count($aces = $acl->{'get'.$property}()));
         $this->assertEquals(2, $aces[0]->getMask());
@@ -141,7 +141,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testInsertClassAceThrowsExceptionOnInvalidIndex($property, $method)
     {
         $acl = $this->getAcl();
-        $acl->$method(1, 1, new RoleSecurityIdentity('foo'), true);
+        $acl->$method(new RoleSecurityIdentity('foo'), 1, 1);
     }
 
     public function getInsertAceTests()
@@ -166,10 +166,10 @@ class AclTest extends \PHPUnit_Framework_TestCase
         $acl->addPropertyChangedListener($listener);
 
         $sid = new RoleSecurityIdentity('foo');
-        $acl->$method(0, 'foo', 1, $sid, true);
-        $acl->$method(0, 'foo2', 1, $sid, true);
-        $acl->$method(0, 'foo', 3, $sid, true);
-        $acl->$method(0, 'foo', 2, $sid, true);
+        $acl->$method('foo', $sid, 1);
+        $acl->$method('foo2', $sid, 1);
+        $acl->$method('foo', $sid, 3);
+        $acl->$method('foo', $sid, 2);
 
         $this->assertEquals(3, count($aces = $acl->{'get'.$property}('foo')));
         $this->assertEquals(1, count($acl->{'get'.$property}('foo2')));
@@ -185,7 +185,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testInsertClassFieldAceThrowsExceptionOnInvalidIndex($property, $method)
     {
         $acl = $this->getAcl();
-        $acl->$method(1, 'foo', 1, new RoleSecurityIdentity('foo'), true);
+        $acl->$method('foo', new RoleSecurityIdentity('foo'), 1, 1);
     }
 
     public function getInsertFieldAceTests()
@@ -298,7 +298,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testUpdateAce($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type}(0, 1, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type}(new RoleSecurityIdentity('foo'), 1);
 
         $listener = $this->getListener(array(
             'mask', 'mask', 'strategy',
@@ -343,7 +343,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testUpdateFieldAce($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type}(0, 'foo', 1, new UserSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type}('foo', new UserSecurityIdentity('foo'), 1);
 
         $listener = $this->getListener(array(
             'mask', 'mask', 'strategy'
@@ -388,7 +388,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testUpdateAuditing($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type.'Ace'}(0, 1, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type.'Ace'}(new RoleSecurityIdentity('foo'), 1);
 
         $listener = $this->getListener(array(
             'auditFailure', 'auditSuccess', 'auditFailure',
@@ -434,7 +434,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testUpdateFieldAuditingThrowsExceptionOnInvalidIndex($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type.'Ace'}(0, 'foo', 1, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type.'Ace'}('foo', new RoleSecurityIdentity('foo'), 1);
         $acl->{'update'.$type.'Auditing'}(1, 'foo', true, false);
     }
 
@@ -444,7 +444,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
     public function testUpdateFieldAuditing($type)
     {
         $acl = $this->getAcl();
-        $acl->{'insert'.$type.'Ace'}(0, 'foo', 1, new RoleSecurityIdentity('foo'), true);
+        $acl->{'insert'.$type.'Ace'}('foo', new RoleSecurityIdentity('foo'), 1);
 
         $listener = $this->getListener(array(
             'auditSuccess', 'auditSuccess', 'auditFailure',

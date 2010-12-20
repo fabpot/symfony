@@ -266,16 +266,16 @@ class MutableAclProviderTest extends \PHPUnit_Framework_TestCase
         $acl3 = $provider->createAcl(new ObjectIdentity(1, 'AnotherFoo'));
         $sid = new RoleSecurityIdentity('ROLE_FOO');
 
-        $acl1->insertClassAce(0, 1, $sid, true);
-        $acl3->insertClassAce(0, 1, $sid, true);
+        $acl1->insertClassAce($sid, 1);
+        $acl3->insertClassAce($sid, 1);
         $provider->updateAcl($acl1);
         $provider->updateAcl($acl3);
 
-        $acl2->insertClassAce(0, 16, $sid, true);
+        $acl2->insertClassAce($sid, 16);
         $provider->updateAcl($acl2);
 
-        $acl1->insertClassAce(0, 3, $sid, true);
-        $acl2->insertClassAce(0, 5, $sid, true);
+        $acl1->insertClassAce($sid, 3);
+        $acl2->insertClassAce($sid, 5);
         try {
             $provider->updateAcl($acl1);
             $this->fail('Provider failed to detect a concurrent modification.');
@@ -289,9 +289,9 @@ class MutableAclProviderTest extends \PHPUnit_Framework_TestCase
         $sid = new UserSecurityIdentity('johannes');
         $acl->setEntriesInheriting(!$acl->isEntriesInheriting());
 
-        $acl->insertObjectAce(0, 1, $sid, true);
-        $acl->insertClassAce(0, 5, $sid, false);
-        $acl->insertObjectAce(1, 2, $sid, true);
+        $acl->insertObjectAce($sid, 1);
+        $acl->insertClassAce($sid, 5, 0, false);
+        $acl->insertObjectAce($sid, 2, 1, true);
         $provider->updateAcl($acl);
 
         $acl->updateObjectAce(0, 3);

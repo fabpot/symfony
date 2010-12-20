@@ -52,7 +52,7 @@ class MaskBuilder
     const MASK_OPERATOR     = 32;         // 1 << 5
     const MASK_MASTER       = 64;         // 1 << 6
     const MASK_OWNER        = 128;        // 1 << 7
-    const MASK_IDDQD        = 1073741823; // bindec(str_repeat('1', 30))
+    const MASK_IDDQD        = 1073741823; // 1 << 0 | 1 << 1 | ... | 1 << 30
 
     const CODE_VIEW         = 'V';
     const CODE_CREATE       = 'C';

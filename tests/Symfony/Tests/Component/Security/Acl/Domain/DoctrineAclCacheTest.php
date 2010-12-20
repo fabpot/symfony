@@ -14,7 +14,7 @@ use Doctrine\Common\Cache\ArrayCache;
 class DoctrineAclCacheTest extends \PHPUnit_Framework_TestCase
 {
     protected $permissionGrantingStrategy;
-    
+
     /**
      * @expectedException \InvalidArgumentException
      * @dataProvider getEmptyValue
@@ -23,7 +23,7 @@ class DoctrineAclCacheTest extends \PHPUnit_Framework_TestCase
     {
         new DoctrineAclCache(new ArrayCache(), $this->getPermissionGrantingStrategy(), $empty);
     }
-    
+
     public function getEmptyValue()
     {
         return array(
@@ -32,7 +32,7 @@ class DoctrineAclCacheTest extends \PHPUnit_Framework_TestCase
             array(''),
         );
     }
-    
+
     public function test()
     {
         $cache = $this->getCache();
@@ -56,39 +56,39 @@ class DoctrineAclCacheTest extends \PHPUnit_Framework_TestCase
     protected function getAcl($depth = 0)
     {
         static $id = 1;
-        
+
         $acl = new Acl($id, new ObjectIdentity($id, 'foo'), $this->getPermissionGrantingStrategy(), array(), $depth > 0);
-        
+
         // insert some ACEs
         $sid = new UserSecurityIdentity('johannes');
-        $acl->insertClassAce(0, 1, $sid, true);
-        $acl->insertClassFieldAce(0, 'foo', 1, $sid, true);
-        $acl->insertObjectAce(0, 1, $sid, true);
-        $acl->insertObjectFieldAce(0, 'foo', 1, $sid, true);
+        $acl->insertClassAce($sid, 1);
+        $acl->insertClassFieldAce('foo', $sid, 1);
+        $acl->insertObjectAce($sid, 1);
+        $acl->insertObjectFieldAce('foo', $sid, 1);
         $id++;
-        
+
         if ($depth > 0) {
             $acl->setParentAcl($this->getAcl($depth - 1));
         }
-        
+
         return $acl;
     }
-    
+
     protected function getPermissionGrantingStrategy()
     {
         if (null === $this->permissionGrantingStrategy) {
             $this->permissionGrantingStrategy = new PermissionGrantingStrategy();
         }
-        
+
         return $this->permissionGrantingStrategy;
     }
-    
+
     protected function getCache($cacheDriver = null, $prefix = DoctrineAclCache::PREFIX)
     {
         if (null === $cacheDriver) {
             $cacheDriver = new ArrayCache();
         }
-        
+
         return new DoctrineAclCache($cacheDriver, $this->getPermissionGrantingStrategy(), $prefix);
     }
 }

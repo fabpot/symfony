@@ -175,7 +175,7 @@ class Acl implements AuditableAclInterface
     /**
      * {@inheritDoc}
      */
-    public function insertClassAce($index, $mask, SecurityIdentityInterface $sid, $granting, $strategy = null)
+    public function insertClassAce(SecurityIdentityInterface $sid, $mask, $index = 0, $granting = true, $strategy = null)
     {
         $this->insertAce('classAces', $index, $mask, $sid, $granting, $strategy);
     }
@@ -183,7 +183,7 @@ class Acl implements AuditableAclInterface
     /**
      * {@inheritDoc}
      */
-    public function insertClassFieldAce($index, $field, $mask, SecurityIdentityInterface $sid, $granting, $strategy = null)
+    public function insertClassFieldAce($field, SecurityIdentityInterface $sid, $mask, $index = 0, $granting = true, $strategy = null)
     {
         $this->insertFieldAce('classFieldAces', $index, $field, $mask, $sid, $granting, $strategy);
     }
@@ -191,7 +191,7 @@ class Acl implements AuditableAclInterface
     /**
      * {@inheritDoc}
      */
-    public function insertObjectAce($index, $mask, SecurityIdentityInterface $sid, $granting, $strategy = null)
+    public function insertObjectAce(SecurityIdentityInterface $sid, $mask, $index = 0, $granting = true, $strategy = null)
     {
         $this->insertAce('objectAces', $index, $mask, $sid, $granting, $strategy);
     }
@@ -199,7 +199,7 @@ class Acl implements AuditableAclInterface
     /**
      * {@inheritDoc}
      */
-    public function insertObjectFieldAce($index, $field, $mask, SecurityIdentityInterface $sid, $granting, $strategy = null)
+    public function insertObjectFieldAce($field, SecurityIdentityInterface $sid, $mask, $index = 0, $granting = true, $strategy = null)
     {
         $this->insertFieldAce('objectFieldAces', $index, $field, $mask, $sid, $granting, $strategy);
     }
