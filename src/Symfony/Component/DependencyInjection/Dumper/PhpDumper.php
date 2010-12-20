@@ -261,7 +261,10 @@ EOF;
         }
 
         foreach ($this->container->getAliases() as $alias => $id) {
-            $code .= $this->addServiceAlias($alias, $id);
+            // skipping aliases that just have a different case
+            if (strtolower($alias) !== strtolower($id)) {
+                $code .= $this->addServiceAlias($alias, $id);
+            }
         }
 
         return $code;
