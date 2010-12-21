@@ -2,6 +2,7 @@
 
 namespace Symfony\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Compiler\ResolveDefinitionParametersPass;
 use Symfony\Component\DependencyInjection\Compiler\ResolveInterfaceInjectorsPass;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -47,6 +48,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
 
         $passes = array();
         $passes[] = new MergeExtensionConfigurationPass();
+        $passes[] = new ResolveDefinitionParametersPass();
         $passes[] = new ResolveInterfaceInjectorsPass();
         $this->compilerPasses = $passes;
     }

@@ -14,28 +14,21 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 
 /**
- * Resolves interface injectors and inlines them as method calls
+ * Resolves place holders in the service definitions to their actual values, so
+ * that following compiler passes do not need to implement this logic themself.
  *
- * @author Bulat Shakirzyanov <mallluhuct@gmail.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class ResolveInterfaceInjectorsPass implements CompilerPassInterface
+class ResolveDefinitionParametersPass implements CompilerPassInterface
 {
     /**
      * {@inheritDoc}
      */
     public function process(ContainerBuilder $container)
     {
+        $parameterBag = $container->getParameterBag();
         foreach ($container->getDefinitions() as $definition) {
-            if (null !== $definition->getFactoryService()) {
-                continue;
-            }
-            $class = $definition->getClass();
-
-            foreach ($container->getInterfaceInjectors() as $injector) {
-                if ($injector->supports($class)) {
-                    $injector->processDefinition($definition);
-                }
-            }
+            $definition->setClass($parameterBag->resolveValue($definition->getClass()));
         }
     }
 }
