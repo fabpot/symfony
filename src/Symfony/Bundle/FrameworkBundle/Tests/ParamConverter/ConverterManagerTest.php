@@ -13,11 +13,11 @@ class ConverterManagerTest extends \PHPUnit_Framework_TestCase
         $importantConverter = $this->getConverterInterfaceMock();
         $lessImportantConverter = $this->getConverterInterfaceMock();
 
-        $manager->add($importantConverter, 10);
-
-        $this->assertEquals($manager->all(), array($importantConverter));
-
         $manager->add($lessImportantConverter);
+
+        $this->assertEquals($manager->all(), array($lessImportantConverter));
+
+        $manager->add($importantConverter, 10);
         
         $this->assertEquals($manager->all(), array(
             $importantConverter,

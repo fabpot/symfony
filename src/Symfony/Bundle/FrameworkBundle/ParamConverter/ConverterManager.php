@@ -68,11 +68,10 @@ class ConverterManager
      */
     public function all()
     {
-        $all = $this->converters;
-        $converters = array();
         krsort($this->converters);
 
-        foreach ($all as $c) {
+        $converters = array();
+        foreach ($this->converters as $c) {
             $converters = array_merge($converters, $c);
         }
 
