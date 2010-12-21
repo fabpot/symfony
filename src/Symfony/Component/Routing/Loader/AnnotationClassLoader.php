@@ -122,6 +122,7 @@ abstract class AnnotationClassLoader implements LoaderInterface
         }
 
         $collection = new RouteCollection();
+        $collection->addResource(new FileResource($class->getFileName()));
         foreach ($class->getMethods() as $method) {
             if ($annot = $this->reader->getMethodAnnotation($method, $this->annotationClass)) {
                 if (null === $annot->getName()) {
@@ -138,10 +139,6 @@ abstract class AnnotationClassLoader implements LoaderInterface
 
                 $collection->add($annot->getName(), $route);
             }
-        }
-
-        if (0 < count($collection->all())) {
-            $collection->addResource(new FileResource($class->getFileName()));
         }
 
         return $collection;
