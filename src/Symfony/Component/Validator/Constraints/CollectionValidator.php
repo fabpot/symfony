@@ -20,7 +20,7 @@ class CollectionValidator extends ConstraintValidator
 {
     public function isValid($value, Constraint $constraint)
     {
-        if (null === $value) {
+        if (null === $value || '' === $value) {
             return true;
         }
 
