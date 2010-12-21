@@ -25,23 +25,24 @@ class ConverterManager
      * a InvalidArgumentException is thrown.
      *
      * @param  Request $request
-     * @param  array   $parameters An array of ReflectionParameter objects
+     * @param  array   $reflectionParam An array of ReflectionParameter objects
      * @throws InvalidArgumentException
      */
-    public function apply(Request $request, \ReflectionParameter $parameter)
+    public function apply(Request $request, \ReflectionParameter $reflectionParam)
     {
         $converted = false;
         $converters = $this->all();
+        $reflectionClass = $reflectionParam->getClass();
 
         foreach ($this->all() as $converter) {
-            if ($converter->supports($parameter->getClass())) {
-                $converter->convert($request, $parameter);
+            if ($converter->supports($reflectionClass)) {
+                $converter->apply($request, $reflectionParam);
                 $converted = true;
             }
         }
-
-        if (false == $converted) {
-            throw new \InvalidArgumentException(sprintf('Could not convert "%s" into an instance of "%"', $parameter->getName(), $parameter->getClass()->getName()));
+        
+        if (true !== $converted) {
+            throw new \InvalidArgumentException(sprintf('Could not convert attribute "%s" into an instance of "%s"', $reflectionParam->getName(), $reflectionClass->getName()));
         }
     }
 

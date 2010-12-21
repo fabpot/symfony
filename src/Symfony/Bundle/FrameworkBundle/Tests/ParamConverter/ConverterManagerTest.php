@@ -56,7 +56,7 @@ class ConverterManagerTest extends \PHPUnit_Framework_TestCase
                   ->will($this->returnValue(true));
 
         $converter->expects($this->once())
-                  ->method('convert')
+                  ->method('apply')
                   ->with($request, $parameter)
                   ->will($this->returnValue(null));
 

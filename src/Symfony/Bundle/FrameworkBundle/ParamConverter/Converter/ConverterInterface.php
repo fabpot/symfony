@@ -12,7 +12,7 @@ interface ConverterInterface
      * @param Request              $request
      * @param \ReflectionParameter $property
      */
-    function convert(Request $request, \ReflectionParameter $parameter);
+    function apply(Request $request, \ReflectionParameter $parameter);
 
     /**
      * Returns boolean true if the ReflectionProperty is supported. Else false
