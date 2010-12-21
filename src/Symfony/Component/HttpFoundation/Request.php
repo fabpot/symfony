@@ -289,7 +289,7 @@ class Request
     /**
      * Returns the client IP address.
      *
-     * @param  Boolean $proxy Whether the current request has been made behind a proxy or not
+     * @param  boolean $proxy Whether the current request has been made behind a proxy or not
      *
      * @return string The client IP address
      */

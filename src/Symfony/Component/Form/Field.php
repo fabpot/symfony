@@ -211,7 +211,7 @@ class Field extends Configurable implements FieldInterface
     /**
      * Returns true if the widget is hidden.
      *
-     * @return Boolean true if the widget is hidden, false otherwise
+     * @return boolean true if the widget is hidden, false otherwise
      */
     public function isHidden()
     {

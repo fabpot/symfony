@@ -197,7 +197,7 @@ class Process
     /**
      * Checks if the process ended successfully.
      *
-     * @return Boolean true if the process ended successfully, false otherwise
+     * @return boolean true if the process ended successfully, false otherwise
      */
     public function isSuccessful()
     {
@@ -209,7 +209,7 @@ class Process
      *
      * It always returns false on Windows.
      *
-     * @return Boolean
+     * @return boolean
      */
     public function hasBeenSignaled()
     {
@@ -233,7 +233,7 @@ class Process
      *
      * It always returns false on Windows.
      *
-     * @return Boolean
+     * @return boolean
      */
     public function hasBeenStopped()
     {

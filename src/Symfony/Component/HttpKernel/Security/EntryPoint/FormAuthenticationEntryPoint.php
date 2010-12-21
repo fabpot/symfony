@@ -31,12 +31,12 @@ class FormAuthenticationEntryPoint implements AuthenticationEntryPointInterface
      * Constructor
      *
      * @param string  $loginPath  The path to the login form
-     * @param Boolean $useForward Whether to forward or redirect to the login form
+     * @param boolean $useForward Whether to forward or redirect to the login form
      */
     public function __construct($loginPath, $useForward = false)
     {
         $this->loginPath = $loginPath;
-        $this->useForward = (Boolean) $useForward;
+        $this->useForward = (boolean) $useForward;
     }
 
     /**

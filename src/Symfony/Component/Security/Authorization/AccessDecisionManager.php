@@ -32,14 +32,14 @@ class AccessDecisionManager implements AccessDecisionManagerInterface
      *
      * @param VoterInterface[] $voters                     An array of VoterInterface instances
      * @param string           $strategy                   The vote strategy
-     * @param Boolean          $allowIfAllAbstainDecisions Whether to grant access if all voters abstained or not
+     * @param boolean          $allowIfAllAbstainDecisions Whether to grant access if all voters abstained or not
      */
     public function __construct(array $voters = array(), $strategy = 'affirmative', $allowIfAllAbstainDecisions = false, $allowIfEqualGrantedDeniedDecisions = true)
     {
         $this->voters = $voters;
         $this->strategy = 'decide'.ucfirst($strategy);
-        $this->allowIfAllAbstainDecisions = (Boolean) $allowIfAllAbstainDecisions;
-        $this->allowIfEqualGrantedDeniedDecisions = (Boolean) $allowIfEqualGrantedDeniedDecisions;
+        $this->allowIfAllAbstainDecisions = (boolean) $allowIfAllAbstainDecisions;
+        $this->allowIfEqualGrantedDeniedDecisions = (boolean) $allowIfEqualGrantedDeniedDecisions;
     }
 
     /**

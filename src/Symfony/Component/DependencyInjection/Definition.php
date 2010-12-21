@@ -316,13 +316,13 @@ class Definition
     /**
      * Sets if the service must be shared or not.
      *
-     * @param  Boolean $shared Whether the service must be shared or not
+     * @param  boolean $shared Whether the service must be shared or not
      *
      * @return Definition The current instance
      */
     public function setShared($shared)
     {
-        $this->shared = (Boolean) $shared;
+        $this->shared = (boolean) $shared;
 
         return $this;
     }
@@ -330,7 +330,7 @@ class Definition
     /**
      * Returns true if the service must be shared.
      *
-     * @return Boolean true if the service is shared, false otherwise
+     * @return boolean true if the service is shared, false otherwise
      */
     public function isShared()
     {

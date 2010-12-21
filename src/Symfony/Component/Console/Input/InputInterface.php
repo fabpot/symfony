@@ -33,7 +33,7 @@ interface InputInterface
      *
      * @param string $value The value to look for in the raw parameters
      *
-     * @return Boolean true if the value is contained in the raw parameters
+     * @return boolean true if the value is contained in the raw parameters
      */
     function hasParameterOption($value);
 

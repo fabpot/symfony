@@ -68,21 +68,21 @@ interface TokenInterface extends \Serializable
     /**
      * Checks if the user is authenticated or not.
      *
-     * @return Boolean true if the token has been authenticated, false otherwise
+     * @return boolean true if the token has been authenticated, false otherwise
      */
     function isAuthenticated();
 
     /**
      * Sets the authenticated flag.
      *
-     * @param Boolean $isAuthenticated The authenticated flag
+     * @param boolean $isAuthenticated The authenticated flag
      */
     function setAuthenticated($isAuthenticated);
 
     /**
      * Whether this token is considered immutable
      *
-     * @return Boolean
+     * @return boolean
      */
     function isImmutable();
 

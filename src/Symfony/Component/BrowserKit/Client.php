@@ -60,17 +60,17 @@ abstract class Client
     /**
      * Sets whether to automatically follow redirects or not.
      *
-     * @param Boolean $followRedirect Whether to follow redirects
+     * @param boolean $followRedirect Whether to follow redirects
      */
     public function followRedirects($followRedirect = true)
     {
-        $this->followRedirects = (Boolean) $followRedirect;
+        $this->followRedirects = (boolean) $followRedirect;
     }
 
     /**
      * Sets the insulated flag.
      *
-     * @param Boolean $insulated Whether to insulate the requests or not
+     * @param boolean $insulated Whether to insulate the requests or not
      *
      * @throws \RuntimeException When Symfony Process Component is not installed
      */
@@ -82,7 +82,7 @@ abstract class Client
             // @codeCoverageIgnoreEnd
         }
 
-        $this->insulated = (Boolean) $insulated;
+        $this->insulated = (boolean) $insulated;
     }
 
     /**
@@ -179,7 +179,7 @@ abstract class Client
      * @param array   $parameters    The Request parameters
      * @param array   $files         The files
      * @param array   $server        The server parameters (HTTP headers are referenced with a HTTP_ prefix as PHP does)
-     * @param Boolean $changeHistory Whether to update the history or not (only used internally for back(), forward(), and reload())
+     * @param boolean $changeHistory Whether to update the history or not (only used internally for back(), forward(), and reload())
      *
      * @return Crawler
      */
@@ -372,7 +372,7 @@ abstract class Client
      * Makes a request from a Request object directly.
      *
      * @param Request $request       A Request instance
-     * @param Boolean $changeHistory Whether to update the history or not (only used internally for back(), forward(), and reload())
+     * @param boolean $changeHistory Whether to update the history or not (only used internally for back(), forward(), and reload())
      *
      * @return Crawler
      */

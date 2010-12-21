@@ -126,11 +126,11 @@ class EventDispatcher
      *
      * @param  string $name The event name
      *
-     * @return Boolean true if some listeners are connected, false otherwise
+     * @return boolean true if some listeners are connected, false otherwise
      */
     public function hasListeners($name)
     {
-        return (Boolean) count($this->getListeners($name));
+        return (boolean) count($this->getListeners($name));
     }
 
     /**

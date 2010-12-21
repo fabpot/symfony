@@ -96,7 +96,7 @@ class ParameterBag implements ParameterBagInterface
      *
      * @param  string  $name       The parameter name
      *
-     * @return Boolean true if the parameter name is defined, false otherwise
+     * @return boolean true if the parameter name is defined, false otherwise
      */
     public function has($name)
     {

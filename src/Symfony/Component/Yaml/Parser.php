@@ -424,7 +424,7 @@ class Parser
     /**
      * Returns true if the next line is indented.
      *
-     * @return Boolean Returns true if the next line is indented, false otherwise
+     * @return boolean Returns true if the next line is indented, false otherwise
      */
     protected function isNextLineIndented()
     {
@@ -452,7 +452,7 @@ class Parser
     /**
      * Returns true if the current line is blank or if it is a comment line.
      *
-     * @return Boolean Returns true if the current line is empty or if it is a comment line, false otherwise
+     * @return boolean Returns true if the current line is empty or if it is a comment line, false otherwise
      */
     protected function isCurrentLineEmpty()
     {
@@ -462,7 +462,7 @@ class Parser
     /**
      * Returns true if the current line is blank.
      *
-     * @return Boolean Returns true if the current line is blank, false otherwise
+     * @return boolean Returns true if the current line is blank, false otherwise
      */
     protected function isCurrentLineBlank()
     {
@@ -472,7 +472,7 @@ class Parser
     /**
      * Returns true if the current line is a comment line.
      *
-     * @return Boolean Returns true if the current line is a comment line, false otherwise
+     * @return boolean Returns true if the current line is a comment line, false otherwise
      */
     protected function isCurrentLineComment()
     {

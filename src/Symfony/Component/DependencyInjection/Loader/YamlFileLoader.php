@@ -71,7 +71,7 @@ class YamlFileLoader extends FileLoader
      *
      * @param  mixed $resource A resource
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean true if this class supports the given resource, false otherwise
      */
     public function supports($resource)
     {
@@ -86,7 +86,7 @@ class YamlFileLoader extends FileLoader
 
         foreach ($content['imports'] as $import) {
             $this->currentDir = dirname($file);
-            $this->import($import['resource'], isset($import['ignore_errors']) ? (Boolean) $import['ignore_errors'] : false);
+            $this->import($import['resource'], isset($import['ignore_errors']) ? (boolean) $import['ignore_errors'] : false);
         }
     }
 

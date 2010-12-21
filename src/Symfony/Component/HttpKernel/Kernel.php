@@ -52,12 +52,12 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
      * Constructor.
      *
      * @param string  $environment The environment
-     * @param Boolean $debug       Whether to enable debugging or not
+     * @param boolean $debug       Whether to enable debugging or not
      */
     public function __construct($environment, $debug)
     {
         $this->environment = $environment;
-        $this->debug = (Boolean) $debug;
+        $this->debug = (boolean) $debug;
         $this->booted = false;
         $this->rootDir = realpath($this->registerRootDir());
         $this->name = basename($this->rootDir);
@@ -214,7 +214,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
      *
      * @param string $class A class name
      *
-     * @return Boolean true if the class belongs to an active bundle, false otherwise
+     * @return boolean true if the class belongs to an active bundle, false otherwise
      */
     public function isClassInActiveBundle($class)
     {

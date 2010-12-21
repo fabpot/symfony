@@ -58,7 +58,7 @@ class Link
     /**
      * Gets the URI associated with this link.
      *
-     * @param Boolean $absolute Whether to return an absolute URI or not (this only works if a base URI has been provided)
+     * @param boolean $absolute Whether to return an absolute URI or not (this only works if a base URI has been provided)
      *
      * @return string The URI
      */

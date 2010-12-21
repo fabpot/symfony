@@ -24,7 +24,7 @@ interface LoaderInterface
      * @param string $template The logical template name
      * @param array  $options  An array of options
      *
-     * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
+     * @return Storage|boolean false if the template cannot be loaded, a Storage instance otherwise
      */
     function load($template, array $options = array());
 

@@ -46,7 +46,7 @@ class Esi
      *
      * @param Request $request A Request instance
      *
-     * @return Boolean true if one surrogate has ESI/1.0 capability, false otherwise
+     * @return boolean true if one surrogate has ESI/1.0 capability, false otherwise
      */
     public function hasSurrogateEsiCapability(Request $request)
     {
@@ -54,7 +54,7 @@ class Esi
             return false;
         }
 
-        return (Boolean) preg_match('#ESI/1.0#', $value);
+        return (boolean) preg_match('#ESI/1.0#', $value);
     }
 
     /**
@@ -89,7 +89,7 @@ class Esi
      *
      * @param Response $response A Response instance
      *
-     * @return Boolean true if the Response needs to be parsed, false otherwise
+     * @return boolean true if the Response needs to be parsed, false otherwise
      */
     public function needsEsiParsing(Response $response)
     {
@@ -97,7 +97,7 @@ class Esi
             return false;
         }
 
-        return (Boolean) preg_match('#content="[^"]*ESI/1.0[^"]*"#', $control);
+        return (boolean) preg_match('#content="[^"]*ESI/1.0[^"]*"#', $control);
     }
 
     /**
@@ -105,7 +105,7 @@ class Esi
      *
      * @param string  $uri          A URI
      * @param string  $alt          An alternate URI
-     * @param Boolean $ignoreErrors Whether to ignore errors or not
+     * @param boolean $ignoreErrors Whether to ignore errors or not
      * @param string  $comment      A comment to add as an esi:include tag
      */
     public function renderIncludeTag($uri, $alt = null, $ignoreErrors = true, $comment = '')
@@ -170,7 +170,7 @@ class Esi
      * @param Cache   $cache        A Cache instance
      * @param string  $uri          The main URI
      * @param string  $alt          An alternative URI
-     * @param Boolean $ignoreErrors Whether to ignore errors or not
+     * @param boolean $ignoreErrors Whether to ignore errors or not
      */
     public function handle(Cache $cache, $uri, $alt, $ignoreErrors)
     {

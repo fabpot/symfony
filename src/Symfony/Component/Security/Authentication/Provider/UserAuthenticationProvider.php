@@ -34,7 +34,7 @@ abstract class UserAuthenticationProvider implements AuthenticationProviderInter
      * Constructor.
      *
      * @param AccountCheckerInterface $accountChecker             An AccountCheckerInterface interface
-     * @param Boolean                 $hideUserNotFoundExceptions Whether to hide user not found exception or not
+     * @param boolean                 $hideUserNotFoundExceptions Whether to hide user not found exception or not
      */
     public function __construct(AccountCheckerInterface $accountChecker, $hideUserNotFoundExceptions = true)
     {

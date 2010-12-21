@@ -20,7 +20,7 @@ class IncludeNode extends \Twig_Node
 {
     public function __construct(\Twig_Node_Expression $expr, \Twig_Node_Expression $variables = null, $only = false, $lineno, $tag = null)
     {
-        parent::__construct(array('expr' => $expr, 'variables' => $variables), array('only' => (Boolean) $only), $lineno, $tag);
+        parent::__construct(array('expr' => $expr, 'variables' => $variables), array('only' => (boolean) $only), $lineno, $tag);
     }
 
     /**

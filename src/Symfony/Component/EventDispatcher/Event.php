@@ -80,7 +80,7 @@ class Event
     /**
      * Sets the processed flag.
      *
-     * @param Boolean $processed The processed flag value
+     * @param boolean $processed The processed flag value
      */
     public function setProcessed($processed)
     {
@@ -90,7 +90,7 @@ class Event
     /**
      * Returns whether the event has been processed by a listener or not.
      *
-     * @return Boolean true if the event has been processed, false otherwise
+     * @return boolean true if the event has been processed, false otherwise
      */
     public function isProcessed()
     {
@@ -112,7 +112,7 @@ class Event
      *
      * @param  string  $name  The parameter name
      *
-     * @return Boolean true if the parameter exists, false otherwise
+     * @return boolean true if the parameter exists, false otherwise
      */
     public function has($name)
     {

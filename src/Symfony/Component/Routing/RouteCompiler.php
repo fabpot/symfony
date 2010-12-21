@@ -169,10 +169,10 @@ class RouteCompiler implements RouteCompilerInterface
      *
      * @param string   $buffer           The current route buffer
      * @param array    $tokens           An array of current tokens
-     * @param Boolean  $afterASeparator  Whether the buffer is just after a separator
+     * @param boolean  $afterASeparator  Whether the buffer is just after a separator
      * @param string   $currentSeparator The last matched separator
      *
-     * @return Boolean true if a token has been generated, false otherwise
+     * @return boolean true if a token has been generated, false otherwise
      */
     protected function tokenizeBufferBefore(&$buffer, &$tokens, &$afterASeparator, &$currentSeparator)
     {
@@ -186,10 +186,10 @@ class RouteCompiler implements RouteCompilerInterface
      *
      * @param string   $buffer           The current route buffer
      * @param array    $tokens           An array of current tokens
-     * @param Boolean  $afterASeparator  Whether the buffer is just after a separator
+     * @param boolean  $afterASeparator  Whether the buffer is just after a separator
      * @param string   $currentSeparator The last matched separator
      *
-     * @return Boolean true if a token has been generated, false otherwise
+     * @return boolean true if a token has been generated, false otherwise
      */
     protected function tokenizeBufferAfter(&$buffer, &$tokens, &$afterASeparator, &$currentSeparator)
     {

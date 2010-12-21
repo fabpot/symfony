@@ -144,7 +144,7 @@ class Engine implements \ArrayAccess
      *
      * @param string $name A template name
      *
-     * @return Boolean true if the template exists, false otherwise
+     * @return boolean true if the template exists, false otherwise
      */
     public function exists($name)
     {
@@ -156,7 +156,7 @@ class Engine implements \ArrayAccess
      *
      * @param string $name A template name
      *
-     * @return Boolean true if the template exists, false otherwise
+     * @return boolean true if the template exists, false otherwise
      */
     public function load($name)
     {
@@ -210,7 +210,7 @@ class Engine implements \ArrayAccess
      *
      * @param string  $name The helper name
      *
-     * @return Boolean true if the helper is defined, false otherwise
+     * @return boolean true if the helper is defined, false otherwise
      */
     public function offsetExists($name)
     {
@@ -269,7 +269,7 @@ class Engine implements \ArrayAccess
      *
      * @param string  $name The helper name
      *
-     * @return Boolean true if the helper is defined, false otherwise
+     * @return boolean true if the helper is defined, false otherwise
      */
     public function has($name)
     {

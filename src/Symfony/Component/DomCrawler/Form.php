@@ -162,7 +162,7 @@ class Form implements \ArrayAccess
      * This method merges the value if the method is GET to mimics
      * browser behavior.
      *
-     * @param Boolean $absolute Whether to return an absolute URI or not (this only works if a base URI has been provided)
+     * @param boolean $absolute Whether to return an absolute URI or not (this only works if a base URI has been provided)
      *
      * @return string The URI
      */
@@ -213,7 +213,7 @@ class Form implements \ArrayAccess
      *
      * @param string $name The field name
      *
-     * @return Boolean true if the field exists, false otherwise
+     * @return boolean true if the field exists, false otherwise
      */
     public function has($name)
     {
@@ -304,7 +304,7 @@ class Form implements \ArrayAccess
      *
      * @param string $name The field name
      *
-     * @return Boolean true if the field exists, false otherwise
+     * @return boolean true if the field exists, false otherwise
      */
     public function offsetExists($name)
     {

@@ -49,7 +49,7 @@ interface ContainerInterface
      *
      * @param  string  $id      The service identifier
      *
-     * @return Boolean true if the service is defined, false otherwise
+     * @return boolean true if the service is defined, false otherwise
      */
     function has($id);
 }

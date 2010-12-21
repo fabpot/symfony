@@ -87,7 +87,7 @@ class Container implements ContainerInterface
     /**
      * Returns true if the container parameter bag are frozen.
      *
-     * @return Boolean true if the container parameter bag are frozen, false otherwise
+     * @return boolean true if the container parameter bag are frozen, false otherwise
      */
     public function isFrozen()
     {
@@ -157,7 +157,7 @@ class Container implements ContainerInterface
      *
      * @param  string  $id      The service identifier
      *
-     * @return Boolean true if the service is defined, false otherwise
+     * @return boolean true if the service is defined, false otherwise
      */
     public function has($id)
     {

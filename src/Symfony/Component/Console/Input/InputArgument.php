@@ -65,7 +65,7 @@ class InputArgument
     /**
      * Returns true if the argument is required.
      *
-     * @return Boolean true if parameter mode is self::REQUIRED, false otherwise
+     * @return boolean true if parameter mode is self::REQUIRED, false otherwise
      */
     public function isRequired()
     {
@@ -75,7 +75,7 @@ class InputArgument
     /**
      * Returns true if the argument can take multiple values.
      *
-     * @return Boolean true if mode is self::IS_ARRAY, false otherwise
+     * @return boolean true if mode is self::IS_ARRAY, false otherwise
      */
     public function isArray()
     {

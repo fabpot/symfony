@@ -110,7 +110,7 @@ abstract class Token implements TokenInterface
             throw new \LogicException('This token is considered immutable.');
         }
 
-        $this->authenticated = (Boolean) $authenticated;
+        $this->authenticated = (boolean) $authenticated;
     }
 
     /**

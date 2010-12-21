@@ -68,7 +68,7 @@ interface AccountInterface
      * are relevant for assessing whether re-authentication is required.
      *
      * @param AccountInterface $account
-     * @return Boolean
+     * @return boolean
      */
     function equals(AccountInterface $account);
 }

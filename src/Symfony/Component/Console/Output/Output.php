@@ -49,11 +49,11 @@ abstract class Output implements OutputInterface
      * Constructor.
      *
      * @param integer $verbosity The verbosity level (self::VERBOSITY_QUIET, self::VERBOSITY_NORMAL, self::VERBOSITY_VERBOSE)
-     * @param Boolean $decorated Whether to decorate messages or not (null for auto-guessing)
+     * @param boolean $decorated Whether to decorate messages or not (null for auto-guessing)
      */
     public function __construct($verbosity = self::VERBOSITY_NORMAL, $decorated = null)
     {
-        $this->decorated = (Boolean) $decorated;
+        $this->decorated = (boolean) $decorated;
         $this->verbosity = null === $verbosity ? self::VERBOSITY_NORMAL : $verbosity;
     }
 
@@ -71,17 +71,17 @@ abstract class Output implements OutputInterface
     /**
      * Sets the decorated flag.
      *
-     * @param Boolean $decorated Whether to decorated the messages or not
+     * @param boolean $decorated Whether to decorated the messages or not
      */
     public function setDecorated($decorated)
     {
-        $this->decorated = (Boolean) $decorated;
+        $this->decorated = (boolean) $decorated;
     }
 
     /**
      * Gets the decorated flag.
      *
-     * @return Boolean true if the output will decorate messages, false otherwise
+     * @return boolean true if the output will decorate messages, false otherwise
      */
     public function isDecorated()
     {
@@ -123,7 +123,7 @@ abstract class Output implements OutputInterface
      * Writes a message to the output.
      *
      * @param string|array $messages The message as an array of lines of a single string
-     * @param Boolean      $newline  Whether to add a newline or not
+     * @param boolean      $newline  Whether to add a newline or not
      * @param integer      $type     The type of output
      *
      * @throws \InvalidArgumentException When unknown output type is given
@@ -160,7 +160,7 @@ abstract class Output implements OutputInterface
      * Writes a message to the output.
      *
      * @param string  $message A message to write to the output
-     * @param Boolean $newline Whether to add a newline or not
+     * @param boolean $newline Whether to add a newline or not
      */
     abstract public function doWrite($message, $newline);
 

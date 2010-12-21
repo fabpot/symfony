@@ -65,7 +65,7 @@ class Store
      *
      * @param Request $request A Request instance
      *
-     * @return Boolean|string true if the lock is acquired, the path to the current lock otherwise
+     * @return boolean|string true if the lock is acquired, the path to the current lock otherwise
      */
     public function lock(Request $request)
     {
@@ -233,7 +233,7 @@ class Store
      * @param array  $env1 A Request HTTP header array
      * @param array  $env2 A Request HTTP header array
      *
-     * @return Boolean true if the the two environments match, false otherwise
+     * @return boolean true if the the two environments match, false otherwise
      */
     public function requestsMatch($vary, $env1, $env2)
     {
@@ -276,7 +276,7 @@ class Store
      *
      * @param string $url A URL
      *
-     * @return Boolean true if the URL exists and has been purged, false otherwise
+     * @return boolean true if the URL exists and has been purged, false otherwise
      */
     public function purge($url)
     {

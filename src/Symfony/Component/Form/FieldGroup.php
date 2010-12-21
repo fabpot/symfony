@@ -450,7 +450,7 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
      *
      * @param string $key The key of the bound field
      *
-     * @return Boolean true if the widget exists, false otherwise
+     * @return boolean true if the widget exists, false otherwise
      */
     public function offsetExists($key)
     {

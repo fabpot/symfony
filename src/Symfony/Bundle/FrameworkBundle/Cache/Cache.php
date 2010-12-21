@@ -41,7 +41,7 @@ abstract class Cache extends BaseCache
      * Forwards the Request to the backend and returns the Response.
      *
      * @param Requset  $request  A Request instance
-     * @param Boolean  $raw      Whether to catch exceptions or not
+     * @param boolean  $raw      Whether to catch exceptions or not
      * @param Response $response A Response instance (the stale entry if present, null otherwise)
      *
      * @return Response A Response instance

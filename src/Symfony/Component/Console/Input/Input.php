@@ -80,7 +80,7 @@ abstract class Input implements InputInterface
 
     public function setInteractive($interactive)
     {
-        $this->interactive = (Boolean) $interactive;
+        $this->interactive = (boolean) $interactive;
     }
 
     /**
@@ -133,7 +133,7 @@ abstract class Input implements InputInterface
      *
      * @param string|integer $name The InputArgument name or position
      *
-     * @return Boolean true if the InputArgument object exists, false otherwise
+     * @return boolean true if the InputArgument object exists, false otherwise
      */
     public function hasArgument($name)
     {
@@ -190,7 +190,7 @@ abstract class Input implements InputInterface
      *
      * @param string $name The InputOption name
      *
-     * @return Boolean true if the InputOption object exists, false otherwise
+     * @return boolean true if the InputOption object exists, false otherwise
      */
     public function hasOption($name)
     {

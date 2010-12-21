@@ -25,7 +25,7 @@ abstract class WebTestCase extends \PHPUnit_Framework_TestCase
      * Creates a Client.
      *
      * @param array   $options An array of options to pass to the createKernel class
-     * @param Boolean $debug   The debug flag
+     * @param boolean $debug   The debug flag
      * @param array   $server  An array of server parameters
      *
      * @return Client A Client instance

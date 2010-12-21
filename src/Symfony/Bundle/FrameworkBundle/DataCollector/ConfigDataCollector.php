@@ -133,7 +133,7 @@ class ConfigDataCollector extends DataCollector
     /**
      * Returns true if the debug is enabled.
      *
-     * @return Boolean true if debug is enabled, false otherwise
+     * @return boolean true if debug is enabled, false otherwise
      */
     public function isDebug()
     {
@@ -143,7 +143,7 @@ class ConfigDataCollector extends DataCollector
     /**
      * Returns true if the XDebug is enabled.
      *
-     * @return Boolean true if XDebug is enabled, false otherwise
+     * @return boolean true if XDebug is enabled, false otherwise
      */
     public function hasXDebug()
     {
@@ -153,7 +153,7 @@ class ConfigDataCollector extends DataCollector
     /**
      * Returns true if an accelerator is enabled.
      *
-     * @return Boolean true if an accelerator is enabled, false otherwise
+     * @return boolean true if an accelerator is enabled, false otherwise
      */
     public function hasAccelerator()
     {

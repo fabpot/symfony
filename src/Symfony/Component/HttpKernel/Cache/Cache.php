@@ -364,7 +364,7 @@ class Cache implements HttpKernelInterface
      * Forwards the Request to the backend and returns the Response.
      *
      * @param Request  $request  A Request instance
-     * @param Boolean  $catch    Whether to catch exceptions or not
+     * @param boolean  $catch    Whether to catch exceptions or not
      * @param Response $response A Response instance (the stale entry if present, null otherwise)
      *
      * @return Response A Response instance
@@ -403,7 +403,7 @@ class Cache implements HttpKernelInterface
      * @param Request  $request A Request instance
      * @param Response $entry   A Response instance
      *
-     * @return Boolean true if the cache entry if fresh enough, false otherwise
+     * @return boolean true if the cache entry if fresh enough, false otherwise
      */
     protected function isFreshEnough(Request $request, Response $entry)
     {
@@ -424,7 +424,7 @@ class Cache implements HttpKernelInterface
      * @param Request  $request A Request instance
      * @param Response $entry   A Response instance
      *
-     * @return Boolean true if the cache entry can be returned even if it is staled, false otherwise
+     * @return boolean true if the cache entry can be returned even if it is staled, false otherwise
      */
     protected function lock(Request $request, Response $entry)
     {
@@ -547,7 +547,7 @@ class Cache implements HttpKernelInterface
      *
      * @param Request $request A Request instance
      *
-     * @return Boolean true if the Request is private, false otherwise
+     * @return boolean true if the Request is private, false otherwise
      */
     protected function isPrivateRequest(Request $request)
     {

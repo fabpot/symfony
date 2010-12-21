@@ -31,7 +31,7 @@ class RedirectController extends ContainerAware
      * If the permanent path parameter is set, the status code will be 302.
      *
      * @param string  $route     The route pattern to redirect to
-     * @param Boolean $permanent Whether the redirect is permanent or not
+     * @param boolean $permanent Whether the redirect is permanent or not
      *
      * @return Response A Response instance
      */

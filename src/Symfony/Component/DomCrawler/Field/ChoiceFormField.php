@@ -27,7 +27,7 @@ class ChoiceFormField extends FormField
     /**
      * Returns true if the field should be included in the submitted values.
      *
-     * @return Boolean true if the field should be included in the submitted values, false otherwise
+     * @return boolean true if the field should be included in the submitted values, false otherwise
      */
     public function hasValue()
     {
@@ -156,7 +156,7 @@ class ChoiceFormField extends FormField
     /**
      * Returns true if the field accepts multiple values.
      *
-     * @return Boolean true if the field accepts multiple values, false otherwise
+     * @return boolean true if the field accepts multiple values, false otherwise
      */
     public function isMultiple()
     {

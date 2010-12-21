@@ -34,7 +34,7 @@ class ProfilerListener
      *
      * @param Profiler                $profiler      A Profiler instance
      * @param RequestMatcherInterface $matcher       A RequestMatcher instance
-     * @param Boolean                 $onlyException true if the profiler only collects data when an exception occurs, false otherwise
+     * @param boolean                 $onlyException true if the profiler only collects data when an exception occurs, false otherwise
      */
     public function __construct(Profiler $profiler, RequestMatcherInterface $matcher = null, $onlyException = false)
     {

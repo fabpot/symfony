@@ -57,7 +57,7 @@ class DelegatingLoader extends Loader
      *
      * @param  mixed $resource A resource
      *
-     * @return Boolean true if this class supports the given resource, false otherwise
+     * @return boolean true if this class supports the given resource, false otherwise
      */
     public function supports($resource)
     {

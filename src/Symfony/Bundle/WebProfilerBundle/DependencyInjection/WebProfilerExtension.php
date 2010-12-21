@@ -55,7 +55,7 @@ class WebProfilerExtension extends Extension
 
         foreach (array('intercept-redirects', 'intercept_redirects') as $key) {
             if (isset($config[$key])) {
-                $container->setParameter('debug.toolbar.intercept_redirects', (Boolean) $config[$key]);
+                $container->setParameter('debug.toolbar.intercept_redirects', (boolean) $config[$key]);
             }
         }
     }

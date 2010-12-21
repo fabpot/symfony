@@ -22,7 +22,7 @@ class BooleanToStringTransformer extends BaseValueTransformer
     /**
      * Transforms a boolean into a string.
      *
-     * @param  boolean $value   Boolean value.
+     * @param  boolean $value   boolean value.
      * @return string           String value.
      */
     public function transform($value)
@@ -42,7 +42,7 @@ class BooleanToStringTransformer extends BaseValueTransformer
      * Transforms a string into a boolean.
      *
      * @param  string $value  String value.
-     * @return boolean        Boolean value.
+     * @return boolean        boolean value.
      */
     public function reverseTransform($value, $originalValue)
     {
