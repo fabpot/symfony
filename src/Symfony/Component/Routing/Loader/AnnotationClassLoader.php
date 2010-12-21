@@ -2,11 +2,12 @@
 
 namespace Symfony\Component\Routing\Loader;
 
-use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Routing\Route;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Routing\Annotation\Route as RouteAnnotation;
 use Symfony\Component\Routing\Loader\LoaderResolver;
+use Symfony\Component\Routing\Resource\FileResource;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /*
  * This file is part of the Symfony framework.
@@ -137,6 +138,10 @@ abstract class AnnotationClassLoader implements LoaderInterface
 
                 $collection->add($annot->getName(), $route);
             }
+        }
+
+        if (0 < count($collection->all())) {
+            $collection->addResource(new FileResource($class->getFileName()));
         }
 
         return $collection;
