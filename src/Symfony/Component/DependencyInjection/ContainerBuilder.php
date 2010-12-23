@@ -687,8 +687,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     {
         $tags = array();
         foreach ($this->getDefinitions() as $id => $definition) {
-            if ($definition->getTag($name)) {
-                $tags[$id] = $definition->getTag($name);
+            if (count($attributes = $definition->getTag($name))) {
+                $tags[$id] = $attributes;
             }
         }
 
