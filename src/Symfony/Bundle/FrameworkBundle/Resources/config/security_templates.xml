@@ -21,6 +21,10 @@
             <tag name="security.listener.factory" />
         </service>
         
+        <service id="security.authentication.factory.remember_me" class="Symfony\Bundle\FrameworkBundle\DependencyInjection\Security\Factory\RememberMeFactory" public="false">
+            <tag name="security.listener.factory" />
+        </service>
+        
         <service id="security.logout_listener" class="%security.logout_listener.class%" public="false">
             <argument type="service" id="security.context" />
             <argument>%security.logout.path%</argument>
@@ -38,6 +42,13 @@
             <argument type="service" id="logger" on-invalid="null" />
         </service>
 
+        <service id="security.authentication.listener.rememberme" class="%security.authentication.listener.rememberme.class%" public="false">
+            <argument type="service" id="security.context" />
+            <argument type="service" id="security.authentication.rememberme" />
+            <argument type="service" id="security.authentication.manager" />
+            <argument type="service" id="logger" on-invalid="null" />
+        </service>
+        
         <service id="security.authentication.listener.x509" class="%security.authentication.listener.x509.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
@@ -58,6 +69,45 @@
             <argument type="service" id="security.user.provider.in_memory" />
             <argument type="service" id="security.authentication.digest_entry_point" />
             <argument type="service" id="logger" on-invalid="null" />
+        </service>
+        
+        <service id="security.authentication.rememberme.services.simplehash" class="%security.authentication.rememberme.services.simplehash.class%" public="false">
+            <argument type="service" id="security.user.provider.in_memory" />
+            <argument type="collection">
+                <argument key="name">%security.authentication.rememberme.services.options.name%</argument>
+                <argument key="lifetime">%security.authentication.rememberme.services.options.lifetime%</argument>
+                <argument key="path">%security.authentication.rememberme.services.options.path%</argument>
+                <argument key="domain">%security.authentication.rememberme.services.options.domain%</argument>
+                <argument key="secure">%security.authentication.rememberme.services.options.secure%</argument>
+                <argument key="httponly">%security.authentication.rememberme.services.options.httponly%</argument>
+                <argument key="always_remember_me">%security.authentication.rememberme.services.options.always_remember_me%</argument>
+                <argument key="remember_me_parameter">%security.authentication.rememberme.services.options.remember_me_parameter%</argument>
+            </argument>
+            <argument type="service" id="logger" on-invalid="null" />
+            <call method="setKey">
+                <argument>%security.rememberme.key%</argument>
+            </call>
+        </service>
+        
+        <service id="security.authentication.rememberme.services.persistent" class="%security.authentication.rememberme.services.persistent.class%" public="false">
+            <argument type="service" id="security.user.provider.in_memory" />
+            <argument type="collection">
+                <argument key="name">%security.authentication.rememberme.services.options.name%</argument>
+                <argument key="lifetime">%security.authentication.rememberme.services.options.lifetime%</argument>
+                <argument key="path">%security.authentication.rememberme.services.options.path%</argument>
+                <argument key="domain">%security.authentication.rememberme.services.options.domain%</argument>
+                <argument key="secure">%security.authentication.rememberme.services.options.secure%</argument>
+                <argument key="httponly">%security.authentication.rememberme.services.options.httponly%</argument>
+                <argument key="always_remember_me">%security.authentication.rememberme.services.options.always_remember_me%</argument>
+                <argument key="remember_me_parameter">%security.authentication.rememberme.services.options.remember_me_parameter%</argument>
+            </argument>
+            <argument type="service" id="logger" on-invalid="null" />
+            <call method="setTokenProvider">
+                <argument type="service" id="security.rememberme.token.provider.in_memory"></argument>
+            </call>
+            <call method="setKey">
+                <argument>%security.rememberme.key%</argument>
+            </call>
         </service>
 
         <service id="security.exception_listener" class="%security.exception_listener.class%" public="false">

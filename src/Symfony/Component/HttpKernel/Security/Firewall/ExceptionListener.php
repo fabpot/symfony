@@ -57,7 +57,7 @@ class ExceptionListener implements ListenerInterface
     {
         $dispatcher->connect('core.exception', array($this, 'handleException'), 0);
     }
-    
+
     /**
      * {@inheritDoc}
      */

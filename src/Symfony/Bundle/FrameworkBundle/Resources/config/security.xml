@@ -23,9 +23,10 @@
 
         <parameter key="security.authentication.provider.dao.class">Symfony\Component\Security\Authentication\Provider\DaoAuthenticationProvider</parameter>
         <parameter key="security.authentication.provider.pre_authenticated.class">Symfony\Component\Security\Authentication\Provider\PreAuthenticatedAuthenticationProvider</parameter>
+        <parameter key="security.authentication.provider.rememberme.class">Symfony\Component\Security\Authentication\Provider\RememberMeAuthenticationProvider</parameter>
 
         <parameter key="security.authentication.manager.class">Symfony\Component\Security\Authentication\AuthenticationProviderManager</parameter>
-
+        
         <parameter key="security.authentication.retry_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\RetryAuthenticationEntryPoint</parameter>
 
         <parameter key="security.authentication.form_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\FormAuthenticationEntryPoint</parameter>
@@ -50,6 +51,21 @@
         <parameter key="security.authentication.listener.anonymous.class">Symfony\Component\HttpKernel\Security\Firewall\AnonymousAuthenticationListener</parameter>
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
+        <parameter key="security.authentication.listener.rememberme.class">Symfony\Component\HttpKernel\Security\Firewall\RememberMeListener</parameter>
+        <parameter key="security.rememberme.key"></parameter>
+        <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\Authentication\RememberMe\InMemoryTokenProvider</parameter>
+        
+        <parameter key="security.authentication.rememberme.services.persistent.class">Symfony\Component\HttpKernel\Security\RememberMe\PersistentTokenBasedRememberMeServices</parameter>
+        <parameter key="security.authentication.rememberme.services.simplehash.class">Symfony\Component\HttpKernel\Security\RememberMe\TokenBasedRememberMeServices</parameter>
+        <parameter key="security.authentication.rememberme.services.options.name">SYMFONY_REMEMBERME</parameter>
+        <parameter key="security.authentication.rememberme.services.options.lifetime">31536000</parameter>
+        <parameter key="security.authentication.rememberme.services.options.path">/</parameter>
+        <parameter key="security.authentication.rememberme.services.options.domain" />
+        <parameter key="security.authentication.rememberme.services.options.secure">false</parameter>
+        <parameter key="security.authentication.rememberme.services.options.httponly">true</parameter>
+        <parameter key="security.authentication.rememberme.services.options.always_remember_me">false</parameter>
+        <parameter key="security.authentication.rememberme.services.options.remember_me_parameter">_remember_me</parameter>
+        
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
 
         <parameter key="security.logout_listener.class">Symfony\Component\HttpKernel\Security\Firewall\LogoutListener</parameter>
@@ -113,6 +129,8 @@
             <argument>%security.authentication.trust_resolver.rememberme_class%</argument>
         </service>
 
+        <service id="security.rememberme.token.provider.in_memory" class="%security.rembemerme.token.provider.in_memory.class%" public="false"></service>
+        
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" public="false" />
 
         <service id="security.authentication.form_entry_point" class="%security.authentication.form_entry_point.class%" public="false">

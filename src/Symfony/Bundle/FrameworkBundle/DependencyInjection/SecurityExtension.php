@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpFoundation\RequestMatcher;
@@ -298,7 +299,7 @@ class SecurityExtension extends Extension
         $hasListeners = false;
         $defaultEntryPoint = null;
 
-        $positions = array('pre_auth', 'form', 'http');
+        $positions = array('pre_auth', 'form', 'http', 'remember_me');
 
         $tags = $container->findTaggedServiceIds('security.listener.factory');
         $factories = array();
