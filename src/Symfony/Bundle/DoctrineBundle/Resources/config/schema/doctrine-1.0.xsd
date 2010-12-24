@@ -57,6 +57,7 @@
         <xsd:attribute name="dir" type="xsd:string" />
         <xsd:attribute name="alias" type="xsd:string" />
         <xsd:attribute name="prefix" type="xsd:string" />
+        <xsd:attribute name="is_bundle" type="xsd:boolean" />
     </xsd:complexType>
 
     <xsd:complexType name="mappings">

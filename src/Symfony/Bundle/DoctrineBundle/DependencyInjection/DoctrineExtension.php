@@ -444,7 +444,9 @@ class DoctrineExtension extends Extension
 
                 $mappingConfig['dir'] = $container->getParameterBag()->resolveValue($mappingConfig['dir']);
                 // a bundle configuration is detected by realizing that the specified dir is not absolute and existing
-                $isBundleConfig = !file_exists($mappingConfig['dir']);
+                if (!isset($mappingConfig['is_bundle'])) {
+                    $mappingConfig['is_bundle'] = !file_exists($mappingConfig['dir']);
+                }
 
                 if (isset($mappingConfig['name'])) {
                     $mappingName = $mappingConfig['name'];
@@ -452,7 +454,7 @@ class DoctrineExtension extends Extension
                     $mappingConfig = array();
                 }
 
-                if ($isBundleConfig) {
+                if ($mappingConfig['is_bundle']) {
                     $namespace = $this->getBundleNamespace($mappingName, $container);
                     if (!isset($bundleDirs[$namespace])) {
                         // skip this bundle if we cannot find its location, it must be misspelled or something.
