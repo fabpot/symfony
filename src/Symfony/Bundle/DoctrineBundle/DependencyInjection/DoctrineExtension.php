@@ -382,7 +382,7 @@ class DoctrineExtension extends Extension
      * @example
      *
      *  doctrine.orm:
-     *     bundles:
+     *     mappings:
      *         MyBundle1: ~
      *         MyBundle2: yml
      *         MyBundle3: { type: annotation, dir: Entities/ }
@@ -391,10 +391,9 @@ class DoctrineExtension extends Extension
      *             type: yml
      *             dir: [bundle-mappings1/, bundle-mappings2/]
      *             alias: BundleAlias
-     *     mappings:
      *         arbitrary_key:
      *             type: xml
-     *             dir: ../src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
+     *             dir: %kernel.dir%/../src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Entities
      *             prefix: DoctrineExtensions\Entities\
      *             alias: DExt
      *
@@ -410,7 +409,6 @@ class DoctrineExtension extends Extension
         $this->drivers = array();
         $this->aliasMap = array();
 
-        $this->loadOrmEntityManagerBundlesMappingInformation($entityManager, $container);
         $this->loadOrmEntityManagerMappingsMappingInformation($entityManager, $container);
         $this->loadOrmRegisterDrivers($entityManager, $ormConfigDef, $container);
     }
@@ -431,66 +429,55 @@ class DoctrineExtension extends Extension
                 }
             }
 
+            $bundleDirs = $container->getParameter('kernel.bundle_dirs');
+
             foreach ($entityManager['mappings'] as $mappingName => $mappingConfig) {
+                if (!isset($mappingConfig['dir'])) {
+                    $mappingConfig['dir'] = false;
+                }
+                if (!isset($mappingConfig['type'])) {
+                    $mappingConfig['type'] = false;
+                }
+                if (!isset($mappingConfig['prefix'])) {
+                    $mappingConfig['prefix'] = false;
+                }
+
+                $mappingConfig['dir'] = $container->getParameterBag()->resolveValue($mappingConfig['dir']);
+                // a bundle configuration is detected by realizing that the specified dir is not absolute and existing
+                $isBundleConfig = !file_exists($mappingConfig['dir']);
+
                 if (isset($mappingConfig['name'])) {
                     $mappingName = $mappingConfig['name'];
                 } else if ($mappingConfig === null) {
                     $mappingConfig = array();
                 }
 
+                if ($isBundleConfig) {
+                    $namespace = $this->getBundleNamespace($mappingName, $container);
+                    if (!isset($bundleDirs[$namespace])) {
+                        // skip this bundle if we cannot find its location, it must be misspelled or something.
+                        continue;
+                    }
+
+                    $mappingConfig = $this->getOrmBundleDriverConfigDefaults($mappingConfig, $namespace, $bundleDirs, $mappingName, $container);
+                    if (!$mappingConfig) {
+                        continue;
+                    }
+                }
+
                 $this->assertValidEntityManagerMappingConfiguration($mappingConfig, $entityManager['name']);
-                $mappingConfig['dir'] = $container->getParameterBag()->resolveValue($mappingConfig['dir']);
                 $this->setOrmEntityManagerDriverConfig($mappingConfig, $mappingName);
-                $this->setOrmEntityManagerDriverAlias($mappingConfig, false);
+                $this->setOrmEntityManagerDriverAlias($mappingConfig, $mappingName);
             }
         }
     }
 
-    protected function loadOrmEntityManagerBundlesMappingInformation(array $entityManager, $container)
-    {
-        $bundleDirs = $container->getParameter('kernel.bundle_dirs');
-
-        if (isset($entityManager['bundles'])) {
-            // fix inconsistency between yaml and xml naming
-            if (isset($entityManager['bundles']['bundle'])) {
-                if (isset($entityManager['bundles']['bundle'][0])) {
-                    $entityManager['bundles'] = $entityManager['bundles']['bundle'];
-                } else {
-                    $entityManager['bundles'] = array($entityManager['bundles']['bundle']);
-                }
-            }
-
-            foreach ($entityManager['bundles'] AS $bundleName => $bundleConfig) {
-                if (isset($bundleConfig['name'])) {
-                    $bundleName = $bundleConfig['name'];
-                } else if ($bundleConfig === null) {
-                    $bundleConfig = array();
-                }
-
-                $namespace = $this->getBundleNamespace($bundleName, $container);
-                if (!isset($bundleDirs[$namespace])) {
-                    // skip this bundle if we cannot find its location, it must be misspelled or something.
-                    continue;
-                }
-
-                $bundleConfig = $this->getOrmBundleDriverConfigDefaults($bundleConfig, $namespace, $bundleDirs, $bundleName, $container);
-                if (!$bundleConfig) {
-                    continue;
-                }
-
-                $this->assertValidEntityManagerMappingConfiguration($bundleConfig, $entityManager['name']);
-                $this->setOrmEntityManagerDriverConfig($bundleConfig, $bundleName);
-                $this->setOrmEntityManagerDriverAlias($bundleConfig, $bundleName);
-            }
-        }
-    }
-
-    protected function setOrmEntityManagerDriverAlias($mappingConfig, $bundleName = false)
+    protected function setOrmEntityManagerDriverAlias($mappingConfig, $mappingName = false)
     {
         if (isset($mappingConfig['alias'])) {
             $this->aliasMap[$mappingConfig['alias']] = $mappingConfig['prefix'];
-        } else if ($bundleName) {
-            $this->aliasMap[$bundleName] = $mappingConfig['prefix'];
+        } else if ($mappingName) {
+            $this->aliasMap[$mappingName] = $mappingConfig['prefix'];
         }
     }
 
@@ -509,7 +496,7 @@ class DoctrineExtension extends Extension
 
     protected function getOrmBundleDriverConfigDefaults(array $bundleConfig, $namespace, $bundleDirs, $bundleName, $container)
     {
-        if (!isset($bundleConfig['type'])) {
+        if (!$bundleConfig['type']) {
             $bundleConfig['type'] = $this->detectMetadataDriver($bundleDirs[$namespace].'/'.$bundleName, $container);
         }
         if (!$bundleConfig['type']) {
@@ -517,13 +504,13 @@ class DoctrineExtension extends Extension
             return false;
         }
 
-        if (!isset($bundleConfig['dir'])) {
+        if (!$bundleConfig['dir']) {
             $bundleConfig['dir'] = $bundleDirs[$namespace].'/'.$bundleName.'/Entity';
         } else {
             $bundleConfig['dir'] = $bundleDirs[$namespace].'/'.$bundleName.'/' . $bundleConfig['dir'];
         }
         
-        if (!isset($bundleConfig['prefix'])) {
+        if (!$bundleConfig['prefix']) {
             $bundleConfig['prefix'] = $namespace.'\\'. $bundleName . '\Entity';
         }
         return $bundleConfig;
@@ -558,7 +545,7 @@ class DoctrineExtension extends Extension
 
     protected function assertValidEntityManagerMappingConfiguration(array $mappingConfig, $entityManagerName)
     {
-        if (!isset($mappingConfig['type']) || !isset($mappingConfig['dir']) || !isset($mappingConfig['prefix'])) {
+        if (!$mappingConfig['type'] || !$mappingConfig['dir'] || !$mappingConfig['prefix']) {
             throw new \InvalidArgumentException("Mapping definition for entity manager '".$entityManagerName."' ".
                 "require at least 'type', 'dir' and 'prefix' options.");
         }

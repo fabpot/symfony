@@ -1,10 +1,9 @@
 doctrine.orm:
-  bundles:
+  mappings:
     AnnotationsBundle: ~
     YamlBundle:
       dir: Resources/config/doctrine/metadata
       alias: yml
-  mappings:
     manual:
       type: xml
       prefix: DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle

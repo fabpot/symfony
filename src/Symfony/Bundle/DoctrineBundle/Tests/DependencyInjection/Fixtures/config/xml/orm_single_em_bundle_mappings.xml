@@ -8,11 +8,9 @@
                         http://www.symfony-project.org/schema/dic/doctrine/dbal http://www.symfony-project.org/schema/dic/doctrine/dbal/doctrine-1.0.xsd">
 
     <doctrine:orm>
-        <bundles>
-            <bundle name="AnnotationsBundle" />
-            <bundle name="YamlBundle" dir="Resources/config/doctrine/metadata" alias="yml" />
-        </bundles>
         <mappings>
+            <mapping name="AnnotationsBundle" />
+            <mapping name="YamlBundle" dir="Resources/config/doctrine/metadata" alias="yml" />
             <mapping name="manual" type="xml" prefix="DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle"
                 dir="%kernel.root_dir%/../src/Symfony/Bundle/DoctrineBundle/Tests/DependencyInjection/Fixtures/Bundles/XmlBundle/Resources/config/doctrine/metadata"
                 alias="TestAlias"

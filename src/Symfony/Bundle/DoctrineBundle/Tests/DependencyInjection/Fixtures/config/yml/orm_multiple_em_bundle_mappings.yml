@@ -1,14 +1,13 @@
 doctrine.orm:
   entity_managers:
     em1:
-      bundles:
+      mappings:
         AnnotationsBundle: ~
     em2:
-      bundles:
+      mappings:
         YamlBundle:
           dir: Resources/config/doctrine/metadata
           alias: yml
-      mappings:
         manual:
           type: xml
           prefix: DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle
