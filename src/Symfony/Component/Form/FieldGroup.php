@@ -92,62 +92,16 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
         $this->fields[$field->getKey()] = $field;
 
         $field->setParent($this);
-        $field->setLocale($this->locale);
 
         $data = $this->getTransformedData();
 
         // if the property "data" is NULL, getTransformedData() returns an empty
         // string
-        if (!empty($data) && $field->getPropertyPath() !== null) {
-            $field->updateFromObject($data);
+        if (!empty($data)) {
+            $field->updateFromProperty($data);
         }
 
         return $field;
-    }
-
-    /**
-     * Merges a field group into this group. The group must have a unique name
-     * within the group. Otherwise the existing field is overwritten.
-     *
-     * Contrary to added groups, merged groups operate on the same object as
-     * the group they are merged into.
-     *
-     * <code>
-     * class Entity
-     * {
-     *   public $longitude;
-     *   public $latitude;
-     * }
-     *
-     * $entity = new Entity();
-     *
-     * $form = new Form('entity', $entity, $validator);
-     *
-     * $locationGroup = new FieldGroup('location');
-     * $locationGroup->add(new TextField('longitude'));
-     * $locationGroup->add(new TextField('latitude'));
-     *
-     * $form->merge($locationGroup);
-     * </code>
-     *
-     * @param FieldGroup $group
-     */
-    public function merge(FieldGroup $group)
-    {
-        if ($group->isBound()) {
-            throw new AlreadyBoundException('A bound form group cannot be merged');
-        }
-
-        foreach ($group as $field) {
-            $group->remove($field->getKey());
-            $this->add($field);
-
-            if (($path = $group->getPropertyPath()) !== null) {
-                $field->setPropertyPath($path.'.'.$field->getPropertyPath());
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -285,12 +239,7 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
         }
 
         if (!empty($data)) {
-            $iterator = new RecursiveFieldsWithPropertyPathIterator($this);
-            $iterator = new \RecursiveIteratorIterator($iterator);
-
-            foreach ($iterator as $field) {
-                $field->updateFromObject($data);
-            }
+            $this->updateFromObject($data);
         }
     }
 
@@ -318,7 +267,7 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
      */
     public function bind($taintedData)
     {
-        if ($taintedData === null) {
+        if (null === $taintedData) {
             $taintedData = array();
         }
 
@@ -341,12 +290,8 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
         }
 
         $data = $this->getTransformedData();
-        $iterator = new RecursiveFieldsWithPropertyPathIterator($this);
-        $iterator = new \RecursiveIteratorIterator($iterator);
 
-        foreach ($iterator as $field) {
-            $field->updateObject($data);
-        }
+        $this->updateObject($data);
 
         // bind and reverse transform the data
         parent::bind($data);
@@ -357,6 +302,45 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
             if (!$this->has($key)) {
                 $this->extraFields[] = $key;
             }
+        }
+    }
+
+    /**
+     * Updates the chield fields from the properties of the given data
+     *
+     * This method calls updateFromProperty() on all child fields that have a
+     * property path set. If a child field has no property path set but
+     * implements FieldGroupInterface, updateProperty() is called on its
+     * children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function updateFromObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldsWithPropertyPathIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->updateFromProperty($objectOrArray);
+        }
+    }
+
+    /**
+     * Updates all properties of the given data from the child fields
+     *
+     * This method calls updateProperty() on all child fields that have a property
+     * path set. If a child field has no property path set but implements
+     * FieldGroupInterface, updateProperty() is called on its children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function updateObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldsWithPropertyPathIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->updateProperty($objectOrArray);
         }
     }
 
@@ -409,7 +393,7 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
      */
     public function addError(FieldError $error, PropertyPathIterator $pathIterator = null, $type = null)
     {
-        if ($pathIterator !== null) {
+        if (null !== $pathIterator) {
             if ($type === self::FIELD_ERROR && $pathIterator->hasNext()) {
                 $pathIterator->next();
 
@@ -528,19 +512,5 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
     public function count()
     {
         return count($this->fields);
-    }
-
-    /**
-     * Sets the locale of this field.
-     *
-     * @see Localizable
-     */
-    public function setLocale($locale)
-    {
-        parent::setLocale($locale);
-
-        foreach ($this->fields as $field) {
-            $field->setLocale($locale);
-        }
     }
 }

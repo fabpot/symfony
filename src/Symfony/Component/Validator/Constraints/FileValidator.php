@@ -21,7 +21,7 @@ class FileValidator extends ConstraintValidator
 {
     public function isValid($value, Constraint $constraint)
     {
-        if ($value === null) {
+        if (null === $value || '' === $value) {
             return true;
         }
 
@@ -77,7 +77,7 @@ class FileValidator extends ConstraintValidator
 
         if ($constraint->mimeTypes) {
             if (!$value instanceof FileObject) {
-                throw new ConstraintValidationException();
+                $value = new FileObject($value);
             }
 
             if (!in_array($value->getMimeType(), (array)$constraint->mimeTypes)) {

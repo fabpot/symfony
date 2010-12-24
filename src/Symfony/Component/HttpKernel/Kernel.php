@@ -182,6 +182,14 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getRequest()
+    {
+        return $this->container->get('http_kernel')->getRequest();
+    }
+
+    /**
      * Gets the directories where bundles can be stored.
      *
      * @return array An array of directories where bundles can be stored

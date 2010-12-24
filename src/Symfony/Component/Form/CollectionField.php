@@ -26,6 +26,12 @@ class CollectionField extends FieldGroup
     protected $prototype;
 
     /**
+     * Remembers which fields were removed upon binding
+     * @var array
+     */
+    protected $removedFields = array();
+
+    /**
      * Repeats the given field twice to verify the user's input
      *
      * @param FieldInterface $innerField
@@ -58,7 +64,7 @@ class CollectionField extends FieldGroup
         }
 
         foreach ($this as $name => $field) {
-            if (!$this->getOption('modifiable') || $name != '$$key$$') {
+            if (!$this->getOption('modifiable') || '$$key$$' != $name) {
                 $this->remove($name);
             }
         }
@@ -72,13 +78,16 @@ class CollectionField extends FieldGroup
 
     public function bind($taintedData)
     {
+        $this->removedFields = array();
+
         if (null === $taintedData) {
             $taintedData = array();
         }
 
         foreach ($this as $name => $field) {
-            if (!isset($taintedData[$name]) && $this->getOption('modifiable') && $name != '$$key$$') {
+            if (!isset($taintedData[$name]) && $this->getOption('modifiable') && '$$key$$' != $name) {
                 $this->remove($name);
+                $this->removedFields[] = $name;
             }
         }
 
@@ -88,14 +97,23 @@ class CollectionField extends FieldGroup
             }
         }
 
-        return parent::bind($taintedData);
+        parent::bind($taintedData);
+    }
+
+    protected function updateObject(&$objectOrArray)
+    {
+        parent::updateObject($objectOrArray);
+
+        foreach ($this->removedFields as $name) {
+            unset($objectOrArray[$name]);
+        }
     }
 
     protected function newField($key, $propertyPath)
     {
         $field = clone $this->prototype;
         $field->setKey($key);
-        $field->setPropertyPath($propertyPath === null ? null : '['.$propertyPath.']');
+        $field->setPropertyPath(null === $propertyPath ? null : '['.$propertyPath.']');
         return $field;
     }
 }

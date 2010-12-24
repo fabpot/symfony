@@ -19,6 +19,7 @@ use Symfony\Component\Security\User\AccountInterface;
  * Base class for Token instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 abstract class Token implements TokenInterface
 {
@@ -35,13 +36,7 @@ abstract class Token implements TokenInterface
      */
     public function __construct(array $roles = array())
     {
-        $this->roles = array();
-        foreach ($roles as $role) {
-            if (is_string($role)) {
-                $role = new Role((string) $role);
-            }
-            $this->addRole($role);
-        }
+        $this->setRoles($roles);
         $this->authenticated = false;
         $this->immutable = false;
     }
@@ -53,6 +48,10 @@ abstract class Token implements TokenInterface
      */
     public function addRole(RoleInterface $role)
     {
+        if ($this->immutable) {
+            throw new \LogicException('This token is considered immutable.');
+        }
+
         $this->roles[] = $role;
     }
 
@@ -62,6 +61,22 @@ abstract class Token implements TokenInterface
     public function getRoles()
     {
         return $this->roles;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setRoles(array $roles)
+    {
+        $this->roles = array();
+
+        foreach ($roles as $role) {
+            if (is_string($role)) {
+                $role = new Role($role);
+            }
+
+            $this->addRole($role);
+        }
     }
 
     /**
@@ -91,6 +106,10 @@ abstract class Token implements TokenInterface
      */
     public function setAuthenticated($authenticated)
     {
+        if ($this->immutable) {
+            throw new \LogicException('This token is considered immutable.');
+        }
+
         $this->authenticated = (Boolean) $authenticated;
     }
 
@@ -111,10 +130,32 @@ abstract class Token implements TokenInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function setUser($user)
+    {
+        if ($this->immutable) {
+            throw new \LogicException('This token is considered immutable.');
+        }
+
+        if (!is_string($user) && !is_object($user)) {
+            throw new \InvalidArgumentException('$user must be an object, or a primitive string.');
+        } else if (is_object($user) && !method_exists($user, '__toString')) {
+            throw new \InvalidArgumentException('If $user is an object, it must implement __toString().');
+        }
+
+        $this->user = $user;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function eraseCredentials()
     {
+        if ($this->immutable) {
+            throw new \LogicException('This token is considered immutable.');
+        }
+
         if ($this->getCredentials() instanceof AccountInterface) {
             $this->getCredentials()->eraseCredentials();
         }
@@ -135,9 +176,9 @@ abstract class Token implements TokenInterface
     /**
      * {@inheritdoc}
      */
-    public function setImmutable($value)
+    public function setImmutable()
     {
-        $this->immutable = (Boolean) $value;
+        $this->immutable = true;
     }
 
     /**
@@ -145,8 +186,6 @@ abstract class Token implements TokenInterface
      */
     public function serialize()
     {
-        // FIXME: don't serialize the user object, just the username (see ContextListener)
-        //return serialize(array((string) $this, $this->credentials, $this->authenticated, $this->roles, $this->immutable));
         return serialize(array($this->user, $this->credentials, $this->authenticated, $this->roles, $this->immutable));
     }
 

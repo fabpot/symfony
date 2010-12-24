@@ -97,7 +97,11 @@ class DateField extends HybridField
         $this->addOption('widget', self::CHOICE, self::$widgets);
         $this->addOption('pattern');
 
-        $this->initFormatter();
+        $this->formatter = new \IntlDateFormatter(
+            $this->locale,
+            self::$intlFormats[$this->getOption('format')],
+            \IntlDateFormatter::NONE
+        );
 
         if ($this->getOption('type') === self::STRING) {
             $this->setNormalizationTransformer(new ReversedTransformer(
@@ -212,34 +216,6 @@ class DateField extends HybridField
     }
 
     /**
-     * Sets the locale of this field.
-     *
-     * @see Localizable
-     */
-    public function setLocale($locale)
-    {
-        parent::setLocale($locale);
-
-        $this->initFormatter();
-
-        if ($this->getOption('widget') === self::CHOICE) {
-            $this->addChoiceFields();
-        }
-    }
-
-    /**
-     * Initializes (or reinitializes) the formatter
-     */
-    protected function initFormatter()
-    {
-        $this->formatter = new \IntlDateFormatter(
-            $this->locale,
-            self::$intlFormats[$this->getOption('format')],
-            \IntlDateFormatter::NONE
-        );
-    }
-
-    /**
      * Adds (or replaces if already added) the fields used when widget=CHOICE
      */
     protected function addChoiceFields()
@@ -267,7 +243,7 @@ class DateField extends HybridField
     {
         $date = $this->getNormalizedData();
 
-        return $date === null || in_array($date->format('Y'), $this->getOption('years'));
+        return null === $date || in_array($date->format('Y'), $this->getOption('years'));
     }
 
     /**
@@ -282,7 +258,7 @@ class DateField extends HybridField
     {
         $date = $this->getNormalizedData();
 
-        return $date === null || in_array($date->format('m'), $this->getOption('months'));
+        return null === $date || in_array($date->format('m'), $this->getOption('months'));
     }
 
     /**
@@ -297,6 +273,6 @@ class DateField extends HybridField
     {
         $date = $this->getNormalizedData();
 
-        return $date === null || in_array($date->format('d'), $this->getOption('days'));
+        return null === $date || in_array($date->format('d'), $this->getOption('days'));
     }
 }

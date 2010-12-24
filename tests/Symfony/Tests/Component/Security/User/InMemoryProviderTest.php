@@ -36,7 +36,8 @@ class InMemoryUserProviderTest extends \PHPUnit_Framework_TestCase
         $provider = new InMemoryUserProvider();
         $provider->createUser(new User('fabien', 'foo'));
 
-        $this->assertEquals('foo', $provider->loadUserByUsername('fabien')->getPassword());
+        $user = $provider->loadUserByUsername('fabien');
+        $this->assertEquals('foo', $user->getPassword());
     }
 
     /**

@@ -2,16 +2,20 @@
 
 namespace Symfony\Bundle\DoctrineBundle\Security;
 
+use Symfony\Component\Security\User\AccountInterface;
 use Symfony\Component\Security\User\UserProviderInterface;
+use Symfony\Component\Security\Exception\UnsupportedAccountException;
 use Symfony\Component\Security\Exception\UsernameNotFoundException;
 
 class EntityUserProvider implements UserProviderInterface
 {
+    protected $class;
     protected $repository;
     protected $property;
 
     public function __construct($em, $class, $property = null)
     {
+        $this->class = $class;
         $this->repository = $em->getRepository($class);
         $this->property = $property;
     }
@@ -36,5 +40,17 @@ class EntityUserProvider implements UserProviderInterface
         }
 
         return $user;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function loadUserByAccount(AccountInterface $account)
+    {
+        if (!$account instanceof $this->class) {
+            throw new UnsupportedAccountException(sprintf('Instances of "%s" are not supported.', get_class($account)));
+        }
+
+        return $this->loadUserByUsername((string) $account);
     }
 }

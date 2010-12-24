@@ -41,15 +41,13 @@ class YamlFileLoader extends FileLoader
 
         $this->container->addResource(new FileResource($path));
 
-        if (!$content) {
+        // empty file
+        if (null === $content) {
             return;
         }
 
         // imports
         $this->parseImports($content, $file);
-
-        // extensions
-        $this->loadFromExtensions($content);
 
         // parameters
         if (isset($content['parameters'])) {
@@ -57,6 +55,9 @@ class YamlFileLoader extends FileLoader
                 $this->container->setParameter($key, $this->resolveServices($value));
             }
         }
+
+        // extensions
+        $this->loadFromExtensions($content);
 
         // interface injectors
         $this->parseInterfaceInjectors($content, $file);

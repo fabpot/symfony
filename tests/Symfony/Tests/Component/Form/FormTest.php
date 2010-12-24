@@ -171,22 +171,6 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->form->isCsrfTokenValid());
     }
 
-    public function testDefaultLocaleCanBeSet()
-    {
-        FormConfiguration::setDefaultLocale('de-DE-1996');
-        $form = new Form('author', new Author(), $this->validator);
-
-        $field = $this->getMock('Symfony\Component\Form\Field', array(), array(), '', false, false);
-        $field->expects($this->any())
-                    ->method('getKey')
-                    ->will($this->returnValue('firstName'));
-        $field->expects($this->once())
-                    ->method('setLocale')
-                    ->with($this->equalTo('de-DE-1996'));
-
-        $form->add($field);
-    }
-
     public function testValidationGroupsCanBeSet()
     {
         $form = new Form('author', new Author(), $this->validator);
@@ -214,6 +198,18 @@ class FormTest extends \PHPUnit_Framework_TestCase
         $form->bind(array()); // irrelevant
     }
 
+    public function testBindThrowsExceptionIfNoValidatorIsSet()
+    {
+        $field = $this->createMockField('firstName');
+        $form = new Form('author', new Author());
+        $form->add($field);
+        $form->setValidationGroups('group');
+
+        $this->setExpectedException('Symfony\Component\Form\Exception\FormException');
+
+        $form->bind(array()); // irrelevant
+    }
+
     public function testMultipartFormsWithoutParentsRequireFiles()
     {
         $form = new Form('author', new Author(), $this->validator);
@@ -234,6 +230,57 @@ class FormTest extends \PHPUnit_Framework_TestCase
 
         // files are expected to be converted by the parent
         $form->bind(array('file' => 'test.txt'));
+    }
+
+    public function testUpdateFromPropertyIsIgnoredIfFormHasObject()
+    {
+        $author = new Author();
+        $author->child = new Author();
+        $standaloneChild = new Author();
+
+        $form = new Form('child', $standaloneChild);
+        $form->updateFromProperty($author);
+
+        // should not be $author->child!!
+        $this->assertSame($standaloneChild, $form->getData());
+    }
+
+    public function testUpdateFromPropertyIsNotIgnoredIfFormHasNoObject()
+    {
+        $author = new Author();
+        $author->child = new Author();
+
+        $form = new Form('child');
+        $form->updateFromProperty($author);
+
+        // should not be $author->child!!
+        $this->assertSame($author->child, $form->getData());
+    }
+
+    public function testUpdatePropertyIsIgnoredIfFormHasObject()
+    {
+        $author = new Author();
+        $author->child = $child = new Author();
+        $standaloneChild = new Author();
+
+        $form = new Form('child', $standaloneChild);
+        $form->updateProperty($author);
+
+        // $author->child was not modified
+        $this->assertSame($child, $author->child);
+    }
+
+    public function testUpdatePropertyIsNotIgnoredIfFormHasNoObject()
+    {
+        $author = new Author();
+        $child = new Author();
+
+        $form = new Form('child');
+        $form->setData($child);
+        $form->updateProperty($author);
+
+        // $author->child was set
+        $this->assertSame($child, $author->child);
     }
 
     protected function createMockField($key)

@@ -10,6 +10,7 @@ require_once __DIR__ . '/Fixtures/RequiredOptionsField.php';
 use Symfony\Component\Form\ValueTransformer\ValueTransformerInterface;
 use Symfony\Component\Form\PropertyPath;
 use Symfony\Component\Form\FieldError;
+use Symfony\Component\Form\FormConfiguration;
 use Symfony\Tests\Component\Form\Fixtures\Author;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
 use Symfony\Tests\Component\Form\Fixtures\InvalidField;
@@ -134,28 +135,18 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('news_article_title', $this->field->getId());
     }
 
-//    public function testLocaleIsPassedToLocalizableValueTransformer_setLocaleCalledBefore()
-//    {
-//        $transformer = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-//        $transformer->expects($this->once())
-//                         ->method('setLocale')
-//                         ->with($this->equalTo('de_DE'));
-//
-//        $this->field->setLocale('de_DE');
-//        $this->field->setValueTransformer($transformer);
-//    }
-
-    public function testLocaleIsPassedToValueTransformer_setLocaleCalledAfter()
+    public function testLocaleIsPassedToValueTransformer()
     {
+        FormConfiguration::setDefaultLocale('de_DE');
+
         $transformer = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-        $transformer->expects($this->exactly(2))
-                         ->method('setLocale'); // we can't test the params cause they differ :(
+        $transformer->expects($this->exactly(1))
+                         ->method('setLocale')
+                         ->with($this->equalTo('de_DE'));
 
         $field = new TestField('title', array(
             'value_transformer' => $transformer,
         ));
-
-        $field->setLocale('de_DE');
     }
 
     public function testIsRequiredReturnsOwnValueIfNoParent()
@@ -423,7 +414,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->will($this->returnValue(' a '));
 
         $field = new TestField('title', array(
-        	'trim' => false,
+            'trim' => false,
             'value_transformer' => $transformer,
         ));
 
@@ -434,43 +425,27 @@ class FieldTest extends \PHPUnit_Framework_TestCase
     }
 
     /*
-     * The use case of this test is a field group with an empty property path.
-     * Even if the field group itself is not associated to a specific property,
-     * nested fields might be.
-     */
-    public function testUpdateFromObjectPassesObjectThroughIfPropertyPathIsEmpty()
-    {
-        $object = new Author();
-        $object->firstName = 'Bernhard';
-
-        $field = new TestField('firstName', array('property_path' => null));
-        $field->updateFromObject($object);
-
-        $this->assertEquals($object, $field->getData());
-    }
-
-    /*
      * This is important so that bind() can work even if setData() was not called
      * before
      */
-    public function testUpdateObjectTreatsEmptyValuesAsArrays()
+    public function testUpdatePropertyTreatsEmptyValuesAsArrays()
     {
         $array = null;
 
         $field = new TestField('firstName');
         $field->bind('Bernhard');
-        $field->updateObject($array);
+        $field->updateProperty($array);
 
         $this->assertEquals(array('firstName' => 'Bernhard'), $array);
     }
 
-    public function testUpdateObjectDoesNotUpdatePropertyIfPropertyPathIsEmpty()
+    public function testUpdatePropertyDoesNotUpdatePropertyIfPropertyPathIsEmpty()
     {
         $object = new Author();
 
         $field = new TestField('firstName', array('property_path' => null));
         $field->bind('Bernhard');
-        $field->updateObject($object);
+        $field->updateProperty($object);
 
         $this->assertEquals(null, $object->firstName);
     }

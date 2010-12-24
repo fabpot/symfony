@@ -67,7 +67,7 @@ class PhpDumper extends Dumper
      *
      * @param Object \$instance
      */
-    protected function applyIntrefaceInjectors(\$instance)
+    protected function applyInterfaceInjectors(\$instance)
     {
 
 EOF;
@@ -161,7 +161,7 @@ EOF;
         }
 
         if (!$this->container->isFrozen() && count($this->container->getInterfaceInjectors()) > 0) {
-            $calls = sprintf("\n        \$this->applyInterfaceInjection(\$instance);\n");
+            $calls = sprintf("\n        \$this->applyInterfaceInjectors(\$instance);\n");
         }
 
         return $calls;
@@ -436,7 +436,7 @@ EOF;
                 $code = str_replace('%%', '%', preg_replace_callback('/(?<!%)(%)([^%]+)\1/', $replaceParameters, var_export($value, true)));
 
                 // optimize string
-                $code = preg_replace(array("/^''\./", "/\.''$/", "/\.''\./"), array('', '', '.'), $code);
+                $code = preg_replace(array("/^''\./", "/\.''$/", "/'\.'/", "/\.''\./"), array('', '', '', '.'), $code);
 
                 return $code;
             }

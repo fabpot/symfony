@@ -73,10 +73,7 @@ class Field extends Configurable implements FieldInterface
         $this->addOption('normalization_transformer');
 
         $this->key = (string)$key;
-
-        if ($this->locale === null) {
-            $this->locale = class_exists('\Locale', false) ? \Locale::getDefault() : 'en';
-        }
+        $this->locale = FormConfiguration::getDefaultLocale();
 
         parent::__construct($options);
 
@@ -130,7 +127,7 @@ class Field extends Configurable implements FieldInterface
      */
     public function setPropertyPath($propertyPath)
     {
-        $this->propertyPath = $propertyPath === null || $propertyPath === '' ? null : new PropertyPath($propertyPath);
+        $this->propertyPath = null === $propertyPath || '' === $propertyPath ? null : new PropertyPath($propertyPath);
     }
 
     /**
@@ -367,20 +364,6 @@ class Field extends Configurable implements FieldInterface
     }
 
     /**
-     * Sets the locale of this field.
-     *
-     * @see Localizable
-     */
-    public function setLocale($locale)
-    {
-        $this->locale = $locale;
-
-        if ($this->valueTransformer !== null && $this->valueTransformer instanceof Localizable) {
-            $this->valueTransformer->setLocale($locale);
-        }
-    }
-
-    /**
      * Injects the locale into the given object, if set.
      *
      * The locale is injected only if the object implements Localizable.
@@ -475,7 +458,7 @@ class Field extends Configurable implements FieldInterface
     protected function transform($value)
     {
         if (null === $this->valueTransformer) {
-            return $value === null ? '' : $value;
+            return null === $value ? '' : $value;
         }
         return $this->valueTransformer->transform($value);
     }
@@ -489,7 +472,7 @@ class Field extends Configurable implements FieldInterface
     protected function reverseTransform($value)
     {
         if (null === $this->valueTransformer) {
-            return $value === '' ? null : $value;
+            return '' === $value ? null : $value;
         }
         return $this->valueTransformer->reverseTransform($value, $this->data);
     }
@@ -497,21 +480,19 @@ class Field extends Configurable implements FieldInterface
     /**
      * {@inheritDoc}
      */
-    public function updateFromObject(&$objectOrArray)
+    public function updateFromProperty(&$objectOrArray)
     {
         // TODO throw exception if not object or array
+
         if ($this->propertyPath !== null) {
             $this->setData($this->propertyPath->getValue($objectOrArray));
-        } else {
-            // pass object through if the property path is empty
-            $this->setData($objectOrArray);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public function updateObject(&$objectOrArray)
+    public function updateProperty(&$objectOrArray)
     {
         // TODO throw exception if not object or array
 

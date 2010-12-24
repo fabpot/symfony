@@ -2,13 +2,17 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
-use Symfony\Component\Security\SecurityContext;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\Security\Authentication\Token\AnonymousToken;
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Exception\UnsupportedAccountException;
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\User\AccountInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -23,15 +27,18 @@ use Symfony\Component\Security\Authentication\Token\AnonymousToken;
  * ContextListener manages the SecurityContext persistence through a session.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class ContextListener implements ListenerInterface
 {
     protected $context;
     protected $logger;
+    protected $userProviders;
 
-    public function __construct(SecurityContext $context, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $context, array $userProviders, LoggerInterface $logger = null)
     {
         $this->context = $context;
+        $this->userProviders = $userProviders;
         $this->logger = $logger;
     }
 
@@ -47,7 +54,7 @@ class ContextListener implements ListenerInterface
         $dispatcher->connect('core.security', array($this, 'read'), 0);
         $dispatcher->connect('core.response', array($this, 'write'), 0);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -76,11 +83,11 @@ class ContextListener implements ListenerInterface
 
             $token = unserialize($token);
 
-            $this->context->setToken($token);
+            if (null !== $token && false === $token->isImmutable()) {
+                $token = $this->refreshUser($token);
+            }
 
-            // FIXME: If the user is not an object, it probably means that it is persisted with a DAO
-            // we need to load it now (that does not happen right now as the Token serialize the user
-            // even if it is an object -- see Token)
+            $this->context->setToken($token);
         }
     }
 
@@ -110,5 +117,45 @@ class ContextListener implements ListenerInterface
         $event->get('request')->getSession()->set('_security', serialize($token));
 
         return $response;
+    }
+
+    /**
+     * Refreshes the user by reloading it from the user provider
+     *
+     * @param TokenInterface $token
+     *
+     * @return TokenInterface|null
+     */
+    protected function refreshUser(TokenInterface $token)
+    {
+        $user = $token->getUser();
+        if (!$user instanceof AccountInterface) {
+            return $token;
+        }
+
+        if (null !== $this->logger) {
+            $this->logger->debug(sprintf('Reloading user from user provider.'));
+        }
+
+        foreach ($this->userProviders as $provider) {
+            try {
+                $cUser = $provider->loadUserByAccount($user);
+
+                $token->setRoles($cUser->getRoles());
+                $token->setUser($cUser);
+
+                if (false === $cUser->equals($user)) {
+                    $token->setAuthenticated(false);
+                }
+
+                return $token;
+            } catch (UnsupportedAccountException $unsupported) {
+                // let's try the next user provider
+            } catch (UsernameNotFoundException $notFound) {
+                return null;
+            }
+        }
+
+        throw new \RuntimeException(sprintf('There is no user provider for user "%s".', get_class($user)));
     }
 }

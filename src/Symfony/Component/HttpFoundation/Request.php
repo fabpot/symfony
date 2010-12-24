@@ -56,6 +56,7 @@ class Request
      */
     public $headers;
 
+    protected $content;
     protected $languages;
     protected $charsets;
     protected $acceptableContentTypes;
@@ -106,6 +107,7 @@ class Request
         $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
         $this->headers = new HeaderBag($this->initializeHeaders());
 
+        $this->content = null;
         $this->languages = null;
         $this->charsets = null;
         $this->acceptableContentTypes = null;
@@ -146,10 +148,20 @@ class Request
 
         $components = parse_url($uri);
         if (isset($components['host'])) {
+            $defaults['SERVER_NAME'] = $components['host'];
             $defaults['HTTP_HOST'] = $components['host'];
         }
+
+        if (isset($components['scheme'])) {
+            if ('https' === $components['scheme']) {
+                $defaults['HTTPS'] = 'on';
+                $defaults['SERVER_PORT'] = 443;
+            }
+        }
+
         if (isset($components['port'])) {
             $defaults['SERVER_PORT'] = $components['port'];
+            $defaults['HTTP_HOST'] = $defaults['HTTP_HOST'].':'.$components['port'];
         }
 
         if (in_array(strtoupper($method), array('POST', 'PUT', 'DELETE'))) {
@@ -389,7 +401,7 @@ class Request
         $name   = $this->server->get('SERVER_NAME');
         $port   = $this->getPort();
 
-        if (($scheme == 'http' && $port == 80) || ($scheme == 'https' && $port == 443)) {
+        if (('http' == $scheme && $port == 80) || ('https' == $scheme && $port == 443)) {
             return $name;
         } else {
             return $name.':'.$port;
@@ -419,7 +431,7 @@ class Request
             $qs = '?'.$qs;
         }
 
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$this->getPathInfo().$qs;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$this->getPathInfo().$qs;
     }
 
     /**
@@ -431,7 +443,7 @@ class Request
      */
     public function getUriForPath($path)
     {
-        return $this->getScheme().'://'.$this->getHost().':'.$this->getPort().$this->getScriptName().$path;
+        return $this->getScheme().'://'.$this->getHttpHost().$this->getBaseUrl().$path;
     }
 
     /**
@@ -602,6 +614,32 @@ class Request
     public function isMethodSafe()
     {
         return in_array($this->getMethod(), array('GET', 'HEAD'));
+    }
+
+    /**
+     * Returns the request body content.
+     *
+     * @param  bool $asResource If true, a resource will be returned
+     *
+     * @return string|resource The request body content or a resource to read the body stream.
+     */
+    public function getContent($asResource = false)
+    {
+        if (false === $this->content || (true === $asResource && null !== $this->content)) {
+            throw new \LogicException('getContent() can only be called once when using the resource return type.');
+        }
+
+        if (true === $asResource) {
+            $this->content = false;
+
+            return fopen('php://input', 'rb');
+        }
+
+        if (null === $this->content) {
+            $this->content = file_get_contents('php://input');
+        }
+
+        return $this->content;
     }
 
     public function getETags()
