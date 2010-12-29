@@ -429,8 +429,6 @@ class DoctrineExtension extends Extension
                 }
             }
 
-            $bundleDirs = $container->getParameter('kernel.bundle_dirs');
-
             foreach ($entityManager['mappings'] as $mappingName => $mappingConfig) {
                 if (!isset($mappingConfig['dir'])) {
                     $mappingConfig['dir'] = false;
@@ -456,12 +454,7 @@ class DoctrineExtension extends Extension
 
                 if ($mappingConfig['is_bundle']) {
                     $namespace = $this->getBundleNamespace($mappingName, $container);
-                    if (!isset($bundleDirs[$namespace])) {
-                        // skip this bundle if we cannot find its location, it must be misspelled or something.
-                        continue;
-                    }
-
-                    $mappingConfig = $this->getOrmBundleDriverConfigDefaults($mappingConfig, $namespace, $bundleDirs, $mappingName, $container);
+                    $mappingConfig = $this->getOrmBundleDriverConfigDefaults($mappingConfig, $namespace, $mappingName, $container);
                     if (!$mappingConfig) {
                         continue;
                     }
@@ -496,10 +489,43 @@ class DoctrineExtension extends Extension
         }
     }
 
-    protected function getOrmBundleDriverConfigDefaults(array $bundleConfig, $namespace, $bundleDirs, $bundleName, $container)
+     /**
+     * Finds the bundle directory for a namespace.
+     *
+     * If the namespace does not yield a direct match, this method will attempt
+     * to match parent namespaces exhaustively.
+     *
+     * @param string           $namespace A bundle namespace omitting the bundle name part
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     *
+     * @return string|false The bundle directory if found, false otherwise
+     */
+    protected function findBundleDirForNamespace($namespace, ContainerBuilder $container)
     {
+
+        $bundleDirs = $container->getParameter('kernel.bundle_dirs');
+
+        $segment = $namespace;
+        do {
+            if (isset($bundleDirs[$segment])) {
+                return $bundleDirs[$segment] . str_replace('\\', '/', substr($namespace, strlen($segment)));
+            }
+        } while ($segment = substr($segment, 0, ($pos = strrpos($segment, '\\'))));
+
+        return false;
+    }
+
+    protected function getOrmBundleDriverConfigDefaults(array $bundleConfig, $namespace, $bundleName, $container)
+    {
+        $bundleDir = $this->findBundleDirForNamespace($namespace, $container);
+
+        if (!$bundleDir) {
+            // skip this bundle if we cannot find its location, it must be misspelled or something.
+            return false;
+        }
+
         if (!$bundleConfig['type']) {
-            $bundleConfig['type'] = $this->detectMetadataDriver($bundleDirs[$namespace].'/'.$bundleName, $container);
+            $bundleConfig['type'] = $this->detectMetadataDriver($bundleDir.'/'.$bundleName, $container);
         }
         if (!$bundleConfig['type']) {
             // skip this bundle, no mapping information was found.
@@ -507,9 +533,9 @@ class DoctrineExtension extends Extension
         }
 
         if (!$bundleConfig['dir']) {
-            $bundleConfig['dir'] = $bundleDirs[$namespace].'/'.$bundleName.'/Entity';
+            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/Entity';
         } else {
-            $bundleConfig['dir'] = $bundleDirs[$namespace].'/'.$bundleName.'/' . $bundleConfig['dir'];
+            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $bundleConfig['dir'];
         }
         
         if (!$bundleConfig['prefix']) {
