@@ -546,16 +546,29 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         ));
     }
 
-    protected function getContainer($bundles = 'YamlBundle')
+    public function testAnnotationsBundleMappingDetectionWithVendorNamespace()
+    {
+        $container = $this->getContainer('AnnotationsBundle', 'Vendor');
+        $loader = new DoctrineExtension();
+
+        $loader->dbalLoad(array(), $container);
+        $loader->ormLoad(array('mappings' => array('AnnotationsBundle' => array())), $container);
+
+        $calls = $container->getDefinition('doctrine.orm.default_metadata_driver')->getMethodCalls();
+        $this->assertEquals('doctrine.orm.default_annotation_metadata_driver', (string) $calls[0][1][0]);
+        $this->assertEquals('DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\Vendor\AnnotationsBundle\Entity', $calls[0][1][1]);
+    }
+
+    protected function getContainer($bundles = 'YamlBundle', $vendor = null)
     {
         if (!is_array($bundles)) {
             $bundles = array($bundles);
         }
 
         foreach ($bundles AS $key => $bundle) {
-            require_once __DIR__.'/Fixtures/Bundles/'.$bundle.'/'.$bundle.'.php';
+            require_once __DIR__.'/Fixtures/Bundles/'.($vendor ? $vendor.'/' : '').$bundle.'/'.$bundle.'.php';
 
-            $bundles[$key] = 'DoctrineBundle\\Tests\DependencyInjection\\Fixtures\\Bundles\\'.$bundle.'\\'.$bundle;
+            $bundles[$key] = 'DoctrineBundle\\Tests\DependencyInjection\\Fixtures\\Bundles\\'.($vendor ? $vendor.'\\' : '').$bundle.'\\'.$bundle;
         }
 
         return new ContainerBuilder(new ParameterBag(array(

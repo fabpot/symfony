@@ -502,7 +502,6 @@ class DoctrineExtension extends Extension
      */
     protected function findBundleDirForNamespace($namespace, ContainerBuilder $container)
     {
-
         $bundleDirs = $container->getParameter('kernel.bundle_dirs');
 
         $segment = $namespace;
