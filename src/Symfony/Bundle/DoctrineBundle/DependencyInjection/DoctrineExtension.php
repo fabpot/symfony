@@ -351,27 +351,6 @@ class DoctrineExtension extends Extension
     }
 
     /**
-     * Get the namespace a bundle resides into.
-     *
-     * @param string $bundleName
-     * @param ContainerBuilder $container
-     * @return string
-     */
-    private function getBundleNamespace($bundleName, $container)
-    {
-        foreach ($container->getParameter('kernel.bundles') AS $bundleClassName) {
-            $tmp = dirname(str_replace('\\', '/', $bundleClassName));
-            $namespace = str_replace('/', '\\', dirname($tmp));
-            $actualBundleName = basename($tmp);
-
-            if ($actualBundleName == $bundleName) {
-                return $namespace;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Loads an ORM entity managers bundle mapping information.
      *
      * There are two distinct configuration possibilities for mapping information:
@@ -409,27 +388,31 @@ class DoctrineExtension extends Extension
         $this->drivers = array();
         $this->aliasMap = array();
 
-        $this->loadOrmEntityManagerMappingsMappingInformation($entityManager, $container);
-        $this->loadOrmRegisterDrivers($entityManager, $ormConfigDef, $container);
+        $this->loadMappingInformation($entityManager, $container);
+        $this->registerMappingDrivers($entityManager, $container);
+        $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
     }
 
     /*
      * @param array $entityManager A configured ORM entity manager.
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadOrmEntityManagerMappingsMappingInformation(array $entityManager, $container)
+    protected function loadMappingInformation(array $objectManager, $container)
     {
-        if (isset($entityManager['mappings'])) {
+        if (isset($objectManager['mappings'])) {
             // fix inconsistency between yaml and xml naming
-            if (isset($entityManager['mappings']['mapping'])) {
-                if (isset($entityManager['mappings']['mapping'][0])) {
-                    $entityManager['mappings'] = $entityManager['mappings']['mapping'];
+            if (isset($objectManager['mappings']['mapping'])) {
+                if (isset($objectManager['mappings']['mapping'][0])) {
+                    $objectManager['mappings'] = $objectManager['mappings']['mapping'];
                 } else {
-                    $entityManager['mappings'] = array($entityManager['mappings']['mapping']);
+                    $objectManager['mappings'] = array($objectManager['mappings']['mapping']);
                 }
             }
 
-            foreach ($entityManager['mappings'] as $mappingName => $mappingConfig) {
+            foreach ($objectManager['mappings'] as $mappingName => $mappingConfig) {
+                if (is_string($mappingConfig)) {
+                    $mappingConfig['type'] = $mappingConfig;
+                }
                 if (!isset($mappingConfig['dir'])) {
                     $mappingConfig['dir'] = false;
                 }
@@ -454,29 +437,45 @@ class DoctrineExtension extends Extension
 
                 if ($mappingConfig['is_bundle']) {
                     $namespace = $this->getBundleNamespace($mappingName, $container);
-                    $mappingConfig = $this->getOrmBundleDriverConfigDefaults($mappingConfig, $namespace, $mappingName, $container);
+                    $mappingConfig = $this->getMappingDriverBundleConfigDefaults($mappingConfig, $namespace, $mappingName, $container);
                     if (!$mappingConfig) {
                         continue;
                     }
                 }
 
-                $this->assertValidEntityManagerMappingConfiguration($mappingConfig, $entityManager['name']);
-                $this->setOrmEntityManagerDriverConfig($mappingConfig, $mappingName);
-                $this->setOrmEntityManagerDriverAlias($mappingConfig, $mappingName);
+                $this->assertValidMappingConfiguration($mappingConfig, $objectManager['name']);
+                $this->setMappingDriverConfig($mappingConfig, $mappingName);
+                $this->setMappingDriverAlias($mappingConfig, $mappingName);
             }
         }
     }
 
-    protected function setOrmEntityManagerDriverAlias($mappingConfig, $mappingName = false)
+    /**
+     * Register the alias for this mapping driver.
+     *
+     * Aliases can be used in the Query languages of all the Doctrine object managers to simplify writing tasks.
+     *
+     * @param array $mappingConfig
+     * @param string $mappingName
+     * @return void
+     */
+    protected function setMappingDriverAlias($mappingConfig, $mappingName)
     {
         if (isset($mappingConfig['alias'])) {
             $this->aliasMap[$mappingConfig['alias']] = $mappingConfig['prefix'];
-        } else if ($mappingName) {
+        } else {
             $this->aliasMap[$mappingName] = $mappingConfig['prefix'];
         }
     }
 
-    protected function setOrmEntityManagerDriverConfig(array $mappingConfig, $mappingName)
+    /**
+     * Registter the mapping driver configuration for later use with the object managers metadata driver chain.
+     *
+     * @param array $mappingConfig
+     * @param string $mappingName
+     * @return void
+     */
+    protected function setMappingDriverConfig(array $mappingConfig, $mappingName)
     {
         if (is_dir($mappingConfig['dir'])) {
             if (!isset($this->drivers[$mappingConfig['type']])) {
@@ -484,8 +483,8 @@ class DoctrineExtension extends Extension
             }
             $this->drivers[$mappingConfig['type']][$mappingConfig['prefix']] = realpath($mappingConfig['dir']);
         } else {
-            throw new \InvalidArgumentException("Invalid mapping/entity path given. ".
-                "Cannot load mapping/bundle '" . $mappingName . "' entities.");
+            throw new \InvalidArgumentException("Invalid mapping path given. ".
+                "Cannot load mapping/bundle named '" . $mappingName . "'.");
         }
     }
 
@@ -514,7 +513,39 @@ class DoctrineExtension extends Extension
         return false;
     }
 
-    protected function getOrmBundleDriverConfigDefaults(array $bundleConfig, $namespace, $bundleName, $container)
+    /**
+     * Get the namespace a bundle resides into.
+     *
+     * @param string $bundleName
+     * @param ContainerBuilder $container
+     * @return string
+     */
+    private function getBundleNamespace($bundleName, $container)
+    {
+        foreach ($container->getParameter('kernel.bundles') AS $bundleClassName) {
+            $tmp = dirname(str_replace('\\', '/', $bundleClassName));
+            $namespace = str_replace('/', '\\', dirname($tmp));
+            $actualBundleName = basename($tmp);
+
+            if ($actualBundleName == $bundleName) {
+                return $namespace;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * If this is a bundle controlled mapping all the missing information can be autodetected by this method.
+     *
+     * Returns false when autodetection failed, an array of the completed information otherwise.
+     *
+     * @param array $bundleConfig
+     * @param string $namespace
+     * @param string $bundleName
+     * @param Container $container
+     * @return array|false
+     */
+    protected function getMappingDriverBundleConfigDefaults(array $bundleConfig, $namespace, $bundleName, $container)
     {
         $bundleDir = $this->findBundleDirForNamespace($namespace, $container);
 
@@ -532,58 +563,79 @@ class DoctrineExtension extends Extension
         }
 
         if (!$bundleConfig['dir']) {
-            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/Entity';
+            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
         } else {
             $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $bundleConfig['dir'];
         }
         
         if (!$bundleConfig['prefix']) {
-            $bundleConfig['prefix'] = $namespace.'\\'. $bundleName . '\Entity';
+            $bundleConfig['prefix'] = $namespace.'\\'. $bundleName . '\\' . $this->getMappingObjectDefaultName();
         }
         return $bundleConfig;
     }
 
-    protected function loadOrmRegisterDrivers($entityManager, $ormConfigDef, $container)
+    /**
+     * Register all the collected mapping information with the object manager by registering the appropiate mapping drivers.
+     *
+     * @param array $objectManager
+     * @param Container $container
+     */
+    protected function registerMappingDrivers($objectManager, $container)
     {
         // configure metadata driver for each bundle based on the type of mapping files found
-        $chainDriverDef = new Definition('%doctrine.orm.metadata.driver_chain_class%');
+        $chainDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.driver_chain_class%'));
         foreach ($this->drivers as $driverType => $driverPaths) {
             if ($driverType == 'annotation') {
-                $mappingDriverDef = new Definition('%doctrine.orm.metadata.' . $driverType . '_class%', array(
-                    new Reference('doctrine.orm.metadata_driver.annotation.reader'),
+                $mappingDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.' . $driverType . '_class%'), array(
+                    new Reference($this->getObjetManagerElementName('metadata_driver.annotation.reader')),
                     array_values($driverPaths)
                 ));
             } else {
-                $mappingDriverDef = new Definition('%doctrine.orm.metadata.' . $driverType . '_class%', array(
+                $mappingDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.' . $driverType . '_class%'), array(
                     array_values($driverPaths)
                 ));
             }
-            $mappingService = 'doctrine.orm.' . $entityManager['name'] . '_'.$driverType.'_metadata_driver';
+            $mappingService = $this->getObjetManagerElementName($objectManager['name'] . '_'.$driverType.'_metadata_driver');
             $container->setDefinition($mappingService, $mappingDriverDef);
 
             foreach ($driverPaths as $prefix => $driverPath) {
                 $chainDriverDef->addMethodCall('addDriver', array(new Reference($mappingService), $prefix));
             }
         }
-        $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
 
-        $container->setDefinition('doctrine.orm.' . $entityManager['name'] . '_metadata_driver', $chainDriverDef);
+        $container->setDefinition($this->getObjetManagerElementName($objectManager['name'] . '_metadata_driver'), $chainDriverDef);
     }
 
-    protected function assertValidEntityManagerMappingConfiguration(array $mappingConfig, $entityManagerName)
+    /**
+     * Assertion if the specified mapping information is valid.
+     * 
+     * @param array $mappingConfig
+     * @param string $objectManagerName
+     */
+    protected function assertValidMappingConfiguration(array $mappingConfig, $objectManagerName)
     {
         if (!$mappingConfig['type'] || !$mappingConfig['dir'] || !$mappingConfig['prefix']) {
-            throw new \InvalidArgumentException("Mapping definition for entity manager '".$entityManagerName."' ".
-                "require at least 'type', 'dir' and 'prefix' options.");
+            throw new \InvalidArgumentException("Mapping definitions for manager '".$objectManagerName."' ".
+                "require at least the 'type', 'dir' and 'prefix' options.");
         }
 
         if (!in_array($mappingConfig['type'], array('xml', 'yml', 'annotation', 'php', 'staticphp'))) {
             throw new \InvalidArgumentException("Can only configure 'xml', 'yml', 'annotation', 'php' or ".
                 "'static-php' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
                 "You can register them by adding a a new driver to the ".
-                "'doctrine.orm." . $entityManagerName . ".metadata_driver' service definition."
+                "'" . $this->getObjetManagerElementName($objectManagerName . ".metadata_driver")."' service definition."
             );
         }
+    }
+
+    protected function getObjetManagerElementName($name)
+    {
+        return 'doctrine.orm.' . $name;
+    }
+
+    protected function getMappingObjectDefaultName()
+    {
+        return 'Entity';
     }
 
     /**
