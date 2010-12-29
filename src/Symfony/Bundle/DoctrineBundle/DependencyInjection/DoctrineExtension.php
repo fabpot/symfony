@@ -563,7 +563,11 @@ class DoctrineExtension extends Extension
         }
 
         if (!$bundleConfig['dir']) {
-            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
+            if (in_array($bundleConfig['type'], array('annotation', 'static-php'))) {
+                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
+            } else {
+                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingResourceConfigDirectory();
+            }
         } else {
             $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $bundleConfig['dir'];
         }
@@ -636,6 +640,11 @@ class DoctrineExtension extends Extension
     protected function getMappingObjectDefaultName()
     {
         return 'Entity';
+    }
+
+    protected function getMappingResourceConfigDirectory()
+    {
+        return 'Resources/config/doctrine/metadata/orm';
     }
 
     /**

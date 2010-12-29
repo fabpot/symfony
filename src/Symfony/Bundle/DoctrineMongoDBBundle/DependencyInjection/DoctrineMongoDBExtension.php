@@ -536,7 +536,11 @@ class DoctrineMongoDBExtension extends Extension
         }
 
         if (!$bundleConfig['dir']) {
-            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
+            if (in_array($bundleConfig['type'], array('annotation', 'static-php'))) {
+                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
+            } else {
+                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingResourceConfigDirectory();
+            }
         } else {
             $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $bundleConfig['dir'];
         }
@@ -609,6 +613,11 @@ class DoctrineMongoDBExtension extends Extension
     protected function getMappingObjectDefaultName()
     {
         return 'Document';
+    }
+
+    protected function getMappingResourceConfigDirectory()
+    {
+        return 'Resources/config/doctrine/metadata/mongodb';
     }
 
     /**
