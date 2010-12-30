@@ -211,10 +211,10 @@ class DoctrineExtension extends Extension
         // Create entity proxy directory
         if (!is_dir($proxyCacheDir)) {
             if (false === @mkdir($proxyCacheDir, 0777, true)) {
-                die(sprintf('Unable to create the Doctrine Proxy directory (%s)', dirname($proxyCacheDir)));
+                throw new \RuntimeException(sprintf('Unable to create the Doctrine Proxy directory (%s)', dirname($proxyCacheDir)));
             }
-        } elseif (!is_writable($proxyCacheDir)) {
-            die(sprintf('Unable to write in the Doctrine Proxy directory (%s)', $proxyCacheDir));
+        } elseif (!is_writable($proxyCacheDir) && $container->getParameter('auto_generate_proxy_classes') == true) {
+            throw new \RuntimeException(sprintf('Unable to write in the Doctrine Proxy directory (%s)', $proxyCacheDir));
         }
     }
 
@@ -274,46 +274,64 @@ class DoctrineExtension extends Extension
     /**
      * Loads a configured ORM entity manager.
      *
+     * You need to be aware that ormLoad() can be called multiple times, which makes this method tricky to implement.
+     * There are two possible runtime scenarios:
+     *
+     * 1. If the EntityManager was defined before, override only the new calls to Doctrine\ORM\Configuration
+     * 2. If the EntityManager was not defined before, gather all the defaults for not specified options and set all the information.
+     *
      * @param array $entityManager A configured ORM entity manager.
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
     protected function loadOrmEntityManager(array $entityManager, ContainerBuilder $container)
     {
         $defaultEntityManager = $container->getParameter('doctrine.orm.default_entity_manager');
+        $configServiceName = sprintf('doctrine.orm.%s_configuration', $entityManager['name']);
 
-        $ormConfigDef = new Definition('Doctrine\ORM\Configuration');
-        $container->setDefinition(sprintf('doctrine.orm.%s_configuration', $entityManager['name']), $ormConfigDef);
+        if ($container->hasDefinition($configServiceName)) {
+            $ormConfigDef = $container->getDefinition($configServiceName);
+        } else {
+            $ormConfigDef = new Definition('Doctrine\ORM\Configuration');
+            $container->setDefinition($configServiceName, $ormConfigDef);
+        }
 
         $this->loadOrmEntityManagerMappingInformation($entityManager, $ormConfigDef, $container);
         $this->loadOrmCacheDrivers($entityManager, $container);
 
-        $methods = array(
-            'setMetadataCacheImpl' => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
-            'setQueryCacheImpl' => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
-            'setResultCacheImpl' => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
-            'setMetadataDriverImpl' => new Reference('doctrine.orm.'.$entityManager['name'].'_metadata_driver'),
-            'setProxyDir' => $container->getParameter('doctrine.orm.proxy_dir'),
-            'setProxyNamespace' => $container->getParameter('doctrine.orm.proxy_namespace'),
-            'setAutoGenerateProxyClasses' => $container->getParameter('doctrine.orm.auto_generate_proxy_classes')
+        $uniqueMethods = array(
+            'setMetadataCacheImpl'          => new Reference(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name'])),
+            'setQueryCacheImpl'             => new Reference(sprintf('doctrine.orm.%s_query_cache', $entityManager['name'])),
+            'setResultCacheImpl'            => new Reference(sprintf('doctrine.orm.%s_result_cache', $entityManager['name'])),
+            'setMetadataDriverImpl'         => new Reference('doctrine.orm.'.$entityManager['name'].'_metadata_driver'),
+            'setProxyDir'                   => $container->getParameter('doctrine.orm.proxy_dir'),
+            'setProxyNamespace'             => $container->getParameter('doctrine.orm.proxy_namespace'),
+            'setAutoGenerateProxyClasses'   => $container->getParameter('doctrine.orm.auto_generate_proxy_classes')
         );
-        foreach ($methods as $method => $arg) {
+        foreach ($uniqueMethods as $method => $arg) {
+            if ($ormConfigDef->hasMethodCall($method)) {
+                $ormConfigDef->removeMethodCall($method);
+            }
             $ormConfigDef->addMethodCall($method, array($arg));
         }
 
-        $ormEmArgs = array(
-            new Reference(sprintf('doctrine.dbal.%s_connection', isset($entityManager['connection']) ? $entityManager['connection'] : $entityManager['name'])),
-            new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name']))
-        );
-        $ormEmDef = new Definition('%doctrine.orm.entity_manager_class%', $ormEmArgs);
-        $ormEmDef->setFactoryMethod('create');
-        $ormEmDef->addTag('doctrine.orm.entity_manager');
-        $container->setDefinition(sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']), $ormEmDef);
+        $entityManagerService = sprintf('doctrine.orm.%s_entity_manager', $entityManager['name']);
 
-        if ($entityManager['name'] == $defaultEntityManager) {
-            $container->setAlias(
-                'doctrine.orm.entity_manager',
-                sprintf('doctrine.orm.%s_entity_manager', $entityManager['name'])
+        if (!$container->hasDefinition($entityManagerService) || isset($entityManager['connection'])) {
+            $ormEmArgs = array(
+                new Reference(sprintf('doctrine.dbal.%s_connection', isset($entityManager['connection']) ? $entityManager['connection'] : $entityManager['name'])),
+                new Reference(sprintf('doctrine.orm.%s_configuration', $entityManager['name']))
             );
+            $ormEmDef = new Definition('%doctrine.orm.entity_manager_class%', $ormEmArgs);
+            $ormEmDef->setFactoryMethod('create');
+            $ormEmDef->addTag('doctrine.orm.entity_manager');
+            $container->setDefinition($entityManagerService, $ormEmDef);
+
+            if ($entityManager['name'] == $defaultEntityManager) {
+                $container->setAlias(
+                    'doctrine.orm.entity_manager',
+                    sprintf('doctrine.orm.%s_entity_manager', $entityManager['name'])
+                );
+            }
         }
     }
 
@@ -390,6 +408,17 @@ class DoctrineExtension extends Extension
 
         $this->loadMappingInformation($entityManager, $container);
         $this->registerMappingDrivers($entityManager, $container);
+
+        if ($ormConfigDef->hasMethodCall('setEntityNamespaces')) {
+            // TODO: Can we make a method out of it on Definition? replaceMethodArguments() or something.
+            $calls = $ormConfigDef->getMethodCalls();
+            foreach ($calls AS $call) {
+                if ($call[0] == 'setEntityNamespaces') {
+                    $this->aliasMap = array_merge($call[1][0], $this->aliasMap);
+                }
+            }
+            $method = $ormConfigDef->removeMethodCall('setEntityNamespaces');
+        }
         $ormConfigDef->addMethodCall('setEntityNamespaces', array($this->aliasMap));
     }
 
@@ -587,19 +616,34 @@ class DoctrineExtension extends Extension
     protected function registerMappingDrivers($objectManager, $container)
     {
         // configure metadata driver for each bundle based on the type of mapping files found
-        $chainDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.driver_chain_class%'));
+        if ($container->hasDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'))) {
+            $chainDriverDef = $container->getDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'));
+        } else {
+            $chainDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.driver_chain_class%'));
+        }
+
         foreach ($this->drivers as $driverType => $driverPaths) {
-            if ($driverType == 'annotation') {
-                $mappingDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.' . $driverType . '_class%'), array(
-                    new Reference($this->getObjetManagerElementName('metadata_driver.annotation.reader')),
+            $mappingService = $this->getObjectManagerElementName($objectManager['name'] . '_'.$driverType.'_metadata_driver');
+            if ($container->hasDefinition($mappingService)) {
+                $mappingDriverDef = $container->getDefinition($mappingService);
+                $args = $mappingDriverDef->getArguments();
+                if ($driverType == 'annotation') {
+                    $args[1] = array_merge($driverPaths, $args[1]);
+                } else {
+                    $args[0] = array_merge($driverPaths, $args[0]);
+                }
+                $mappingDriverDef->setArguments($args);
+            } else if ($driverType == 'annotation') {
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '_class%'), array(
+                    new Reference($this->getObjectManagerElementName('metadata_driver.annotation.reader')),
                     array_values($driverPaths)
                 ));
             } else {
-                $mappingDriverDef = new Definition('%'.$this->getObjetManagerElementName('metadata.' . $driverType . '_class%'), array(
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '_class%'), array(
                     array_values($driverPaths)
                 ));
             }
-            $mappingService = $this->getObjetManagerElementName($objectManager['name'] . '_'.$driverType.'_metadata_driver');
+            
             $container->setDefinition($mappingService, $mappingDriverDef);
 
             foreach ($driverPaths as $prefix => $driverPath) {
@@ -607,7 +651,7 @@ class DoctrineExtension extends Extension
             }
         }
 
-        $container->setDefinition($this->getObjetManagerElementName($objectManager['name'] . '_metadata_driver'), $chainDriverDef);
+        $container->setDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'), $chainDriverDef);
     }
 
     /**
@@ -627,12 +671,12 @@ class DoctrineExtension extends Extension
             throw new \InvalidArgumentException("Can only configure 'xml', 'yml', 'annotation', 'php' or ".
                 "'static-php' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
                 "You can register them by adding a a new driver to the ".
-                "'" . $this->getObjetManagerElementName($objectManagerName . ".metadata_driver")."' service definition."
+                "'" . $this->getObjectManagerElementName($objectManagerName . ".metadata_driver")."' service definition."
             );
         }
     }
 
-    protected function getObjetManagerElementName($name)
+    protected function getObjectManagerElementName($name)
     {
         return 'doctrine.orm.' . $name;
     }
@@ -668,10 +712,13 @@ class DoctrineExtension extends Extension
      */
     protected function loadOrmEntityManagerMetadataCacheDriver(array $entityManager, ContainerBuilder $container)
     {
-        $cacheDriver = $container->getParameter('doctrine.orm.metadata_cache_driver');
-        $cacheDriver = isset($entityManager['metadata-cache-driver']) ? $entityManager['metadata-cache-driver'] : (isset($entityManager['metadata_cache_driver']) ? $entityManager['metadata_cache_driver'] : $cacheDriver);
-        $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
-        $container->setDefinition(sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name']), $cacheDef);
+        $metadataCacheDriverService = sprintf('doctrine.orm.%s_metadata_cache', $entityManager['name']);
+        if (!$container->hasDefinition($metadataCacheDriverService) || isset($entityManager['metadata-cache-driver']) || (isset($entityManager['metadata_cache_driver']))) {
+            $cacheDriver = $container->getParameter('doctrine.orm.metadata_cache_driver');
+            $cacheDriver = isset($entityManager['metadata-cache-driver']) ? $entityManager['metadata-cache-driver'] : (isset($entityManager['metadata_cache_driver']) ? $entityManager['metadata_cache_driver'] : $cacheDriver);
+            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
+            $container->setDefinition($metadataCacheDriverService, $cacheDef);
+        }
     }
 
     /**
@@ -682,10 +729,13 @@ class DoctrineExtension extends Extension
      */
     protected function loadOrmEntityManagerQueryCacheDriver(array $entityManager, ContainerBuilder $container)
     {
-        $cacheDriver = $container->getParameter('doctrine.orm.query_cache_driver');
-        $cacheDriver = isset($entityManager['query-cache-driver']) ? $entityManager['query-cache-driver'] : (isset($entityManager['query_cache_driver']) ? $entityManager['query_cache_driver'] : $cacheDriver);
-        $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
-        $container->setDefinition(sprintf('doctrine.orm.%s_query_cache', $entityManager['name']), $cacheDef);
+        $queryCacheDriverService = sprintf('doctrine.orm.%s_query_cache', $entityManager['name']);
+        if (!$container->hasDefinition($queryCacheDriverService) || isset($entityManager['query-cache-driver']) || isset($entityManager['query_cache_driver'])) {
+            $cacheDriver = $container->getParameter('doctrine.orm.query_cache_driver');
+            $cacheDriver = isset($entityManager['query-cache-driver']) ? $entityManager['query-cache-driver'] : (isset($entityManager['query_cache_driver']) ? $entityManager['query_cache_driver'] : $cacheDriver);
+            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
+            $container->setDefinition($queryCacheDriverService, $cacheDef);
+        }
     }
 
     /**
@@ -696,10 +746,13 @@ class DoctrineExtension extends Extension
      */
     protected function loadOrmEntityManagerResultCacheDriver(array $entityManager, ContainerBuilder $container)
     {
-        $cacheDriver = $container->getParameter('doctrine.orm.result_cache_driver');
-        $cacheDriver = isset($entityManager['result-cache-driver']) ? $entityManager['result-cache-driver'] : (isset($entityManager['result_cache_driver']) ? $entityManager['result_cache_driver'] : $cacheDriver);
-        $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
-        $container->setDefinition(sprintf('doctrine.orm.%s_result_cache', $entityManager['name']), $cacheDef);
+        $resultCacheDriverService = sprintf('doctrine.orm.%s_result_cache', $entityManager['name']);
+        if (!$container->hasDefinition($resultCacheDriverService) || isset($entityManager['result-cache-driver']) || isset($entityManager['result_cache_driver'])) {
+            $cacheDriver = $container->getParameter('doctrine.orm.result_cache_driver');
+            $cacheDriver = isset($entityManager['result-cache-driver']) ? $entityManager['result-cache-driver'] : (isset($entityManager['result_cache_driver']) ? $entityManager['result_cache_driver'] : $cacheDriver);
+            $cacheDef = $this->getEntityManagerCacheDefinition($entityManager, $cacheDriver, $container);
+            $container->setDefinition($resultCacheDriverService, $cacheDef);
+        }
     }
 
     /**
