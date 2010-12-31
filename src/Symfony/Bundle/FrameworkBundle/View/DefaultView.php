@@ -131,6 +131,17 @@ class DefaultView
     }
 
     /**
+     * Verifies whether the given format is supported by this view
+     *
+     * @param string $format format name
+     * @return bool
+     */
+    public function supports($format)
+    {
+        return isset($this->customHandlers[$format]) || method_exists($this, 'handle'.ucfirst($format));
+    }
+
+    /**
      * Handles a request with the proper handler
      *
      * Decides on which handler to use based on the request format
