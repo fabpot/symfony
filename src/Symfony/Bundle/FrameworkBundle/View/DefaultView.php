@@ -80,7 +80,7 @@ class DefaultView
     {
         $this->redirect = array(
             'location' => $this->container->get('router')->generate($route, $parameters),
-            'statuscode' => $code,
+            'status_code' => $code,
         );
     }
 
@@ -92,7 +92,7 @@ class DefaultView
      */
     public function setUriRedirect($uri, $code = 302)
     {
-        $this->redirect = array('location' => $uri, 'statuscode' => $code);
+        $this->redirect = array('location' => $uri, 'status_code' => $code);
     }
 
     public function getRedirect()
@@ -198,7 +198,7 @@ class DefaultView
     protected function handleGeneric(Request $request, Response $response, $format)
     {
         if ($this->redirect) {
-            $response->setRedirect($this->redirect['location'], $this->redirect['statuscode']);
+            $response->setRedirect($this->redirect['location'], $this->redirect['status_code']);
             return $response;
         }
 
@@ -351,32 +351,32 @@ class DefaultView
      */
     public function parametersToDom($data, $domdoc, $domnode, $keys = array(), $parentKey = null)
     {
-        foreach ($data as $n => $node) {
-            $v = $n;
+        foreach ($data as $nodeKey => $node) {
+            $nodeParentKey = $nodeKey;
             if (isset($keys[$parentKey])) {
                 $key = $keys[$parentKey];
             } else {
                 $key = 'entry';
             }
 
-            $n = (is_numeric($n)) ? $key : $n;
+            $nodeKey = (is_numeric($nodeKey)) ? $key : $nodeKey;
 
-            $elem = $domdoc->createElement($n);
+            $elem = $domdoc->createElement($nodeKey);
             if ($elem instanceof \DOMNode) {
-                if ($n === $key) {
-                    $elem->setAttribute('key', $v);
+                if ($nodeKey === $key) {
+                    $elem->setAttribute('key', $nodeParentKey);
                 }
 
                 if (is_array($node)) {
-                    $this->parametersToDom($node, $domdoc, $elem, $keys, $v);
+                    $this->parametersToDom($node, $domdoc, $elem, $keys, $nodeParentKey);
                 } elseif (method_exists($node, 'toArray')) {
-                    $this->parametersToDom($node->toArray(), $domdoc, $elem, $keys, $v);
+                    $this->parametersToDom($node->toArray(), $domdoc, $elem, $keys, $nodeParentKey);
                 } elseif ($node instanceof \Traversable) {
-                    $this->parametersToDom($node, $domdoc, $elem, $keys, $v);
+                    $this->parametersToDom($node, $domdoc, $elem, $keys, $nodeParentKey);
                 } else {
                     if ($node instanceof \DOMDocument){
                         $nodeObj = $domdoc->importNode($node->documentElement, true);
-                    } elseif (is_bool($node) || is_null($node)) {
+                    } elseif (is_bool($node) || null === $node) {
                         $node = strtolower(var_export($node, true));
                         $nodeObj = $domdoc->createTextNode($node);
                     } elseif (!is_object($node)) {
