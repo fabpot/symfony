@@ -161,6 +161,9 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             'setLoggerCallable' => array(new Reference('doctrine.odm.mongodb.logger'), 'logQuery'),
         );
         foreach ($methods as $method => $arg) {
+            if ($odmConfigDef->hasMethodCall($method)) {
+                $odmConfigDef->removeMethodCall($method);
+            }
             $odmConfigDef->addMethodCall($method, array($arg));
         }
 
