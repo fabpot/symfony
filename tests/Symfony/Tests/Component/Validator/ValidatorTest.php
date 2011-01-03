@@ -3,17 +3,20 @@
 namespace Symfony\Tests\Component\Validator;
 
 require_once __DIR__.'/Fixtures/Entity.php';
+require_once __DIR__.'/Fixtures/EntityWithChild.php';
 require_once __DIR__.'/Fixtures/FailingConstraint.php';
 require_once __DIR__.'/Fixtures/FailingConstraintValidator.php';
 require_once __DIR__.'/Fixtures/FakeClassMetadataFactory.php';
 
 use Symfony\Tests\Component\Validator\Fixtures\Entity;
+use Symfony\Tests\Component\Validator\Fixtures\EntityWithChild;
 use Symfony\Tests\Component\Validator\Fixtures\FakeClassMetadataFactory;
 use Symfony\Tests\Component\Validator\Fixtures\FailingConstraint;
 use Symfony\Component\Validator\Validator;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
+use Symfony\Component\Validator\Constraints\Valid as ValidConstraint;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 
 class ValidatorTest extends \PHPUnit_Framework_TestCase
@@ -136,5 +139,22 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         $result = $this->validator->validateValue('Bernhard', new FailingConstraint());
 
         $this->assertEquals(1, count($result));
+    }
+
+    public function testValidate_Cascade()
+    {
+        $entityWithChild = new EntityWithChild();
+
+        $metadata = new ClassMetadata(get_class($entityWithChild));
+        $metadata->addPropertyConstraint('child', new ValidConstraint());
+
+        $this->factory->addClassMetadata($metadata);
+
+        $metadata = new ClassMetadata(get_class(new Entity()));
+        $metadata->addPropertyConstraint('firstName', new FailingConstraint());
+
+        $this->factory->addClassMetadata($metadata);
+
+        $this->assertEquals(1, $this->validator->validate($entityWithChild)->count());
     }
 }
