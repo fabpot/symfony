@@ -135,15 +135,14 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : $container->getParameter('doctrine.odm.mongodb.default_database');
         $proxyCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Proxies';
         $hydratorCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Hydrators';
-
         $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
 
-		if ($container->hasDefinition($configServiceName)) {
-			$odmConfigDef = $container->getDefinition($configServiceName);
-		} else {
-			$odmConfigDef = new Definition('%doctrine.odm.mongodb.configuration_class%');
-			$container->setDefinition($configServiceName, $odmConfigDef);
-		}
+        if ($container->hasDefinition($configServiceName)) {
+            $odmConfigDef = $container->getDefinition($configServiceName);
+        } else {
+            $odmConfigDef = new Definition('%doctrine.odm.mongodb.configuration_class%');
+            $container->setDefinition($configServiceName, $odmConfigDef);
+        }
 
         $this->loadDocumentManagerBundlesMappingInformation($documentManager, $odmConfigDef, $container);
         $this->loadDocumentManagerMetadataCacheDriver($documentManager, $container);
@@ -317,7 +316,6 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         return $connections;
     }
 
-
     /**
      * Loads an ODM document managers bundle mapping information.
      *
@@ -347,7 +345,8 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
      * in the mappings key everything except alias is a required argument.
      *
-     * @param array $entityManager A configured ORM entity manager.
+     * @param array $documentManager A configured ODM entity manager.
+     * @param Definition A Definition instance
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
     protected function loadDocumentManagerBundlesMappingInformation(array $documentManager, Definition $odmConfigDef, ContainerBuilder $container)
@@ -359,7 +358,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $this->loadMappingInformation($documentManager, $container);
         $this->registerMappingDrivers($documentManager, $container);
 
-		if ($odmConfigDef->hasMethodCall('setDocumentNamespaces')) {
+        if ($odmConfigDef->hasMethodCall('setDocumentNamespaces')) {
             // TODO: Can we make a method out of it on Definition? replaceMethodArguments() or something.
             $calls = $odmConfigDef->getMethodCalls();
             foreach ($calls AS $call) {
