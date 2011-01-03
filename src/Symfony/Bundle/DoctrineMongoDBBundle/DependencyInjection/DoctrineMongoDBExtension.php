@@ -136,8 +136,14 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $proxyCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Proxies';
         $hydratorCacheDir = $container->getParameter('kernel.cache_dir').'/doctrine/odm/mongodb/Hydrators';
 
-        $odmConfigDef = new Definition('%doctrine.odm.mongodb.configuration_class%');
-        $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']), $odmConfigDef);
+        $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
+
+		if ($container->hasDefinition($configServiceName)) {
+			$odmConfigDef = $container->getDefinition($configServiceName);
+		} else {
+			$odmConfigDef = new Definition('%doctrine.odm.mongodb.configuration_class%');
+			$container->setDefinition($configServiceName, $odmConfigDef);
+		}
 
         $this->loadDocumentManagerBundlesMappingInformation($documentManager, $odmConfigDef, $container);
         $this->loadDocumentManagerMetadataCacheDriver($documentManager, $container);
@@ -349,7 +355,17 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 
         $this->loadMappingInformation($documentManager, $container);
         $this->registerMappingDrivers($documentManager, $container);
-        
+
+		if ($odmConfigDef->hasMethodCall('setDocumentNamespaces')) {
+            // TODO: Can we make a method out of it on Definition? replaceMethodArguments() or something.
+            $calls = $odmConfigDef->getMethodCalls();
+            foreach ($calls AS $call) {
+                if ($call[0] == 'setDocumentNamespaces') {
+                    $this->aliasMap = array_merge($call[1][0], $this->aliasMap);
+                }
+            }
+            $method = $odmConfigDef->removeMethodCall('setDocumentNamespaces');
+        }
         $odmConfigDef->addMethodCall('setDocumentNamespaces', array($this->aliasMap));
     }
 
