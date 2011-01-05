@@ -28,28 +28,20 @@ class Engine extends BaseEngine
     /**
      * Constructor.
      *
-     * @param ContainerInterface $container A ContainerInterface instance
+     * @param ContainerInterface $container The DI container
      * @param LoaderInterface    $loader    A loader instance
+     * @param array              $renderers All templating renderers
      */
-    public function __construct(ContainerInterface $container, LoaderInterface $loader)
+    public function __construct(ContainerInterface $container, LoaderInterface $loader, array $renderers)
     {
         $this->container = $container;
 
-        parent::__construct($loader);
+        parent::__construct($loader, $renderers);
+    }
 
-        foreach ($this->container->findTaggedServiceIds('templating.renderer') as $id => $attributes) {
-            if (isset($attributes[0]['alias'])) {
-                $this->renderers[$attributes[0]['alias']] = $this->container->get($id);
-                $this->renderers[$attributes[0]['alias']]->setEngine($this);
-            }
-        }
-
-        $this->helpers = array();
-        foreach ($this->container->findTaggedServiceIds('templating.helper') as $id => $attributes) {
-            if (isset($attributes[0]['alias'])) {
-                $this->helpers[$attributes[0]['alias']] = $id;
-            }
-        }
+    public function getContainer()
+    {
+        return $this->container;
     }
 
     /**
@@ -92,6 +84,11 @@ class Engine extends BaseEngine
         }
 
         return $this->helpers[$name];
+    }
+
+    public function setHelpers(array $helpers)
+    {
+        $this->helpers = $helpers;
     }
 
     // parses template names following the following pattern:

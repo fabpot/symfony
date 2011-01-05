@@ -62,6 +62,7 @@ class Field extends Configurable implements FieldInterface
     private $normalizationTransformer = null;
     private $valueTransformer = null;
     private $propertyPath = null;
+    private $transformationSuccessful = true;
 
     public function __construct($key, array $options = array())
     {
@@ -237,6 +238,16 @@ class Field extends Configurable implements FieldInterface
     }
 
     /**
+     * Returns the root of the form tree
+     *
+     * @return FieldInterface  The root of the tree
+     */
+    public function getRoot()
+    {
+        return $this->parent ? $this->parent->getRoot() : $this;
+    }
+
+    /**
      * Updates the field with default data
      *
      * @see FieldInterface
@@ -269,10 +280,9 @@ class Field extends Configurable implements FieldInterface
             $this->normalizedData = $this->processData($this->reverseTransform($this->transformedData));
             $this->data = $this->denormalize($this->normalizedData);
             $this->transformedData = $this->transform($this->normalizedData);
+            $this->transformationSuccessful = true;
         } catch (TransformationFailedException $e) {
-            // TODO better text
-            // TESTME
-            $this->addError(new FieldError('invalid (localized)'));
+            $this->transformationSuccessful = false;
         }
     }
 
@@ -327,6 +337,16 @@ class Field extends Configurable implements FieldInterface
     public function isBound()
     {
         return $this->bound;
+    }
+
+    /**
+     * Returns whether the bound value could be reverse transformed correctly
+     *
+     * @return boolean
+     */
+    public function isTransformationSuccessful()
+    {
+        return $this->transformationSuccessful;
     }
 
     /**

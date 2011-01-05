@@ -2,6 +2,9 @@
 
 namespace Symfony\Bundle\FrameworkBundle;
 
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddConstraintValidatorsPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddTemplatingRenderersPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RegisterKernelListenersPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddSecurityVotersPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ConverterManagerPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RoutingResolverPass;
@@ -35,9 +38,21 @@ class FrameworkBundle extends Bundle
             $this->container->get('error_handler');
         }
         if ($this->container->hasParameter('csrf_secret')) {
-            FormConfiguration::setDefaultCsrfSecret($this->container->getParameter('csrf_secret'));
+            FormConfiguration::addDefaultCsrfSecret($this->container->getParameter('csrf_secret'));
             FormConfiguration::enableDefaultCsrfProtection();
         }
+
+        $container = $this->container;
+
+        // the session ID should always be included in the CSRF token, even
+        // if default CSRF protection is not enabled
+        FormConfiguration::addDefaultCsrfSecret(function () use ($container) {
+            // automatically starts the session when the CSRF token is
+            // generated
+            $container->get('session')->start();
+
+            return $container->get('session')->getId();
+        });
     }
 
     public function registerExtensions(ContainerBuilder $container)
@@ -48,5 +63,8 @@ class FrameworkBundle extends Bundle
         $container->addCompilerPass(new ConverterManagerPass());
         $container->addCompilerPass(new RoutingResolverPass());
         $container->addCompilerPass(new ProfilerPass());
+        $container->addCompilerPass(new RegisterKernelListenersPass());
+        $container->addCompilerPass(new AddTemplatingRenderersPass());
+        $container->addCompilerPass(new AddConstraintValidatorsPass());
     }
 }

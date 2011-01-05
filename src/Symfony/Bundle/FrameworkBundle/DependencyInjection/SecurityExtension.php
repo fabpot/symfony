@@ -2,6 +2,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
@@ -108,6 +109,7 @@ class SecurityExtension extends Extension
             // matcher
             $id = 'security.matcher.url.'.$i;
             $definition = $container->register($id, '%security.matcher.class%');
+            $definition->setPublic(false);
             if (isset($access['path'])) {
                 $definition->addMethodCall('matchPath', array(is_array($access['path']) ? $access['path']['pattern'] : $access['path']));
             }
@@ -178,6 +180,7 @@ class SecurityExtension extends Extension
             $id = 'security.matcher.map'.$id.'.'.++$i;
             $matcher = $container
                 ->register($id, '%security.matcher.class%')
+                ->setPublic(false)
                 ->addMethodCall('matchPath', array($firewall['pattern']))
             ;
             $matcher = new Reference($id);
@@ -362,7 +365,9 @@ class SecurityExtension extends Extension
 
         // Existing DAO service provider
         if (isset($provider['id'])) {
-            return array($provider['id'], $encoder);
+            $container->setAlias($name, $provider['id']);
+
+            return array($name, $encoder);
         }
 
         // Chain provider
@@ -375,6 +380,7 @@ class SecurityExtension extends Extension
         if (isset($provider['entity'])) {
             $container
                 ->register($name, '%security.user.provider.entity.class%')
+                ->setPublic(false)
                 ->setArguments(array(
                     new Reference('security.user.entity_manager'),
                     $provider['entity']['class'],
@@ -388,6 +394,7 @@ class SecurityExtension extends Extension
         if (isset($provider['document'])) {
             $container
                 ->register($name, '%security.user.provider.document.class%')
+                ->setPublic(false)
                 ->setArguments(array(
                     new Reference('security.user.document_manager'),
                     $provider['document']['class'],
@@ -399,6 +406,7 @@ class SecurityExtension extends Extension
 
         // In-memory DAO provider
         $definition = $container->register($name, '%security.user.provider.in_memory.class%');
+        $definition->setPublic(false);
         foreach ($this->fixConfig($provider, 'user') as $username => $user) {
             if (isset($user['name'])) {
                 $username = $user['name'];
@@ -424,6 +432,7 @@ class SecurityExtension extends Extension
             $container
                 ->register($userId, 'Symfony\Component\Security\User\User')
                 ->setArguments(array($username, $user['password'], $user['roles']))
+                ->setPublic(false)
             ;
 
             $definition->addMethodCall('createUser', array(new Reference($userId)));
@@ -444,6 +453,7 @@ class SecurityExtension extends Extension
         $container
             ->register($authManager, '%security.authentication.manager.class%')
             ->addArgument($providers)
+            ->setPublic(false)
         ;
 
         // Access listener
@@ -486,6 +496,25 @@ class SecurityExtension extends Extension
         }
 
         return $switchUserListenerId;
+    }
+    
+    public function aclLoad(array $config, ContainerBuilder $container)
+    {
+        if (!$container->hasDefinition('security.acl')) {
+            $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
+            $loader->load('security_acl.xml');
+        }
+        
+        if (isset($config['connection'])) {
+            $container->setAlias(sprintf('doctrine.dbal.%s_connection', $config['connection']), 'security.acl.dbal.connection');
+        }
+        
+        if (isset($config['cache'])) {
+            $container->setAlias('security.acl.cache', sprintf('security.acl.cache.%s', $config['cache']));
+        } else {
+            $container->remove('security.acl.cache.doctrine');
+            $container->removeAlias('security.acl.cache.doctrine.cache_impl');
+        }
     }
 
     /**

@@ -22,14 +22,19 @@ class ContainerTest extends TestCase
     public function getContainer()
     {
         $container = new ContainerBuilder(new ParameterBag(array(
-            'kernel.bundle_dirs' => array(),
-            'kernel.bundles'     => array(),
+            'kernel.bundle_dirs' => array(
+                'DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles' =>
+                __DIR__ . "/DependencyInjection/Fixtures/Bundles"
+            ),
+            'kernel.bundles'     => array(
+                'DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\YamlBundle\YamlBundle',
+            ),
             'kernel.cache_dir'   => sys_get_temp_dir(),
         )));
         $loader = new DoctrineExtension();
         $container->registerExtension($loader);
         $loader->dbalLoad(array(), $container);
-        $loader->ormLoad(array(), $container);
+        $loader->ormLoad(array('bundles' => array('YamlBundle' => array())), $container);
 
         $dumper = new PhpDumper($container);
         $code = $dumper->dump(array('class' => 'DoctrineBundleTestsProjectServiceContainer'));
@@ -44,19 +49,18 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('Doctrine\DBAL\Logging\DebugStack', $container->get('doctrine.dbal.logger'));
         $this->assertInstanceOf('Symfony\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector', $container->get('doctrine.data_collector'));
         $this->assertInstanceOf('Doctrine\DBAL\Configuration', $container->get('doctrine.dbal.default_connection.configuration'));
-        $this->assertInstanceOf('Doctrine\Common\EventManager', $container->get('doctrine.dbal.default_connection.event_manager'));
+        $this->assertInstanceOf('Symfony\Bundle\DoctrineAbstractBundle\Event\EventManager', $container->get('doctrine.dbal.default_connection.event_manager'));
         $this->assertInstanceOf('Doctrine\DBAL\Connection', $container->get('doctrine.dbal.default_connection'));
-        $this->assertInstanceOf('Doctrine\ORM\Mapping\Driver\AnnotationDriver', $container->get('doctrine.orm.metadata_driver.annotation'));
-        $this->assertInstanceOf('Doctrine\Common\Annotations\AnnotationReader', $container->get('doctrine.orm.metadata_driver.annotation.reader'));
-        $this->assertInstanceOf('Doctrine\ORM\Mapping\Driver\XmlDriver', $container->get('doctrine.orm.metadata_driver.xml'));
-        $this->assertInstanceOf('Doctrine\ORM\Mapping\Driver\YamlDriver', $container->get('doctrine.orm.metadata_driver.yml'));
+        $this->assertInstanceOf('Doctrine\Common\Annotations\AnnotationReader', $container->get('doctrine.orm.metadata.annotation_reader'));
         $this->assertInstanceOf('Doctrine\ORM\Configuration', $container->get('doctrine.orm.default_configuration'));
-        $this->assertInstanceOf('Doctrine\ORM\Mapping\Driver\DriverChain', $container->get('doctrine.orm.metadata_driver'));
+        $this->assertInstanceOf('Doctrine\ORM\Mapping\Driver\DriverChain', $container->get('doctrine.orm.default_metadata_driver'));
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $container->get('doctrine.orm.default_metadata_cache'));
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $container->get('doctrine.orm.default_query_cache'));
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $container->get('doctrine.orm.default_result_cache'));
         $this->assertInstanceOf('Doctrine\ORM\EntityManager', $container->get('doctrine.orm.default_entity_manager'));
         $this->assertInstanceOf('Doctrine\DBAL\Connection', $container->get('database_connection'));
         $this->assertInstanceOf('Doctrine\ORM\EntityManager', $container->get('doctrine.orm.entity_manager'));
+        $this->assertInstanceOf('Symfony\Bundle\DoctrineAbstractBundle\Event\EventManager', $container->get('doctrine.orm.default_entity_manager.event_manager'));
+        $this->assertInstanceOf('Symfony\Bundle\DoctrineAbstractBundle\Event\EventManager', $container->get('doctrine.dbal.event_manager'));
     }
 }

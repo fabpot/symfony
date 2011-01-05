@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineExtension;
 
 /**
  * Doctrine MongoDB ODM extension.
@@ -16,7 +17,7 @@ use Symfony\Component\DependencyInjection\Resource\FileResource;
  * @author Kris Wallsmith <kris.wallsmith@symfony-project.com>
  * @author Jonathan H. Wage <jonwage@gmail.com>
  */
-class DoctrineMongoDBExtension extends Extension
+class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 {
     /**
      * Loads the MongoDB ODM configuration.
@@ -105,8 +106,6 @@ class DoctrineMongoDBExtension extends Extension
                 $container->setParameter('doctrine.odm.mongodb.'.$key, $config[$nKey]);
             }
         }
-        $container->setParameter('doctrine.odm.mongodb.mapping_dirs', $this->findBundleSubpaths('Resources/config/doctrine/metadata/mongodb', $container));
-        $container->setParameter('doctrine.odm.mongodb.document_dirs', $this->findBundleSubpaths('Document', $container));
     }
 
     /**
@@ -145,7 +144,7 @@ class DoctrineMongoDBExtension extends Extension
 
         $methods = array(
             'setMetadataCacheImpl' => new Reference(sprintf('doctrine.odm.mongodb.%s_metadata_cache', $documentManager['name'])),
-            'setMetadataDriverImpl' => new Reference('doctrine.odm.mongodb.metadata'),
+            'setMetadataDriverImpl' => new Reference(sprintf('doctrine.odm.mongodb.%s_metadata_driver', $documentManager['name'])),
             'setProxyDir' => $proxyCacheDir,
             'setProxyNamespace' => $container->getParameter('doctrine.odm.mongodb.proxy_namespace'),
             'setAutoGenerateProxyClasses' => $container->getParameter('doctrine.odm.mongodb.auto_generate_proxy_classes'),
@@ -236,50 +235,6 @@ class DoctrineMongoDBExtension extends Extension
     }
 
     /**
-     * Loads a document managers bundles mapping information configuration.
-     *
-     * @param array $config An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function loadDocumentManagerBundlesMappingInformation(array $documentManager, Definition $odmConfigDef, ContainerBuilder $container)
-    {
-        // configure metadata driver for each bundle based on the type of mapping files found
-        $mappingDriverDef = new Definition('%doctrine.odm.mongodb.metadata.driver_chain_class%');
-        $bundleDocumentMappings = array();
-        $bundleDirs = $container->getParameter('kernel.bundle_dirs');
-        $aliasMap = array();
-        foreach ($container->getParameter('kernel.bundles') as $className) {
-            $tmp = dirname(str_replace('\\', '/', $className));
-            $namespace = str_replace('/', '\\', dirname($tmp));
-            $class = basename($tmp);
-
-            if (!isset($bundleDirs[$namespace])) {
-                continue;
-            }
-
-            $type = $this->detectMetadataDriver($bundleDirs[$namespace].'/'.$class, $container);
-
-            if (is_dir($dir = $bundleDirs[$namespace].'/'.$class.'/Document')) {
-                if (null === $type) {
-                    $type = 'annotation';
-                }
-                $aliasMap[$class] = $namespace.'\\'.$class.'\\Document';
-            }
-
-            if (null !== $type) {
-                $mappingDriverDef->addMethodCall('addDriver', array(
-                        new Reference(sprintf('doctrine.odm.mongodb.metadata.%s', $type)),
-                        $namespace.'\\'.$class.'\\Document'
-                    )
-                );
-            }
-        }
-        $odmConfigDef->addMethodCall('setDocumentNamespaces', array($aliasMap));
-
-        $container->setDefinition('doctrine.odm.mongodb.metadata', $mappingDriverDef);
-    }
-
-    /**
      * Loads the configured document manager metadata cache driver.
      *
      * @param array $config        A configured document manager array
@@ -353,62 +308,64 @@ class DoctrineMongoDBExtension extends Extension
         return $connections;
     }
 
+
     /**
-     * Finds existing bundle subpaths.
+     * Loads an ODM document managers bundle mapping information.
      *
-     * @param string $path A subpath to check for
-     * @param ContainerBuilder $container A ContainerBuilder configuration
+     * There are two distinct configuration possibilities for mapping information:
      *
-     * @return array An array of absolute directory paths
+     * 1. Specifiy a bundle and optionally details where the entity and mapping information reside.
+     * 2. Specifiy an arbitrary mapping location.
+     *
+     * @example
+     *
+     *  doctrine.orm:
+     *     mappings:
+     *         MyBundle1: ~
+     *         MyBundle2: yml
+     *         MyBundle3: { type: annotation, dir: Documents/ }
+     *         MyBundle4: { type: xml, dir: Resources/config/doctrine/mapping }
+     *         MyBundle5:
+     *             type: yml
+     *             dir: [bundle-mappings1/, bundle-mappings2/]
+     *             alias: BundleAlias
+     *         arbitrary_key:
+     *             type: xml
+     *             dir: %kernel.dir%/../src/vendor/DoctrineExtensions/lib/DoctrineExtensions/Documents
+     *             prefix: DoctrineExtensions\Documents\
+     *             alias: DExt
+     *
+     * In the case of bundles everything is really optional (which leads to autodetection for this bundle) but
+     * in the mappings key everything except alias is a required argument.
+     *
+     * @param array $entityManager A configured ORM entity manager.
+     * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function findBundleSubpaths($path, ContainerBuilder $container)
+    protected function loadDocumentManagerBundlesMappingInformation(array $documentManager, Definition $odmConfigDef, ContainerBuilder $container)
     {
-        $dirs = array();
-        foreach ($container->getParameter('kernel.bundles') as $bundle) {
-            $reflection = new \ReflectionClass($bundle);
-            if (is_dir($dir = dirname($reflection->getFilename()).'/'.$path)) {
-                $dirs[] = $dir;
-                $container->addResource(new FileResource($dir));
-            } else {
-                // add the closest existing parent directory as a file resource
-                do {
-                    $dir = dirname($dir);
-                } while (!is_dir($dir));
-                $container->addResource(new FileResource($dir));
-            }
-        }
-        return $dirs;
+        // reset state of drivers and alias map. They are only used by this methods and children.
+        $this->drivers = array();
+        $this->aliasMap = array();
+
+        $this->loadMappingInformation($documentManager, $container);
+        $this->registerMappingDrivers($documentManager, $container);
+        
+        $odmConfigDef->addMethodCall('setDocumentNamespaces', array($this->aliasMap));
     }
 
-    /**
-     * Detects what metadata driver to use for the supplied directory.
-     *
-     * @param string $dir A directory path
-     * @param ContainerBuilder $container A ContainerBuilder configuration
-     *
-     * @return string|null A metadata driver short name, if one can be detected
-     */
-    static protected function detectMetadataDriver($dir, ContainerBuilder $container)
+    protected function getObjectManagerElementName($name)
     {
-        // add the closest existing directory as a resource
-        $resource = $dir.'/Resources/config/doctrine/metadata/mongodb';
-        while (!is_dir($resource)) {
-            $resource = dirname($resource);
-        }
-        $container->addResource(new FileResource($resource));
+        return 'doctrine.odm.mongodb.' . $name;
+    }
 
-        if (count(glob($dir.'/Resources/config/doctrine/metadata/mongodb/*.xml'))) {
-            return 'xml';
-        } elseif (count(glob($dir.'/Resources/config/doctrine/metadata/mongodb/*.yml'))) {
-            return 'yml';
-        }
+    protected function getMappingObjectDefaultName()
+    {
+        return 'Document';
+    }
 
-        // add the directory itself as a resource
-        $container->addResource(new FileResource($dir));
-
-        if (is_dir($dir.'/Document')) {
-            return 'annotation';
-        }
+    protected function getMappingResourceConfigDirectory()
+    {
+        return 'Resources/config/doctrine/metadata/mongodb';
     }
 
     /**

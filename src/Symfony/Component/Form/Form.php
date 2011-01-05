@@ -57,6 +57,8 @@ class Form extends FieldGroup
             $this->enableCsrfProtection();
         }
 
+        $this->addOption('field_factory');
+
         parent::__construct($name, $options);
 
         // If data is passed to this constructor, objects from parent forms
@@ -84,6 +86,17 @@ class Form extends FieldGroup
     public function getValidationGroups()
     {
         return $this->validationGroups;
+    }
+
+    /**
+     * Returns a factory for automatically creating fields based on metadata
+     * available for a form's object
+     *
+     * @return FieldFactoryInterface  The factory
+     */
+    public function getFieldFactory()
+    {
+        return $this->getOption('field_factory');
     }
 
     /**
@@ -161,11 +174,18 @@ class Form extends FieldGroup
      */
     protected function generateCsrfToken($secret)
     {
-        $sessId = session_id();
-        if (!$sessId) {
-            throw new \LogicException('The session must be started in order to generate a proper CSRF Token');
+        $secret .= get_class($this);
+        $defaultSecrets = FormConfiguration::getDefaultCsrfSecrets();
+
+        foreach ($defaultSecrets as $defaultSecret) {
+            if ($defaultSecret instanceof \Closure) {
+                $defaultSecret = $defaultSecret();
+            }
+
+            $secret .= $defaultSecret;
         }
-        return md5($secret.$sessId.get_class($this));
+
+        return md5($secret);
     }
 
     /**
@@ -187,11 +207,7 @@ class Form extends FieldGroup
             }
 
             if (null === $csrfSecret) {
-                if (FormConfiguration::getDefaultCsrfSecret() !== null) {
-                    $csrfSecret = FormConfiguration::getDefaultCsrfSecret();
-                } else {
-                    $csrfSecret = md5(__FILE__.php_uname());
-                }
+                $csrfSecret = md5(__FILE__.php_uname());
             }
 
             $field = new HiddenField($csrfFieldName, array(

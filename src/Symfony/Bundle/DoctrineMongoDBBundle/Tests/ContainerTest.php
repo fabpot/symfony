@@ -28,7 +28,7 @@ class ContainerTest extends TestCase
         )));
         $loader = new DoctrineMongoDBExtension();
         $container->registerExtension($loader);
-        $loader->mongodbLoad(array(), $container);
+        $loader->mongodbLoad(array('mappings' => array('YamlBundle' => array())), $container);
 
         $dumper = new PhpDumper($container);
         $code = $dumper->dump(array('class' => 'DoctrineMongoDBBundleTestsProjectServiceContainer'));
@@ -49,10 +49,12 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf('Symfony\Bundle\DoctrineMongoDBBundle\DataCollector\DoctrineMongoDBDataCollector', $container->get('doctrine.odm.mongodb.data_collector'));
         $this->assertInstanceOf('Doctrine\MongoDB\Connection', $container->get('doctrine.odm.mongodb.default_connection'));
         $this->assertInstanceOf('Doctrine\ODM\MongoDB\Configuration', $container->get('doctrine.odm.mongodb.default_configuration'));
-        $this->assertInstanceOf('Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain', $container->get('doctrine.odm.mongodb.metadata'));
+        $this->assertInstanceOf('Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain', $container->get('doctrine.odm.mongodb.default_metadata_driver'));
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $container->get('doctrine.odm.mongodb.default_metadata_cache'));
         $this->assertInstanceOf('Doctrine\ODM\MongoDB\DocumentManager', $container->get('doctrine.odm.mongodb.default_document_manager'));
         $this->assertInstanceOf('Doctrine\Common\Cache\ArrayCache', $container->get('doctrine.odm.mongodb.cache'));
         $this->assertInstanceOf('Doctrine\ODM\MongoDB\DocumentManager', $container->get('doctrine.odm.mongodb.document_manager'));
+        $this->assertInstanceof('Doctrine\Common\Annotations\AnnotationReader', $container->get('doctrine.odm.mongodb.metadata.annotation_reader'));
+        $this->assertInstanceof('Symfony\Bundle\DoctrineAbstractBundle\Event\EventManager', $container->get('doctrine.odm.mongodb.event_manager'));
     }
 }
