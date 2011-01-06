@@ -33,6 +33,7 @@ class Engine implements \ArrayAccess
     protected $charset;
     protected $cache;
     protected $escapers;
+    protected $globals;
 
     /**
      * Constructor.
@@ -51,6 +52,7 @@ class Engine implements \ArrayAccess
         $this->stack     = array();
         $this->charset   = 'UTF-8';
         $this->cache     = array();
+        $this->globals   = array();
 
         $this->addHelpers($helpers);
 
@@ -117,6 +119,9 @@ class Engine implements \ArrayAccess
 
         $this->current = $name;
         $this->parents[$name] = null;
+
+        // Attach the global variables
+        $parameters = array_replace($this->getGlobals(), $parameters);
 
         // render
         if (false === $content = $this->renderers[$renderer]->evaluate($template, $parameters)) {
@@ -358,6 +363,14 @@ class Engine implements \ArrayAccess
         $renderer->setEngine($this);
     }
 
+    /**
+     * Converts a short template notation to a template name and an array of options.
+     *
+     * @param string $name     A short template template
+     * @param array  $defaults An array of default options
+     *
+     * @return array An array composed of the template name and an array of options
+     */
     public function splitTemplateName($name)
     {
         if (false !== $pos = strpos($name, ':')) {
@@ -395,6 +408,25 @@ class Engine implements \ArrayAccess
         }
 
         return $this->escapers[$context];
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     */
+    public function addGlobal($name, $value)
+    {
+        $this->globals[$name] = $value;
+    }
+
+    /**
+     * Returns the assigned globals.
+     *
+     * @return array
+     */
+    public function getGlobals()
+    {
+        return $this->globals;
     }
 
     /**
