@@ -29,6 +29,14 @@ class ProjectUrlMatcher extends Symfony\Component\Routing\Matcher\UrlMatcher
             return array_merge($this->mergeDefaults($matches, array ()), array('_route' => 'bar'));
         }
 
+        if ($url === '/test/baz') {
+            return array_merge($this->mergeDefaults(array(), array ()), array('_route' => 'baz'));
+        }
+
+        if ($url === '/test/baz.html') {
+            return array_merge($this->mergeDefaults(array(), array ()), array('_route' => 'baz2'));
+        }
+
         return false;
     }
 }

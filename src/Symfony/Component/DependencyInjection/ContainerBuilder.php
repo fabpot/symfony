@@ -2,10 +2,18 @@
 
 namespace Symfony\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+
+use Symfony\Component\DependencyInjection\Compiler\RemoveUnusedDefinitionsPass;
+
+use Symfony\Component\DependencyInjection\Compiler\ResolveInterfaceInjectorsPass;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
-use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -31,6 +39,18 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     protected $resources        = array();
     protected $extensionConfigs = array();
     protected $injectors        = array();
+    protected $compilerPassConfig;
+
+    /**
+     * Constructor
+     * @param ParameterBagInterface $parameterBag
+     */
+    public function __construct(ParameterBagInterface $parameterBag = null)
+    {
+        parent::__construct($parameterBag);
+
+        $this->compilerPassConfig = new PassConfig();
+    }
 
     /**
      * Registers an extension.
@@ -95,10 +115,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function addObjectResource($object)
     {
         $parent = new \ReflectionObject($object);
-        $this->addResource(new FileResource($parent->getFileName()));
-        while ($parent = $parent->getParentClass()) {
+        do {
             $this->addResource(new FileResource($parent->getFileName()));
-        }
+        } while ($parent = $parent->getParentClass());
     }
 
     /**
@@ -128,6 +147,27 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
+     * Adds a compiler pass at the end of the current passes
+     *
+     * @param CompilerPassInterface $pass
+     * @return void
+     */
+    public function addCompilerPass(CompilerPassInterface $pass)
+    {
+        $this->compilerPassConfig->addPass($pass);
+    }
+
+    /**
+     * Returns the compiler pass config which can then be modified
+     *
+     * @return PassConfig
+     */
+    public function getCompilerPassConfig()
+    {
+        return $this->compilerPassConfig;
+    }
+
+    /**
      * Sets a service.
      *
      * @param string $id      The service identifier
@@ -141,8 +181,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             throw new \BadMethodCallException('Setting service on a frozen container is not allowed');
         }
 
-        unset($this->definitions[$id]);
-        unset($this->aliases[$id]);
+        $id = strtolower($id);
+
+        unset($this->definitions[$id], $this->aliases[$id]);
 
         parent::set($id, $service);
     }
@@ -154,7 +195,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function remove($id)
     {
-        unset($this->definitions[$id]);
+        unset($this->definitions[strtolower($id)]);
     }
 
     /**
@@ -166,6 +207,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function has($id)
     {
+        $id = strtolower($id);
+
         return isset($this->definitions[$id]) || isset($this->aliases[$id]) || parent::has($id);
     }
 
@@ -184,6 +227,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function get($id, $invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE)
     {
+        $id = strtolower($id);
+
         try {
             return parent::get($id, ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE);
         } catch (\InvalidArgumentException $e) {
@@ -268,6 +313,17 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
+     * Sets the extension configs array
+     *
+     * @param array $config
+     * @return void
+     */
+    public function setExtensionConfigs(array $config)
+    {
+        $this->extensionConfigs = $config;
+    }
+
+    /**
      * Freezes the container.
      *
      * This method does four things:
@@ -279,40 +335,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function freeze()
     {
-        $parameters = $this->parameterBag->all();
-        $definitions = $this->definitions;
-        $aliases = $this->aliases;
-
-        foreach ($this->extensionConfigs as $name => $configs) {
-            list($namespace, $tag) = explode(':', $name);
-
-            $extension = $this->getExtension($namespace);
-
-            $container = new self($this->parameterBag);
-            $container->addObjectResource($extension);
-            foreach ($configs as $config) {
-                $extension->load($tag, $config, $container);
-            }
-
-            $this->merge($container);
-        }
-
-        $this->extensionConfigs = array();
-        $this->addDefinitions($definitions);
-        $this->addAliases($aliases);
-        $this->parameterBag->add($parameters);
-
-        foreach ($this->definitions as $definition) {
-            foreach ($this->injectors as $injector) {
-                if (null !== $definition->getFactoryService()) {
-                    continue;
-                }
-                $defClass = $this->parameterBag->resolveValue($definition->getClass());
-                $definition->setClass($defClass);
-                if ($injector->supports($defClass)) {
-                    $injector->processDefinition($definition);
-                }
-            }
+        foreach ($this->compilerPassConfig->getPasses() as $pass) {
+            $pass->process($this);
         }
 
         parent::freeze();
@@ -359,6 +383,9 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function setAlias($alias, $id)
     {
+        $alias = strtolower($alias);
+        $id = strtolower($id);
+
         unset($this->definitions[$alias]);
 
         $this->aliases[$alias] = $id;
@@ -371,7 +398,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function removeAlias($alias)
     {
-        unset($this->aliases[$alias]);
+        unset($this->aliases[strtolower($alias)]);
     }
 
     /**
@@ -383,7 +410,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function hasAlias($id)
     {
-        return array_key_exists($id, $this->aliases);
+        return array_key_exists(strtolower($id), $this->aliases);
     }
 
     /**
@@ -407,6 +434,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function getAlias($id)
     {
+        $id = strtolower($id);
+
         if (!$this->hasAlias($id)) {
             throw new \InvalidArgumentException(sprintf('The service alias "%s" does not exist.', $id));
         }
@@ -442,6 +471,11 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         });
     }
 
+    public function setInterfaceInjectors(array $injectors)
+    {
+        $this->injectors = $injectors;
+    }
+
     /**
      * Registers a service definition.
      *
@@ -455,7 +489,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function register($id, $class = null)
     {
-        return $this->setDefinition($id, new Definition($class));
+        return $this->setDefinition(strtolower($id), new Definition($class));
     }
 
     /**
@@ -505,6 +539,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             throw new \BadMethodCallException('Adding definition to a frozen container is not allowed');
         }
 
+        $id = strtolower($id);
+
         unset($this->aliases[$id]);
 
         return $this->definitions[$id] = $definition;
@@ -519,7 +555,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function hasDefinition($id)
     {
-        return array_key_exists($id, $this->definitions);
+        return array_key_exists(strtolower($id), $this->definitions);
     }
 
     /**
@@ -533,6 +569,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function getDefinition($id)
     {
+        $id = strtolower($id);
+
         if (!$this->hasDefinition($id)) {
             throw new \InvalidArgumentException(sprintf('The service definition "%s" does not exist.', $id));
         }
@@ -553,6 +591,8 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function findDefinition($id)
     {
+        $id = strtolower($id);
+
         if ($this->hasAlias($id)) {
             return $this->findDefinition($this->getAlias($id));
         }
@@ -597,7 +637,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         }
 
         if ($definition->isShared()) {
-            $this->services[$id] = $service;
+            $this->services[strtolower($id)] = $service;
         }
 
         foreach ($definition->getMethodCalls() as $call) {

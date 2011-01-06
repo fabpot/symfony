@@ -169,6 +169,16 @@ class Session implements \Serializable
     }
 
     /**
+     * Returns the session ID
+     *
+     * @return mixed  The session ID
+     */
+    public function getId()
+    {
+        return $this->storage->getId();
+    }
+
+    /**
      * Returns the locale
      *
      * @return string
@@ -224,6 +234,16 @@ class Session implements \Serializable
     public function hasFlash($name)
     {
         return array_key_exists($name, $this->attributes['_flash']);
+    }
+
+    public function removeFlash($name)
+    {
+        unset($this->attributes['_flash'][$name]);
+    }
+
+    public function clearFlashes()
+    {
+        $this->attributes['_flash'] = array();
     }
 
     public function save()

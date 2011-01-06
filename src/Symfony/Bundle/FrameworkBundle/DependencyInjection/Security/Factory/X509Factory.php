@@ -21,12 +21,13 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class X509Factory implements SecurityFactoryInterface
 {
-    public function create(ContainerBuilder $container, $id, $config, $userProvider, $providerIds, $defaultEntryPoint)
+    public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint)
     {
         $provider = 'security.authentication.provider.pre_authenticated.'.$id;
         $container
             ->register($provider, '%security.authentication.provider.pre_authenticated.class%')
             ->setArguments(array(new Reference($userProvider), new Reference('security.account_checker')))
+            ->setPublic(false)
         ;
 
         // listener

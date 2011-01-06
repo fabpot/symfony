@@ -11,6 +11,8 @@ namespace Symfony\Component\Form\ValueTransformer;
  * with this source code in the file LICENSE.
  */
 
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
+
 /**
  * Transforms between a boolean and a string.
  *
@@ -27,12 +29,12 @@ class BooleanToStringTransformer extends BaseValueTransformer
      */
     public function transform($value)
     {
-        if ($value === null) {
+        if (null === $value) {
             return '';
         }
 
         if (!is_bool($value)) {
-            throw new \InvalidArgumentException(sprintf('Expected argument of type boolean but got %s.', gettype($value)));
+            throw new UnexpectedTypeException($value, 'boolean');
         }
 
         return true === $value ? '1' : '';
@@ -47,10 +49,10 @@ class BooleanToStringTransformer extends BaseValueTransformer
     public function reverseTransform($value, $originalValue)
     {
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(sprintf('Expected argument of type string but got %s.', gettype($value)));
+            throw new UnexpectedTypeException($value, 'string');
         }
 
-        return $value !== '';
+        return '' !== $value;
     }
 
 }

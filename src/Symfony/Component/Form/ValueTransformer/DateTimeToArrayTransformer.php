@@ -11,7 +11,7 @@ namespace Symfony\Component\Form\ValueTransformer;
  * with this source code in the file LICENSE.
  */
 
-use \Symfony\Component\Form\ValueTransformer\ValueTransformerException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
  * Transforms between a normalized time and a localized time string/array.
@@ -49,7 +49,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
      */
     public function transform($dateTime)
     {
-        if ($dateTime === null) {
+        if (null === $dateTime) {
             return array(
                 'year'    => '',
                 'month'   => '',
@@ -61,7 +61,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
         }
 
         if (!$dateTime instanceof \DateTime) {
-            throw new \InvalidArgumentException('Expected value of type \DateTime');
+            throw new UnexpectedTypeException($dateTime, '\DateTime');
         }
 
         $inputTimezone = $this->getOption('input_timezone');
@@ -98,7 +98,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
      */
     public function reverseTransform($value, $originalValue)
     {
-        if ($value === null) {
+        if (null === $value) {
             return null;
         }
 
@@ -106,7 +106,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
         $outputTimezone = $this->getOption('output_timezone');
 
         if (!is_array($value)) {
-            throw new \InvalidArgumentException(sprintf('Expected argument of type array, %s given', gettype($value)));
+            throw new UnexpectedTypeException($value, 'array');
         }
 
         if (implode('', $value) === '') {

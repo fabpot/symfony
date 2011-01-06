@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 /**
  * InterfaceInjector is used for Interface Injection.
  *
- * @author     Bulat Shakirzyanov <mallluhuct@gmail.com>
+ * @author Bulat Shakirzyanov <mallluhuct@gmail.com>
  */
 class InterfaceInjector
 {
@@ -42,6 +42,17 @@ class InterfaceInjector
     public function getClass()
     {
         return $this->class;
+    }
+
+    /**
+     * Sets the interface class
+     *
+     * @param string $class
+     * @return void
+     */
+    public function setClass($class)
+    {
+        $this->class = $class;
     }
 
     /**
@@ -79,8 +90,12 @@ class InterfaceInjector
     public function supports($object)
     {
         if (is_string($object)) {
+            if (!class_exists($object)) {
+                return false;
+            }
+
             $reflection = new \ReflectionClass($object);
-            
+
             return $reflection->isSubClassOf($this->class)
                    || $object === $this->class;
         }

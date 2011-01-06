@@ -9,8 +9,6 @@
         <parameter key="templating.loader.filesystem.class">Symfony\Component\Templating\Loader\FilesystemLoader</parameter>
         <parameter key="templating.loader.cache.class">Symfony\Component\Templating\Loader\CacheLoader</parameter>
         <parameter key="templating.loader.chain.class">Symfony\Component\Templating\Loader\ChainLoader</parameter>
-        <parameter key="templating.helper.javascripts.class">Symfony\Component\Templating\Helper\JavascriptsHelper</parameter>
-        <parameter key="templating.helper.stylesheets.class">Symfony\Component\Templating\Helper\StylesheetsHelper</parameter>
         <parameter key="templating.helper.slots.class">Symfony\Component\Templating\Helper\SlotsHelper</parameter>
         <parameter key="templating.helper.assets.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\AssetsHelper</parameter>
         <parameter key="templating.helper.actions.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\ActionsHelper</parameter>
@@ -23,39 +21,31 @@
         <parameter key="templating.helper.form.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\FormHelper</parameter>
         <parameter key="templating.assets.version">null</parameter>
         <parameter key="templating.assets.base_urls" type="collection"></parameter>
+        <parameter key="templating.name_converter.class">Symfony\Bundle\FrameworkBundle\Templating\TemplateNameConverter</parameter>
         <parameter key="debug.file_link_format">null</parameter>
     </parameters>
 
     <services>
-        <service id="templating.engine" class="%templating.engine.class%">
+        <service id="templating.engine" class="%templating.engine.class%" public="false">
             <argument type="service" id="service_container" />
             <argument type="service" id="templating.loader" />
+            <argument type="collection" />
             <call method="setCharset"><argument>%kernel.charset%</argument></call>
         </service>
 
-        <service id="templating.loader.filesystem" class="%templating.loader.filesystem.class%">
+        <service id="templating.loader.filesystem" class="%templating.loader.filesystem.class%" public="false">
             <argument>%templating.loader.filesystem.path%</argument>
             <call method="setDebugger"><argument type="service" id="templating.debugger" on-invalid="ignore" /></call>
         </service>
 
-        <service id="templating.loader.cache" class="%templating.loader.cache.class%">
+        <service id="templating.loader.cache" class="%templating.loader.cache.class%" public="false">
             <argument type="service" id="templating.loader.wrapped" />
             <argument>%templating.loader.cache.path%</argument>
             <call method="setDebugger"><argument type="service" id="templating.debugger" on-invalid="ignore" /></call>
         </service>
 
-        <service id="templating.loader.chain" class="%templating.loader.chain.class%">
+        <service id="templating.loader.chain" class="%templating.loader.chain.class%" public="false">
             <call method="setDebugger"><argument type="service" id="templating.debugger" on-invalid="ignore" /></call>
-        </service>
-
-        <service id="templating.helper.javascripts" class="%templating.helper.javascripts.class%">
-            <tag name="templating.helper" alias="javascripts" />
-            <argument type="service" id="templating.helper.assets" />
-        </service>
-
-        <service id="templating.helper.stylesheets" class="%templating.helper.stylesheets.class%">
-            <tag name="templating.helper" alias="stylesheets" />
-            <argument type="service" id="templating.helper.assets" />
         </service>
 
         <service id="templating.helper.slots" class="%templating.helper.slots.class%">
@@ -108,6 +98,10 @@
         <service id="templating.helper.form" class="%templating.helper.form.class%">
             <tag name="templating.helper" alias="form" />
             <argument type="service" id="templating" />
+        </service>
+
+        <service id="templating.name_converter" class="%templating.name_converter.class%">
+            <argument type="service" id="service_container" />
         </service>
 
         <service id="templating.loader" alias="templating.loader.filesystem" />

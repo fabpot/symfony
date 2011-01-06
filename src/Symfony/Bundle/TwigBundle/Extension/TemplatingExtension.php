@@ -2,11 +2,11 @@
 
 namespace Symfony\Bundle\TwigBundle\Extension;
 
-use Symfony\Bundle\TwigBundle\TokenParser\HelperTokenParser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\TwigBundle\TokenParser\IncludeTokenParser;
 use Symfony\Bundle\TwigBundle\TokenParser\UrlTokenParser;
 use Symfony\Bundle\TwigBundle\TokenParser\PathTokenParser;
+use Symfony\Bundle\TwigBundle\TokenParser\RenderTokenParser;
 use Symfony\Component\Yaml\Dumper as YamlDumper;
 
 /*
@@ -38,7 +38,7 @@ class TemplatingExtension extends \Twig_Extension
 
     public function getTemplating()
     {
-        return $this->container->get('templating.engine');
+        return $this->container->get('templating');
     }
 
     /**
@@ -60,15 +60,16 @@ class TemplatingExtension extends \Twig_Extension
     }
 
     /**
-     * Returns a list of global functions to add to the existing list.
+     * Returns a list of functions to add to the existing list.
      *
-     * @return array An array of global functions
+     * @return array An array of functions
      */
-    public function getGlobals()
+    public function getFunctions()
     {
         return array(
-            'fn_url'  => new \Twig_Function($this, 'getUrl'),
-            'fn_path' => new \Twig_Function($this, 'getPath'),
+            'url'   => new \Twig_Function_Method($this, 'getUrl'),
+            'path'  => new \Twig_Function_Method($this, 'getPath'),
+            'asset' => new \Twig_Function_Method($this, 'getAssetUrl'),
         );
     }
 
@@ -82,6 +83,11 @@ class TemplatingExtension extends \Twig_Extension
         return $this->container->get('router')->generate($name, $parameters, true);
     }
 
+    public function getAssetUrl($location)
+    {
+        return $this->container->get('templating.helper.assets')->getUrl($location);
+    }
+
     /**
      * Returns the token parser instance to add to the existing list.
      *
@@ -90,26 +96,8 @@ class TemplatingExtension extends \Twig_Extension
     public function getTokenParsers()
     {
         return array(
-            // {% javascript 'bundles/blog/js/blog.js' %}
-            new HelperTokenParser('javascript', '<js> [with <arguments:hash>]', 'templating.helper.javascripts', 'add'),
-
-            // {% javascripts %}
-            new HelperTokenParser('javascripts', '', 'templating.helper.javascripts', 'render'),
-
-            // {% stylesheet 'bundles/blog/css/blog.css' with { 'media': 'screen' } %}
-            new HelperTokenParser('stylesheet', '<css> [with <arguments:hash>]', 'templating.helper.stylesheets', 'add'),
-
-            // {% stylesheets %}
-            new HelperTokenParser('stylesheets', '', 'templating.helper.stylesheets', 'render'),
-
-            // {% asset 'css/blog.css' %}
-            new HelperTokenParser('asset', '<location>', 'templating.helper.assets', 'getUrl'),
-
             // {% render 'BlogBundle:Post:list' with { 'limit': 2 }, { 'alt': 'BlogBundle:Post:error' } %}
-            new HelperTokenParser('render', '<template> [with <attributes:hash>[, <options:hash>]]', 'templating.helper.actions', 'render'),
-
-            // {% flash 'notice' %}
-            new HelperTokenParser('flash', '<name>', 'templating.helper.session', 'getFlash'),
+            new RenderTokenParser(),
 
             // {% include 'sometemplate.php' with { 'something' : 'something2' } %}
             new IncludeTokenParser(),

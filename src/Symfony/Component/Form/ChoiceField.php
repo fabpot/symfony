@@ -11,7 +11,7 @@ namespace Symfony\Component\Form;
  * with this source code in the file LICENSE.
  */
 
-use Symfony\Component\Form\Exception\UnexpectedTypeException;
+use Symfony\Component\Form\Exception\InvalidOptionsException;
 
 /**
  * Lets the user select between different choices
@@ -39,11 +39,11 @@ class ChoiceField extends HybridField
         $this->addOption('empty_value', '');
 
         if (!is_array($this->getOption('choices'))) {
-            throw new UnexpectedTypeException('The choices option must be an array');
+            throw new InvalidOptionsException('The choices option must be an array', array('choices'));
         }
 
         if (!is_array($this->getOption('preferred_choices'))) {
-            throw new UnexpectedTypeException('The preferred_choices option must be an array');
+            throw new InvalidOptionsException('The preferred_choices option must be an array', array('preferred_choices'));
         }
 
         if (count($this->getOption('preferred_choices')) > 0) {
@@ -156,7 +156,7 @@ class ChoiceField extends HybridField
     public function bind($value)
     {
         if (!$this->isMultipleChoice() && $this->isExpanded()) {
-            $value = $value === null ? array() : array($value => true);
+            $value = null === $value ? array() : array($value => true);
         }
 
         parent::bind($value);

@@ -11,7 +11,7 @@ namespace Symfony\Component\Form\ValueTransformer;
  * with this source code in the file LICENSE.
  */
 
-use \Symfony\Component\Form\ValueTransformer\ValueTransformerException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
  * Transforms between a timestamp and a DateTime object
@@ -40,12 +40,12 @@ class DateTimeToTimestampTransformer extends BaseValueTransformer
      */
     public function transform($value)
     {
-        if ($value === null) {
+        if (null === $value) {
             return null;
         }
 
         if (!$value instanceof \DateTime) {
-            throw new \InvalidArgumentException('Expected value of type \DateTime');
+            throw new UnexpectedTypeException($value, '\DateTime');
         }
 
         $value->setTimezone(new \DateTimeZone($this->getOption('output_timezone')));
@@ -61,8 +61,12 @@ class DateTimeToTimestampTransformer extends BaseValueTransformer
      */
     public function reverseTransform($value, $originalValue)
     {
-        if ($value === null) {
+        if (null === $value) {
             return null;
+        }
+
+        if (!is_numeric($value)) {
+            throw new UnexpectedTypeException($value, 'numeric');
         }
 
         $outputTimezone = $this->getOption('output_timezone');

@@ -28,28 +28,20 @@ class Engine extends BaseEngine
     /**
      * Constructor.
      *
-     * @param ContainerInterface $container A ContainerInterface instance
+     * @param ContainerInterface $container The DI container
      * @param LoaderInterface    $loader    A loader instance
+     * @param array              $renderers All templating renderers
      */
-    public function __construct(ContainerInterface $container, LoaderInterface $loader)
+    public function __construct(ContainerInterface $container, LoaderInterface $loader, array $renderers)
     {
         $this->container = $container;
 
-        parent::__construct($loader);
+        parent::__construct($loader, $renderers);
+    }
 
-        foreach ($this->container->findTaggedServiceIds('templating.renderer') as $id => $attributes) {
-            if (isset($attributes[0]['alias'])) {
-                $this->renderers[$attributes[0]['alias']] = $this->container->get($id);
-                $this->renderers[$attributes[0]['alias']]->setEngine($this);
-            }
-        }
-
-        $this->helpers = array();
-        foreach ($this->container->findTaggedServiceIds('templating.helper') as $id => $attributes) {
-            if (isset($attributes[0]['alias'])) {
-                $this->helpers[$attributes[0]['alias']] = $id;
-            }
-        }
+    public function getContainer()
+    {
+        return $this->container;
     }
 
     /**
@@ -94,44 +86,16 @@ class Engine extends BaseEngine
         return $this->helpers[$name];
     }
 
-    // parses template names following the following pattern:
-    // bundle:section:template(.format).renderer
+    public function setHelpers(array $helpers)
+    {
+        $this->helpers = $helpers;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function splitTemplateName($name, array $defaults = array())
     {
-        $parts = explode(':', $name);
-        if (3 !== count($parts)) {
-            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name));
-        }
-
-        $options = array_replace(
-            array(
-                'format' => '',
-            ),
-            $defaults,
-            array(
-                'bundle'     => str_replace('\\', '/', $parts[0]),
-                'controller' => $parts[1],
-            )
-        );
-
-        $elements = explode('.', $parts[2]);
-        if (3 === count($elements)) {
-            $parts[2] = $elements[0];
-            if ('html' !== $elements[1]) {
-                $options['format'] = '.'.$elements[1];
-            }
-            $options['renderer'] = $elements[2];
-        } elseif (2 === count($elements)) {
-            $parts[2] = $elements[0];
-            $options['renderer'] = $elements[1];
-            $format = $this->container->get('request')->getRequestFormat();
-            if (null !== $format && 'html' !== $format) {
-                $options['format'] = '.'.$format;
-            }
-        } else {
-            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name));
-        }
-
-        return array($parts[2], $options);
+        return $this->container->get('templating.name_converter')->fromShortNotation($name, $defaults);
     }
 }

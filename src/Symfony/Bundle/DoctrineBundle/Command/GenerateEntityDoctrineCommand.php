@@ -93,7 +93,7 @@ EOT
               $name = $e[0];
               $type = isset($e[1]) ? $e[1] : 'string';
               preg_match_all('/(.*)\((.*)\)/', $type, $matches);
-              $type = isset($matches[1][0]) ? $matches[1][0] : 'string';
+              $type = isset($matches[1][0]) ? $matches[1][0] : $type;
               $length = isset($matches[2][0]) ? $matches[2][0] : null;
               $class->mapField(array(
                   'fieldName' => $name,
@@ -107,12 +107,12 @@ EOT
         $cme = new ClassMetadataExporter();
         $exporter = $cme->getExporter($mappingType);
 
-        if ($mappingType === 'annotation') {
+        if ('annotation' === $mappingType) {
             $path = $dirs[$namespace].'/'.$bundle.'/Entity/'.str_replace($entityNamespace.'\\', null, $fullEntityClassName).'.php';
 
             $exporter->setEntityGenerator($this->getEntityGenerator());
         } else {
-            $mappingType = $mappingType == 'yaml' ? 'yml' : $mappingType;
+            $mappingType = 'yaml' == $mappingType ? 'yml' : $mappingType;
             $path = $dirs[$namespace].'/'.$bundle.'/Resources/config/doctrine/metadata/orm/'.str_replace('\\', '.', $fullEntityClassName).'.dcm.'.$mappingType;
         }
 

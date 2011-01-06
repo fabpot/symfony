@@ -14,7 +14,6 @@ namespace Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
-use Symfony\Component\Locale\Locale;
 
 /**
  * Validates whether a value is a valid country code
@@ -25,7 +24,7 @@ class CountryValidator extends ConstraintValidator
 {
     public function isValid($value, Constraint $constraint)
     {
-        if ($value === null || $value === '') {
+        if (null === $value || '' === $value) {
             return true;
         }
 
@@ -35,7 +34,7 @@ class CountryValidator extends ConstraintValidator
 
         $value = (string)$value;
 
-        if (!in_array($value, Locale::getCountries())) {
+        if (!in_array($value, \Symfony\Component\Locale\Locale::getCountries())) {
             $this->setMessage($constraint->message, array('{{ value }}' => $value));
 
             return false;

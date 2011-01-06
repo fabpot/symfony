@@ -11,7 +11,7 @@ namespace Symfony\Component\Form\ValueTransformer;
  * with this source code in the file LICENSE.
  */
 
-use \Symfony\Component\Form\ValueTransformer\ValueTransformerException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
  * Transforms between a normalized time and a localized time string
@@ -57,18 +57,18 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
      */
     public function transform($dateTime)
     {
-        if ($dateTime === null) {
+        if (null === $dateTime) {
             return '';
         }
 
         if (!$dateTime instanceof \DateTime) {
-            throw new \InvalidArgumentException('Expected value of type \DateTime');
+            throw new UnexpectedTypeException($dateTime, '\DateTime');
         }
 
         $inputTimezone = $this->getOption('input_timezone');
 
         // convert time to UTC before passing it to the formatter
-        if ($inputTimezone != 'UTC') {
+        if ('UTC' != $inputTimezone) {
             $dateTime->setTimezone(new \DateTimeZone('UTC'));
         }
 
@@ -92,10 +92,10 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
         $inputTimezone = $this->getOption('input_timezone');
 
         if (!is_string($value)) {
-            throw new \InvalidArgumentException(sprintf('Expected argument of type string, %s given', gettype($value)));
+            throw new UnexpectedTypeException($value, 'string');
         }
 
-        if ($value === '') {
+        if ('' === $value) {
             return null;
         }
 
@@ -108,7 +108,7 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
         // read timestamp into DateTime object - the formatter delivers in UTC
         $dateTime = new \DateTime(sprintf('@%s UTC', $timestamp));
 
-        if ($inputTimezone != 'UTC') {
+        if ('UTC' != $inputTimezone) {
             $dateTime->setTimezone(new \DateTimeZone($inputTimezone));
         }
 

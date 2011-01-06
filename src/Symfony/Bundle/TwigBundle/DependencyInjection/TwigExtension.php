@@ -5,6 +5,7 @@ namespace Symfony\Bundle\TwigBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 
 /*
  * This file is part of the Symfony framework.
@@ -44,6 +45,33 @@ class TwigExtension extends Extension
             }
         }
 
+        // globals
+        $def = $container->getDefinition('twig');
+        $globals = $this->fixConfig($config, 'global');
+        if (isset($globals[0])) {
+            foreach ($globals as $global) {
+                $def->addMethodCall('addGlobal', array($global['key'], new Reference($global['id'])));
+            }
+        } else {
+            foreach ($globals as $key => $id) {
+                $def->addMethodCall('addGlobal', array($key, new Reference($id)));
+            }
+        }
+        unset($config['globals'], $config['global']);
+
+        // extensions
+        $extensions = $this->fixConfig($config, 'extension');
+        if (isset($extensions[0]) && is_array($extensions[0])) {
+            foreach ($extensions as $extension) {
+                $container->getDefinition($extension['id'])->addTag('twig.extension');
+            }
+        } else {
+            foreach ($extensions as $id) {
+                $container->getDefinition($id)->addTag('twig.extension');
+            }
+        }
+        unset($config['extensions'], $config['extension']);
+
         // convert - to _
         foreach ($config as $key => $value) {
             $config[str_replace('-', '_', $key)] = $value;
@@ -70,5 +98,22 @@ class TwigExtension extends Extension
     public function getAlias()
     {
         return 'twig';
+    }
+
+    protected function fixConfig($config, $key)
+    {
+        $values = array();
+        if (isset($config[$key.'s'])) {
+            $values = $config[$key.'s'];
+        } elseif (isset($config[$key])) {
+            if (is_string($config[$key]) || !is_int(key($config[$key]))) {
+                // only one
+                $values = array($config[$key]);
+            } else {
+                $values = $config[$key];
+            }
+        }
+
+        return $values;
     }
 }

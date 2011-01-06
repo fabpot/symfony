@@ -7,7 +7,7 @@
     <parameters>
         <parameter key="router.class">Symfony\Component\Routing\Router</parameter>
         <parameter key="routing.loader.class">Symfony\Bundle\FrameworkBundle\Routing\DelegatingLoader</parameter>
-        <parameter key="routing.resolver.class">Symfony\Bundle\FrameworkBundle\Routing\LoaderResolver</parameter>
+        <parameter key="routing.resolver.class">Symfony\Component\Routing\Loader\LoaderResolver</parameter>
         <parameter key="routing.loader.xml.class">Symfony\Component\Routing\Loader\XmlFileLoader</parameter>
         <parameter key="routing.loader.yml.class">Symfony\Component\Routing\Loader\YamlFileLoader</parameter>
         <parameter key="routing.loader.php.class">Symfony\Component\Routing\Loader\PhpFileLoader</parameter>
@@ -20,21 +20,19 @@
     </parameters>
 
     <services>
-        <service id="routing.resolver" class="%routing.resolver.class%">
-            <argument type="service" id="service_container" />
-        </service>
+        <service id="routing.resolver" class="%routing.resolver.class%" public="false" />
 
-        <service id="routing.loader.xml" class="%routing.loader.xml.class%">
+        <service id="routing.loader.xml" class="%routing.loader.xml.class%" public="false">
             <tag name="routing.loader" />
             <argument>%kernel.bundle_dirs%</argument>
         </service>
 
-        <service id="routing.loader.yml" class="%routing.loader.yml.class%">
+        <service id="routing.loader.yml" class="%routing.loader.yml.class%" public="false">
             <tag name="routing.loader" />
             <argument>%kernel.bundle_dirs%</argument>
         </service>
 
-        <service id="routing.loader.php" class="%routing.loader.php.class%">
+        <service id="routing.loader.php" class="%routing.loader.php.class%" public="false">
             <tag name="routing.loader" />
             <argument>%kernel.bundle_dirs%</argument>
         </service>
@@ -45,7 +43,7 @@
             <argument type="service" id="routing.resolver" />
         </service>
 
-        <service id="routing.loader" class="Symfony\Bundle\FrameworkBundle\Routing\LazyLoader">
+        <service id="routing.loader" class="Symfony\Bundle\FrameworkBundle\Routing\LazyLoader" public="false">
             <argument type="service" id="service_container" />
             <argument>routing.loader.real</argument>
         </service>

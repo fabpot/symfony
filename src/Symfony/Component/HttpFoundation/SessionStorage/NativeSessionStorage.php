@@ -26,7 +26,7 @@ class NativeSessionStorage implements SessionStorageInterface
     /**
      * Available options:
      *
-     *  * name:     The cookie name (_SESSION by default)
+     *  * name:     The cookie name (_SESS by default)
      *  * id:       The session id (null by default)
      *  * lifetime: Cookie lifetime
      *  * path:     Cookie path
@@ -43,7 +43,7 @@ class NativeSessionStorage implements SessionStorageInterface
         $cookieDefaults = session_get_cookie_params();
 
         $this->options = array_merge(array(
-            'name'          => '_SESSION',
+            'name'          => '_SESS',
             'lifetime'      => $cookieDefaults['lifetime'],
             'path'          => $cookieDefaults['path'],
             'domain'        => $cookieDefaults['domain'],
@@ -81,6 +81,18 @@ class NativeSessionStorage implements SessionStorageInterface
         session_start();
 
         self::$sessionStarted = true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getId()
+    {
+        if (!self::$sessionStarted) {
+            throw new \RuntimeException('The session must be started before reading its ID');
+        }
+
+        return session_id();
     }
 
     /**

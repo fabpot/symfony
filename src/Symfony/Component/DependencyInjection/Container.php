@@ -22,7 +22,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
  *
  * Services and parameters are simple key/pair stores.
  *
- * Parameters keys are case insensitive.
+ * Parameter and service keys are case insensitive.
  *
  * A service id can contain lowercased letters, digits, underscores, and dots.
  * Underscores are used to separate words, and dots to group services
@@ -149,7 +149,7 @@ class Container implements ContainerInterface
      */
     public function set($id, $service)
     {
-        $this->services[$id] = $service;
+        $this->services[strtolower($id)] = $service;
     }
 
     /**
@@ -161,6 +161,8 @@ class Container implements ContainerInterface
      */
     public function has($id)
     {
+        $id = strtolower($id);
+
         return isset($this->services[$id]) || method_exists($this, 'get'.strtr($id, array('_' => '', '.' => '_')).'Service');
     }
 
@@ -181,14 +183,26 @@ class Container implements ContainerInterface
      */
     public function get($id, $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE)
     {
-        $id = (string) $id;
+        static $loading = array();
+
+        $id = strtolower($id);
 
         if (isset($this->services[$id])) {
             return $this->services[$id];
         }
 
+        if (isset($loading[$id])) {
+            throw new \LogicException(sprintf('Circular reference detected for service "%s" (services currently loading: %s).', $id, implode(', ', array_keys($loading))));
+        }
+
         if (method_exists($this, $method = 'get'.strtr($id, array('_' => '', '.' => '_')).'Service')) {
-            return $this->$method();
+            $loading[$id] = true;
+
+            $service = $this->$method();
+
+            unset($loading[$id]);
+
+            return $service;
         }
 
         if (self::EXCEPTION_ON_INVALID_REFERENCE === $invalidBehavior) {
