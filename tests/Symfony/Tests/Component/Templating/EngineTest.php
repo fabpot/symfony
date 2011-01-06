@@ -135,7 +135,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     public function testGlobalVariables()
     {
         $engine = new ProjectTemplateEngine(self::$loader);
-        $engine->addGlobal('global_variable', 'lorem ipsum');
+        $engine->setGlobal('global_variable', 'lorem ipsum');
 
         $this->assertEquals(array(
             'global_variable' => 'lorem ipsum',
@@ -145,7 +145,7 @@ class EngineTest extends \PHPUnit_Framework_TestCase
     public function testGlobalsGetPassedToTemplate()
     {
         $engine = new ProjectTemplateEngine(self::$loader);
-        $engine->addGlobal('global', 'global variable');
+        $engine->setGlobal('global', 'global variable');
 
         self::$loader->setTemplate('global.php', '<?php echo $global; ?>');
 

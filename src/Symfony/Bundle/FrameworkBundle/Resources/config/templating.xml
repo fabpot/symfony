@@ -30,6 +30,14 @@
             <argument type="service" id="templating.loader" />
             <argument type="collection" />
             <call method="setCharset"><argument>%kernel.charset%</argument></call>
+            <call method="setGlobal">
+                <argument>request</argument>
+                <argument type="service" id="request" />
+            </call>
+            <call method="setGlobal">
+                <argument>session</argument>
+                <argument type="service" id="session" />
+            </call>
         </service>
 
         <service id="templating.loader.filesystem" class="%templating.loader.filesystem.class%" public="false">

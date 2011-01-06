@@ -406,7 +406,7 @@ class Engine implements \ArrayAccess
      * @param string $name
      * @param mixed $value
      */
-    public function addGlobal($name, $value)
+    public function setGlobal($name, $value)
     {
         $this->globals[$name] = $value;
     }
