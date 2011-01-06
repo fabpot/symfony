@@ -59,14 +59,14 @@ class ProfilerListener
      * Handles the core.exception event.
      *
      * @param Event $event An Event instance
+     *
+     * @return Boolean false Do not mark the core.exception event as processed
      */
     public function handleException(Event $event)
     {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return false;
+        if (HttpKernelInterface::MASTER_REQUEST === $event->get('request_type')) {
+            $this->exception = $event->get('exception');
         }
-
-        $this->exception = $event->get('exception');
 
         return false;
     }
@@ -80,20 +80,13 @@ class ProfilerListener
      */
     public function handleResponse(Event $event, Response $response)
     {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
+        if (HttpKernelInterface::MASTER_REQUEST === $event->get('request_type')
+            && (null === $this->matcher || $this->matcher->matches($event->get('request')))
+            && (!$this->onlyException || null !== $this->exception)
+        ) {
+            $this->profiler->collect($event->get('request'), $response, $this->exception);
+            $this->exception = null;
         }
-
-        if (null !== $this->matcher && !$this->matcher->matches($event->get('request'))) {
-            return $response;
-        }
-
-        if ($this->onlyException && null === $this->exception) {
-            return $response;
-        }
-
-        $this->profiler->collect($event->get('request'), $response, $this->exception);
-        $this->exception = null;
 
         return $response;
     }
