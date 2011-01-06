@@ -1,0 +1,29 @@
+<?php
+
+namespace Symfony\Test\Component\Validator\Mapping;
+
+require_once __DIR__.'/../Fixtures/Entity.php';
+
+use Symfony\Component\Validator\Mapping\PropertyMetadata;
+use Symfony\Test\Component\Validator\Fixtures\Entity;
+
+class PropertyMetadataTest extends \PHPUnit_Framework_TestCase
+{
+    const CLASSNAME = 'Symfony\Test\Component\Validator\Fixtures\Entity';
+
+    public function testInvalidPropertyName()
+    {
+        $this->setExpectedException('Symfony\Component\Validator\Exception\ValidatorException');
+
+        new PropertyMetadata(self::CLASSNAME, 'foobar');
+    }
+
+    public function testGetValueFromPrivateProperty()
+    {
+        $entity = new Entity('foobar');
+        $metadata = new PropertyMetadata(self::CLASSNAME, 'internal');
+
+        $this->assertEquals('foobar', $metadata->getValue($entity));
+    }
+}
+
