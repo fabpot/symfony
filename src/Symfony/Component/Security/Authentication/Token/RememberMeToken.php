@@ -13,6 +13,7 @@ use Symfony\Component\Security\User\AccountInterface;
 class RememberMeToken extends Token
 {
     protected $key;
+    protected $providerKey;
 
     /**
      * The persistent token which resulted in this authentication token.
@@ -27,7 +28,7 @@ class RememberMeToken extends Token
      * @param string $username
      * @param string $key
      */
-    public function __construct(AccountInterface $user, $key) {
+    public function __construct(AccountInterface $user, $providerKey, $key) {
         parent::__construct($user->getRoles());
 
         if (0 === strlen($key)) {
@@ -35,8 +36,14 @@ class RememberMeToken extends Token
         }
 
         $this->user = $user;
+        $this->providerKey = $providerKey;
         $this->key = $key;
         $this->setAuthenticated(true);
+    }
+
+    public function getProviderKey()
+    {
+        return $this->providerKey;
     }
 
     public function getKey()

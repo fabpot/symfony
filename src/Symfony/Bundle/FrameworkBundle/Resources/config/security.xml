@@ -6,6 +6,7 @@
 
     <parameters>
         <parameter key="security.context.class">Symfony\Component\Security\SecurityContext</parameter>
+        <parameter key="security.context.always_authenticate">false</parameter>
 
         <parameter key="security.account_checker.class">Symfony\Component\Security\User\AccountChecker</parameter>
 
@@ -48,6 +49,8 @@
         <parameter key="security.authentication.listener.basic.class">Symfony\Component\HttpKernel\Security\Firewall\BasicAuthenticationListener</parameter>
         <parameter key="security.authentication.listener.digest.class">Symfony\Component\HttpKernel\Security\Firewall\DigestAuthenticationListener</parameter>
         <parameter key="security.authentication.listener.anonymous.class">Symfony\Component\HttpKernel\Security\Firewall\AnonymousAuthenticationListener</parameter>
+        
+        <parameter key="security.authentication.provider.anonymous">Symfony\Component\Security\Authentication\Provider\AnonymousAuthenticationProvider</parameter>
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
         <parameter key="security.channel_listener.class">Symfony\Component\HttpKernel\Security\Firewall\ChannelListener</parameter>
@@ -84,7 +87,9 @@
 
     <services>
         <service id="security.context" class="%security.context.class%">
+            <argument type="service" id="security.authentication.manager" />
             <argument type="service" id="security.access.decision_manager" />
+            <argument>%security.context.always_authenticate%</argument>
         </service>
 
         <service id="security.role_hierarchy" class="%security.role_hierarchy.class%" public="false">
@@ -105,6 +110,15 @@
             <argument type="service" id="security.context" />
             <argument>%security.anonymous.key%</argument>
             <argument type="service" id="logger" on-invalid="null" />
+        </service>
+
+        <service id="security.authentication.manager" class="%security.authentication.manager.class%" public="false">
+            <argument type="collection" />
+        </service>
+        
+        <service id="security.authentication.provider.anonymous" class="%security.authentication.provider.anonymous%" public="false">
+            <argument>%security.anonymous.key%</argument>
+            <tag name="security.authentication_provider" />
         </service>
 
         <service id="security.authentication.trust_resolver" class="%security.authentication.trust_resolver.class%" public="false">

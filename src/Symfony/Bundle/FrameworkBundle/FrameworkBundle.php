@@ -2,6 +2,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle;
 
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddAuthenticationProvidersPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddConstraintValidatorsPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddTemplatingRenderersPass;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RegisterKernelListenersPass;
@@ -66,5 +67,6 @@ class FrameworkBundle extends Bundle
         $container->addCompilerPass(new RegisterKernelListenersPass());
         $container->addCompilerPass(new AddTemplatingRenderersPass());
         $container->addCompilerPass(new AddConstraintValidatorsPass());
+        $container->addCompilerPass(new AddAuthenticationProvidersPass());
     }
 }

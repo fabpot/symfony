@@ -26,16 +26,16 @@ class FormLoginFactory implements SecurityFactoryInterface
         $provider = 'security.authentication.provider.dao.'.$id;
         $container
             ->register($provider, '%security.authentication.provider.dao.class%')
-            ->setArguments(array(new Reference($userProvider), new Reference('security.account_checker'), new Reference('security.encoder_factory')))
+            ->setArguments(array(new Reference($userProvider), new Reference('security.account_checker'), $id, new Reference('security.encoder_factory')))
             ->setPublic(false)
+            ->addTag('security.authentication_provider')
         ;
 
         // listener
         $listenerId = 'security.authentication.listener.form.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
         $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $arguments[2] = $id;
 
         $options = array(
             'check_path'                     => '/login_check',
@@ -53,7 +53,9 @@ class FormLoginFactory implements SecurityFactoryInterface
                 $options[$key] = $config[$key];
             }
         }
-        $container->setParameter('security.authentication.form.options', $options);
+        $arguments[3] = $options;
+        $listener->setArguments($arguments);
+
         $container->setParameter('security.authentication.form.login_path', $options['login_path']);
         $container->setParameter('security.authentication.form.use_forward', $options['use_forward']);
 

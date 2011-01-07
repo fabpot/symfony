@@ -34,6 +34,7 @@
         <service id="security.authentication.listener.form" class="%security.authentication.listener.form.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
+            <argument />
             <argument>%security.authentication.form.options%</argument>
             <argument type="service" id="logger" on-invalid="null" />
         </service>
@@ -41,6 +42,7 @@
         <service id="security.authentication.listener.x509" class="%security.authentication.listener.x509.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
+            <argument />
             <argument>%security.authentication.x509.user%</argument>
             <argument>%security.authentication.x509.credentials%</argument>
             <argument type="service" id="logger" on-invalid="null" />
@@ -49,6 +51,7 @@
         <service id="security.authentication.listener.basic" class="%security.authentication.listener.basic.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
+            <argument></argument>
             <argument type="service" id="security.authentication.basic_entry_point" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>
@@ -56,6 +59,7 @@
         <service id="security.authentication.listener.digest" class="%security.authentication.listener.digest.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.user.provider.in_memory" />
+            <argument></argument>
             <argument type="service" id="security.authentication.digest_entry_point" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>

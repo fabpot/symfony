@@ -148,10 +148,18 @@ class ContextListener implements ListenerInterface
                     $token->setAuthenticated(false);
                 }
 
+                if (null !== $this->logger) {
+                    $this->logger->debug(sprintf('Username "%s" was reloaded from user provider.', $user));
+                }
+
                 return $token;
             } catch (UnsupportedAccountException $unsupported) {
                 // let's try the next user provider
             } catch (UsernameNotFoundException $notFound) {
+                if (null !== $this->logger) {
+                    $this->logger->debug(sprintf('Username "%s" could not be found.', $user));
+                }
+
                 return null;
             }
         }

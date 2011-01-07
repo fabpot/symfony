@@ -25,16 +25,24 @@ use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
  */
 class UsernamePasswordFormAuthenticationListener extends FormAuthenticationListener
 {
+    protected $providerKey;
+
     /**
      * {@inheritdoc}
      */
-    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, array $options = array(), LoggerInterface $logger = null)
+    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, $providerKey, array $options = array(), LoggerInterface $logger = null)
     {
         parent::__construct($securityContext, $authenticationManager, array_merge(array(
             'username_parameter' => '_username',
             'password_parameter' => '_password',
             'post_only'          => true,
         ), $options), $logger);
+
+        if (empty($providerKey)) {
+            throw new \InvalidArgumentException('$providerKey must not be empty.');
+        }
+
+        $this->providerKey = $providerKey;
     }
 
     /**
@@ -55,6 +63,6 @@ class UsernamePasswordFormAuthenticationListener extends FormAuthenticationListe
 
         $request->getSession()->set(SecurityContext::LAST_USERNAME, $username);
 
-        return $this->authenticationManager->authenticate(new UsernamePasswordToken($username, $password));
+        return $this->authenticationManager->authenticate(new UsernamePasswordToken($username, $password, $this->providerKey));
     }
 }

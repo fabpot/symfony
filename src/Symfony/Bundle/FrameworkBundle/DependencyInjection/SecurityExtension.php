@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\RequestMatcher;
  * SecurityExtension.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class SecurityExtension extends Extension
 {
@@ -247,7 +248,7 @@ class SecurityExtension extends Extension
         $listeners = array_merge($listeners, $authListeners);
 
         // Access listener
-        $listeners[] = new Reference($this->createAccessListener($container, $id, $providers));
+        $listeners[] = new Reference('security.access_listener');
 
         // Switch user listener
         if (array_key_exists('switch_user', $firewall)) {
@@ -523,26 +524,6 @@ class SecurityExtension extends Extension
     protected function getUserProviderId($name)
     {
         return 'security.authentication.provider.'.$name;
-    }
-
-    protected function createAccessListener($container, $id, $providers)
-    {
-        // Authentication manager
-        $authManager = 'security.authentication.manager.'.$id;
-        $container
-            ->register($authManager, '%security.authentication.manager.class%')
-            ->addArgument($providers)
-            ->setPublic(false)
-        ;
-
-        // Access listener
-        $listenerId = 'security.access_listener.'.$id;
-        $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.access_listener'));
-        $arguments = $listener->getArguments();
-        $arguments[3] = new Reference($authManager);
-        $listener->setArguments($arguments);
-
-        return $listenerId;
     }
 
     protected function createExceptionListener($container, $id, $defaultEntryPoint)
