@@ -11,6 +11,13 @@
          syntaxCheck="false"
          bootstrap="tests/bootstrap.php"
 >
+
+<!--
+    <php>
+        <server name="KERNEL_DIR" value="../../app/" />
+    </php
+-->
+
     <testsuites>
         <testsuite name="Symfony Test Suite">
             <directory>./tests/Symfony/</directory>
