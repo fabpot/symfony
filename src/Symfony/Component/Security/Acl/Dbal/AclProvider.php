@@ -379,9 +379,16 @@ class AclProvider implements AclProviderInterface
                 if (!isset($loadedAces[$aceId])) {
                     if (!isset($sids[$key = ($username?'1':'0').$securityIdentifier])) {
                         if ($username) {
+                            foreach($sids as $identity) {
+                                if($identity instanceof UserSecurityIdentity) {
+                                    break;
+                                }
+                                $identity = null;
+                            }
+
                             $sids[$key] = new UserSecurityIdentity(
-                                substr($securityIdentifier, 1 + $pos = strpos($securityIdentifier, '-')),
-                                substr($securityIdentifier, 0, $pos)
+                                $identity->getUsername(),
+                                $identity->getClass()
                             );
                         } else {
                             $sids[$key] = new RoleSecurityIdentity($securityIdentifier);
