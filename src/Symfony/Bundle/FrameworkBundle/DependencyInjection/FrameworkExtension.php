@@ -3,6 +3,7 @@
 namespace Symfony\Bundle\FrameworkBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -34,7 +35,7 @@ class FrameworkExtension extends Extension
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function configLoad($config, ContainerBuilder $container)
+    public function configLoad(array $config, ContainerBuilder $container)
     {
         $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
 
@@ -67,7 +68,6 @@ class FrameworkExtension extends Extension
         }
 
         if (!$container->hasDefinition('event_dispatcher')) {
-            $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
             $loader->load('services.xml');
 
             if ($container->getParameter('kernel.debug')) {
@@ -93,32 +93,32 @@ class FrameworkExtension extends Extension
         }
 
         if (isset($config['router'])) {
-            $this->registerRouterConfiguration($config, $container);
+            $this->registerRouterConfiguration($config, $container, $loader);
         }
 
         if (isset($config['profiler'])) {
-            $this->registerProfilerConfiguration($config, $container);
+            $this->registerProfilerConfiguration($config, $container, $loader);
         }
 
         if (isset($config['validation']['enabled'])) {
-            $this->registerValidationConfiguration($config, $container);
+            $this->registerValidationConfiguration($config, $container, $loader);
         }
 
         if (array_key_exists('templating', $config)) {
-            $this->registerTemplatingConfiguration($config, $container);
+            $this->registerTemplatingConfiguration($config, $container, $loader);
         }
 
         if (array_key_exists('test', $config)) {
-            $this->registerTestConfiguration($config, $container);
+            $this->registerTestConfiguration($config, $container, $loader);
         }
 
         if (array_key_exists('param_converter', $config) || array_key_exists('param-converter', $config)) {
-            $this->registerParamConverterConfiguration($config, $container);
+            $this->registerParamConverterConfiguration($config, $container, $loader);
         }
 
-        $this->registerSessionConfiguration($config, $container);
+        $this->registerSessionConfiguration($config, $container, $loader);
 
-        $this->registerTranslatorConfiguration($config, $container);
+        $this->registerTranslatorConfiguration($config, $container, $loader);
 
         $this->addCompiledClasses($container, array(
             'Symfony\\Component\\HttpFoundation\\ParameterBag',
@@ -150,25 +150,25 @@ class FrameworkExtension extends Extension
      *
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
      */
-    protected function registerParamConverterConfiguration($config, ContainerBuilder $container)
+    protected function registerParamConverterConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
-        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
         $loader->load('param_converter.xml');
     }
 
     /**
      * Loads the templating configuration.
      *
-     * @param array            $config        An array of configuration settings
+     * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
      */
-    protected function registerTemplatingConfiguration($config, ContainerBuilder $container)
+    protected function registerTemplatingConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         $config = isset($config['templating']) ? $config['templating'] : array();
 
         if (!$container->hasDefinition('templating')) {
-            $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
             $loader->load('templating.xml');
 
             if ($container->getParameter('kernel.debug')) {
@@ -254,10 +254,10 @@ class FrameworkExtension extends Extension
      *
      * @param array            $config    A configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
      */
-    protected function registerTestConfiguration($config, ContainerBuilder $container)
+    protected function registerTestConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
-        $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
         $loader->load('test.xml');
 
         $container->setAlias('session.storage', 'session.storage.array');
@@ -268,13 +268,13 @@ class FrameworkExtension extends Extension
      *
      * @param array            $config    A configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
      */
-    protected function registerTranslatorConfiguration($config, ContainerBuilder $container)
+    protected function registerTranslatorConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         $first = false;
         if (!$container->hasDefinition('translator')) {
             $first = true;
-            $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
             $loader->load('translation.xml');
         }
 
@@ -326,11 +326,11 @@ class FrameworkExtension extends Extension
      *
      * @param array            $config    A configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
      */
-    protected function registerSessionConfiguration($config, ContainerBuilder $container)
+    protected function registerSessionConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         if (!$container->hasDefinition('session')) {
-            $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
             $loader->load('session.xml');
         }
 
@@ -380,10 +380,16 @@ class FrameworkExtension extends Extension
         ));
     }
 
-    protected function registerRouterConfiguration($config, ContainerBuilder $container)
+    /**
+     * Loads the router configuration.
+     *
+     * @param array            $config    A configuration array
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
+     */
+    protected function registerRouterConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         if (!$container->hasDefinition('router')) {
-            $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
             $loader->load('routing.xml');
         }
 
@@ -401,20 +407,25 @@ class FrameworkExtension extends Extension
         ));
     }
 
-    /*
-        <profiler only-exceptions="false">
-            <matcher ip="192.168.0.0/24" path="#/admin/#i" />
-            <matcher>
-                <service class="MyMatcher" />
-            </matcher>
-            <matcher service="my_matcher" />
-        </profiler>
-    */
-    protected function registerProfilerConfiguration($config, ContainerBuilder $container)
+    /**
+     * Loads the profiler configuration.
+     *
+     *  <app:profiler only-exceptions="false">
+     *      <matcher ip="192.168.0.0/24" path="#/admin/#i" />
+     *      <matcher>
+     *          <service class="MyMatcher" />
+     *      </matcher>
+     *      <matcher service="my_matcher" />
+     *  </app:profiler>
+     *
+     * @param array            $config    A configuration array
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
+     */
+    protected function registerProfilerConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         if ($config['profiler']) {
             if (!$container->hasDefinition('profiler')) {
-                $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
                 $loader->load('profiling.xml');
                 $loader->load('collectors.xml');
             }
@@ -450,11 +461,17 @@ class FrameworkExtension extends Extension
         }
     }
 
-    protected function registerValidationConfiguration($config, ContainerBuilder $container)
+    /**
+     * Loads the validator configuration.
+     *
+     * @param array            $config    A configuration array
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param LoaderInterface  $loader    A loader for the container
+     */
+    protected function registerValidationConfiguration(array $config, ContainerBuilder $container, LoaderInterface $loader)
     {
         if ($config['validation']['enabled']) {
             if (!$container->hasDefinition('validator')) {
-                $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
                 $loader->load('validator.xml');
             }
 
@@ -526,7 +543,13 @@ class FrameworkExtension extends Extension
         }
     }
 
-    protected function addCompiledClasses($container, array $classes)
+    /**
+     * Add class to be compiled when debug mode is not activated
+     *
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param array            $classes   Classes to be compiled
+     */
+    protected function addCompiledClasses(ContainerBuilder $container, array $classes)
     {
         if (false === $container->getParameter('kernel.debug')) {
             $current =$container->getParameter('kernel.compiled_classes');

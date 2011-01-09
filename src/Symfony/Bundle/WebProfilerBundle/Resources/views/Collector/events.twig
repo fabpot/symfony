@@ -14,11 +14,11 @@ Events
             <th>Caller</th>
             <th>Listener</th>
         </tr>
-        {% for elements in collector.calledlisteners %}
+        {% for element in collector.calledlisteners %}
             <tr>
-                <td><code>{{ elements.event }}</code></td>
-                <td><code>{{ elements.caller|abbr_class }}</code></td>
-                <td><code>{{ elements.listener|abbr_method }}()</code></td>
+                <td><code>{{ element.event }}</code></td>
+                <td><code>{{ element.caller|abbr_class }}</code></td>
+                <td><code>{{ element.listener|abbr_method }}()</code></td>
             </tr>
         {% endfor %}
     </table>
@@ -31,10 +31,10 @@ Events
                 <th>Event</th>
                 <th>Listener</th>
             </tr>
-            {% for elements in collector.notcalledlisteners %}
+            {% for element in collector.notcalledlisteners %}
                 <tr>
-                    <td><code>{{ elements.event }}</code></td>
-                    <td><code>{{ elements.listener|abbr_method }}()</code></td>
+                    <td><code>{{ element.event }}</code></td>
+                    <td><code>{{ element.listener|abbr_method }}()</code></td>
                 </tr>
             {% endfor %}
         </table>
