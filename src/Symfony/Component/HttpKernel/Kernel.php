@@ -326,6 +326,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
                 'kernel.bundle_dirs'      => $this->bundleDirs,
                 'kernel.bundles'          => $bundles,
                 'kernel.charset'          => 'UTF-8',
+                'kernel.compiled_classes' => array(),
             ),
             $this->getEnvParameters()
         );

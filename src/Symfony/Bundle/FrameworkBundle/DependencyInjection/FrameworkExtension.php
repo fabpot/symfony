@@ -528,8 +528,10 @@ class FrameworkExtension extends Extension
 
     protected function addCompiledClasses($container, array $classes)
     {
-        $current = $container->hasParameter('kernel.compiled_classes') ? $container->getParameter('kernel.compiled_classes') : array();
-        $container->setParameter('kernel.compiled_classes', array_merge($current, $classes));
+        if (false === $container->getParameter('kernel.debug')) {
+            $current =$container->getParameter('kernel.compiled_classes');
+            $container->setParameter('kernel.compiled_classes', array_merge($current, $classes));
+        }
     }
 
     /**
