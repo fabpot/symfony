@@ -950,6 +950,10 @@ class Request
             if (is_array($data)) {
                 $keys = array_keys($data);
                 sort($keys);
+                
+                if ($keys == $fileKeys) {
+                    $data['error'] = (int) $data['error'];
+                }
 
                 if ($keys != $fileKeys) {
                     $fixedFiles[$key] = $this->convertFileInformation($data);
