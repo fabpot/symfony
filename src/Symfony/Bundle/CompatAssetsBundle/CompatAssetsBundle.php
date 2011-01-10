@@ -1,6 +1,7 @@
 <?php
 
 namespace Symfony\Bundle\CompatAssetsBundle;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /*
  * This file is part of the Symfony framework.
