@@ -53,6 +53,10 @@ class FrameworkBundle extends Bundle
 
             return $container->get('session')->getId();
         });
+
+        if ($this->container->getParameter('kernel.debug')) {
+            FormConfiguration::disableDefaultCsrfProtection();
+        }
     }
 
     public function registerExtensions(ContainerBuilder $container)
