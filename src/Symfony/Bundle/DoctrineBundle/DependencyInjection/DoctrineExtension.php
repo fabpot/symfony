@@ -118,7 +118,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
             $driverOptions = array();
             $driverDef = new Definition('Doctrine\DBAL\DriverManager');
-            $driverDef->setPublic(false);
+            $driverDef->setPublic(true);
             $driverDef->setFactoryMethod('getConnection');
             $container->setDefinition(sprintf('doctrine.dbal.%s_connection', $connection['name']), $driverDef);
         }
