@@ -6,9 +6,6 @@
                     
 
 
-foo3:bar [-h|--help] [-q|--quiet] [-v|--verbose] [-V|--version] [-a|--ansi] [-n|--no-interaction] command
-
-
 
 
                    

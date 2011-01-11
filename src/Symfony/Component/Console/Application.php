@@ -680,11 +680,6 @@ class Application
             }
             $output->writeln("\n");
 
-            if (null !== $this->runningCommand) {
-                $output->writeln(sprintf('<info>%s</info>', sprintf($this->runningCommand->getSynopsis(), $this->getName())));
-                $output->writeln("\n");
-            }
-
             if (Output::VERBOSITY_VERBOSE === $output->getVerbosity()) {
                 $output->writeln('</comment>Exception trace:</comment>');
 
@@ -710,6 +705,11 @@ class Application
                 $output->writeln("\n");
             }
         } while ($e = $e->getPrevious());
+
+        if (null !== $this->runningCommand) {
+            $output->writeln(sprintf('<info>%s</info>', sprintf($this->runningCommand->getSynopsis(), $this->getName())));
+            $output->writeln("\n");
+        }
     }
 
     protected function getCommandName(InputInterface $input)
