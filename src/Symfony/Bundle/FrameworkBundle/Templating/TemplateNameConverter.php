@@ -35,6 +35,25 @@ class TemplateNameConverter
     }
 
     /**
+     * Merges the default options with the given set of options.
+     *
+     * @param array $options An array of options
+     * @param array $defaults An array of default options
+     *
+     * @return array The merged set of options
+     */
+    protected function mergeDefaultOptions(array $options, array $defaults = array())
+    {
+        return array_replace(
+            array(
+                 'format' => '',
+            ),
+            $defaults,
+            $options
+        );
+    }
+
+    /**
      * Converts a short template notation to a template name and an array of options.
      *
      * @param string $name     A short template template
@@ -49,31 +68,20 @@ class TemplateNameConverter
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name));
         }
 
-        $options = array_replace(
-            array(
-                'format' => '',
-            ),
-            $defaults,
-            array(
-                'bundle'     => str_replace('\\', '/', $parts[0]),
-                'controller' => $parts[1],
-            )
+        $options = array(
+            'bundle'     => str_replace('\\', '/', $parts[0]),
+            'controller' => $parts[1],
         );
+        $options = $this->mergeDefaultOptions($options, $defaults);
 
         $elements = explode('.', $parts[2]);
         if (3 === count($elements)) {
             $parts[2] = $elements[0];
-            if ('html' !== $elements[1]) {
-                $options['format'] = '.'.$elements[1];
-            }
+            $options['format'] = '.'.$elements[1];
             $options['renderer'] = $elements[2];
         } elseif (2 === count($elements)) {
             $parts[2] = $elements[0];
             $options['renderer'] = $elements[1];
-            $format = $this->container->get('request')->getRequestFormat();
-            if (null !== $format && 'html' !== $format) {
-                $options['format'] = '.'.$format;
-            }
         } else {
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name));
         }
