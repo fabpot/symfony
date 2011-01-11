@@ -56,13 +56,23 @@ class TemplateNameConverter
     /**
      * Converts a short template notation to a template name and an array of options.
      *
-     * @param string $name     A short template template
-     * @param array  $defaults An array of default options
+     * @param string|array  $name     A short template template
+     * @param array         $defaults An array of default options
      *
      * @return array An array composed of the template name and an array of options
      */
     public function fromShortNotation($name, array $defaults = array())
     {
+        if (is_array($name)) {
+            $options = $this->mergeDefaultOptions($name, $defaults);
+
+            if (empty($name['name'])) {
+                throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', var_export($name, true)));
+            }
+
+            return array($name['name'], $options);
+        }
+
         $parts = explode(':', $name);
         if (3 !== count($parts)) {
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name));

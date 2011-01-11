@@ -76,8 +76,8 @@ class Engine implements \ArrayAccess
      *  * index:      The template logical name is index and the renderer is php
      *  * index:twig: The template logical name is index and the renderer is twig
      *
-     * @param string $name       A template name
-     * @param array  $parameters An array of parameters to pass to the template
+     * @param string|array  $name       A template identifier
+     * @param array         $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
      *
@@ -86,8 +86,9 @@ class Engine implements \ArrayAccess
      */
     public function render($name, array $parameters = array())
     {
-        if (isset($this->cache[$name])) {
-            list($tpl, $options, $template) = $this->cache[$name];
+        $cacheKey = var_export($name, true);
+        if (isset($this->cache[$cacheKey])) {
+            list($tpl, $options, $template) = $this->cache[$cacheKey];
         } else {
             list($tpl, $options) = $this->splitTemplateName($name);
 
@@ -98,7 +99,7 @@ class Engine implements \ArrayAccess
                 throw new \InvalidArgumentException(sprintf('The template "%s" does not exist (renderer: %s).', $name, $options['renderer']));
             }
 
-            $this->cache[$name] = array($tpl, $options, $template);
+            $this->cache[$cacheKey] = array($tpl, $options, $template);
         }
 
         // renderer
@@ -113,25 +114,25 @@ class Engine implements \ArrayAccess
             throw new \InvalidArgumentException(sprintf('The renderer "%s" is not registered.', $renderer));
         }
 
-        $this->current = $name;
-        $this->parents[$name] = null;
+        $this->current = $cacheKey;
+        $this->parents[$cacheKey] = null;
 
         // Attach the global variables
         $parameters = array_replace($this->getGlobals(), $parameters);
 
         // render
         if (false === $content = $this->renderers[$renderer]->evaluate($template, $parameters)) {
-            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered (renderer: %s).', $name, $renderer));
+            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered (renderer: %s).', $cacheKey, $renderer));
         }
 
         // decorator
-        if ($this->parents[$name]) {
+        if ($this->parents[$cacheKey]) {
             $slots = $this->get('slots');
             $this->stack[] = $slots->get('_content');
             $slots->set('_content', $content);
 
             $this->currentRenderer = $renderer;
-            $content = $this->render($this->parents[$name], $parameters);
+            $content = $this->render($this->parents[$cacheKey], $parameters);
             $this->currentRenderer = null;
 
             $slots->set('_content', array_pop($this->stack));
