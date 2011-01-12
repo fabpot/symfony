@@ -24,8 +24,8 @@ class GlobalVariables
 
     // act as a cache to avoid calling the getters more than once
     // request related variables cannot be cached as we can have sub-requests
-    public $security;
-    public $user;
+    private $security;
+    private $user;
 
     public function __construct(ContainerInterface $container)
     {
@@ -34,7 +34,7 @@ class GlobalVariables
 
     public function getSecurity()
     {
-        if ($this->container->has('security.context')) {
+        if (null === $this->security && $this->container->has('security.context')) {
             $this->security = $this->container->get('security.context');
         }
 
@@ -43,7 +43,7 @@ class GlobalVariables
 
     public function getUser()
     {
-        if ($security = $this->getSecurity() && $user = $security->getUser()) {
+        if (null === $this->user && $this->getSecurity() && $user = $this->security->getUser()) {
             $this->user = $user;
         }
 
