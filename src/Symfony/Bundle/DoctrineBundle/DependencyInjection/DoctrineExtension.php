@@ -118,7 +118,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
             $driverOptions = array();
             $driverDef = new Definition('Doctrine\DBAL\DriverManager');
-            $driverDef->setPublic(false);
             $driverDef->setFactoryMethod('getConnection');
             $container->setDefinition(sprintf('doctrine.dbal.%s_connection', $connection['name']), $driverDef);
         }
@@ -226,7 +225,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
             if (false === @mkdir($proxyCacheDir, 0777, true)) {
                 throw new \RuntimeException(sprintf('Unable to create the Doctrine Proxy directory (%s)', dirname($proxyCacheDir)));
             }
-        } elseif (!is_writable($proxyCacheDir) && $container->getParameter('auto_generate_proxy_classes') == true) {
+        } elseif (!is_writable($proxyCacheDir) && $container->getParameter('doctrine.orm.auto_generate_proxy_classes') == true) {
             throw new \RuntimeException(sprintf('Unable to write in the Doctrine Proxy directory (%s)', $proxyCacheDir));
         }
     }

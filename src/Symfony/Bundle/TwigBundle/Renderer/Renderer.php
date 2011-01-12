@@ -4,6 +4,8 @@ namespace Symfony\Bundle\TwigBundle\Renderer;
 
 use Symfony\Component\Templating\Renderer\Renderer as BaseRenderer;
 use Symfony\Component\Templating\Storage\Storage;
+use Symfony\Component\Templating\Engine;
+use Symfony\Bundle\TwigBundle\GlobalVariables;
 
 /*
  * This file is part of the Symfony package.
@@ -22,9 +24,11 @@ class Renderer extends BaseRenderer
 {
     protected $environment;
 
-    public function __construct(\Twig_Environment $environment)
+    public function __construct(\Twig_Environment $environment, GlobalVariables $globals)
     {
         $this->environment = $environment;
+
+        $environment->addGlobal('app', $globals);
     }
 
     /**
@@ -37,13 +41,6 @@ class Renderer extends BaseRenderer
      */
     public function evaluate(Storage $template, array $parameters = array())
     {
-        if ($this->engine->getContainer()->has('request')) {
-            // cannot be set in the constructor as we need the current request
-            $request = $this->engine->getContainer()->get('request');
-            $this->environment->addGlobal('request', $request);
-            $this->environment->addGlobal('session', $request->getSession());
-        }
-
         return $this->environment->loadTemplate($template)->render($parameters);
     }
 }

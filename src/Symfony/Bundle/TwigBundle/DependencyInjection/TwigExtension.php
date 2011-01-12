@@ -29,7 +29,7 @@ class TwigExtension extends Extension
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function configLoad($config, ContainerBuilder $container)
+    public function configLoad(array $config, ContainerBuilder $container)
     {
         if (!$container->hasDefinition('twig')) {
             $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
@@ -50,11 +50,21 @@ class TwigExtension extends Extension
         $globals = $this->fixConfig($config, 'global');
         if (isset($globals[0])) {
             foreach ($globals as $global) {
-                $def->addMethodCall('addGlobal', array($global['key'], new Reference($global['id'])));
+                if (isset($global['type']) && 'service' === $global['type']) {
+                    $def->addMethodCall('addGlobal', array($global['key'], new Reference($global['id'])));
+                } elseif (isset($global['value'])) {
+                    $def->addMethodCall('addGlobal', array($global['key'], $global['value']));
+                } else {
+                    throw new \InvalidArgumentException(sprintf('Unable to understand global configuration (%s).', var_export($global, true)));
+                }
             }
         } else {
-            foreach ($globals as $key => $id) {
-                $def->addMethodCall('addGlobal', array($key, new Reference($id)));
+            foreach ($globals as $key => $value) {
+                if ('@' === substr($value, 0, 1)) {
+                    $def->addMethodCall('addGlobal', array($key, new Reference(substr($value, 1))));
+                } else {
+                    $def->addMethodCall('addGlobal', array($key, $value));
+                }
             }
         }
         unset($config['globals'], $config['global']);
@@ -74,7 +84,10 @@ class TwigExtension extends Extension
 
         // convert - to _
         foreach ($config as $key => $value) {
-            $config[str_replace('-', '_', $key)] = $value;
+            if (false !== strpos($key, '-')) {
+                unset($config[$key]);
+                $config[str_replace('-', '_', $key)] = $value;
+            }            
         }
 
         $container->setParameter('twig.options', array_replace($container->getParameter('twig.options'), $config));

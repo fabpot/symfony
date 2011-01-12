@@ -2,6 +2,14 @@
 
 namespace Symfony\Tests\Component\DependencyInjection\Compiler;
 
+use Symfony\Component\DependencyInjection\Definition;
+
+use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
+
+use Symfony\Component\DependencyInjection\Compiler\Compiler;
+
+use Symfony\Component\DependencyInjection\Compiler\RepeatedPass;
+
 use Symfony\Component\DependencyInjection\Compiler\InlineServiceDefinitionsPass;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -70,14 +78,37 @@ class InlineServiceDefinitionsPassTest extends \PHPUnit_Framework_TestCase
         $this->process($container);
 
         $arguments = $container->getDefinition('service')->getArguments();
-        $this->assertSame($container->getDefinition('foo'), $arguments[0]);
+        $this->assertEquals($container->getDefinition('foo'), $arguments[0]);
+        $this->assertNotSame($container->getDefinition('foo'), $arguments[0]);
         $this->assertSame($ref, $arguments[1]);
-        $this->assertSame($container->getDefinition('bar'), $arguments[2]);
+        $this->assertEquals($container->getDefinition('bar'), $arguments[2]);
+        $this->assertNotSame($container->getDefinition('bar'), $arguments[2]);
+    }
+
+    public function testProcessInlinesIfMultipleReferencesButAllFromTheSameDefinition()
+    {
+        $container = new ContainerBuilder();
+
+        $a = $container->register('a')->setPublic(false);
+        $b = $container
+            ->register('b')
+            ->addArgument(new Reference('a'))
+            ->addArgument(new Definition(null, array(new Reference('a'))))
+        ;
+
+        $this->process($container);
+
+        $arguments = $b->getArguments();
+        $this->assertSame($a, $arguments[0]);
+
+        $inlinedArguments = $arguments[1]->getArguments();
+        $this->assertSame($a, $inlinedArguments[0]);
     }
 
     protected function process(ContainerBuilder $container)
     {
-        $pass = new InlineServiceDefinitionsPass();
-        $pass->process($container);
+        $repeatedPass = new RepeatedPass(array(new AnalyzeServiceReferencesPass(), new InlineServiceDefinitionsPass()));
+        $repeatedPass->setCompiler(new Compiler());
+        $repeatedPass->process($container);
     }
 }

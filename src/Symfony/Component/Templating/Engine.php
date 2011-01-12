@@ -3,7 +3,6 @@
 namespace Symfony\Component\Templating;
 
 use Symfony\Component\Templating\Loader\LoaderInterface;
-use Symfony\Component\Templating\Renderer\PhpRenderer;
 use Symfony\Component\Templating\Renderer\RendererInterface;
 use Symfony\Component\Templating\Helper\HelperInterface;
 
@@ -38,36 +37,33 @@ class Engine implements \ArrayAccess
     /**
      * Constructor.
      *
-     * @param LoaderInterface $loader    A loader instance
-     * @param array           $renderers An array of renderer instances
-     * @param array           $helpers   A array of helper instances
-     * @param array           $escapers  An array of escapers
+     * @param LoaderInterface $loader  A loader instance
+     * @param array           $helpers An array of helper instances
      */
-    public function __construct(LoaderInterface $loader, array $renderers = array(), array $helpers = array(), array $escapers = array())
+    public function __construct(LoaderInterface $loader, array $helpers = array())
     {
         $this->loader    = $loader;
-        $this->renderers = $renderers;
         $this->helpers   = array();
         $this->parents   = array();
         $this->stack     = array();
         $this->charset   = 'UTF-8';
         $this->cache     = array();
         $this->globals   = array();
+        $this->renderers = array();
 
         $this->addHelpers($helpers);
 
-        if (!isset($this->renderers['php'])) {
-            $this->renderers['php'] = new PhpRenderer();
-        }
-
-        foreach ($this->renderers as $renderer) {
-            $renderer->setEngine($this);
-        }
-
         $this->initializeEscapers();
-
         foreach ($this->escapers as $context => $escaper) {
             $this->setEscaper($context, $escaper);
+        }
+    }
+
+    public function setRenderers(array $renderers = array())
+    {
+        $this->renderers = array();
+        foreach ($renderers as $name => $renderer) {
+            $this->setRenderer($name, $renderer);
         }
     }
 

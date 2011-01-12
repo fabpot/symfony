@@ -9,15 +9,16 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session;
 use Symfony\Component\HttpFoundation\SessionStorage\ArraySessionStorage;
+use Symfony\Bundle\TwigBundle\GlobalVariables;
 
 class RendererTest extends TestCase
 {
-    public function testEvalutateAddsRequestAndSessionGlobals()
+    public function testEvalutateAddsAppGlobal()
     {
         $environment = $this->getTwigEnvironment();
-        $renderer = new Renderer($environment);
-
         $container = $this->getContainer();
+        $renderer = new Renderer($environment, $app = new GlobalVariables($container));
+
         $engine = new Engine($container, $this->getMock('Symfony\Component\Templating\Loader\LoaderInterface'), array());
 
         $storage = $this->getStorage();
@@ -33,16 +34,16 @@ class RendererTest extends TestCase
 
         $request = $container->get('request');
         $globals = $environment->getGlobals();
-        $this->assertSame($request, $globals['request']);
-        $this->assertSame($request->getSession(), $globals['session']);
+        $this->assertSame($app, $globals['app']);
     }
 
     public function testEvalutateWithoutAvailableRequest()
     {
         $environment = $this->getTwigEnvironment();
-        $renderer = new Renderer($environment);
+        $container = new Container();
+        $renderer = new Renderer($environment, new GlobalVariables($container));
 
-        $engine = new Engine(new Container(), $this->getMock('Symfony\Component\Templating\Loader\LoaderInterface'), array());
+        $engine = new Engine($container, $this->getMock('Symfony\Component\Templating\Loader\LoaderInterface'), array());
 
         $storage = $this->getStorage();
         $template = $this->getMock('\Twig_TemplateInterface');
@@ -52,10 +53,12 @@ class RendererTest extends TestCase
             ->with($storage)
             ->will($this->returnValue($template));
 
+        $container->set('request', null);
         $renderer->setEngine($engine);
         $renderer->evaluate($storage);
 
-        $this->assertEmpty($environment->getGlobals());
+        $globals = $environment->getGlobals();
+        $this->assertEmpty($globals['app']->getRequest());
     }
 
     /**

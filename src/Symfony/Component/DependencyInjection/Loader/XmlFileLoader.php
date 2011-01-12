@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\DependencyInjection\Loader;
 
+use Symfony\Component\DependencyInjection\Alias;
+
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -69,7 +71,7 @@ class XmlFileLoader extends FileLoader
         return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION);
     }
 
-    protected function parseParameters($xml, $file)
+    protected function parseParameters(SimpleXMLElement $xml, $file)
     {
         if (!$xml->parameters) {
             return;
@@ -78,7 +80,7 @@ class XmlFileLoader extends FileLoader
         $this->container->getParameterBag()->add($xml->parameters->getArgumentsAsPhp('parameter'));
     }
 
-    protected function parseImports($xml, $file)
+    protected function parseImports(SimpleXMLElement $xml, $file)
     {
         if (!$xml->imports) {
             return;
@@ -90,7 +92,7 @@ class XmlFileLoader extends FileLoader
         }
     }
 
-    protected function parseInterfaceInjectors($xml, $file)
+    protected function parseInterfaceInjectors(SimpleXMLElement $xml, $file)
     {
         if (!$xml->interfaces) {
             return;
@@ -110,7 +112,7 @@ class XmlFileLoader extends FileLoader
         $this->container->addInterfaceInjector($injector);
     }
 
-    protected function parseDefinitions($xml, $file)
+    protected function parseDefinitions(SimpleXMLElement $xml, $file)
     {
         if (!$xml->services) {
             return;
@@ -124,7 +126,11 @@ class XmlFileLoader extends FileLoader
     protected function parseDefinition($id, $service, $file)
     {
         if ((string) $service['alias']) {
-            $this->container->setAlias($id, (string) $service['alias']);
+            $public = true;
+            if (isset($service['public'])) {
+                $public = $service->getAttributeAsPhp('public');
+            }
+            $this->container->setAlias($id, new Alias((string) $service['alias'], $public));
 
             return;
         }
@@ -196,7 +202,7 @@ class XmlFileLoader extends FileLoader
         return simplexml_import_dom($dom, 'Symfony\\Component\\DependencyInjection\\SimpleXMLElement');
     }
 
-    protected function processAnonymousServices($xml, $file)
+    protected function processAnonymousServices(SimpleXMLElement $xml, $file)
     {
         $definitions = array();
         $count = 0;
@@ -242,7 +248,7 @@ class XmlFileLoader extends FileLoader
         return $xml;
     }
 
-    protected function validate($dom, $file)
+    protected function validate(\DOMDocument $dom, $file)
     {
         $this->validateSchema($dom, $file);
         $this->validateExtensions($dom, $file);
@@ -252,7 +258,7 @@ class XmlFileLoader extends FileLoader
      * @throws \RuntimeException         When extension references a non-existent XSD file
      * @throws \InvalidArgumentException When xml doesn't validate its xsd schema
      */
-    protected function validateSchema($dom, $file)
+    protected function validateSchema(\DOMDocument $dom, $file)
     {
         $schemaLocations = array('http://www.symfony-project.org/schema/dic/services' => str_replace('\\', '/', __DIR__.'/schema/dic/services/services-1.0.xsd'));
 
@@ -275,9 +281,18 @@ class XmlFileLoader extends FileLoader
             }
         }
 
+        $tmpfiles = array();
         $imports = '';
         foreach ($schemaLocations as $namespace => $location) {
             $parts = explode('/', $location);
+            if (preg_match('#^phar://#i', $location)) {
+                $tmpfile = tempnam(sys_get_temp_dir(), 'sf2');
+                if ($tmpfile) {
+                    file_put_contents($tmpfile, file_get_contents($location));
+                    $tmpfiles[] = $tmpfile;
+                    $parts = explode('/', str_replace('\\', '/', $tmpfile));
+                }
+            }
             $drive = '\\' === DIRECTORY_SEPARATOR ? array_shift($parts).'/' : '';
             $location = 'file:///'.$drive.implode('/', array_map('rawurlencode', $parts));
 
@@ -298,7 +313,11 @@ EOF
         ;
 
         $current = libxml_use_internal_errors(true);
-        if (!$dom->schemaValidateSource($source)) {
+        $valid = $dom->schemaValidateSource($source);
+        foreach ($tmpfiles as $tmpfile) {
+            @unlink($tmpfile);
+        }
+        if (!$valid) {
             throw new \InvalidArgumentException(implode("\n", $this->getXmlErrors()));
         }
         libxml_use_internal_errors($current);
@@ -307,7 +326,7 @@ EOF
     /**
      * @throws  \InvalidArgumentException When non valid tag are found or no extension are found
      */
-    protected function validateExtensions($dom, $file)
+    protected function validateExtensions(\DOMDocument $dom, $file)
     {
         foreach ($dom->documentElement->childNodes as $node) {
             if (!$node instanceof \DOMElement || in_array($node->tagName, array('imports', 'parameters', 'services', 'interfaces'))) {
@@ -340,7 +359,7 @@ EOF
         return $errors;
     }
 
-    protected function loadFromExtensions($xml)
+    protected function loadFromExtensions(SimpleXMLElement $xml)
     {
         foreach (dom_import_simplexml($xml)->childNodes as $node) {
             if (!$node instanceof \DOMElement || $node->namespaceURI === 'http://www.symfony-project.org/schema/dic/services') {

@@ -106,11 +106,11 @@ class ProfilerController extends ContainerAware
         $profiler->disable();
 
         $file = $this->container->get('request')->files->get('file');
-        if (!$file || 0 !== $file['error']) {
+        if (!$file || UPLOAD_ERR_OK !== $file->getError()) {
             throw new \RuntimeException('Problem uploading the data.');
         }
 
-        $token = $profiler->import(file_get_contents($file['tmp_name']));
+        $token = $profiler->import(file_get_contents($file->getPath()));
 
         if (false === $token) {
             throw new \RuntimeException('Problem uploading the data (token already exists).');
@@ -171,7 +171,7 @@ class ProfilerController extends ContainerAware
         return $this->container->get('templating')->renderResponse('WebProfilerBundle:Profiler:search.twig', array(
             'token'    => $token,
             'profiler' => $profiler,
-            'tokens'   => $profiler->find($ip, $url, 10),
+            'tokens'   => $profiler->find($ip, $url, $limit),
             'ip'       => $ip,
             'url'      => $url,
             'limit'    => $limit,
@@ -196,7 +196,7 @@ class ProfilerController extends ContainerAware
         return $this->container->get('templating')->renderResponse('WebProfilerBundle:Profiler:results.twig', array(
             'token'    => $token,
             'profiler' => $this->container->get('profiler')->loadFromToken($token),
-            'tokens'   => $profiler->find($ip, $url, 10),
+            'tokens'   => $profiler->find($ip, $url, $limit),
             'ip'       => $ip,
             'url'      => $url,
             'limit'    => $limit,
@@ -233,7 +233,7 @@ class ProfilerController extends ContainerAware
         $tokens = $profiler->find($ip, $url, $limit);
 
         $response = $this->container->get('response');
-        $response->setRedirect($this->container->get('router')->generate('_profiler_search_results', array('token' => $tokens[0]['token'])));
+        $response->setRedirect($this->container->get('router')->generate('_profiler_search_results', array('token' => $tokens ? $tokens[0]['token'] : '')));
 
         return $response;
     }
