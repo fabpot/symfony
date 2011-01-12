@@ -29,6 +29,8 @@ use Symfony\Component\HttpFoundation\RequestMatcher;
  */
 class SecurityExtension extends Extension
 {
+    protected $contextListeners = array();
+
     /**
      * Loads the web configuration.
      *
@@ -208,7 +210,12 @@ class SecurityExtension extends Extension
 
         // Context serializer listener
         if (!isset($firewall['stateless']) || !$firewall['stateless']) {
-            $listeners[] = new Reference('security.context_listener');
+            $contextKey = $id;
+            if (isset($firewall['context'])) {
+                $contextKey = $firewall['context'];
+            }
+
+            $listeners[] = new Reference($this->createContextListener($container, $contextKey));
         }
 
         // Logout listener
@@ -261,6 +268,21 @@ class SecurityExtension extends Extension
         $exceptionListener = new Reference($this->createExceptionListener($container, $id, $defaultEntryPoint));
 
         return array($matcher, $listeners, $exceptionListener);
+    }
+
+    protected function createContextListener($container, $contextKey)
+    {
+        if (isset($this->contextListeners[$contextKey])) {
+            return $this->contextListeners[$contextKey];
+        }
+
+        $listenerId = 'security.context_listener.'.count($this->contextListeners);
+        $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.context_listener'));
+        $arguments = $listener->getArguments();
+        $arguments[2] = $contextKey;
+        $listener->setArguments($arguments);
+
+        return $this->contextListeners[$contextKey] = $listenerId;
     }
 
     protected function createAuthenticationListeners($container, $id, $firewall, $defaultProvider)
