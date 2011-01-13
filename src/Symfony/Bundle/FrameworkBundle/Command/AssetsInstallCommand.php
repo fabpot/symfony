@@ -50,7 +50,7 @@ class AssetsInstallCommand extends Command
             throw new \InvalidArgumentException(sprintf('The target directory "%s" does not exist.', $input->getArgument('target')));
         }
 
-        $filesystem = new Filesystem();
+        $filesystem = $this->container->get('filesystem');
 
         // Create the bundles directory otherwise symlink will fail.
         $filesystem->mkdirs($input->getArgument('target').'/bundles/', 0777);

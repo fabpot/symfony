@@ -71,7 +71,7 @@ class InitBundleCommand extends Command
             throw new \RuntimeException(sprintf('Bundle "%s" already exists.', $bundle));
         }
 
-        $filesystem = new Filesystem();
+        $filesystem = $this->container->get('filesystem');
         $filesystem->mirror(__DIR__.'/../Resources/skeleton/bundle', $targetDir);
 
         Mustache::renderDir($targetDir, array(
