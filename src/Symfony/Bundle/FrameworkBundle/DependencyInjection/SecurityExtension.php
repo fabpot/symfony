@@ -29,13 +29,27 @@ use Symfony\Component\HttpFoundation\RequestMatcher;
  */
 class SecurityExtension extends Extension
 {
+    public function configLoad(array $configs, ContainerBuilder $container)
+    {
+        foreach ($configs as $config) {
+            $this->doConfigLoad($config, $container);
+        }
+    }
+
+    public function aclLoad(array $configs, ContainerBuilder $container)
+    {
+        foreach ($configs as $config) {
+            $this->doAclLoad($config, $container);
+        }
+    }
+
     /**
      * Loads the web configuration.
      *
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function configLoad($config, ContainerBuilder $container)
+    protected function doConfigLoad($config, ContainerBuilder $container)
     {
         if (!$container->hasDefinition('security.context')) {
             $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
@@ -577,7 +591,7 @@ class SecurityExtension extends Extension
         return $switchUserListenerId;
     }
 
-    public function aclLoad(array $config, ContainerBuilder $container)
+    protected function doAclLoad(array $config, ContainerBuilder $container)
     {
         if (!$container->hasDefinition('security.acl')) {
             $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
