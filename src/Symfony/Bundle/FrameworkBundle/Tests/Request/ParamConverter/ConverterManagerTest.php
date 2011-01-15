@@ -5,6 +5,15 @@ namespace Symfony\Bundle\FrameworkBundle\Tests\Request\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterManager;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class ConverterManagerTest extends \PHPUnit_Framework_TestCase
 {
     public function testManagerCanContainerConverters()

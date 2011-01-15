@@ -5,6 +5,15 @@ namespace Symfony\Tests\Component\HttpKernel\Security\Logout;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Security\Logout\SessionLogoutHandler;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class SessionLogoutHandlerTest extends \PHPUnit_Framework_TestCase
 {
     public function testLogout()

@@ -5,8 +5,6 @@ namespace Symfony\Component\Routing\Loader;
 /*
  * This file is part of the Symfony framework.
  *
- * The Closure must return a RouteCollection instance.
- *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * This source file is subject to the MIT license that is bundled
@@ -15,6 +13,8 @@ namespace Symfony\Component\Routing\Loader;
 
 /**
  * ClosureLoader loads routes from a PHP closure.
+ *
+ * The Closure must return a RouteCollection instance.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */

@@ -8,6 +8,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
 use Symfony\Bundle\DoctrineBundle\Request\ParamConverter\DoctrineConverter;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class DoctrineConverterTest extends TestCase
 {
     /**

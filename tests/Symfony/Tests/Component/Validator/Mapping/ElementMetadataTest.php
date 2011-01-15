@@ -9,6 +9,15 @@ use Symfony\Tests\Component\Validator\Fixtures\ConstraintA;
 use Symfony\Tests\Component\Validator\Fixtures\ConstraintB;
 use Symfony\Component\Validator\Mapping\ElementMetadata;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class ElementMetadataTest extends \PHPUnit_Framework_TestCase
 {
     protected $metadata;

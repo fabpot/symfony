@@ -6,6 +6,15 @@ use Symfony\Component\Validator\ValidationContext;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\ChoiceValidator;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 function choice_callback()
 {
     return array('foo', 'bar');

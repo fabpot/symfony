@@ -2,6 +2,15 @@
 
 namespace Symfony\Component\Security\Acl\Exception;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
  * This exception is thrown whenever you change shared properties of more than
  * one ACL of the same class type concurrently.

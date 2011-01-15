@@ -5,6 +5,15 @@ namespace Symfony\Bundle\DoctrineAbstractBundle\Event;
 use Doctrine\Common\EventManager as BaseEventManager;
 use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
  * An event manager that can pull listeners and subscribers from the service container.
  *

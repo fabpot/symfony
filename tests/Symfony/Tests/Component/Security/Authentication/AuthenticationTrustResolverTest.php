@@ -6,6 +6,15 @@ use Symfony\Component\Security\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class AuthenticationTrustResolverTest extends \PHPUnit_Framework_TestCase
 {
     public function testIsAnonymous()

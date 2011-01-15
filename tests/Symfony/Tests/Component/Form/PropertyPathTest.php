@@ -9,6 +9,15 @@ use Symfony\Component\Form\PropertyPath;
 use Symfony\Tests\Component\Form\Fixtures\Author;
 use Symfony\Tests\Component\Form\Fixtures\Magician;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class PropertyPathTest extends \PHPUnit_Framework_TestCase
 {
 

@@ -6,6 +6,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\DoctrineBundle\Form\ValueTransformer\CollectionToChoiceTransformer;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class CollectionToChoiceTransformerTest extends \Symfony\Bundle\DoctrineBundle\Tests\TestCase
 {
     /**

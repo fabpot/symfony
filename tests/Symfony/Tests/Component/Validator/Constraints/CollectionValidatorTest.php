@@ -7,6 +7,15 @@ use Symfony\Component\Validator\Constraints\Min;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\CollectionValidator;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class CollectionValidatorTest extends \PHPUnit_Framework_TestCase
 {
     protected $validator;

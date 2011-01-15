@@ -6,6 +6,15 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\Mapping\Loader\StaticMethodLoader;
 use Symfony\Component\Validator\Constraints\NotNull;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class StaticMethodLoaderTest extends \PHPUnit_Framework_TestCase
 {
     public function testLoadClassMetadataReturnsTrueIfSuccessful()

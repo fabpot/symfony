@@ -7,6 +7,15 @@ require_once __DIR__ . '/Fixtures/TestField.php';
 use Symfony\Component\Form\RepeatedField;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 class RepeatedFieldTest extends \PHPUnit_Framework_TestCase
 {
     protected $field;

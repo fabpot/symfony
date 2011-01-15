@@ -2,14 +2,19 @@
 
 namespace Symfony\Tests\Component\DependencyInjection\Compiler;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 use Symfony\Component\DependencyInjection\Definition;
-
 use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
-
 use Symfony\Component\DependencyInjection\Compiler\Compiler;
-
 use Symfony\Component\DependencyInjection\Compiler\RepeatedPass;
-
 use Symfony\Component\DependencyInjection\Compiler\InlineServiceDefinitionsPass;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

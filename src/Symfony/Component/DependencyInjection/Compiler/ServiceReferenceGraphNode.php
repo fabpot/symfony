@@ -5,6 +5,15 @@ namespace Symfony\Component\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Alias;
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
  * Represents a node in your service graph.
  *
