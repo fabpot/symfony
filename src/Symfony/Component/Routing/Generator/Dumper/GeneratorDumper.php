@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing\Generator\Dumper;
-
-use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Routing\Route;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Routing\Route;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing\Generator\Dumper;
+
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
 
 /**
  * GeneratorDumper is the base class for all built-in generator dumpers.

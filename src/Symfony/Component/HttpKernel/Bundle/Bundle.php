@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Bundle;
-
-use Symfony\Component\DependencyInjection\ContainerAware;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Finder\Finder;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Finder\Finder;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Bundle;
+
+use Symfony\Component\DependencyInjection\ContainerAware;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Finder\Finder;
 
 /**
  * An implementation of the BundleInterface that follows a few conventions

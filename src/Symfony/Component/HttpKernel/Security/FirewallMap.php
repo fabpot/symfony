@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Security;
-
-use Symfony\Component\HttpFoundation\RequestMatcherInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Security\Firewall\ExceptionListener;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\HttpKernel\Security\Firewall\ExceptionListener;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Security;
+
+use Symfony\Component\HttpFoundation\RequestMatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Security\Firewall\ExceptionListener;
 
 /**
  * FirewallMap allows configuration of different firewalls for specific parts

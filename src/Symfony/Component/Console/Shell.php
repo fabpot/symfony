@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console;
-
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\StringInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console;
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * A Shell wraps an Application to add shell capabilities to it.

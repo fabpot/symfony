@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Authentication\Token;
-
-use Symfony\Component\Security\Authentication\RememberMe\PersistentTokenInterface;
-use Symfony\Component\Security\User\AccountInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Security\User\AccountInterface;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Security\Authentication\Token;
+
+use Symfony\Component\Security\Authentication\RememberMe\PersistentTokenInterface;
+use Symfony\Component\Security\User\AccountInterface;
 
 /**
  * Base class for "Remember Me" tokens

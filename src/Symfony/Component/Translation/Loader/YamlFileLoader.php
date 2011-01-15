@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Translation\Loader;
-
-use Symfony\Component\Translation\Resource\FileResource;
-use Symfony\Component\Yaml\Yaml;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Yaml\Yaml;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Translation\Loader;
+
+use Symfony\Component\Translation\Resource\FileResource;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * YamlFileLoader loads translations from Yaml files.

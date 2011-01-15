@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpFoundation;
-
-use Symfony\Component\HttpFoundation\SessionStorage\SessionStorageInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\HttpFoundation\SessionStorage\SessionStorageInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpFoundation;
+
+use Symfony\Component\HttpFoundation\SessionStorage\SessionStorageInterface;
 
 /**
  * Session.

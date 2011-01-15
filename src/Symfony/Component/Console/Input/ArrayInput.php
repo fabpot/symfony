@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console\Input;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\Console\Input;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console\Input;
 
 /**
  * ArrayInput represents an input provided as an array.

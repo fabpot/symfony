@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Form;
-
-use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Component\Form\Exception\FormException;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Form\Exception\FormException;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Form;
+
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Form\Exception\FormException;
 
 /**
  * A file field to upload files.

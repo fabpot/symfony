@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
-use Symfony\Component\Security\Role\Role;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Security\Role\Role;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
+use Symfony\Component\Security\Role\Role;
 
 /**
  * A SecurityIdentity implementation for roles

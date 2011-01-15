@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Security\Firewall;
-
-use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
-use Symfony\Component\Security\SecurityContext;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Response;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\HttpFoundation\Response;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Security\Firewall;
+
+use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * LogoutListener logout users.

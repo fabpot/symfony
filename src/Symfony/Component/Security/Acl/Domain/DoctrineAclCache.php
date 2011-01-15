@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Doctrine\Common\Cache\Cache;
-use Symfony\Component\Security\Acl\Model\AclCacheInterface;
-use Symfony\Component\Security\Acl\Model\AclInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Doctrine\Common\Cache\Cache;
+use Symfony\Component\Security\Acl\Model\AclCacheInterface;
+use Symfony\Component\Security\Acl\Model\AclInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
+use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
 
 /**
  * This class is a wrapper around the actual cache implementation.

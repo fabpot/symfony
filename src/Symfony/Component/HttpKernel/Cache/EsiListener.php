@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Cache;
-
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Cache;
+
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * EsiListener adds a Surrogate-Control HTTP header when the Response needs to be parsed for ESI.

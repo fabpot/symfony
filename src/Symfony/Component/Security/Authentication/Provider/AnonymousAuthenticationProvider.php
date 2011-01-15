@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Authentication\Provider;
-
-use Symfony\Component\Security\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Exception\BadCredentialsException;
-use Symfony\Component\Security\Authentication\Token\AnonymousToken;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Security\Authentication\Token\AnonymousToken;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Authentication\Provider;
+
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Exception\BadCredentialsException;
+use Symfony\Component\Security\Authentication\Token\AnonymousToken;
 
 /**
  * AnonymousAuthenticationProvider validates AnonymousToken instances.

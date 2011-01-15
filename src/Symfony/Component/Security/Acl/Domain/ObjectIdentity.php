@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\Acl\Exception\InvalidDomainObjectException;
-use Symfony\Component\Security\Acl\Model\DomainObjectInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Exception\InvalidDomainObjectException;
+use Symfony\Component\Security\Acl\Model\DomainObjectInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 
 /**
  * ObjectIdentity implementation

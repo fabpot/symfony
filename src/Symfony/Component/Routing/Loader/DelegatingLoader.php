@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing\Loader;
-
-use Symfony\Component\Routing\RouteCollection;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Routing\RouteCollection;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing\Loader;
+
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * DelegatingLoader delegates route loading to other loaders using a loader resolver.

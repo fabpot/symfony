@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Security\EntryPoint;
-
-use Symfony\Component\Security\Exception\AuthenticationException;
-use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
-use Symfony\Component\Security\Exception\NonceExpiredException;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Security\EntryPoint;
+
+use Symfony\Component\Security\Exception\AuthenticationException;
+use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\Security\Exception\NonceExpiredException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 /**
  * DigestAuthenticationEntryPoint starts an HTTP Digest authentication.

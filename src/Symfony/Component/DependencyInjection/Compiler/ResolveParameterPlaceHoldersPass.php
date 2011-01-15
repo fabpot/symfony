@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\DependencyInjection\Compiler;
+
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Resolves all parameter placeholders "%somevalue%" to their real values.

@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console\Helper;
-
-use Symfony\Component\Console\Command\Command;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Console\Command\Command;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console\Helper;
+
+use Symfony\Component\Console\Command\Command;
 
 /**
  * HelperSet represents a set of helpers to be used with a command.

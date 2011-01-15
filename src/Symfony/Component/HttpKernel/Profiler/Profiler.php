@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Profiler;
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Profiler\ProfilerStorageInterface;
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Profiler;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Profiler\ProfilerStorageInterface;
+use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 /**
  * Profiler.

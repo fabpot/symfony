@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Security\Firewall;
-
-use Symfony\Component\HttpKernel\Security\AccessMap;
-use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\EventDispatcher\Event;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Security\Firewall;
+
+use Symfony\Component\HttpKernel\Security\AccessMap;
+use Symfony\Component\Security\Authentication\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * ChannelListener switches the HTTP protocol based on the access control

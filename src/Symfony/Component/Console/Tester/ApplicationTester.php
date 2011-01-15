@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console\Tester;
-
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\StreamOutput;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Console\Output\StreamOutput;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console\Tester;
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\StreamOutput;
 
 /**
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>

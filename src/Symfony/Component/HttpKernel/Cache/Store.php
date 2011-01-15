@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Cache;
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\HeaderBag;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +11,12 @@ use Symfony\Component\HttpFoundation\HeaderBag;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Cache;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\HeaderBag;
 
 /**
  * Store implements all the logic for storing cache metadata (Request and Response headers).

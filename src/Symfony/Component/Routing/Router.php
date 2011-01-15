@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing;
-
-use Symfony\Component\Routing\Loader\LoaderInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Routing\Loader\LoaderInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing;
+
+use Symfony\Component\Routing\Loader\LoaderInterface;
 
 /**
  * The Router class is an example of the integration of all pieces of the

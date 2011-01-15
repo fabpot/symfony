@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing;
-
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing;
+
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 
 /**
  * RouterInterface is the interface that all Router classes must implements.

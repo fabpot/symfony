@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Security\Firewall;
-
-use Symfony\Component\Security\SecurityContext;
-use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Exception\BadCredentialsException;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Security\Exception\BadCredentialsException;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel\Security\Firewall;
+
+use Symfony\Component\Security\SecurityContext;
+use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Exception\BadCredentialsException;
 
 /**
  * X509 authentication listener.

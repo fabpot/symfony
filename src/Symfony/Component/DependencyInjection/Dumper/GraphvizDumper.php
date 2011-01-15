@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\Dumper;
-
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Parameter;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\DependencyInjection\Dumper;
+
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Parameter;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * GraphvizDumper dumps a service container as a graphviz file.

@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console\Command;
-
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\Output;
-use Symfony\Component\Console\Command\Command;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\Console\Command\Command;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console\Command;
+
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\Output;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * ListCommand displays the list of all available commands for the application.

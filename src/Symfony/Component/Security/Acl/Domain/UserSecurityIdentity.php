@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\User\AccountInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 /**
  * A SecurityIdentity implementation used for actual users

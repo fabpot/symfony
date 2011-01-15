@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing\Loader;
-
-use Symfony\Component\Routing\Loader\LoaderResolver;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Routing\Loader\LoaderResolver;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing\Loader;
+
+use Symfony\Component\Routing\Loader\LoaderResolver;
 
 /**
  * LoaderInterface is the interface that all loader classes must implement.

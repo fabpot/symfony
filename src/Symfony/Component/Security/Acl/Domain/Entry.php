@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\Acl\Model\AclInterface;
-use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
-use Symfony\Component\Security\Acl\Model\EntryInterface;
-use Symfony\Component\Security\Acl\Model\PermissionInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Model\AclInterface;
+use Symfony\Component\Security\Acl\Model\AuditableEntryInterface;
+use Symfony\Component\Security\Acl\Model\EntryInterface;
+use Symfony\Component\Security\Acl\Model\PermissionInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityInterface;
 
 /**
  * Auditable ACE implementation

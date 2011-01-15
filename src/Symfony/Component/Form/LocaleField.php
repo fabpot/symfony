@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Form;
-
-use Symfony\Component\Locale\Locale;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Locale\Locale;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
+
+use Symfony\Component\Locale\Locale;
 
 /**
  * A field for selecting from a list of locales

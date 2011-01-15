@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing\Loader;
-
-use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Component\Routing\Annotation\Route as RouteAnnotation;
-use Symfony\Component\Routing\Loader\LoaderResolver;
-use Symfony\Component\Routing\Resource\FileResource;
-use Symfony\Component\Routing\Route;
-use Symfony\Component\Routing\RouteCollection;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\Routing\RouteCollection;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing\Loader;
+
+use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\Routing\Annotation\Route as RouteAnnotation;
+use Symfony\Component\Routing\Loader\LoaderResolver;
+use Symfony\Component\Routing\Resource\FileResource;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * AnnotationClassLoader loads routing information from a PHP class and its methods.

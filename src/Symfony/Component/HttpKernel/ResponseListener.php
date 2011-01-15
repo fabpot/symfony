@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpKernel;
-
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Response;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\HttpKernel;
+
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * ResponseListener fixes the Response Content-Type.

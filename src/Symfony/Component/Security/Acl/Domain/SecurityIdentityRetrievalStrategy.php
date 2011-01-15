@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
-use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
-use Symfony\Component\Security\Role\RoleHierarchyInterface;
-use Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\User\AccountInterface;
+use Symfony\Component\Security\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
+use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
+use Symfony\Component\Security\Role\RoleHierarchyInterface;
+use Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter;
 
 /**
  * Strategy for retrieving security identities

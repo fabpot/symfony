@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Console\Helper;
-
-use Symfony\Component\Console\Output\OutputInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Console\Helper;
+
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * The Dialog class provides helpers to interact with the user.

@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Routing;
-
-use Symfony\Component\Routing\Resource\ResourceInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Routing\Resource\ResourceInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Routing;
+
+use Symfony\Component\Routing\Resource\ResourceInterface;
 
 /**
  * A RouteCollection represents a set of Route instances.

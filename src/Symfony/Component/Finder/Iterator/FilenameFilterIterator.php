@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Finder\Iterator;
-
-use Symfony\Component\Finder\Glob;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Finder\Glob;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Component\Finder\Iterator;
+
+use Symfony\Component\Finder\Glob;
 
 /**
  * FilenameFilterIterator filters files by patterns (a regexp, a glob, or a string).

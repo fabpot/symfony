@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Symfony\Component\HttpKernel\Debug;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -9,15 +18,6 @@ use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Exception\FlattenException;
 use Symfony\Component\HttpFoundation\Request;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * ExceptionListener.
