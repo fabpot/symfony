@@ -12,7 +12,7 @@ use Symfony\Component\Security\Exception\BadCredentialsException;
 use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

@@ -7,7 +7,7 @@ use Symfony\Component\Security\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Acl\Voter\FieldVote;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

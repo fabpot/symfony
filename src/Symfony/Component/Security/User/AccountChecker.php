@@ -8,7 +8,7 @@ use Symfony\Component\Security\Exception\DisabledException;
 use Symfony\Component\Security\Exception\AccountExpiredException;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

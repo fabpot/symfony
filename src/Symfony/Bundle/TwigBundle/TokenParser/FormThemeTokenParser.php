@@ -5,7 +5,7 @@ namespace Symfony\Bundle\TwigBundle\TokenParser;
 use Symfony\Bundle\TwigBundle\Node\FormThemeNode;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

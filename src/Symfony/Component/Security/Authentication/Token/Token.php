@@ -7,7 +7,7 @@ use Symfony\Component\Security\Role\Role;
 use Symfony\Component\Security\User\AccountInterface;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

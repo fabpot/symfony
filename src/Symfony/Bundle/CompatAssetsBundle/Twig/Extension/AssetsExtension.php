@@ -9,7 +9,7 @@ use Symfony\Bundle\CompatAssetsBundle\Twig\TokenParser\JavascriptTokenParser;
 use Symfony\Bundle\CompatAssetsBundle\Twig\TokenParser\JavascriptsTokenParser;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

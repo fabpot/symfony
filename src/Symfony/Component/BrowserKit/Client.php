@@ -11,7 +11,7 @@ use Symfony\Component\BrowserKit\Response;
 use Symfony\Component\BrowserKit\Client;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *

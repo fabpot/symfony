@@ -6,7 +6,7 @@ use Symfony\Component\CssSelector\SyntaxError;
 use Symfony\Component\CssSelector\XPathExpr;
 
 /*
- * This file is part of the Symfony package.
+ * This file is part of the Symfony framework.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
