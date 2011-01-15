@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
@@ -12,15 +12,6 @@
 namespace Symfony\Bundle\CompatAssetsBundle\Twig\TokenParser;
 
 use Symfony\Bundle\CompatAssetsBundle\Twig\Node\StylesheetNode;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 /**
  * 
