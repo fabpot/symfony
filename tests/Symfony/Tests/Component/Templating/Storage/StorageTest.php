@@ -21,12 +21,6 @@ class StorageTest extends \PHPUnit_Framework_TestCase
         $storage = new TestStorage('foo');
         $this->assertEquals('foo', (string) $storage, '__toString() returns the template name');
     }
-
-    public function testGetRenderer()
-    {
-        $storage = new TestStorage('foo', $renderer = new PhpRenderer());
-        $this->assertTrue($storage->getRenderer() === $renderer, '->getRenderer() returns the renderer');
-    }
 }
 
 class TestStorage extends Storage

@@ -231,21 +231,8 @@ class FrameworkExtension extends Extension
 
         // compilation
         $this->addCompiledClasses($container, array(
-            'Symfony\\Component\\Templating\\Loader\\LoaderInterface',
-            'Symfony\\Component\\Templating\\Loader\\Loader',
-            'Symfony\\Component\\Templating\\Loader\\FilesystemLoader',
-            'Symfony\\Component\\Templating\\Engine',
-            'Symfony\\Component\\Templating\\Renderer\\RendererInterface',
-            'Symfony\\Component\\Templating\\Renderer\\Renderer',
-            'Symfony\\Component\\Templating\\Renderer\\PhpRenderer',
-            'Symfony\\Component\\Templating\\Storage\\Storage',
-            'Symfony\\Component\\Templating\\Storage\\FileStorage',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Engine',
-            'Symfony\\Component\\Templating\\Helper\\Helper',
-            'Symfony\\Component\\Templating\\Helper\\SlotsHelper',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Helper\\ActionsHelper',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Helper\\RouterHelper',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Helper\\RouterHelper',
+            'Symfony\\Component\\Templating\\DelegatingEngine',
+            'Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface',
         ));
     }
 
@@ -481,18 +468,13 @@ class FrameworkExtension extends Extension
             // default entries by the framework
             $xmlMappingFiles[] = __DIR__.'/../../../Component/Form/Resources/config/validation.xml';
 
-            foreach ($container->getParameter('kernel.bundles') as $className) {
-                $tmp = dirname(str_replace('\\', '/', $className));
-                $namespace = str_replace('/', '\\', dirname($tmp));
-                $bundle = basename($tmp);
-
-                foreach ($container->getParameter('kernel.bundle_dirs') as $dir) {
-                    if (file_exists($file = $dir.'/'.$bundle.'/Resources/config/validation.xml')) {
-                        $xmlMappingFiles[] = realpath($file);
-                    }
-                    if (file_exists($file = $dir.'/'.$bundle.'/Resources/config/validation.yml')) {
-                        $yamlMappingFiles[] = realpath($file);
-                    }
+            foreach ($container->getParameter('kernel.bundles') as $bundle) {
+                $reflection = new \ReflectionClass($bundle);
+                if (file_exists($file = dirname($reflection->getFilename()).'/Resources/config/validation.xml')) {
+                    $xmlMappingFiles[] = realpath($file);
+                }
+                if (file_exists($file = dirname($reflection->getFilename()).'/Resources/config/validation.yml')) {
+                    $yamlMappingFiles[] = realpath($file);
                 }
             }
 

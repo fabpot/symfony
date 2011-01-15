@@ -5,6 +5,7 @@ namespace Symfony\Component\DependencyInjection\Dumper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 
 /*
@@ -20,9 +21,15 @@ use Symfony\Component\DependencyInjection\InterfaceInjector;
  * XmlDumper dumps a service container as an XML string.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Martin Hasoň <martin.hason@gmail.com>
  */
 class XmlDumper extends Dumper
 {
+    /**
+     * @var \DOMDocument
+     */
+    protected $document;
+
     /**
      * Dumps the service container as an XML string.
      *
@@ -32,189 +39,188 @@ class XmlDumper extends Dumper
      */
     public function dump(array $options = array())
     {
-        return $this->startXml().$this->addParameters().$this->addInterfaceInjectors().$this->addServices().$this->endXml();
-    }
+        $this->document = new \DOMDocument('1.0', 'utf-8');
+        $this->document->formatOutput = true;
 
-    protected function addParameters()
-    {
-        if (!$this->container->getParameterBag()->all()) {
-            return '';
-        }
+        $container = $this->document->createElementNS('http://www.symfony-project.org/schema/dic/services', 'container');
+        $container->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $container->setAttribute('xsi:schemaLocation', 'http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd');
 
-        if ($this->container->isFrozen()) {
-            $parameters = $this->escape($this->container->getParameterBag()->all());
-        } else {
-            $parameters = $this->container->getParameterBag()->all();
-        }
+        $this->addParameters($container);
+        $this->addServices($container);
+        $this->addInterfaceInjectors($container);
 
-        return sprintf("  <parameters>\n%s  </parameters>\n", $this->convertParameters($parameters, 'parameter', 4));
-    }
-
-    protected function addInterfaceInjector(InterfaceInjector $injector)
-    {
-        $code = \sprintf("    <interface class=\"%s\">\n", $injector->getClass());
-
-        foreach ($injector->getMethodCalls() as $call) {
-            if (count($call[1])) {
-                $code .= sprintf("      <call method=\"%s\">\n%s      </call>\n", $call[0], $this->convertParameters($call[1], 'argument', 8));
-            } else {
-                $code .= sprintf("      <call method=\"%s\" />\n", $call[0]);
-            }
-        }
-
-        $code .= "    </interface>\n";
-
-        return $code;
-    }
-
-    protected function addInterfaceInjectors()
-    {
-        if (!$this->container->getInterfaceInjectors()) {
-            return '';
-        }
-
-        $code = '';
-        foreach ($this->container->getInterfaceInjectors() as $injector) {
-            $code .= $this->addInterfaceInjector($injector);
-        }
-
-        return sprintf("  <interfaces>\n%s  </interfaces>\n", $code);
-    }
-
-    protected function addService($id, $definition)
-    {
-        $code = sprintf("    <service id=\"%s\"%s%s%s%s>\n",
-            $id,
-            $definition->getClass() ? sprintf(' class="%s"', $definition->getClass()) : '',
-            $definition->getFactoryMethod() ? sprintf(' factory-method="%s"', $definition->getFactoryMethod()) : '',
-            $definition->getFactoryService() ? sprintf(' factory-service="%s"', $definition->getFactoryService()) : '',
-            !$definition->isShared() ? ' shared="false"' : ''
-        );
-
-        foreach ($definition->getTags() as $name => $tags) {
-            foreach ($tags as $attributes) {
-                $att = array();
-                foreach ($attributes as $key => $value) {
-                    $att[] = sprintf('%s="%s"', $key, $value);
-                }
-                $att = $att ? ' '.implode(' ', $att) : '';
-
-                $code .= sprintf("      <tag name=\"%s\"%s />\n", $name, $att);
-            }
-        }
-
-        if ($definition->getFile()) {
-            $code .= sprintf("      <file>%s</file>\n", $definition->getFile());
-        }
-
-        if ($definition->getArguments()) {
-            $code .= $this->convertParameters($definition->getArguments(), 'argument', 6);
-        }
-
-        foreach ($definition->getMethodCalls() as $call) {
-            if (count($call[1])) {
-                $code .= sprintf("      <call method=\"%s\">\n%s      </call>\n", $call[0], $this->convertParameters($call[1], 'argument', 8));
-            } else {
-                $code .= sprintf("      <call method=\"%s\" />\n", $call[0]);
-            }
-        }
-
-        if ($callable = $definition->getConfigurator()) {
-            if (is_array($callable)) {
-                if (is_object($callable[0]) && $callable[0] instanceof Reference) {
-                    $code .= sprintf("      <configurator service=\"%s\" method=\"%s\" />\n", $callable[0], $callable[1]);
-                } else {
-                    $code .= sprintf("      <configurator class=\"%s\" method=\"%s\" />\n", $callable[0], $callable[1]);
-                }
-            } else {
-                $code .= sprintf("      <configurator function=\"%s\" />\n", $callable);
-            }
-        }
-
-        $code .= "    </service>\n";
-
-        return $code;
-    }
-
-    protected function addServiceAlias($alias, $id)
-    {
-        if ($id->isPublic()) {
-            return sprintf("    <service id=\"%s\" alias=\"%s\" />\n", $alias, $id);
-        }
-        return sprintf("    <service id=\"%s\" alias=\"%s\" public=\"false\" />\n", $alias, $id);
-    }
-
-    protected function addServices()
-    {
-        if (!$this->container->getDefinitions()) {
-            return '';
-        }
-
-        $code = '';
-        foreach ($this->container->getDefinitions() as $id => $definition) {
-            $code .= $this->addService($id, $definition);
-        }
-
-        foreach ($this->container->getAliases() as $alias => $id) {
-            $code .= $this->addServiceAlias($alias, $id);
-        }
-
-        return sprintf("  <services>\n%s  </services>\n", $code);
-    }
-
-    protected function convertParameters($parameters, $type='parameter', $depth = 2)
-    {
-        $white = str_repeat(' ', $depth);
-        $xml = '';
-        $withKeys = array_keys($parameters) !== range(0, count($parameters) - 1);
-        foreach ($parameters as $key => $value) {
-            $attributes = '';
-            $key = $withKeys ? sprintf(' key="%s"', $key) : '';
-            if (is_array($value)) {
-                $value = "\n".$this->convertParameters($value, $type, $depth + 2).$white;
-                $attributes = ' type="collection"';
-            }
-
-            if (is_object($value) && $value instanceof Reference) {
-                $xml .= sprintf("%s<%s%s type=\"service\" id=\"%s\" %s/>\n", $white, $type, $key, (string) $value, $this->getXmlInvalidBehavior($value));
-            } else {
-                if (in_array($value, array('null', 'true', 'false'), true)) {
-                    $attributes = ' type="string"';
-                }
-
-                $xml .= sprintf("%s<%s%s%s>%s</%s>\n", $white, $type, $key, $attributes, self::phpToXml($value), $type);
-            }
-        }
+        $this->document->appendChild($container);
+        $xml = $this->document->saveXML();
+        $this->document = null;
 
         return $xml;
     }
 
-    protected function startXml()
+    protected function addParameters(\DOMElement $parent)
     {
-        return <<<EOF
-<?xml version="1.0" ?>
+        $data = $this->container->getParameterBag()->all();
+        if (!$data) {
+            return;
+        }
 
-<container xmlns="http://www.symfony-project.org/schema/dic/services"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd">
+        if ($this->container->isFrozen()) {
+            $data = $this->escape($data);
+        }
 
-EOF;
+        $parameters = $this->document->createElement('parameters');
+        $parent->appendChild($parameters);
+        $this->convertParameters($data, 'parameter', $parameters);
     }
 
-    protected function endXml()
+    protected function addMethodCalls(array $methodcalls, \DOMElement $parent)
     {
-        return "</container>\n";
+        foreach ($methodcalls as $methodcall) {
+            $call = $this->document->createElement('call');
+            $call->setAttribute('method', $methodcall[0]);
+            if (count($methodcall[1])) {
+                $this->convertParameters($methodcall[1], 'argument', $call);
+            }
+            $parent->appendChild($call);
+        }
     }
 
-    protected function getXmlInvalidBehavior(Reference $reference)
+    protected function addInterfaceInjector(InterfaceInjector $injector, \DOMElement $parent)
     {
-        switch ($reference->getInvalidBehavior()) {
-            case ContainerInterface::NULL_ON_INVALID_REFERENCE:
-                return 'on-invalid="null" ';
-            case ContainerInterface::IGNORE_ON_INVALID_REFERENCE:
-                return 'on-invalid="ignore" ';
-            default:
-                return '';
+        $interface = $this->document->createElement('interface');
+        $interface->setAttribute('class', $injector->getClass());
+        $this->addMethodCalls($injector->getMethodCalls(), $interface);
+        $parent->appendChild($interface);
+    }
+
+    protected function addInterfaceInjectors(\DOMElement $parent)
+    {
+        if (!$this->container->getInterfaceInjectors()) {
+            return;
+        }
+
+        $interfaces = $this->document->createElement('interfaces');
+        foreach ($this->container->getInterfaceInjectors() as $injector) {
+            $this->addInterfaceInjector($injector, $interfaces);
+        }
+        $parent->appendChild($interfaces);
+    }
+
+    protected function addService($definition, $id, \DOMElement $parent)
+    {
+        $service = $this->document->createElement('service');
+        if (null !== $id) {
+            $service->setAttribute('id', $id);
+        }
+        if ($definition->getClass()) {
+            $service->setAttribute('class', $definition->getClass());
+        }
+        if ($definition->getFactoryMethod()) {
+            $service->setAttribute ('factory-method', $definition->getFactoryMethod());
+        }
+        if ($definition->getFactoryService()) {
+            $service->setAttribute ('factory-service', $definition->getFactoryService());
+        }
+        if (!$definition->isShared()) {
+            $service->setAttribute ('shared', 'false');
+        }
+
+        foreach ($definition->getTags() as $name => $tags) {
+            foreach ($tags as $attributes) {
+                $tag = $this->document->createElement('tag');
+                $tag->setAttribute('name', $name);
+                foreach ($attributes as $key => $value) {
+                    $tag->setAttribute($key, $value);
+                }
+                $service->appendChild($tag);
+            }
+        }
+
+        if ($definition->getFile()) {
+            $file = $this->document->createElement('file', $definition->getFile());
+            $service->appendChild($file);
+        }
+
+        if ($parameters = $definition->getArguments()) {
+            $this->convertParameters($parameters, 'argument', $service);
+        }
+
+        $this->addMethodCalls($definition->getMethodCalls(), $service);
+
+        if ($callable = $definition->getConfigurator()) {
+            $configurator = $this->document->createElement('configurator');
+            if (is_array($callable)) {
+                $configurator->setAttribute((is_object($callable[0]) && $callable[0] instanceof Reference ? 'service' : 'class'), $callable[0]);
+                $configurator->setAttribute('method', $callable[1]);
+            } else {
+                $configurator->setAttribute('function', $callable);
+            }
+            $service->appendChild($configurator);
+        }
+
+        $parent->appendChild($service);
+    }
+
+    protected function addServiceAlias($alias, $id, \DOMElement $parent)
+    {
+        $service = $this->document->createElement('service');
+        $service->setAttribute('id', $alias);
+        $service->setAttribute('alias', $id);
+        if (!$id->isPublic()) {
+            $service->setAttribute('public', 'false');
+        }
+        $parent->appendChild($service);
+    }
+
+    protected function addServices(\DOMElement $parent)
+    {
+        $definitions = $this->container->getDefinitions();
+        if (!$definitions) {
+            return;
+        }
+
+        $services = $this->document->createElement('services');
+        foreach ($definitions as $id => $definition) {
+            $this->addService($definition, $id, $services);
+        }
+
+        foreach ($this->container->getAliases() as $alias => $id) {
+            $this->addServiceAlias($alias, $id, $services);
+        }
+        $parent->appendChild($services);
+    }
+
+    protected function convertParameters($parameters, $type, \DOMElement $parent)
+    {
+        $withKeys = array_keys($parameters) !== range(0, count($parameters) - 1);
+        foreach ($parameters as $key => $value) {
+            $element = $this->document->createElement($type);
+            if ($withKeys) {
+                $element->setAttribute('key', $key);
+            }
+
+            if (is_array($value)) {
+                $element->setAttribute('type', 'collection');
+                $this->convertParameters($value, $type, $element);
+            } else if (is_object($value) && $value instanceof Reference) {
+                $element->setAttribute('type', 'service');
+                $element->setAttribute('id', (string) $value);
+                $behaviour = $value->getInvalidBehavior();
+                if ($behaviour == ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                    $element->setAttribute('on-invalid', 'null');
+                else if ($behaviour == ContainerInterface::IGNORE_ON_INVALID_REFERENCE)
+                    $element->setAttribute('on-invalid', 'ignore');
+            } else if (is_object($value) && $value instanceof Definition) {
+                $element->setAttribute('type', 'service');
+                $this->addService($value, null, $element);
+            } else {
+                if (in_array($value, array('null', 'true', 'false'), true)) {
+                    $element->setAttribute('type', 'string');
+                }
+                $text = $this->document->createTextNode(self::phpToXml($value));
+                $element->appendChild($text);
+            }
+            $parent->appendChild($element);
         }
     }
 
@@ -251,7 +257,7 @@ EOF;
             case is_object($value) || is_resource($value):
                 throw new \RuntimeException('Unable to dump a service container if a parameter is an object or a resource.');
             default:
-                return $value;
+                return (string) $value;
         }
     }
 }
