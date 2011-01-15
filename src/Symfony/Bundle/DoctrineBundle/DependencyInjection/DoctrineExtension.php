@@ -189,6 +189,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
             }
         }
 
+        if (isset($connection['platform-service'])) {
+            $driverOptions['platform'] = new Reference($connection['platform-service']);
+        }
+
         $driverDef->setArguments(array(
             $driverOptions,
             new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $connection['name'])),
