@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator\Mapping\Loader;
-
-require_once __DIR__.'/../../Fixtures/FilesLoader.php';
-require_once __DIR__.'/../../Fixtures/Entity.php';
-
-use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
-use Symfony\Component\Validator\Mapping\ClassMetadata;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator\Mapping\Loader;
+
+require_once __DIR__.'/../../Fixtures/FilesLoader.php';
+require_once __DIR__.'/../../Fixtures/Entity.php';
+
+use Symfony\Component\Validator\Mapping\Loader\LoaderInterface;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 
 class FilesLoaderTest extends \PHPUnit_Framework_TestCase
 {

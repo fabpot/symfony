@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy;
-use Symfony\Component\Security\Acl\Domain\Acl;
-use Symfony\Component\Security\Acl\Domain\DoctrineAclCache;
-use Doctrine\Common\Cache\ArrayCache;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Doctrine\Common\Cache\ArrayCache;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
+use Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy;
+use Symfony\Component\Security\Acl\Domain\Acl;
+use Symfony\Component\Security\Acl\Domain\DoctrineAclCache;
+use Doctrine\Common\Cache\ArrayCache;
 
 class DoctrineAclCacheTest extends \PHPUnit_Framework_TestCase
 {

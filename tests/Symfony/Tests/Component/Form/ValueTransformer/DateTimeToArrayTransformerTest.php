@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Form\ValueTransformer;
-
-require_once __DIR__ . '/../DateTimeTestCase.php';
-
-use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
-use Symfony\Tests\Component\Form\DateTimeTestCase;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Tests\Component\Form\DateTimeTestCase;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Form\ValueTransformer;
+
+require_once __DIR__ . '/../DateTimeTestCase.php';
+
+use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
+use Symfony\Tests\Component\Form\DateTimeTestCase;
 
 class DateTimeToArrayTransformerTest extends DateTimeTestCase
 {

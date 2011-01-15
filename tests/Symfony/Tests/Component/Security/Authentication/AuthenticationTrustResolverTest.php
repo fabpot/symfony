@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Security\Authentication;
-
-use Symfony\Component\Security\Authentication\Token\AnonymousToken;
-use Symfony\Component\Security\Authentication\Token\RememberMeToken;
-use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Security\Authentication;
+
+use Symfony\Component\Security\Authentication\Token\AnonymousToken;
+use Symfony\Component\Security\Authentication\Token\RememberMeToken;
+use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
 
 class AuthenticationTrustResolverTest extends \PHPUnit_Framework_TestCase
 {

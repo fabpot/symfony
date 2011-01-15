@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator;
-
-use Symfony\Component\Validator\ValidationContext;
-use Symfony\Component\Validator\Constraints\Min;
-use Symfony\Component\Validator\Constraints\All;
-use Symfony\Component\Validator\Constraints\AllValidator;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\Validator\Constraints\AllValidator;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator;
+
+use Symfony\Component\Validator\ValidationContext;
+use Symfony\Component\Validator\Constraints\Min;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\AllValidator;
 
 class AllValidatorTest extends \PHPUnit_Framework_TestCase
 {

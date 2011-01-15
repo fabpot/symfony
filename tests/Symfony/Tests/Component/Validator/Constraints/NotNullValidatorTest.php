@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator;
-
-use Symfony\Component\Validator\Constraints\NotNull;
-use Symfony\Component\Validator\Constraints\NotNullValidator;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Validator\Constraints\NotNullValidator;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator;
+
+use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Constraints\NotNullValidator;
 
 class NotNullValidatorTest extends \PHPUnit_Framework_TestCase
 {

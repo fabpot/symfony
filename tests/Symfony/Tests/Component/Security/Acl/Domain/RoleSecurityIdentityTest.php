@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-use Symfony\Component\Security\Role\Role;
-use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
+use Symfony\Component\Security\Role\Role;
+use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 
 class RoleSecurityIdentityTest extends \PHPUnit_Framework_TestCase
 {

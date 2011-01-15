@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator\Mapping;
-
-require_once __DIR__.'/../Fixtures/ConstraintA.php';
-require_once __DIR__.'/../Fixtures/ConstraintB.php';
-
-use Symfony\Tests\Component\Validator\Fixtures\ConstraintA;
-use Symfony\Tests\Component\Validator\Fixtures\ConstraintB;
-use Symfony\Component\Validator\Mapping\ElementMetadata;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\Validator\Mapping\ElementMetadata;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator\Mapping;
+
+require_once __DIR__.'/../Fixtures/ConstraintA.php';
+require_once __DIR__.'/../Fixtures/ConstraintB.php';
+
+use Symfony\Tests\Component\Validator\Fixtures\ConstraintA;
+use Symfony\Tests\Component\Validator\Fixtures\ConstraintB;
+use Symfony\Component\Validator\Mapping\ElementMetadata;
 
 class ElementMetadataTest extends \PHPUnit_Framework_TestCase
 {

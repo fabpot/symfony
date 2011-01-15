@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Security\Acl\Dbal;
-
-use Symfony\Component\Security\Acl\Dbal\AclProvider;
-use Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy;
-use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
-use Symfony\Component\Security\Acl\Dbal\Schema;
-use Doctrine\DBAL\DriverManager;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Doctrine\DBAL\DriverManager;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Security\Acl\Dbal;
+
+use Symfony\Component\Security\Acl\Dbal\AclProvider;
+use Symfony\Component\Security\Acl\Domain\PermissionGrantingStrategy;
+use Symfony\Component\Security\Acl\Domain\ObjectIdentity;
+use Symfony\Component\Security\Acl\Dbal\Schema;
+use Doctrine\DBAL\DriverManager;
 
 class AclProviderTest extends \PHPUnit_Framework_TestCase
 {

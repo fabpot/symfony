@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Form;
-
-require_once __DIR__ . '/Fixtures/TestField.php';
-
-use Symfony\Component\Form\CollectionField;
-use Symfony\Component\Form\FieldGroup;
-use Symfony\Tests\Component\Form\Fixtures\TestField;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Tests\Component\Form\Fixtures\TestField;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Form;
+
+require_once __DIR__ . '/Fixtures/TestField.php';
+
+use Symfony\Component\Form\CollectionField;
+use Symfony\Component\Form\FieldGroup;
+use Symfony\Tests\Component\Form\Fixtures\TestField;
 
 class CollectionFieldTest extends \PHPUnit_Framework_TestCase
 {

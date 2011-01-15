@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Form;
-
-require_once __DIR__ . '/Fixtures/Author.php';
-require_once __DIR__ . '/Fixtures/Magician.php';
-
-use Symfony\Component\Form\PropertyPath;
-use Symfony\Tests\Component\Form\Fixtures\Author;
-use Symfony\Tests\Component\Form\Fixtures\Magician;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Tests\Component\Form\Fixtures\Magician;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Form;
+
+require_once __DIR__ . '/Fixtures/Author.php';
+require_once __DIR__ . '/Fixtures/Magician.php';
+
+use Symfony\Component\Form\PropertyPath;
+use Symfony\Tests\Component\Form\Fixtures\Author;
+use Symfony\Tests\Component\Form\Fixtures\Magician;
 
 class PropertyPathTest extends \PHPUnit_Framework_TestCase
 {

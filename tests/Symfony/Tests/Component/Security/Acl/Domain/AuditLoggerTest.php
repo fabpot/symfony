@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\Security\Acl\Domain;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
 
 class AuditLoggerTest extends \PHPUnit_Framework_TestCase
 {

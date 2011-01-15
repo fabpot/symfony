@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Validator\Mapping;
 
 use Symfony\Component\Validator\Constraint;
@@ -13,15 +22,6 @@ use Symfony\Tests\Component\Validator\Fixtures\ConstraintB;
 require_once __DIR__.'/../Fixtures/Entity.php';
 require_once __DIR__.'/../Fixtures/ConstraintA.php';
 require_once __DIR__.'/../Fixtures/ConstraintB.php';
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 {

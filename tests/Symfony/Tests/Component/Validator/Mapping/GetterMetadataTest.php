@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator\Mapping;
-
-require_once __DIR__.'/../Fixtures/Entity.php';
-
-use Symfony\Component\Validator\Mapping\GetterMetadata;
-use Symfony\Tests\Component\Validator\Fixtures\Entity;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Tests\Component\Validator\Fixtures\Entity;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator\Mapping;
+
+require_once __DIR__.'/../Fixtures/Entity.php';
+
+use Symfony\Component\Validator\Mapping\GetterMetadata;
+use Symfony\Tests\Component\Validator\Fixtures\Entity;
 
 class GetterMetadataTest extends \PHPUnit_Framework_TestCase
 {

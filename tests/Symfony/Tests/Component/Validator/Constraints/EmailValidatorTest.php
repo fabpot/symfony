@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator;
-
-use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\EmailValidator;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Validator\Constraints\EmailValidator;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator;
+
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\EmailValidator;
 
 class EmailValidatorTest extends \PHPUnit_Framework_TestCase
 {

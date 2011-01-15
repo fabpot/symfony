@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Form;
-
-use Symfony\Component\Form\LocaleField;
-use Symfony\Component\Form\FormConfiguration;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Form\FormConfiguration;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Form;
+
+use Symfony\Component\Form\LocaleField;
+use Symfony\Component\Form\FormConfiguration;
 
 class LocaleFieldTest extends \PHPUnit_Framework_TestCase
 {

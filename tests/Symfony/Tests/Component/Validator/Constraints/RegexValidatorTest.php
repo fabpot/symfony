@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Validator;
-
-use Symfony\Component\Validator\Constraints\Regex;
-use Symfony\Component\Validator\Constraints\RegexValidator;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Validator\Constraints\RegexValidator;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Validator;
+
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\RegexValidator;
 
 class RegexValidatorTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Tests\Component\Routing;
-
-use Symfony\Component\Routing\RouteCompiler as BaseRouteCompiler;
-use Symfony\Component\Routing\Route;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Routing\Route;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Tests\Component\Routing;
+
+use Symfony\Component\Routing\RouteCompiler as BaseRouteCompiler;
+use Symfony\Component\Routing\Route;
 
 class RouteCompiler extends BaseRouteCompiler
 {
