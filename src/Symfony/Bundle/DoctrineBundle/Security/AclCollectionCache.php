@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Security;
-
-use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Security\Acl\Model\AclProviderInterface;
-use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategyInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterf
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Security;
+
+use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Security\Acl\Model\AclProviderInterface;
+use Symfony\Component\Security\Acl\Model\ObjectIdentityRetrievalStrategyInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
 
 /**
  * This service caches ACLs for an entire collection

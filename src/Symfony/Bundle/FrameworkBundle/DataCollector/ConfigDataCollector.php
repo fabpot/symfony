@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\DataCollector;
-
-use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\HttpKernel\DataCollector\DataCollector;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\RouterInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Routing\RouterInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\DataCollector;
+
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\DataCollector\DataCollector;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * ConfigDataCollector.

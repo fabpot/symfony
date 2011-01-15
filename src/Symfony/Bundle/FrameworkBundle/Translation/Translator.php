@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Translation;
-
-use Symfony\Component\Translation\Translator as BaseTranslator;
-use Symfony\Component\Translation\Loader\LoaderInterface;
-use Symfony\Component\Translation\MessageSelector;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Session;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\HttpFoundation\Session;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Translation;
+
+use Symfony\Component\Translation\Translator as BaseTranslator;
+use Symfony\Component\Translation\Loader\LoaderInterface;
+use Symfony\Component\Translation\MessageSelector;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Session;
 
 /**
  * Translator.

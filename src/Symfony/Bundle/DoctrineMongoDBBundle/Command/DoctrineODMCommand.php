@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineMongoDBBundle\Command;
-
-use Symfony\Bundle\FrameworkBundle\Command\Command;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Doctrine\ODM\MongoDB\Tools\Console\Helper\DocumentManagerHelper;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Doctrine\ODM\MongoDB\Tools\Console\Helper\DocumentManagerHelper;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineMongoDBBundle\Command;
+
+use Symfony\Bundle\FrameworkBundle\Command\Command;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Doctrine\ODM\MongoDB\Tools\Console\Helper\DocumentManagerHelper;
 
 /**
  * Base class for Doctrine ODM console commands to extend.

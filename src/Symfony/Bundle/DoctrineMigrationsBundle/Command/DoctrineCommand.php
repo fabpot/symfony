@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineMigrationsBundle\Command;
-
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\DoctrineBundle\Command\DoctrineCommand as BaseCommand;
-use Doctrine\DBAL\Migrations\Configuration\Configuration;
-use Doctrine\Common\Util\Inflector;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Doctrine\Common\Util\Inflector;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineMigrationsBundle\Command;
+
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Bundle\DoctrineBundle\Command\DoctrineCommand as BaseCommand;
+use Doctrine\DBAL\Migrations\Configuration\Configuration;
+use Doctrine\Common\Util\Inflector;
 
 /**
  * Base class for Doctrine console commands to extend from.

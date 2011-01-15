@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineMigrationsBundle\Command;
-
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineMigrationsBundle\Command;
+
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand;
 
 /**
  * Command for executing a migration to a specified version or the latest available version.

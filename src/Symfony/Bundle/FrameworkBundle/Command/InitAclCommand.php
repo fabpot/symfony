@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Command;
-
-use Symfony\Component\Security\Acl\Dbal\Schema;
-
-use Doctrine\DBAL\DriverManager;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Command;
+
+use Symfony\Component\Security\Acl\Dbal\Schema;
+
+use Doctrine\DBAL\DriverManager;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Installs the tables required by the ACL system

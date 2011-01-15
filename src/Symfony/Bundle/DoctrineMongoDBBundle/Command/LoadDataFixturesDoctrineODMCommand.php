@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Symfony\Bundle\DoctrineMongoDBBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,15 +23,6 @@ use Doctrine\Common\Cli\CliController as DoctrineCliController;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Internal\CommitOrderCalculator;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Load data fixtures from bundles.

@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineMongoDBBundle\Logger;
-
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\Yaml\Yaml;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Yaml\Yaml;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineMongoDBBundle\Logger;
+
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Logger for the Doctrine MongoDB ODM.

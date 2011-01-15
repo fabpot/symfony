@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Routing;
-
-use Symfony\Bundle\FrameworkBundle\Controller\ControllerNameConverter;
-use Symfony\Component\Routing\Loader\DelegatingLoader as BaseDelegatingLoader;
-use Symfony\Component\Routing\Loader\LoaderResolverInterface;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Routing;
+
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerNameConverter;
+use Symfony\Component\Routing\Loader\DelegatingLoader as BaseDelegatingLoader;
+use Symfony\Component\Routing\Loader\LoaderResolverInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 /**
  * DelegatingLoader delegates route loading to other loaders using a loader resolver.

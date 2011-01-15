@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Request\ParamConverter;
-
-use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\MappingException;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Doctrine\ORM\Mapping\MappingException;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Request\ParamConverter;
+
+use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\MappingException;
 
 /**
  * DoctrineConverter.

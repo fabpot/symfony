@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Console;
-
-use Symfony\Component\Console\Shell as BaseShell;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Console\Shell as BaseShell;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Console;
+
+use Symfony\Component\Console\Shell as BaseShell;
 
 /**
  * Shell.

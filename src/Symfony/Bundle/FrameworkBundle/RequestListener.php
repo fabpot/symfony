@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle;
-
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle;
+
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * RequestListener.

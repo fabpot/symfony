@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
-
-use Symfony\Component\Templating\Helper\Helper;
-use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Templating\Helper;
+
+use Symfony\Component\Templating\Helper\Helper;
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
 
 /**
  * ActionsHelper manages action inclusions.

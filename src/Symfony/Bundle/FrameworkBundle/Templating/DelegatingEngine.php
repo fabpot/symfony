@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Templating;
-
-use Symfony\Component\Templating\DelegatingEngine as BaseDelegatingEngine;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
-use Symfony\Component\HttpFoundation\Response;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Templating;
+
+use Symfony\Component\Templating\DelegatingEngine as BaseDelegatingEngine;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * DelegatingEngine selects an engine for a given template.

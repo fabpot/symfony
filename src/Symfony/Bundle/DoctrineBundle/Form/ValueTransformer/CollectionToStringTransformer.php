@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Form\ValueTransformer;
-
-use Symfony\Component\Form\ValueTransformer\BaseValueTransformer;
-use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
-use Doctrine\Common\Collections\Collection;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Doctrine\Common\Collections\Collection;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Form\ValueTransformer;
+
+use Symfony\Component\Form\ValueTransformer\BaseValueTransformer;
+use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Transforms an instance of Doctrine\Common\Collections\Collection into a string of unique names.

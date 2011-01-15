@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\ZendBundle;
-
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Bundle\ZendBundle\DependencyInjection\Compiler\ZendLoggerWriterPass;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Bundle\ZendBundle\DependencyInjection\Compiler\ZendLoggerWriterPass;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\ZendBundle;
+
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Bundle\ZendBundle\DependencyInjection\Compiler\ZendLoggerWriterPass;
 
 /**
  * Bundle.

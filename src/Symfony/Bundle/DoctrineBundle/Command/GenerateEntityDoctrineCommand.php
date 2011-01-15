@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony framework.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Symfony\Bundle\DoctrineBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -10,15 +19,6 @@ use Symfony\Component\Console\Output\Output;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
 use Doctrine\ORM\Tools\EntityGenerator;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Initialize a new Doctrine entity inside a bundle.

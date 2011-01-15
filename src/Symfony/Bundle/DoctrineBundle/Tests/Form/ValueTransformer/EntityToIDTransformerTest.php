@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer;
-
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\DoctrineBundle\Form\ValueTransformer\EntityToIDTransformer;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Bundle\DoctrineBundle\Form\ValueTransformer\EntityToIDTransformer;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Tools\SchemaTool;
+use Symfony\Bundle\DoctrineBundle\Form\ValueTransformer\EntityToIDTransformer;
 
 class EntityToIDTransformerTest extends \Symfony\Bundle\DoctrineBundle\Tests\TestCase
 {

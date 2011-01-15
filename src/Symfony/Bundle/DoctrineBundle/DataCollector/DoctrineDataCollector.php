@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\DataCollector;
-
-use Symfony\Component\HttpKernel\DataCollector\DataCollector;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\DoctrineBundle\Logger\DbalLogger;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Bundle\DoctrineBundle\Logger\DbalLogger;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\DataCollector;
+
+use Symfony\Component\HttpKernel\DataCollector\DataCollector;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Bundle\DoctrineBundle\Logger\DbalLogger;
 
 /**
  * DoctrineDataCollector.

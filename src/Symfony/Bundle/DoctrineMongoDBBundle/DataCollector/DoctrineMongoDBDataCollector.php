@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineMongoDBBundle\DataCollector;
-
-use Symfony\Component\HttpKernel\DataCollector\DataCollector;
-use Symfony\Bundle\DoctrineMongoDBBundle\Logger\DoctrineMongoDBLogger;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineMongoDBBundle\DataCollector;
+
+use Symfony\Component\HttpKernel\DataCollector\DataCollector;
+use Symfony\Bundle\DoctrineMongoDBBundle\Logger\DoctrineMongoDBLogger;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Data collector for the Doctrine MongoDB ODM.

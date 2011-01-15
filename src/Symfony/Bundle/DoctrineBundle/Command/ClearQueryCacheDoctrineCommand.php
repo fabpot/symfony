@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Command;
-
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Command;
+
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand;
 
 /**
  * Command to clear the query cache of the various cache drivers.

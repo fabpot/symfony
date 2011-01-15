@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Tests\Request\ParamConverter;
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterManager;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterManager;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Tests\Request\ParamConverter;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Request\ParamConverter\ConverterManager;
 
 class ConverterManagerTest extends \PHPUnit_Framework_TestCase
 {

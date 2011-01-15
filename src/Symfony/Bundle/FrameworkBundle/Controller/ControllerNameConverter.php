@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Controller;
-
-use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\HttpKernel\Log\LoggerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Controller;
+
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
 
 /**
  * ControllerNameConverter converts controller from the short notation a:b:c

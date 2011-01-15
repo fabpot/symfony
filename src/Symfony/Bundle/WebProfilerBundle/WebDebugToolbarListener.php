@@ -1,14 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\WebProfilerBundle;
-
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -17,6 +8,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\WebProfilerBundle;
+
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver;
 
 /**
  * WebDebugToolbarListener injects the Web Debug Toolbar.

@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Tests\Request\ParamConverter;
-
-use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
-use Symfony\Bundle\DoctrineBundle\Request\ParamConverter\DoctrineConverter;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -16,6 +8,14 @@ use Symfony\Bundle\DoctrineBundle\Request\ParamConverter\DoctrineConverter;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Tests\Request\ParamConverter;
+
+use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\DoctrineBundle\Tests\TestCase;
+use Symfony\Bundle\DoctrineBundle\Request\ParamConverter\DoctrineConverter;
 
 class DoctrineConverterTest extends TestCase
 {

@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Security;
-
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\User\UserProviderInterface;
-use Symfony\Component\Security\Exception\UnsupportedAccountException;
-use Symfony\Component\Security\Exception\UsernameNotFoundException;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -15,6 +8,13 @@ use Symfony\Component\Security\Exception\UsernameNotFoundException;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Security;
+
+use Symfony\Component\Security\User\AccountInterface;
+use Symfony\Component\Security\User\UserProviderInterface;
+use Symfony\Component\Security\Exception\UnsupportedAccountException;
+use Symfony\Component\Security\Exception\UsernameNotFoundException;
 
 class EntityUserProvider implements UserProviderInterface
 {

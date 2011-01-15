@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\ZendBundle\Logger;
-
-use Zend\Log\Logger as BaseLogger;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -14,6 +8,12 @@ use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\ZendBundle\Logger;
+
+use Zend\Log\Logger as BaseLogger;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 
 /**
  * Logger.

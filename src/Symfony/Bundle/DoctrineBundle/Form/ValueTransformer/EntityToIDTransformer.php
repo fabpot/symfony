@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle\Form\ValueTransformer;
-
-use Symfony\Component\Form\ValueTransformer\BaseValueTransformer;
-use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\DoctrineBundle\Form\ValueTransformer;
+
+use Symfony\Component\Form\ValueTransformer\BaseValueTransformer;
+use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
 
 /**
  * Transforms a Doctrine Entity into its identifier value and back.

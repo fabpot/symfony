@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Validator;
-
 /*
  * This file is part of the Symfony framework.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Bundle\FrameworkBundle\Validator;
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Validator;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\TaggedContainerInterface;
