@@ -128,6 +128,9 @@ class DoctrineExtension extends AbstractDoctrineExtension
         if (isset($connection['driver-class'])) {
             $driverOptions['driverClass'] = $connection['driver-class'];
         }
+        if (isset($connection['driver_class'])) {
+            $driverOptions['driverClass'] = $connection['driver_class'];
+        }
         if (isset($connection['wrapper-class'])) {
             $driverOptions['wrapperClass'] = $connection['wrapper-class'];
         }
