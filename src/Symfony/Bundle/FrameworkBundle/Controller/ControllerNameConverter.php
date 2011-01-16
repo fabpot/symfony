@@ -37,7 +37,7 @@ class ControllerNameConverter
     {
         $this->kernel = $kernel;
         $this->logger = $logger;
-        $this->namespaces = array_keys($kernel->getBundleDirs());
+        $this->namespaces = array_keys($this->kernel->getBundleDirs());
     }
 
     /**
@@ -65,20 +65,19 @@ class ControllerNameConverter
         }
         $controller = $match[1];
 
-        $bundle = null;
+        $bundleName = null;
         $namespace = substr($class, 0, strrpos($class, '\\'));
-        foreach ($this->namespaces as $prefix) {
-            if (0 === $pos = strpos($namespace, $prefix)) {
-                // -11 to remove the \Controller suffix (11 characters)
-                $bundle = substr($namespace, strlen($prefix) + 1, -11);
+        foreach ($this->kernel->getBundles() as $bundle) {
+            if (0 === $pos = strpos($namespace, $bundle->getNamespace())) {
+                $bundleName = $bundle->getName();
             }
         }
 
-        if (null === $bundle) {
+        if (null === $bundleName) {
             throw new \InvalidArgumentException(sprintf('The "%s" class does not belong to a known bundle namespace.', $class));
         }
 
-        return str_replace('\\', '', $bundle).':'.$controller.':'.$action;
+        return str_replace('\\', '', $bundleName).':'.$controller.':'.$action;
     }
 
     /**
