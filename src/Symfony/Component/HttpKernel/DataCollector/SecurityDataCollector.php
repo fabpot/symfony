@@ -53,7 +53,7 @@ class SecurityDataCollector extends DataCollector
                 'enabled'       => true,
                 'authenticated' => $token->isAuthenticated(),
                 'user'          => (string) $token->getUser(),
-                'roles'         => $token->getRoles(),
+                'roles'         => array_map(function ($role){ return $role->getRole();}, $token->getRoles()),
             );
         }
     }
