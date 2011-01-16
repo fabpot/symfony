@@ -52,21 +52,21 @@ class FilesystemLoader extends \Twig_Loader_Filesystem
 
     protected function findTemplate($name)
     {
-        list($tpl, $options) = $this->nameParser->parse($name);
-
         // normalize name
-        $tpl = preg_replace('#/{2,}#', '/', strtr($tpl, '\\', '/'));
+        $name = str_replace(':/' , ':', preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')));
 
-        if (isset($this->cache[$tpl])) {
-            return $this->cache[$tpl];
+        if (isset($this->cache[$name])) {
+            return $this->cache[$name];
         }
+
+        list($tpl, $options) = $this->nameParser->parse($name);
 
         $this->validateName($tpl);
         $this->validateName($options['bundle']);
         $this->validateName($options['controller']);
         $this->validateName($options['format']);
 
-        $options['name'] = $tpl;
+        $options['name'] = strtolower($tpl);
 
         $replacements = array();
         foreach ($options as $key => $value) {
@@ -80,7 +80,7 @@ class FilesystemLoader extends \Twig_Loader_Filesystem
                     $this->logger->info(sprintf('Loaded template file "%s"', $file));
                 }
 
-                return $file;
+                return $this->cache[$name] = $file;
             }
 
             if (null !== $this->logger) {
