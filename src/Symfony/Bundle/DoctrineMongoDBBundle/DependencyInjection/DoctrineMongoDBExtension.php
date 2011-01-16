@@ -158,6 +158,10 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
                 'doctrine.odm.mongodb.document_manager',
                 new Alias(sprintf('doctrine.odm.mongodb.%s_document_manager', $documentManager['name']))
             );
+            $container->setAlias(
+                'doctrine.odm.mongodb.event_manager',
+                new Alias(sprintf('doctrine.odm.mongodb.%s_event_manager', $documentManager['name']))
+            );
         }
     }
 
