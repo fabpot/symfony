@@ -132,6 +132,10 @@ class FrameworkExtension extends Extension
             $this->registerEsiConfiguration($config, $container);
         }
 
+        if (array_key_exists('esi', $config)) {
+            $this->registerEsiConfiguration($config, $container);
+        }
+
         $this->addClassesToCompile(array(
             'Symfony\\Component\\HttpFoundation\\ParameterBag',
             'Symfony\\Component\\HttpFoundation\\HeaderBag',
