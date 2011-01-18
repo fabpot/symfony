@@ -93,8 +93,8 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
             ':created_at'   => time(),
         );
         try {
-          $this->exec($db, 'INSERT INTO data (token, data, ip, url, time, created_at) VALUES (:token, :data, :ip, :url, :time, :created_at)', $args);
-          $status = true;
+            $this->exec($db, 'INSERT INTO data (token, data, ip, url, time, created_at) VALUES (:token, :data, :ip, :url, :time, :created_at)', $args);
+            $status = true;
         } catch (\Exception $e) {
             $status = false;
         }
