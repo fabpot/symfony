@@ -20,4 +20,27 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class SensioCmsFooBundle extends Bundle
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'SensioCmsFooBundle';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPath()
+    {
+        return strtr(__DIR__, '\\', '/');
+    }
 }

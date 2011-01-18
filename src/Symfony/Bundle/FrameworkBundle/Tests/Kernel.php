@@ -54,21 +54,10 @@ class Kernel extends BaseKernel
     {
         return array(
             new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new \TestBundle\FooBundle\FooBundle(),
             new \TestBundle\Sensio\FooBundle\SensioFooBundle(),
-            new \TestApplication\Sensio\FooBundle\SensioFooBundle(),
             new \TestBundle\Sensio\Cms\FooBundle\SensioCmsFooBundle(),
-        );
-    }
-
-    public function registerBundleDirs()
-    {
-        return array(
-            'Application'     => __DIR__.'/../src/Application',
-            'Bundle'          => __DIR__.'/../src/Bundle',
-            'TestApplication' => __DIR__.'/Fixtures/TestApplication',
-            'TestBundle'      => __DIR__.'/Fixtures/TestBundle',
-            'Symfony\\Bundle' => __DIR__.'/../src/vendor/symfony/src/Symfony/Bundle',
+            new \TestBundle\FooBundle\FooBundle(),
+            new \TestApplication\Sensio\FooBundle\SensioFooBundle(),
         );
     }
 
@@ -85,8 +74,17 @@ class Kernel extends BaseKernel
             throw new \LogicException('The kernel is already booted.');
         }
 
-        $this->bundles = $this->registerBundles();
-        $this->bundleDirs = $this->registerBundleDirs();
+        // init bundles
+        $this->bundles = array_reverse($this->registerBundles());
+        foreach ($this->bundles as $bundle) {
+            $name = $bundle->getName();
+            if (!isset($this->bundleMap[$name])) {
+                $this->bundleMap[$name] = array();
+            }
+            $this->bundleMap[$name][] = $bundle;
+        }
+
+        // init container
         $this->container = $this->initializeContainer();
 
         foreach ($this->bundles as $bundle) {

@@ -20,4 +20,27 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class CompatAssetsBundle extends Bundle
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'CompatAssetsBundle';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getNamespace()
+    {
+        return __NAMESPACE__;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPath()
+    {
+        return strtr(__DIR__, '\\', '/');
+    }
 }

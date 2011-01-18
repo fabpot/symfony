@@ -27,4 +27,27 @@ interface BundleInterface
      * Shutdowns the Bundle.
      */
     function shutdown();
+
+    /**
+     * Gets the Bundle name.
+     *
+     * @return string The Bundle name
+     */
+    function getName();
+
+    /**
+     * Gets the Bundle namespace.
+     *
+     * @return string The Bundle namespace
+     */
+    function getNamespace();
+
+    /**
+     * Gets the Bundle directory path.
+     *
+     * The path should always be returned as a Unix path (with /).
+     *
+     * @return string The Bundle absolute path
+     */
+    function getPath();
 }
