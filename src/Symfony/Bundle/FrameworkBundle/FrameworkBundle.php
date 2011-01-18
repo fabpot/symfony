@@ -22,6 +22,7 @@ use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddClassesToCach
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\TranslatorPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Form\FormConfiguration;
 
@@ -46,6 +47,10 @@ class FrameworkBundle extends Bundle
         if ($this->container->hasParameter('csrf_secret')) {
             FormConfiguration::addDefaultCsrfSecret($this->container->getParameter('csrf_secret'));
             FormConfiguration::enableDefaultCsrfProtection();
+        }
+
+        if ($this->container->hasParameter('document_root')) {
+            File::setDocumentRoot($this->container->getParameter('document_root'));
         }
 
         // the session ID should always be included in the CSRF token, even

@@ -66,6 +66,12 @@ class FrameworkExtension extends Extension
             }
         }
 
+        foreach (array('document_root', 'document-root') as $key) {
+            if (isset($config[$key])) {
+                $container->setParameter('document_root', $config[$key]);
+            }
+        }
+
         if (!$container->hasDefinition('event_dispatcher')) {
             $loader = new XmlFileLoader($container, array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config'));
             $loader->load('services.xml');
