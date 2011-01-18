@@ -170,11 +170,9 @@ abstract class AbstractDoctrineExtension extends Extension
     protected function getBundleNamespace($bundleName, $container)
     {
         foreach ($container->getParameter('kernel.bundles') AS $bundleClassName) {
-            $tmp = dirname(str_replace('\\', '/', $bundleClassName));
-            $namespace = str_replace('/', '\\', dirname($tmp));
-            $actualBundleName = basename($tmp);
+            list($actualBundleName, $namespace) = array_map('strrev', explode('\\', strrev($bundleClassName), 2));
 
-            if ($actualBundleName == $bundleName) {
+            if ($actualBundleName == $bundleName || $bundleClassName == $bundleName) {
                 return $namespace;
             }
         }
@@ -202,7 +200,7 @@ abstract class AbstractDoctrineExtension extends Extension
         }
 
         if (!$bundleConfig['type']) {
-            $bundleConfig['type'] = $this->detectMetadataDriver($bundleDir.'/'.$bundleName, $container);
+            $bundleConfig['type'] = $this->detectMetadataDriver($bundleDir, $container);
         }
         if (!$bundleConfig['type']) {
             // skip this bundle, no mapping information was found.
@@ -211,16 +209,16 @@ abstract class AbstractDoctrineExtension extends Extension
 
         if (!$bundleConfig['dir']) {
             if (in_array($bundleConfig['type'], array('annotation', 'static-php'))) {
-                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingObjectDefaultName();
+                $bundleConfig['dir'] = $bundleDir . '/' . $this->getMappingObjectDefaultName();
             } else {
-                $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $this->getMappingResourceConfigDirectory();
+                $bundleConfig['dir'] = $bundleDir . '/' . $this->getMappingResourceConfigDirectory();
             }
         } else {
-            $bundleConfig['dir'] = $bundleDir.'/'.$bundleName.'/' . $bundleConfig['dir'];
+            $bundleConfig['dir'] = $bundleDir .'/' . $bundleConfig['dir'];
         }
 
         if (!$bundleConfig['prefix']) {
-            $bundleConfig['prefix'] = $namespace.'\\'. $bundleName . '\\' . $this->getMappingObjectDefaultName();
+            $bundleConfig['prefix'] = $namespace . '\\' . $this->getMappingObjectDefaultName();
         }
         return $bundleConfig;
     }
