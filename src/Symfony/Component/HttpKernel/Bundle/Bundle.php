@@ -49,7 +49,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
      *
      * @return string The Bundle name
      */
-    public function getName()
+    final public function getName()
     {
         if (null === $this->name) {
             $this->initReflection();
@@ -63,7 +63,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
      *
      * @return string The Bundle namespace
      */
-    public function getNamespace()
+    final public function getNamespace()
     {
         if (null === $this->name) {
             $this->initReflection();
@@ -77,7 +77,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
      *
      * @return string The Bundle absolute path
      */
-    public function getPath()
+    final public function getPath()
     {
         if (null === $this->name) {
             $this->initReflection();
@@ -91,7 +91,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
      *
      * @return \ReflectionObject A \ReflectionObject instance for the Bundle
      */
-    public function getReflection()
+    final public function getReflection()
     {
         if (null === $this->name) {
             $this->initReflection();
@@ -159,7 +159,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
      * Initializes the properties on this object that require a reflection
      * object to have been created.
      */
-    protected function initReflection()
+    private function initReflection()
     {
         $this->reflection = new \ReflectionObject($this);
         $this->namespace = $this->reflection->getNamespaceName();
