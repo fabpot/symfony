@@ -66,8 +66,9 @@ EOT
 
             // retrieve the full bundle classname
             $class = $bundle->getReflection()->getName();
+            $namespace = $bundle->getReflection()->getNamespaceName();
 
-            if ($filterBundle && $filterBundle != $class) {
+            if ($filterBundle && $filterBundle != $namespace) {
                 continue;
             }
 
