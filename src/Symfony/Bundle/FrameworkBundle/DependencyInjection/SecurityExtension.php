@@ -43,7 +43,7 @@ class SecurityExtension extends Extension
         }
 
         if (isset($config['access-denied-url'])) {
-            $container->setParameter('security.access_denied.url', $config['access-denied-url']);
+            $container->setParameter('security.access.denied_url', $config['access-denied-url']);
         }
 
         $this->createFirewalls($config, $container);
@@ -258,7 +258,7 @@ class SecurityExtension extends Extension
         }
 
         // Exception listener
-        $exceptionListener = new Reference($this->createExceptionListener($container, $id, $defaultEntryPoint));
+        $exceptionListener = new Reference($this->createExceptionListener($container, $firewall, $id, $defaultEntryPoint));
 
         return array($matcher, $listeners, $exceptionListener);
     }
@@ -545,12 +545,31 @@ class SecurityExtension extends Extension
         return $listenerId;
     }
 
-    protected function createExceptionListener($container, $id, $defaultEntryPoint)
+    protected function createExceptionListener($container, $config, $id, $defaultEntryPoint)
     {
+        if (isset($config['access_denied_handler'])) {
+            $config['access-denied-handler'] = $config['access_denied_handler'];
+        }
+        if (isset($config['access_denied_url'])) {
+            $config['access-denied-url'] = $config['access_denied_url'];
+        }
+
         $exceptionListenerId = 'security.exception_listener.'.$id;
         $listener = $container->setDefinition($exceptionListenerId, clone $container->getDefinition('security.exception_listener'));
         $arguments = $listener->getArguments();
         $arguments[2] = null === $defaultEntryPoint ? null : new Reference($defaultEntryPoint);
+
+        // access denied handler setup
+        if (isset($config['access-denied-handler'])) {
+            $arguments[3] = new Reference($config['access-denied-handler']);
+        } else if (isset($config['access-denied-url'])) {
+            $definition = $container->setDefinition('security.access.denied_handler.'.$id, clone $container->getDefinition('security.access.denied_handler'));
+            $hArguments = $definition->getArguments();
+            $hArguments[0] = $config['access-denied-url'];
+            $definition->setArguments($hArguments);
+            $arguments[3] = new Reference('security.access.denied_handler.'.$id);
+        }
+
         $listener->setArguments($arguments);
 
         return $exceptionListenerId;

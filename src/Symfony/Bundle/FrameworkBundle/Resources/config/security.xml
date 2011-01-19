@@ -67,6 +67,9 @@
         <parameter key="security.access.decision_manager.allow_if_all_abstain">false</parameter>
         <parameter key="security.access.decision_manager.allow_if_equal_granted_denied">true</parameter>
         
+        <parameter key="security.access.denied_handler.class">Symfony\Component\HttpKernel\Security\ExceptionTranslation\AccessDeniedHandler</parameter>
+        <parameter key="security.access.denied_url">/access-denied</parameter>
+        
         <parameter key="security.access.simple_role_voter.class">Symfony\Component\Security\Authorization\Voter\RoleVoter</parameter>
         <parameter key="security.access.authenticated_voter.class">Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter</parameter>
         <parameter key="security.access.role_hierarchy_voter.class">Symfony\Component\Security\Authorization\Voter\RoleHierarchyVoter</parameter>
@@ -152,6 +155,10 @@
         <service id="security.access.role_hierarchy_voter" class="%security.access.role_hierarchy_voter.class%" public="false">
             <argument type="service" id="security.role_hierarchy" />
         </service>
+        
+        <service id="security.access.denied_handler" class="%security.access.denied_handler.class%" public="false">
+            <argument>%security.access.denied_url%</argument>
+        </service>        
 
         <service id="security.firewall" class="%security.firewall.class%" public="false">
             <tag name="kernel.listener" priority="-128" />
