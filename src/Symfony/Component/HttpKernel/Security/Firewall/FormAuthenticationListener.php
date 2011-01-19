@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\HttpKernel\Security\Session\SessionAuthenticationStrategyInterface;
+
 use Symfony\Component\HttpKernel\Security\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\HttpKernel\Security\Authentication\AuthenticationSuccessHandlerInterface;
 use Symfony\Component\Security\SecurityContext;
@@ -36,6 +38,7 @@ abstract class FormAuthenticationListener
     protected $failureHandler;
     protected $authenticationManager;
     protected $eventDispatcher;
+    protected $sessionStrategy;
     protected $checkPath;
     protected $logger;
 
@@ -47,7 +50,7 @@ abstract class FormAuthenticationListener
      * @param array                          $options               An array of options
      * @param LoggerInterface                $logger                A LoggerInterface instance
      */
-    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, AuthenticationSuccessHandlerInterface $successHandler, AuthenticationFailureHandlerInterface $failureHandler, $checkPath, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, AuthenticationSuccessHandlerInterface $successHandler, AuthenticationFailureHandlerInterface $failureHandler, $checkPath, SessionAuthenticationStrategyInterface $sessionStrategy, LoggerInterface $logger = null)
     {
         if (empty($checkPath)) {
             throw new \InvalidArgumentException('$checkPath cannot be empty.');
@@ -57,6 +60,7 @@ abstract class FormAuthenticationListener
         $this->authenticationManager = $authenticationManager;
         $this->successHandler = $successHandler;
         $this->failureHandler = $failureHandler;
+        $this->sessionStrategy = $sessionStrategy;
         $this->checkPath = $checkPath;
         $this->logger = $logger;
     }
@@ -98,6 +102,8 @@ abstract class FormAuthenticationListener
             if (null === $token = $this->attemptAuthentication($request)) {
                 return;
             }
+
+            $this->sessionStrategy->onAuthentication($request, $token);
 
             $response = $this->onSuccess($event, $request, $token);
         } catch (AuthenticationException $failed) {

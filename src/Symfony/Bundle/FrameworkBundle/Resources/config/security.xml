@@ -28,6 +28,9 @@
 
         <parameter key="security.authentication.retry_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\RetryAuthenticationEntryPoint</parameter>
 
+        <parameter key="security.authentication.session_strategy.class">Symfony\Component\HttpKernel\Security\Session\SessionAuthenticationStrategy</parameter>
+        <parameter key="security.authentication.session_strategy.strategy">migrate</parameter>
+
         <parameter key="security.authentication.default_response_handler.class">Symfony\Component\HttpKernel\Security\Authentication\DefaultAuthenticationResponseHandler</parameter>
         <parameter key="security.authentication.default_response_handler.options" type="collection"></parameter>
 
@@ -114,6 +117,10 @@
         <service id="security.authentication.trust_resolver" class="%security.authentication.trust_resolver.class%" public="false">
             <argument>%security.authentication.trust_resolver.anonymous_class%</argument>
             <argument>%security.authentication.trust_resolver.rememberme_class%</argument>
+        </service>
+        
+        <service id="security.authentication.session_strategy" class="%security.authentication.session_strategy.class%" public="false">
+            <argument>%security.authentication.session_strategy.strategy%</argument>
         </service>
 
         <service id="security.authentication.default_response_handler" class="%security.authentication.default_response_handler.class%" public="false">

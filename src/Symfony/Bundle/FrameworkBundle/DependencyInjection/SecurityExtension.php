@@ -46,6 +46,14 @@ class SecurityExtension extends Extension
             $container->setParameter('security.access.denied_url', $config['access-denied-url']);
         }
 
+        // session fixation protection
+        if (isset($config['session_fixation_protection'])) {
+            $config['session-fixation-protection'] = $config['session_fixation_protection'];
+        }
+        if (isset($config['session-fixation-protection'])) {
+            $container->setParameter('security.authentication.session_strategy.strategy', $config['session-fixation-protection']);
+        }
+
         $this->createFirewalls($config, $container);
         $this->createAuthorization($config, $container);
         $this->createRoleHierarchy($config, $container);
@@ -224,6 +232,10 @@ class SecurityExtension extends Extension
 
             $listeners[] = new Reference($listenerId);
 
+            if (!is_array($firewall['logout'])) {
+                $firewall['logout'] = array();
+            }
+
             $arguments = $listener->getArguments();
             if (isset($firewall['logout']['path'])) {
                 $arguments[1] = $firewall['logout']['path'];
@@ -234,10 +246,19 @@ class SecurityExtension extends Extension
             }
             $listener->setArguments($arguments);
 
-            if (!isset($firewall['stateless']) || !$firewall['stateless']) {
+            // add session logout handler
+            $invalidateSession = true;
+            if (array_key_exists('invalidate_session', $firewall['logout'])) {
+                $firewall['logout']['invalidate-session'] = $firewall['logout']['invalidate_session'];
+            }
+            if (array_key_exists('invalidate-session', $firewall['logout'])) {
+                $invalidateSession = (Boolean) $invalidateSession;
+            }
+            if (true === $invalidateSession && (!isset($firewall['stateless']) || !$firewall['stateless'])) {
                 $listener->addMethodCall('addHandler', array(new Reference('security.logout.handler.session')));
             }
 
+            // add cookie logout handler
             if (count($cookies = $this->fixConfig($firewall['logout'], 'cookie')) > 0) {
                 $cookieHandlerId = 'security.logout.handler.cookie_clearing.'.$id;
                 $cookieHandler = $container->setDefinition($cookieHandlerId, clone $container->getDefinition('security.logout.handler.cookie_clearing'));
