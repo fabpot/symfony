@@ -33,10 +33,9 @@ class FormLoginFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.form.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($provider));
 
+        // generate options
         $options = array(
             'check_path'                     => '/login_check',
             'login_path'                     => '/login',
@@ -53,11 +52,39 @@ class FormLoginFactory implements SecurityFactoryInterface
                 $options[$key] = $config[$key];
             }
         }
-        $container->setParameter('security.authentication.form.options', $options);
-        $container->setParameter('security.authentication.form.login_path', $options['login_path']);
-        $container->setParameter('security.authentication.form.use_forward', $options['use_forward']);
+        $listener->setArgument(4, $options['check_path']);
+        unset($options['check_path']);
 
-        return array($provider, $listenerId, 'security.authentication.form_entry_point');
+        // set-up the default handler
+        $defaultHandler = $container->setDefinition($defaultHandlerId = 'security.authentication.default_response_handler.'.$id, clone $container->getDefinition('security.authentication.default_response_handler.'.$id));
+        $defaultHandler->setArgument(0, $options);
+
+        // success handler
+        if (isset($config['success_handler'])) {
+            $config['success-handler'] = $config['success_handler'];
+        }
+        if (isset($config['success-handler'])) {
+            $listener->setArgument(2, new Reference($config['success-handler']));
+        } else {
+            $listener->setArgument(2, new Reference($defaultHandlerId));
+        }
+
+        // failure handler
+        if (isset($config['failure_handler'])) {
+            $config['failure-handler'] = $config['failure_handler'];
+        }
+        if (isset($config['failure-handler'])) {
+            $listener->setArgument(3, new Reference($config['failure-handler']));
+        } else {
+            $listener->setArgument(3, new Reference($defaultHandlerId));
+        }
+
+        // form entry point
+        $entryPoint = $container->setDefinition($entryPointId = 'security.authentication.form_entry_point.'.$id, clone $container->getDefinition('security.authentication.form_entry_point'));
+        $entryPoint->setArgument(0, $options['login_path']);
+        $entryPoint->setArgument(1, $options['use_forward']);
+
+        return array($provider, $listenerId, $entryPointId);
     }
 
     public function getPosition()

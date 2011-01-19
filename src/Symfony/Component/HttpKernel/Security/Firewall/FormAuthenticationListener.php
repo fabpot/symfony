@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
+use Symfony\Component\HttpKernel\Security\Authentication\AuthenticationFailureHandlerInterface;
+use Symfony\Component\HttpKernel\Security\Authentication\AuthenticationSuccessHandlerInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
@@ -30,8 +32,11 @@ use Symfony\Component\Security\Authentication\Token\TokenInterface;
 abstract class FormAuthenticationListener
 {
     protected $securityContext;
+    protected $successHandler;
+    protected $failureHandler;
     protected $authenticationManager;
-    protected $options;
+    protected $eventDispatcher;
+    protected $checkPath;
     protected $logger;
 
     /**
@@ -42,25 +47,22 @@ abstract class FormAuthenticationListener
      * @param array                          $options               An array of options
      * @param LoggerInterface                $logger                A LoggerInterface instance
      */
-    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, array $options = array(), LoggerInterface $logger = null)
+    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, AuthenticationSuccessHandlerInterface $successHandler, AuthenticationFailureHandlerInterface $failureHandler, $checkPath, LoggerInterface $logger = null)
     {
+        if (empty($checkPath)) {
+            throw new \InvalidArgumentException('$checkPath cannot be empty.');
+        }
+
         $this->securityContext = $securityContext;
         $this->authenticationManager = $authenticationManager;
-        $this->options = array_merge(array(
-            'check_path'                     => '/login_check',
-            'login_path'                     => '/login',
-            'always_use_default_target_path' => false,
-            'default_target_path'            => '/',
-            'target_path_parameter'          => '_target_path',
-            'use_referer'                    => false,
-            'failure_path'                   => null,
-            'failure_forward'                => false,
-        ), $options);
+        $this->successHandler = $successHandler;
+        $this->failureHandler = $failureHandler;
+        $this->checkPath = $checkPath;
         $this->logger = $logger;
     }
 
     /**
-     * 
+     *
      *
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
@@ -68,8 +70,10 @@ abstract class FormAuthenticationListener
     public function register(EventDispatcher $dispatcher)
     {
         $dispatcher->connect('core.security', array($this, 'handle'), 0);
+
+        $this->eventDispatcher = $dispatcher;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -86,7 +90,7 @@ abstract class FormAuthenticationListener
     {
         $request = $event->get('request');
 
-        if ($this->options['check_path'] !== $request->getPathInfo()) {
+        if ($this->checkPath !== $request->getPathInfo()) {
             return;
         }
 
@@ -95,7 +99,7 @@ abstract class FormAuthenticationListener
                 return;
             }
 
-            $response = $this->onSuccess($request, $token);
+            $response = $this->onSuccess($event, $request, $token);
         } catch (AuthenticationException $failed) {
             $response = $this->onFailure($event->getSubject(), $request, $failed);
         }
@@ -113,34 +117,10 @@ abstract class FormAuthenticationListener
 
         $this->securityContext->setToken(null);
 
-        if (null === $this->options['failure_path']) {
-            $this->options['failure_path'] = $this->options['login_path'];
-        }
-
-        if ($this->options['failure_forward']) {
-            if (null !== $this->logger) {
-                $this->logger->debug(sprintf('Forwarding to %s', $this->options['failure_path']));
-            }
-
-            $subRequest = Request::create($this->options['failure_path']);
-            $subRequest->attributes->set(SecurityContext::AUTHENTICATION_ERROR, $failed->getMessage());
-
-            return $kernel->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
-        } else {
-            if (null !== $this->logger) {
-                $this->logger->debug(sprintf('Redirecting to %s', $this->options['failure_path']));
-            }
-
-            $request->getSession()->set(SecurityContext::AUTHENTICATION_ERROR, $failed->getMessage());
-
-            $response = new Response();
-            $response->setRedirect(0 !== strpos($this->options['failure_path'], 'http') ? $request->getUriForPath($this->options['failure_path']) : $this->options['failure_path'], 302);
-
-            return $response;
-        }
+        return $this->failureHandler->onAuthenticationFailure($event, $request, $failed);
     }
 
-    protected function onSuccess(Request $request, TokenInterface $token)
+    protected function onSuccess(Event $event, Request $request, TokenInterface $token)
     {
         if (null !== $this->logger) {
             $this->logger->debug('User has been authenticated successfully');
@@ -152,39 +132,9 @@ abstract class FormAuthenticationListener
         $session->remove(SecurityContext::AUTHENTICATION_ERROR);
         $session->remove(SecurityContext::LAST_USERNAME);
 
-        $response = new Response();
-        $path = $this->determineTargetUrl($request);
-        $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
+        $this->eventDispatcher->notify(new Event($this, 'security.login_success', array('request' => $request, 'token' => $token)));
 
-        return $response;
-    }
-
-    /**
-     * Builds the target URL according to the defined options.
-     */
-    protected function determineTargetUrl(Request $request)
-    {
-        if ($this->options['always_use_default_target_path']) {
-            return $this->options['default_target_path'];
-        }
-
-        if ($targetUrl = $request->get($this->options['target_path_parameter'])) {
-            return $targetUrl;
-        }
-
-        $session = $request->getSession();
-        if ($targetUrl = $session->get('_security.target_path')) {
-            $session->remove('_security.target_path');
-
-            return $targetUrl;
-        }
-
-        if ($this->options['use_referer'] && $targetUrl = $request->headers->get('Referer')) {
-
-            return $targetUrl;
-        }
-
-        return $this->options['default_target_path'];
+        return $this->successHandler->onAuthenticationSuccess($request, $token);
     }
 
     /**

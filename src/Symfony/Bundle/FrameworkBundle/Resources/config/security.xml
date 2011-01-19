@@ -28,9 +28,10 @@
 
         <parameter key="security.authentication.retry_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\RetryAuthenticationEntryPoint</parameter>
 
+        <parameter key="security.authentication.default_response_handler.class">Symfony\Component\HttpKernel\Security\Authentication\DefaultAuthenticationResponseHandler</parameter>
+        <parameter key="security.authentication.default_response_handler.options" type="collection"></parameter>
+
         <parameter key="security.authentication.form_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\FormAuthenticationEntryPoint</parameter>
-        <parameter key="security.authentication.form.login_path">/login</parameter>
-        <parameter key="security.authentication.form.use_forward">false</parameter>
         <parameter key="security.authentication.listener.form.class">Symfony\Component\HttpKernel\Security\Firewall\UsernamePasswordFormAuthenticationListener</parameter>
         <parameter key="security.authentication.form.options" type="collection" />
 
@@ -115,12 +116,14 @@
             <argument>%security.authentication.trust_resolver.rememberme_class%</argument>
         </service>
 
-        <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" public="false" />
-
-        <service id="security.authentication.form_entry_point" class="%security.authentication.form_entry_point.class%" public="false">
-            <argument>%security.authentication.form.login_path%</argument>
-            <argument>%security.authentication.form.use_forward%</argument>
+        <service id="security.authentication.default_response_handler" class="%security.authentication.default_response_handler.class%" public="false">
+            <argument>%security.authentication.default_response_handler.options%</argument>
+            <argument type="service" id="logger" on-invalid="null" />
         </service>
+        <service id="security.authentication.success_handler" alias="security.authentication.default_response_handler" public="false" />
+        <service id="security.authentication.failure_handler" alias="security.authentication.default_response_handler" public="false" />
+
+        <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" public="false" />
 
         <service id="security.authentication.basic_entry_point" class="%security.authentication.basic_entry_point.class%" public="false">
             <argument>%security.authentication.basic_entry_point.realm%</argument>

@@ -174,7 +174,13 @@ class SecurityExtension extends Extension
         // Matcher
         $i = 0;
         $matcher = null;
-        if (isset($firewall['pattern'])) {
+        if (isset($firewall['request_matcher'])) {
+            $firewall['request-matcher'] = $firewall['request_matcher'];
+        }
+
+        if (isset($firewall['request-matcher'])) {
+            $matcher = new Reference($firewall['request-matcher']);
+        } else if (isset($firewall['pattern'])) {
             $id = 'security.matcher.map'.$id.'.'.++$i;
             $container
                 ->register($id, '%security.matcher.class%')
@@ -255,6 +261,14 @@ class SecurityExtension extends Extension
         }
         if (array_key_exists('switch-user', $firewall)) {
             $listeners[] = new Reference($this->createSwitchUserListener($container, $id, $firewall['switch-user'], $defaultProvider));
+        }
+
+        // Determine default entry point
+        if (isset($firewall['entry_point'])) {
+            $firewall['entry-point'] = $firewall['entry_point'];
+        }
+        if (isset($firewall['entry-point'])) {
+            $defaultEntryPoint = new Reference($firewall['entry-point']);
         }
 
         // Exception listener
