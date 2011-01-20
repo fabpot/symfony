@@ -52,21 +52,14 @@ class FormLoginFactory implements SecurityFactoryInterface
                 $options[$key] = $config[$key];
             }
         }
-        $listener->setArgument(4, $options['check_path']);
-        unset($options['check_path']);
-
-        // set-up the default handler
-        $defaultHandler = $container->setDefinition($defaultHandlerId = 'security.authentication.default_response_handler.'.$id, clone $container->getDefinition('security.authentication.default_response_handler.'.$id));
-        $defaultHandler->setArgument(0, $options);
+        $listener->setArgument(3, $options);
 
         // success handler
         if (isset($config['success_handler'])) {
             $config['success-handler'] = $config['success_handler'];
         }
         if (isset($config['success-handler'])) {
-            $listener->setArgument(2, new Reference($config['success-handler']));
-        } else {
-            $listener->setArgument(2, new Reference($defaultHandlerId));
+            $listener->setArgument(4, new Reference($config['success-handler']));
         }
 
         // failure handler
@@ -74,9 +67,7 @@ class FormLoginFactory implements SecurityFactoryInterface
             $config['failure-handler'] = $config['failure_handler'];
         }
         if (isset($config['failure-handler'])) {
-            $listener->setArgument(3, new Reference($config['failure-handler']));
-        } else {
-            $listener->setArgument(3, new Reference($defaultHandlerId));
+            $listener->setArgument(5, new Reference($config['failure-handler']));
         }
 
         // form entry point

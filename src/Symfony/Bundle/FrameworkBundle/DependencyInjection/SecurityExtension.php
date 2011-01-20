@@ -596,13 +596,9 @@ class SecurityExtension extends Extension
 
         // access denied handler setup
         if (isset($config['access-denied-handler'])) {
-            $arguments[3] = new Reference($config['access-denied-handler']);
+            $arguments[4] = new Reference($config['access-denied-handler']);
         } else if (isset($config['access-denied-url'])) {
-            $definition = $container->setDefinition('security.access.denied_handler.'.$id, clone $container->getDefinition('security.access.denied_handler'));
-            $hArguments = $definition->getArguments();
-            $hArguments[0] = $config['access-denied-url'];
-            $definition->setArguments($hArguments);
-            $arguments[3] = new Reference('security.access.denied_handler.'.$id);
+            $arguments[3] = $config['access-denied-url'];
         }
 
         $listener->setArguments($arguments);

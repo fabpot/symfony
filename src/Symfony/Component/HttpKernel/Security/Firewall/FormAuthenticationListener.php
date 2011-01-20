@@ -39,7 +39,7 @@ abstract class FormAuthenticationListener
     protected $authenticationManager;
     protected $eventDispatcher;
     protected $sessionStrategy;
-    protected $checkPath;
+    protected $options;
     protected $logger;
 
     /**
@@ -50,18 +50,23 @@ abstract class FormAuthenticationListener
      * @param array                          $options               An array of options
      * @param LoggerInterface                $logger                A LoggerInterface instance
      */
-    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, AuthenticationSuccessHandlerInterface $successHandler, AuthenticationFailureHandlerInterface $failureHandler, $checkPath, SessionAuthenticationStrategyInterface $sessionStrategy, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, SessionAuthenticationStrategyInterface $sessionStrategy, array $options = array(), AuthenticationSuccessHandlerInterface $successHandler = null, AuthenticationFailureHandlerInterface $failureHandler = null, LoggerInterface $logger = null)
     {
-        if (empty($checkPath)) {
-            throw new \InvalidArgumentException('$checkPath cannot be empty.');
-        }
-
         $this->securityContext = $securityContext;
         $this->authenticationManager = $authenticationManager;
         $this->successHandler = $successHandler;
         $this->failureHandler = $failureHandler;
         $this->sessionStrategy = $sessionStrategy;
-        $this->checkPath = $checkPath;
+        $this->options = array_merge(array(
+            'check_path'										 => '/login_check',
+            'login_path'                     => '/login',
+            'always_use_default_target_path' => false,
+            'default_target_path'            => '/',
+            'target_path_parameter'          => '_target_path',
+            'use_referer'                    => false,
+            'failure_path'                   => null,
+            'failure_forward'                => false,
+        ), $options);
         $this->logger = $logger;
     }
 
@@ -94,7 +99,7 @@ abstract class FormAuthenticationListener
     {
         $request = $event->get('request');
 
-        if ($this->checkPath !== $request->getPathInfo()) {
+        if ($this->options['check_path'] !== $request->getPathInfo()) {
             return;
         }
 
@@ -107,7 +112,7 @@ abstract class FormAuthenticationListener
 
             $response = $this->onSuccess($event, $request, $token);
         } catch (AuthenticationException $failed) {
-            $response = $this->onFailure($event->getSubject(), $request, $failed);
+            $response = $this->onFailure($event, $request, $failed);
         }
 
         $event->setReturnValue($response);
@@ -115,7 +120,7 @@ abstract class FormAuthenticationListener
         return true;
     }
 
-    protected function onFailure($kernel, Request $request, \Exception $failed)
+    protected function onFailure($event, Request $request, \Exception $failed)
     {
         if (null !== $this->logger) {
             $this->logger->debug(sprintf('Authentication request failed: %s', $failed->getMessage()));
@@ -123,7 +128,35 @@ abstract class FormAuthenticationListener
 
         $this->securityContext->setToken(null);
 
-        return $this->failureHandler->onAuthenticationFailure($event, $request, $failed);
+        if (null !== $this->failureHandler) {
+            return $this->failureHandler->onAuthenticationFailure($event, $request, $failed);
+        }
+
+        if (null === $this->options['failure_path']) {
+            $this->options['failure_path'] = $this->options['login_path'];
+        }
+
+        if ($this->options['failure_forward']) {
+            if (null !== $this->logger) {
+                $this->logger->debug(sprintf('Forwarding to %s', $this->options['failure_path']));
+            }
+
+            $subRequest = Request::create($this->options['failure_path']);
+            $subRequest->attributes->set(SecurityContext::AUTHENTICATION_ERROR, $failed->getMessage());
+
+            return $event->getSubject()->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
+        } else {
+            if (null !== $this->logger) {
+                $this->logger->debug(sprintf('Redirecting to %s', $this->options['failure_path']));
+            }
+
+            $request->getSession()->set(SecurityContext::AUTHENTICATION_ERROR, $failed->getMessage());
+
+            $response = new Response();
+            $response->setRedirect(0 !== strpos($this->options['failure_path'], 'http') ? $request->getUriForPath($this->options['failure_path']) : $this->options['failure_path'], 302);
+
+            return $response;
+        }
     }
 
     protected function onSuccess(Event $event, Request $request, TokenInterface $token)
@@ -140,7 +173,46 @@ abstract class FormAuthenticationListener
 
         $this->eventDispatcher->notify(new Event($this, 'security.login_success', array('request' => $request, 'token' => $token)));
 
-        return $this->successHandler->onAuthenticationSuccess($request, $token);
+        if (null !== $this->successHandler) {
+            return $this->successHandler->onAuthenticationSuccess($request, $token);
+        }
+
+        $response = new Response();
+        $path = $this->determineTargetUrl($request);
+        $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
+
+        return $response;
+    }
+
+    /**
+     * Builds the target URL according to the defined options.
+     *
+     * @param Request $request
+     *
+     * @return string
+     */
+    protected function determineTargetUrl(Request $request)
+    {
+        if ($this->options['always_use_default_target_path']) {
+            return $this->options['default_target_path'];
+        }
+
+        if ($targetUrl = $request->get($this->options['target_path_parameter'])) {
+            return $targetUrl;
+        }
+
+        $session = $request->getSession();
+        if ($targetUrl = $session->get('_security.target_path')) {
+            $session->remove('_security.target_path');
+
+            return $targetUrl;
+        }
+
+        if ($this->options['use_referer'] && $targetUrl = $request->headers->get('Referer')) {
+            return $targetUrl;
+        }
+
+        return $this->options['default_target_path'];
     }
 
     /**

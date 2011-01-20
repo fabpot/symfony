@@ -31,9 +31,6 @@
         <parameter key="security.authentication.session_strategy.class">Symfony\Component\HttpKernel\Security\Session\SessionAuthenticationStrategy</parameter>
         <parameter key="security.authentication.session_strategy.strategy">migrate</parameter>
 
-        <parameter key="security.authentication.default_response_handler.class">Symfony\Component\HttpKernel\Security\Authentication\DefaultAuthenticationResponseHandler</parameter>
-        <parameter key="security.authentication.default_response_handler.options" type="collection"></parameter>
-
         <parameter key="security.authentication.form_entry_point.class">Symfony\Component\HttpKernel\Security\EntryPoint\FormAuthenticationEntryPoint</parameter>
         <parameter key="security.authentication.listener.form.class">Symfony\Component\HttpKernel\Security\Firewall\UsernamePasswordFormAuthenticationListener</parameter>
         <parameter key="security.authentication.form.options" type="collection" />
@@ -71,8 +68,7 @@
         <parameter key="security.access.decision_manager.allow_if_all_abstain">false</parameter>
         <parameter key="security.access.decision_manager.allow_if_equal_granted_denied">true</parameter>
         
-        <parameter key="security.access.denied_handler.class">Symfony\Component\HttpKernel\Security\ExceptionTranslation\AccessDeniedHandler</parameter>
-        <parameter key="security.access.denied_url">/access-denied</parameter>
+        <parameter key="security.access.denied_url">/access_denied</parameter>
         
         <parameter key="security.access.simple_role_voter.class">Symfony\Component\Security\Authorization\Voter\RoleVoter</parameter>
         <parameter key="security.access.authenticated_voter.class">Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter</parameter>
@@ -123,13 +119,6 @@
             <argument>%security.authentication.session_strategy.strategy%</argument>
         </service>
 
-        <service id="security.authentication.default_response_handler" class="%security.authentication.default_response_handler.class%" public="false">
-            <argument>%security.authentication.default_response_handler.options%</argument>
-            <argument type="service" id="logger" on-invalid="null" />
-        </service>
-        <service id="security.authentication.success_handler" alias="security.authentication.default_response_handler" public="false" />
-        <service id="security.authentication.failure_handler" alias="security.authentication.default_response_handler" public="false" />
-
         <service id="security.authentication.retry_entry_point" class="%security.authentication.retry_entry_point.class%" public="false" />
 
         <service id="security.authentication.basic_entry_point" class="%security.authentication.basic_entry_point.class%" public="false">
@@ -166,10 +155,6 @@
             <argument type="service" id="security.role_hierarchy" />
         </service>
         
-        <service id="security.access.denied_handler" class="%security.access.denied_handler.class%" public="false">
-            <argument>%security.access.denied_url%</argument>
-        </service>        
-
         <service id="security.firewall" class="%security.firewall.class%" public="false">
             <tag name="kernel.listener" priority="-128" />
             <argument type="service" id="security.firewall.map" />

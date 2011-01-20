@@ -39,10 +39,10 @@
         <service id="security.authentication.listener.form" class="%security.authentication.listener.form.class%" public="false">
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.manager" />
-            <argument type="service" id="security.authentication.success_handler" />
-            <argument type="service" id="security.authentication.failure_handler" />
-            <argument/>
             <argument type="service" id="security.authentication.session_strategy" />
+            <argument type="collection"></argument>
+            <argument type="service" id="security.authentication.success_handler" on-invalid="null" />
+            <argument type="service" id="security.authentication.failure_handler" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>
         
@@ -72,6 +72,7 @@
             <argument type="service" id="security.context" />
             <argument type="service" id="security.authentication.trust_resolver" />
             <argument type="service" id="security.authentication.entry_point" on-invalid="null" />
+            <argument>%security.access.denied_url%</argument>
             <argument type="service" id="security.access.denied_handler" on-invalid="null" />
             <argument type="service" id="logger" on-invalid="null" />
         </service>

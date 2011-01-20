@@ -39,14 +39,16 @@ class ExceptionListener implements ListenerInterface
     protected $accessDeniedHandler;
     protected $authenticationEntryPoint;
     protected $authenticationTrustResolver;
+    protected $errorPage;
     protected $logger;
 
-    public function __construct(SecurityContext $context, AuthenticationTrustResolverInterface $trustResolver, AuthenticationEntryPointInterface $authenticationEntryPoint = null, AccessDeniedHandlerInterface $accessDeniedHandler = null, LoggerInterface $logger = null)
+    public function __construct(SecurityContext $context, AuthenticationTrustResolverInterface $trustResolver, AuthenticationEntryPointInterface $authenticationEntryPoint = null, $errorPage = null, AccessDeniedHandlerInterface $accessDeniedHandler = null, LoggerInterface $logger = null)
     {
         $this->context = $context;
         $this->accessDeniedHandler = $accessDeniedHandler;
         $this->authenticationEntryPoint = $authenticationEntryPoint;
         $this->authenticationTrustResolver = $trustResolver;
+        $this->errorPage = $errorPage;
         $this->logger = $logger;
     }
 
@@ -110,15 +112,25 @@ class ExceptionListener implements ListenerInterface
                     $this->logger->info('Access is denied (and user is neither anonymous, nor remember-me)');
                 }
 
-                if (null === $this->accessDeniedHandler) {
-                    return;
-                }
-
                 try {
-                    $response = $this->accessDeniedHandler->handle($event, $request, $exception);
+                    if (null !== $this->accessDeniedHandler) {
+                        $response = $this->accessDeniedHandler->handle($event, $request, $exception);
 
-                    if (!$response instanceof Response) {
-                        return;
+                        if (!$response instanceof Response) {
+                            return;
+                        }
+                    } else {
+                        if (null === $this->errorPage) {
+                            return;
+                        }
+
+                        $subRequest = Request::create($this->errorPage);
+                        $subRequest->attributes->set(SecurityContext::ACCESS_DENIED_ERROR, $exception->getMessage());
+
+                        $response = $event->getSubject()->handle($subRequest, HttpKernelInterface::SUB_REQUEST, true);
+                        $response->setStatusCode(403);
+
+                        return $response;
                     }
                 } catch (\Exception $e) {
                     if (null !== $this->logger) {
