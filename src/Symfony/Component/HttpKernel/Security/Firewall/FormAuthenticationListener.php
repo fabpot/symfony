@@ -61,7 +61,6 @@ abstract class FormAuthenticationListener
 
     /**
      *
-     *
      * @param EventDispatcher $dispatcher An EventDispatcher instance
      * @param integer         $priority   The priority
      */
@@ -91,11 +90,17 @@ abstract class FormAuthenticationListener
         }
 
         try {
-            if (null === $token = $this->attemptAuthentication($request)) {
+            if (null === $returnValue = $this->attemptAuthentication($request)) {
                 return;
             }
 
-            $response = $this->onSuccess($request, $token);
+            if ($returnValue instanceof TokenInterface) {
+                $response = $this->onSuccess($request, $returnValue);
+            } else if ($returnValue instanceof Response) {
+                $response = $returnValue;
+            } else {
+                throw new \RuntimeException('attemptAuthentication() must either return a Response, an implementation of TokenInterface, or null.');
+            }
         } catch (AuthenticationException $failed) {
             $response = $this->onFailure($event->getSubject(), $request, $failed);
         }
