@@ -498,6 +498,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $req->getContent($second);
     }
 
+    public function testGetContentType()
+    {
+        $request = new Request();
+
+        $this->assertEquals('application/octet-stream', $request->getContentType());
+
+        $request->headers->set('content_type', 'text/html');
+
+        $this->assertEquals('text/html', $request->getContentType());
+    }
+
     public function getContentCantBeCalledTwiceWithResourcesProvider()
     {
         return array(
