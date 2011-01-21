@@ -25,21 +25,21 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Symfony\Component\HttpFoundation\Request::initialize
+     * @covers Symfony\Component\HttpFoundation\Request::__construct
      */
     public function testInitialize()
     {
         $request = new Request(array('foo' => 'bar'));
-        $this->assertEquals('bar', $request->query->get('foo'), '->initialize() takes an array of query parameters as its first argument');
+        $this->assertEquals('bar', $request->query->get('foo'), '->__construct() takes an array of query parameters as its first argument');
 
         $request = new Request(array(), array('foo' => 'bar'));
-        $this->assertEquals('bar', $request->request->get('foo'), '->initialize() takes an array of request parameters as its second argument');
+        $this->assertEquals('bar', $request->request->get('foo'), '->__construct() takes an array of request parameters as its second argument');
 
         $request = new Request(array(), array(), array('foo' => 'bar'));
-        $this->assertEquals('bar', $request->attributes->get('foo'), '->initialize() takes an array of attributes as its thrid argument');
+        $this->assertEquals('bar', $request->attributes->get('foo'), '->__construct() takes an array of attributes as its thrid argument');
 
         $request = new Request(array(), array(), array(), array(), array(), array('HTTP_FOO' => 'bar'));
-        $this->assertEquals('bar', $request->headers->get('FOO'), '->initialize() takes an array of HTTP headers as its fourth argument');
+        $this->assertEquals('bar', $request->headers->get('FOO'), '->__construct() takes an array of HTTP headers as its fourth argument');
     }
 
     /**
