@@ -189,6 +189,8 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
      */
     public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
+        $this->initializeRequest($request);
+
         if (false === $this->booted) {
             $this->boot();
         }
@@ -456,6 +458,17 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
 
         $this->container = new $class();
         $this->container->set('kernel', $this);
+    }
+
+    protected function initializeRequest(Request $request)
+    {
+        $request->request->replace($_POST);
+        $request->query->replace($_GET);
+        $request->attributes->replace(array());
+        $request->cookies->replace($_COOKIE);
+        $request->files->replace($_FILES);
+        $request->server->replace($_SERVER);
+        $request->headers->replace($request->server->getHeaders());
     }
 
     public function getKernelParameters()
