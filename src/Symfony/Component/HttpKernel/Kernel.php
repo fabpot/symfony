@@ -189,11 +189,11 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
      */
     public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
-        $this->initializeRequest($request);
-
         if (false === $this->booted) {
             $this->boot();
         }
+
+        $this->initializeRequest($request);
 
         return $this->container->get('http_kernel')->handle($request, $type, $catch);
     }
