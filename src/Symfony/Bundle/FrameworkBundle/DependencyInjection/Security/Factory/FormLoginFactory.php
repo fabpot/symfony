@@ -33,9 +33,7 @@ class FormLoginFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.form.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($provider));
 
         $options = array(
             'check_path'                     => '/login_check',
@@ -53,7 +51,7 @@ class FormLoginFactory implements SecurityFactoryInterface
                 $options[$key] = $config[$key];
             }
         }
-        $container->setParameter('security.authentication.form.options', $options);
+        $listener->setArgument(2, $options);
         $container->setParameter('security.authentication.form.login_path', $options['login_path']);
         $container->setParameter('security.authentication.form.use_forward', $options['use_forward']);
 

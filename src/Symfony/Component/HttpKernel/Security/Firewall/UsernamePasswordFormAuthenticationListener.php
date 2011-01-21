@@ -23,7 +23,7 @@ use Symfony\Component\Security\Authentication\Token\UsernamePasswordToken;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class UsernamePasswordFormAuthenticationListener extends FormAuthenticationListener
+class UsernamePasswordFormAuthenticationListener extends AbstractAuthenticationListener
 {
     /**
      * {@inheritdoc}

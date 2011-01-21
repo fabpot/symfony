@@ -23,11 +23,22 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 
 /**
- * FormAuthenticationListener implements authentication via a form.
+ * The AbstractAuthenticationListener is the preferred base class for all
+ * browser-/HTTP-based authentication requests.
+ *
+ * Subclasses likely have to implement the following:
+ * - an TokenInterface to hold authentication related data
+ * - an AuthenticationProvider to perform the actual authentication of the
+ *   token, retrieve the AccountInterface implementation from a database, and
+ *   perform the specific account checks using the AccountChecker
+ *
+ * By default, this listener only is active for a specific path, e.g.
+ * /login_check. If you want to change this behavior, you can overwrite the
+ * requiresAuthentication() method.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-abstract class FormAuthenticationListener
+abstract class AbstractAuthenticationListener
 {
     protected $securityContext;
     protected $authenticationManager;
@@ -39,7 +50,7 @@ abstract class FormAuthenticationListener
      *
      * @param SecurityContext                $securityContext       A SecurityContext instance
      * @param AuthenticationManagerInterface $authenticationManager An AuthenticationManagerInterface instance
-     * @param array                          $options               An array of options
+     * @param array                          $options               An array of options for the processing of a successful, or failed authentication attempt
      * @param LoggerInterface                $logger                A LoggerInterface instance
      */
     public function __construct(SecurityContext $securityContext, AuthenticationManagerInterface $authenticationManager, array $options = array(), LoggerInterface $logger = null)
@@ -86,7 +97,7 @@ abstract class FormAuthenticationListener
     {
         $request = $event->get('request');
 
-        if ($this->options['check_path'] !== $request->getPathInfo()) {
+        if (!$this->requiresAuthentication($request)) {
             return;
         }
 
@@ -103,6 +114,22 @@ abstract class FormAuthenticationListener
         $event->setReturnValue($response);
 
         return true;
+    }
+
+    /**
+     * Whether this request requires authentication.
+     *
+     * The default implementation only processed requests to a specific path,
+     * but a subclass could change this to only authenticate requests where a
+     * certain parameters is present.
+     *
+     * @param Request $request
+     *
+     * @return Boolean
+     */
+    protected function requiresAuthentication(Request $request)
+    {
+        return $this->options['check_path'] === $request->getPathInfo();
     }
 
     protected function onFailure($kernel, Request $request, \Exception $failed)
