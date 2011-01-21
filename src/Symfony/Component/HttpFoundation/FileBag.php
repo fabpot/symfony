@@ -1,9 +1,24 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\HttpFoundation;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/**
+ * HeaderBag is a container for HTTP headers.
+ *
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Bulat Shakirzyanov <mallluhuct@gmail.com>
+ */
 class FileBag extends ParameterBag
 {
     private $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
@@ -17,7 +32,9 @@ class FileBag extends ParameterBag
 
     public function set($key, $value)
     {
-        parent::set($key, $this->convertFileInformation($value));
+        if (is_array($value)) {
+            parent::set($key, $this->convertFileInformation($value));
+        }
     }
 
     /**
@@ -33,20 +50,19 @@ class FileBag extends ParameterBag
         if (is_array($file)) {
             $keys = array_keys($file);
             sort($keys);
-
             if ($keys == $this->fileKeys) {
                 $file['error'] = (int) $file['error'];
             }
-
             if ($keys != $this->fileKeys) {
                 $file = array_map(array($this, 'convertFileInformation'), $file);
-            } else if ($file['error'] === UPLOAD_ERR_NO_FILE) {
-                $file = null;
-            } else {
-                $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['size'], $file['error']);
-            }
+            } else
+                if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                    $file = null;
+                } else {
+                    $file = new UploadedFile($file['tmp_name'], $file['name'],
+                    $file['type'], $file['size'], $file['error']);
+                }
         }
-
         return $file;
     }
 
@@ -67,31 +83,26 @@ class FileBag extends ParameterBag
      */
     protected function fixPhpFilesArray($data)
     {
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return $data;
         }
-
         $keys = array_keys($data);
         sort($keys);
-
-        if ($this->fileKeys != $keys || !isset($data['name']) || !is_array($data['name'])) {
+        if ($this->fileKeys != $keys || ! isset($data['name']) ||
+         ! is_array($data['name'])) {
             return $data;
         }
-
         $files = $data;
         foreach ($this->fileKeys as $k) {
             unset($files[$k]);
         }
         foreach (array_keys($data['name']) as $key) {
-            $files[$key] = $this->fixPhpFilesArray(array(
-                'error'    => $data['error'][$key],
-                'name'     => $data['name'][$key],
-                'type'     => $data['type'][$key],
+            $files[$key] = $this->fixPhpFilesArray(
+                array('error' => $data['error'][$key],
+                'name' => $data['name'][$key], 'type' => $data['type'][$key],
                 'tmp_name' => $data['tmp_name'][$key],
-                'size'     => $data['size'][$key],
-            ));
+                'size' => $data['size'][$key]));
         }
-
         return $files;
     }
 }
