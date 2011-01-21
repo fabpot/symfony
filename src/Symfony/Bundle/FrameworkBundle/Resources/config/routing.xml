@@ -25,6 +25,9 @@
 
         <service id="routing.file_locator" class="%routing.file_locator.class%" public="false">
             <argument type="service" id="kernel" />
+            <argument type="collection">
+                <argument>%kernel.root_dir%/config/</argument>
+            </argument>
         </service>
 
         <service id="routing.loader.xml" class="%routing.loader.xml.class%" public="false">
