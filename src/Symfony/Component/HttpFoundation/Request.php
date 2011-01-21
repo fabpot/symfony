@@ -913,6 +913,17 @@ class Request
         return (string) $pathInfo;
     }
 
+    /**
+     * Gets content type of current Request from headers
+     *
+     * Defaults to 'application/octet-stream', according to current HTTP/1.1 spec
+     * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.2.1
+     */
+    public function getContentType()
+    {
+        return $this->headers->get('content_type', 'application/octet-stream');
+    }
+
     static protected function initializeFormats()
     {
         static::$formats = array(
