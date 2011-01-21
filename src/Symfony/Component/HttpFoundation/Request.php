@@ -80,32 +80,15 @@ class Request
      * @param array $files      The FILES parameters
      * @param array $server     The SERVER parameters
      */
-    public function __construct(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function __construct(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array())
     {
-        $this->initialize($query, $request, $attributes, $cookies, $files, $server);
-    }
-
-    /**
-     * Sets the parameters for this request.
-     *
-     * This method also re-initializes all properties.
-     *
-     * @param array $query      The GET parameters
-     * @param array $request    The POST parameters
-     * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
-     * @param array $cookies    The COOKIE parameters
-     * @param array $files      The FILES parameters
-     * @param array $server     The SERVER parameters
-     */
-    public function initialize(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
-    {
-        $this->request = new ParameterBag(null !== $request ? $request : $_POST);
-        $this->query = new ParameterBag(null !== $query ? $query : $_GET);
-        $this->attributes = new ParameterBag(null !== $attributes ? $attributes : array());
-        $this->cookies = new ParameterBag(null !== $cookies ? $cookies : $_COOKIE);
-        $this->files = new FileBag(null !== $files ? $files : $_FILES);
-        $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
-        $this->headers = new HeaderBag($this->initializeHeaders());
+        $this->request = new ParameterBag($request);
+        $this->query = new ParameterBag($query);
+        $this->attributes = new ParameterBag($attributes);
+        $this->cookies = new ParameterBag($cookies);
+        $this->files = new FileBag($files);
+        $this->server = new ServerBag($server);
+        $this->headers = new HeaderBag($this->server->getHeaders());
 
         $this->content = null;
         $this->languages = null;
@@ -207,17 +190,17 @@ class Request
      * @param array $files      The FILES parameters
      * @param array $server     The SERVER parameters
      */
-    public function duplicate(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function duplicate(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array())
     {
         $dup = clone $this;
-        $dup->initialize(
-            null !== $query ? $query : $this->query->all(),
-            null !== $request ? $request : $this->request->all(),
-            null !== $attributes ? $attributes : $this->attributes->all(),
-            null !== $cookies ? $cookies : $this->cookies->all(),
-            null !== $files ? $files : $this->files->all(),
-            null !== $server ? $server : $this->server->all()
-        );
+
+        $dup->query->replace(empty($query) ? $this->query->all() : $query);
+        $dup->request->replace(empty($request) ? $this->request->all() : $request);
+        $dup->attributes->replace(empty($attributes) ? $this->attributes->all() : $attributes);
+        $dup->cookies->replace(empty($cookies) ? $this->cookies->all() : $cookies);
+        $dup->files->replace(empty($files) ? $this->files->all() : $files);
+        $dup->server->replace(empty($server) ? $this->server->all() : $server);
+        $dup->headers->replace($dup->server->getHeaders());
 
         return $dup;
     }
@@ -928,18 +911,6 @@ class Request
         }
 
         return (string) $pathInfo;
-    }
-
-    protected function initializeHeaders()
-    {
-        $headers = array();
-        foreach ($this->server->all() as $key => $value) {
-            if ('http_' === strtolower(substr($key, 0, 5))) {
-                $headers[substr($key, 5)] = $value;
-            }
-        }
-
-        return $headers;
     }
 
     static protected function initializeFormats()

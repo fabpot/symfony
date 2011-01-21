@@ -29,18 +29,16 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testInitialize()
     {
-        $request = new Request();
-
-        $request->initialize(array('foo' => 'bar'));
+        $request = new Request(array('foo' => 'bar'));
         $this->assertEquals('bar', $request->query->get('foo'), '->initialize() takes an array of query parameters as its first argument');
 
-        $request->initialize(null, array('foo' => 'bar'));
+        $request = new Request(array(), array('foo' => 'bar'));
         $this->assertEquals('bar', $request->request->get('foo'), '->initialize() takes an array of request parameters as its second argument');
 
-        $request->initialize(null, null, array('foo' => 'bar'));
+        $request = new Request(array(), array(), array('foo' => 'bar'));
         $this->assertEquals('bar', $request->attributes->get('foo'), '->initialize() takes an array of attributes as its thrid argument');
 
-        $request->initialize(null, null, null, null, null, array('HTTP_FOO' => 'bar'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_FOO' => 'bar'));
         $this->assertEquals('bar', $request->headers->get('FOO'), '->initialize() takes an array of HTTP headers as its fourth argument');
     }
 
@@ -132,9 +130,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['PHP_SELF'] = '/index_dev.php/path/info';
         $server['SCRIPT_FILENAME'] = '/some/where/index.php';
 
-        $request = new Request();
-
-        $request->initialize(null, null, null, null, null,$server);
+        $request = new Request(array(), array(), array(), array(), array(),$server);
 
         $this->assertEquals('http://hostname:8080/index.php/path/info?query=string', $request->getUri(), '->getUri() with non default port');
 
@@ -143,7 +139,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/index.php/path/info?query=string', $request->getUri(), '->getUri() with default port');
 
@@ -152,7 +148,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/index.php/path/info?query=string', $request->getUri(), '->getUri() with default port without HOST_HEADER');
 
@@ -174,7 +170,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['PHP_SELF'] = '/index.php';
         $server['SCRIPT_FILENAME'] = '/some/where/index.php';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
         $this->assertEquals('http://hostname:8080/path/info?query=string', $request->getUri(), '->getUri() with rewrite');
 
         // Use std port number
@@ -183,7 +179,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/path/info?query=string', $request->getUri(), '->getUri() with rewrite and default port');
 
@@ -192,7 +188,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/path/info?query=string', $request->getUri(), '->getUri() with rewrite, default port without HOST_HEADER');
    }
@@ -231,9 +227,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['PHP_SELF'] = '/index_dev.php/path/info';
         $server['SCRIPT_FILENAME'] = '/some/where/index.php';
 
-        $request = new Request();
-
-        $request->initialize(null, null, null, null, null,$server);
+        $request = new Request(array(), array(), array(), array(), array(),$server);
 
         $this->assertEquals('http://hostname:8080/index.php/some/path', $request->getUriForPath('/some/path'), '->getUriForPath() with non default port');
 
@@ -242,7 +236,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/index.php/some/path', $request->getUriForPath('/some/path'), '->getUriForPath() with default port');
 
@@ -251,7 +245,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/index.php/some/path', $request->getUriForPath('/some/path'), '->getUriForPath() with default port without HOST_HEADER');
 
@@ -273,7 +267,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['PHP_SELF'] = '/index.php';
         $server['SCRIPT_FILENAME'] = '/some/where/index.php';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
         $this->assertEquals('http://hostname:8080/some/path', $request->getUriForPath('/some/path'), '->getUri() with rewrite');
 
         // Use std port number
@@ -282,7 +276,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/some/path', $request->getUriForPath('/some/path'), '->getUriForPath() with rewrite and default port');
 
@@ -291,7 +285,7 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $server['SERVER_NAME'] = 'hostname';
         $server['SERVER_PORT'] = '80';
 
-        $request->initialize(null, null, null, null, null, $server);
+        $request = new Request(array(), array(), array(), array(), array(), $server);
 
         $this->assertEquals('http://hostname/some/path', $request->getUriForPath('/some/path'), '->getUriForPath() with rewrite, default port without HOST_HEADER');
     }
@@ -330,41 +324,39 @@ class RequestTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetHost()
     {
-        $request = new Request();
-
-        $request->initialize(array('foo' => 'bar'));
+        $request = new Request(array('foo' => 'bar'));
         $this->assertEquals('', $request->getHost(), '->getHost() return empty string if not initialized');
 
-        $request->initialize(null, null, null, null, null, array('HTTP_HOST' => 'www.exemple.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_HOST' => 'www.exemple.com'));
         $this->assertEquals('www.exemple.com', $request->getHost(), '->getHost() from Host Header');
 
         // Host header with port number.
-        $request->initialize(null, null, null, null, null, array('HTTP_HOST' => 'www.exemple.com:8080'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_HOST' => 'www.exemple.com:8080'));
         $this->assertEquals('www.exemple.com', $request->getHost(), '->getHost() from Host Header with port number');
 
         // Server values.
-        $request->initialize(null, null, null, null, null, array('SERVER_NAME' => 'www.exemple.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('SERVER_NAME' => 'www.exemple.com'));
         $this->assertEquals('www.exemple.com', $request->getHost(), '->getHost() from server name');
 
         // X_FORWARDED_HOST.
-        $request->initialize(null, null, null, null, null, array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com'));
         $this->assertEquals('www.exemple.com', $request->getHost(), '->getHost() from X_FORWARDED_HOST');
 
         // X_FORWARDED_HOST
-        $request->initialize(null, null, null, null, null, array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com, www.second.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com, www.second.com'));
         $this->assertEquals('www.second.com', $request->getHost(), '->getHost() value from X_FORWARDED_HOST use last value');
 
         // X_FORWARDED_HOST with port number
-        $request->initialize(null, null, null, null, null, array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com, www.second.com:8080'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_X_FORWARDED_HOST' => 'www.exemple.com, www.second.com:8080'));
         $this->assertEquals('www.second.com', $request->getHost(), '->getHost() value from X_FORWARDED_HOST with port number');
 
-        $request->initialize(null, null, null, null, null, array('HTTP_HOST' => 'www.exemple.com', 'HTTP_X_FORWARDED_HOST' => 'www.forward.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('HTTP_HOST' => 'www.exemple.com', 'HTTP_X_FORWARDED_HOST' => 'www.forward.com'));
         $this->assertEquals('www.forward.com', $request->getHost(), '->getHost() value from X_FORWARDED_HOST has priority over Host');
 
-        $request->initialize(null, null, null, null, null, array('SERVER_NAME' => 'www.exemple.com', 'HTTP_X_FORWARDED_HOST' => 'www.forward.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('SERVER_NAME' => 'www.exemple.com', 'HTTP_X_FORWARDED_HOST' => 'www.forward.com'));
         $this->assertEquals('www.forward.com', $request->getHost(), '->getHost() value from X_FORWARDED_HOST has priority over SERVER_NAME ');
 
-        $request->initialize(null, null, null, null, null, array('SERVER_NAME' => 'www.exemple.com', 'HTTP_HOST' => 'www.host.com'));
+        $request = new Request(array(), array(), array(), array(), array(), array('SERVER_NAME' => 'www.exemple.com', 'HTTP_HOST' => 'www.host.com'));
         $this->assertEquals('www.host.com', $request->getHost(), '->getHost() value from Host header has priority over SERVER_NAME ');
     }
 
