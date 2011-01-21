@@ -6,47 +6,48 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileBag extends ParameterBag
 {
-    public function __construct(array $files = array())
+    private $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
+
+    public function replace(array $files = array())
     {
-        parent::__construct($this->convertFileInformation($files));
+        foreach ($files as $key => $file) {
+            $this->set($key, $file);
+        }
+    }
+
+    public function set($key, $value)
+    {
+        parent::set($key, $this->convertFileInformation($value));
     }
 
     /**
      * Converts uploaded files to UploadedFile instances.
      *
-     * @param  array $files A (multi-dimensional) array of uploaded file information
+     * @param  array $file A (multi-dimensional) array of uploaded file information
      *
      * @return array A (multi-dimensional) array of UploadedFile instances
      */
-    protected function convertFileInformation(array $files)
+    protected function convertFileInformation(array $file)
     {
-        $fixedFiles = array();
+        $file = $this->fixPhpFilesArray($file);
+        if (is_array($file)) {
+            $keys = array_keys($file);
+            sort($keys);
 
-        foreach ($files as $key => $data) {
-            $fixedFiles[$key] = $this->fixPhpFilesArray($data);
-        }
+            if ($keys == $this->fileKeys) {
+                $file['error'] = (int) $file['error'];
+            }
 
-        $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
-        foreach ($fixedFiles as $key => $data) {
-            if (is_array($data)) {
-                $keys = array_keys($data);
-                sort($keys);
-
-                if ($keys == $fileKeys) {
-                    $data['error'] = (int) $data['error'];
-                }
-
-                if ($keys != $fileKeys) {
-                    $fixedFiles[$key] = $this->convertFileInformation($data);
-                } else if ($data['error'] === UPLOAD_ERR_NO_FILE) {
-                    $fixedFiles[$key] = null;
-                } else {
-                    $fixedFiles[$key] = new UploadedFile($data['tmp_name'], $data['name'], $data['type'], $data['size'], $data['error']);
-                }
+            if ($keys != $this->fileKeys) {
+                $file = array_map(array($this, 'convertFileInformation'), $file);
+            } else if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                $file = null;
+            } else {
+                $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['size'], $file['error']);
             }
         }
 
-        return $fixedFiles;
+        return $file;
     }
 
     /**
@@ -70,16 +71,15 @@ class FileBag extends ParameterBag
             return $data;
         }
 
-        $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
         $keys = array_keys($data);
         sort($keys);
 
-        if ($fileKeys != $keys || !isset($data['name']) || !is_array($data['name'])) {
+        if ($this->fileKeys != $keys || !isset($data['name']) || !is_array($data['name'])) {
             return $data;
         }
 
         $files = $data;
-        foreach ($fileKeys as $k) {
+        foreach ($this->fileKeys as $k) {
             unset($files[$k]);
         }
         foreach (array_keys($data['name']) as $key) {
