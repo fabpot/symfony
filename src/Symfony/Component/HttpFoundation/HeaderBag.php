@@ -62,6 +62,16 @@ class HeaderBag
     public function replace(array $headers = array())
     {
         $this->headers = array();
+        $this->add($headers);
+    }
+
+    /**
+     * Adds new headers the current HTTP headers set.
+     *
+     * @param array  $headers An array of HTTP headers
+     */
+    public function add(array $headers)
+    {
         foreach ($headers as $key => $values) {
             $this->set($key, $values);
         }
@@ -104,6 +114,10 @@ class HeaderBag
      */
     public function set($key, $values, $replace = true)
     {
+        if ('http_' === strtolower(substr($key, 0, 5))) {
+            $key = substr($key, 5);
+        }
+
         $key = strtr(strtolower($key), '_', '-');
 
         if (!is_array($values)) {
