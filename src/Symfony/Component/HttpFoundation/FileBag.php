@@ -25,15 +25,21 @@ class FileBag extends ParameterBag
 
     public function replace(array $files = array())
     {
-        foreach ($files as $key => $file) {
-            $this->set($key, $file);
-        }
+        $this->parameters = array();
+        $this->add($files);
     }
 
     public function set($key, $value)
     {
         if (is_array($value)) {
             parent::set($key, $this->convertFileInformation($value));
+        }
+    }
+
+    public function add(array $files)
+    {
+        foreach ($files as $key => $file) {
+            $this->set($key, $file);
         }
     }
 
