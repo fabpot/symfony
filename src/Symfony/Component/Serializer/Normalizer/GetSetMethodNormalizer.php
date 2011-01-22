@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Serializer\Normalizer;
 
+use Symfony\Component\Serializer\SerializerInterface;
+
 /*
  * This file is part of the Symfony framework.
  *
@@ -95,7 +97,7 @@ class GetSetMethodNormalizer implements NormalizerInterface
         return false;
     }
 
-    public function setSerializer($serializer)
+    public function setSerializer(SerializerInterface $serializer)
     {
         $this->serializer = $serializer;
     }

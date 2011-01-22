@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class Serializer
+class Serializer implements SerializerInterface
 {
     protected $normalizers = array();
     protected $encoders = array();
@@ -93,7 +93,7 @@ class Serializer
         if (!isset($this->encoders[$format])) {
             throw new \UnexpectedValueException('Could not find an encoder for the '.$format.' format');
         }
-        return $this->encoders[$format]->encode($data);
+        return $this->encoders[$format]->encode($data, $format);
     }
 
     public function decode($data, $format)
@@ -101,13 +101,13 @@ class Serializer
         if (!isset($this->encoders[$format])) {
             throw new \UnexpectedValueException('Could not find a decoder for the '.$format.' format');
         }
-        return $this->encoders[$format]->decode($data);
+        return $this->encoders[$format]->decode($data, $format);
     }
 
     public function addNormalizer(NormalizerInterface $normalizer)
     {
         $this->normalizers[] = $normalizer;
-        $normalizer->setManager($this);
+        $normalizer->setSerializer($this);
     }
 
     public function getNormalizers()
@@ -123,7 +123,7 @@ class Serializer
     public function addEncoder($format, EncoderInterface $encoder)
     {
         $this->encoders[$format] = $encoder;
-        $encoder->setManager($this);
+        $encoder->setSerializer($this);
     }
 
     public function getEncoders()

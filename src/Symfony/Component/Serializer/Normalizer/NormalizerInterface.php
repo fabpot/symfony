@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Serializer\Normalizer;
 
+use Symfony\Component\Serializer\SerializerInterface;
+
 /*
  * This file is part of the Symfony framework.
  *
@@ -21,6 +23,6 @@ interface NormalizerInterface
     function normalize($object, $format, $properties = null);
     function denormalize($data, $class, $format = null);
     function supports(\ReflectionClass $class, $format = null);
-    function setSerializer($serializer);
+    function setSerializer(SerializerInterface $serializer);
     function getSerializer();
 }

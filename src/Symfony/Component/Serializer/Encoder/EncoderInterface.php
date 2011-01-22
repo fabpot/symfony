@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Serializer\Encoder;
 
+use Symfony\Component\Serializer\SerializerInterface;
+
 /*
  * This file is part of the Symfony framework.
  *
@@ -18,8 +20,8 @@ namespace Symfony\Component\Serializer\Encoder;
  */
 interface EncoderInterface
 {
-    function encode($data);
-    function decode($data);
-    function setManager($manager);
-    function getManager();
+    function encode($data, $format);
+    function decode($data, $format);
+    function setSerializer(SerializerInterface $serializer);
+    function getSerializer();
 }

@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\Serializer\Encoder;
 
+use Symfony\Component\Serializer\SerializerInterface;
+
 /*
  * This file is part of the Symfony framework.
  *
@@ -18,25 +20,25 @@ namespace Symfony\Component\Serializer\Encoder;
  */
 class JsonEncoder implements EncoderInterface
 {
-    protected $manager;
+    protected $serializer;
 
-    public function encode($data)
+    public function encode($data, $format)
     {
         return json_encode($data);
     }
 
-    public function decode($data)
+    public function decode($data, $format)
     {
         return json_decode($data);
     }
 
-    public function setManager($manager)
+    public function setSerializer(SerializerInterface $serializer)
     {
-        $this->manager = $manager;
+        $this->serializer = $serializer;
     }
 
-    public function getManager()
+    public function getSerializer()
     {
-        return $this->manager;
+        return $this->serializer;
     }
 }
