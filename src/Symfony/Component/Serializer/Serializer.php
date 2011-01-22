@@ -17,10 +17,10 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
 /**
  * Serializer serializes and unserializes data
  *
- * objects are turned into arrays by serializers, and vice versa.
+ * objects are turned into arrays by normalizers
  * arrays are turned into various output formats by encoders
  *
- * $serializer->serialize($obj, 'xml', array('field','field2'))
+ * $serializer->serialize($obj, 'xml')
  * $serializer->decode($data, 'xml')
  * $serializer->denormalizeObject($data, 'Class', 'xml')
  *
@@ -36,41 +36,71 @@ class Serializer implements SerializerInterface
     protected $encoders = array();
     protected $normalizerCache = array();
 
+    /**
+     * Serializes data in the appropriate format
+     *
+     * @param mixed $data any data
+     * @param string $format format name
+     * @return string
+     */
     public function serialize($data, $format)
     {
         return $this->encode($data, $format);
     }
 
+    /**
+     * Normalizes an object into a set of arrays/scalars
+     *
+     * @param object $object object to normalize
+     * @param string $format format name, present to give the option to normalizers to act differently based on formats
+     * @param array $properties a list of properties to extract, if null all properties are returned
+     * @return array|scalar
+     */
     public function normalizeObject($object, $format, $properties = null)
     {
         $class = get_class($object);
         if (isset($this->normalizerCache[$class][$format])) {
-            return $normalizer->serialize($object, $format, $properties);
+            return $normalizer->normalize($object, $format, $properties);
         }
         foreach ($this->normalizers as $normalizer) {
             if ($normalizer->supports($class, $format)) {
                 $this->normalizerCache[$class][$format] = $normalizer;
-                return $normalizer->serialize($object, $format, $properties);
+                return $normalizer->normalize($object, $format, $properties);
             }
         }
         throw new \UnexpectedValueException('Could not serialize object of type '.$class);
     }
 
+    /**
+     * Denormalizes data back into an object of the given class
+     *
+     * @param mixed $data data to restore
+     * @param string $class the expected class to instanciate
+     * @param string $format format name, present to give the option to normalizers to act differently based on formats
+     * @return object
+     */
     public function denormalizeObject($data, $class, $format = null)
     {
         if (isset($this->normalizerCache[$class][$format])) {
-            return $normalizer->deserialize($data, $format);
+            return $normalizer->denormalize($data, $format);
         }
         $reflClass = new \ReflectionClass($class);
         foreach ($this->normalizers as $normalizer) {
             if ($normalizer->supports($reflClass, $format)) {
                 $this->normalizerCache[$class][$format] = $normalizer;
-                return $normalizer->deserialize($data, $class, $format);
+                return $normalizer->denormalize($data, $class, $format);
             }
         }
         throw new \UnexpectedValueException('Could not deserialize object of type '.$class);
     }
 
+    /**
+     * Normalizes any data into a set of arrays/scalars
+     *
+     * @param mixed $data data to normalize
+     * @param string $format format name, present to give the option to normalizers to act differently based on formats
+     * @return array|scalar
+     */
     public function normalize($data, $format)
     {
         if (is_array($data)) {
@@ -85,6 +115,13 @@ class Serializer implements SerializerInterface
         throw new \UnexpectedValueException('An unexpected value could not be serialized: '.var_export($data, true));
     }
 
+    /**
+     * Encodes data into the given format
+     *
+     * @param mixed $data data to encode
+     * @param string $format format name
+     * @return array|scalar
+     */
     public function encode($data, $format)
     {
         if (!isset($this->encoders[$format])) {
@@ -93,6 +130,13 @@ class Serializer implements SerializerInterface
         return $this->encoders[$format]->encode($data, $format);
     }
 
+    /**
+     * Decodes a string from the given format back into PHP data
+     *
+     * @param string $data data to decode
+     * @param string $format format name
+     * @return mixed
+     */
     public function decode($data, $format)
     {
         if (!isset($this->encoders[$format])) {
