@@ -24,6 +24,9 @@ class JsonEncoder implements EncoderInterface
 
     public function encode($data, $format)
     {
+        if (!is_scalar($data)) {
+            $data = $this->serializer->normalize($data, $format);
+        }
         return json_encode($data);
     }
 

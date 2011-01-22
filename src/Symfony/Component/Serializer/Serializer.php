@@ -38,9 +38,6 @@ class Serializer implements SerializerInterface
 
     public function serialize($data, $format)
     {
-        if (!is_scalar($data)) {
-            $data = $this->normalize($data, $format);
-        }
         return $this->encode($data, $format);
     }
 
