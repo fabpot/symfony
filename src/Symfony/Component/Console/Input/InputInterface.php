@@ -23,7 +23,7 @@ interface InputInterface
      *
      * @return string The value of the first argument or null otherwise
      */
-    function getFirstArgument();
+    public function getFirstArgument();
 
     /**
      * Returns true if the raw parameters (not parsed) contains a value.
@@ -35,22 +35,49 @@ interface InputInterface
      *
      * @return Boolean true if the value is contained in the raw parameters
      */
-    function hasParameterOption($value);
+    public function hasParameterOption($value);
 
     /**
      * Binds the current Input instance with the given arguments and options.
      *
      * @param InputDefinition $definition A InputDefinition instance
      */
-    function bind(InputDefinition $definition);
+    public function bind(InputDefinition $definition);
 
-    function validate();
+    /**
+     * Validate if arguments given are correct.
+     *
+     * Throws an exception when not enough arguments are given.
+     *
+     * @throws \RuntimeException
+     */
+    public function validate();
 
-    function getArguments();
+    /**
+     * Returns all the given arguments merged with the default values.
+     *
+     * @return array
+     */
+    public function getArguments();
 
-    function getArgument($name);
+    /**
+     * Get argument by name.
+     *
+     * @return mixed
+     */
+    public function getArgument($name);
 
-    function getOptions();
+    /**
+     * @return array
+     */
+    public function getOptions();
 
-    function getOption($name);
+    public function getOption($name);
+
+    /**
+     * Is this input means interactive?
+     *
+     * @return bool
+     */
+    public function isInteractive();
 }
