@@ -34,10 +34,16 @@ class ZendExtension extends Extension
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function configLoad($config, ContainerBuilder $container)
+    public function configLoad(array $configs, ContainerBuilder $container)
     {
-        if (isset($config['logger'])) {
-            $this->registerLoggerConfiguration($config, $container);
+        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
+        $loader->load('logger.xml');
+        $container->setAlias('logger', 'zend.logger');
+
+        foreach ($configs as $config) {
+            if (isset($config['logger'])) {
+                $this->registerLoggerConfiguration($config, $container);
+            }
         }
     }
 
@@ -54,12 +60,6 @@ class ZendExtension extends Extension
     protected function registerLoggerConfiguration($config, ContainerBuilder $container)
     {
         $config = $config['logger'];
-
-        if (!$container->hasDefinition('zend.logger')) {
-            $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
-            $loader->load('logger.xml');
-            $container->setAlias('logger', 'zend.logger');
-        }
 
         if (isset($config['priority'])) {
             $container->setParameter('zend.logger.priority', is_int($config['priority']) ? $config['priority'] : constant('\\Zend\\Log\\Logger::'.strtoupper($config['priority'])));

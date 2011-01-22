@@ -108,7 +108,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
     /**
      * Checks whether the current kernel has been booted or not.
      *
-     * @return boolean $booted
+     * @return Boolean $booted
      */
     public function isBooted()
     {
@@ -261,6 +261,8 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
     /**
      * Returns the file path for a given resource.
      *
+     * A Resource can be a file or a directory.
+     *
      * The resource name must follow the following pattern:
      *
      *     @BundleName/path/to/a/file.something
@@ -297,25 +299,20 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
 
         $isResource = 0 === strpos($path, 'Resources');
 
-        // return the first matching one
-        if (true === $first) {
-            if (true === $isResource && null !== $dir && is_file($file = $dir.'/'.$bundle.'/'.substr($path, 10))) {
-                return $file;
-            } elseif (is_file($file = $this->getBundle($bundle)->getPath().'/'.$path)) {
+        $files = array();
+        if (true === $isResource && null !== $dir && file_exists($file = $dir.'/'.$bundle.'/'.substr($path, 10))) {
+            if ($first) {
                 return $file;
             }
 
-            throw new \InvalidArgumentException(sprintf('Unable to find file "@%s".', $name));
-        }
-
-        // return them all
-        $files = array();
-        if (true === $isResource && null !== $dir && is_file($file = $dir.'/'.$bundle.'/'.substr($path, 10))) {
             $files[] = $file;
         }
 
         foreach ($this->getBundle($bundle, false) as $bundle) {
-            if (is_file($file = $bundle->getPath().'/'.$path)) {
+            if (file_exists($file = $bundle->getPath().'/'.$path)) {
+                if ($first) {
+                    return $file;
+                }
                 $files[] = $file;
             }
         }
@@ -412,8 +409,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         // init bundles
         $this->bundles = array();
         foreach ($this->registerBundles() as $bundle) {
-            $parts = explode('\\', get_class($bundle));
-            $name = $parts[count($parts) - 1];
+            $name = $bundle->getName();
             $this->bundles[$name] = $bundle;
             if (!isset($this->bundleMap[$name])) {
                 $this->bundleMap[$name] = array();

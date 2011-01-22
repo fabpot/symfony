@@ -23,32 +23,37 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class TwigExtension extends Extension
 {
+    public function configLoad(array $configs, ContainerBuilder $container)
+    {
+        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
+        $loader->load('twig.xml');
+
+        $this->addClassesToCompile(array(
+            'Twig_Environment',
+            'Twig_ExtensionInterface',
+            'Twig_Extension',
+            'Twig_Extension_Core',
+            'Twig_Extension_Escaper',
+            'Twig_Extension_Optimizer',
+            'Twig_LoaderInterface',
+            'Twig_Markup',
+            'Twig_TemplateInterface',
+            'Twig_Template',
+        ));
+
+        foreach ($configs as $config) {
+            $this->doConfigLoad($config, $container);
+        }
+    }
+
     /**
      * Loads the Twig configuration.
      *
      * @param array            $config    An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function configLoad(array $config, ContainerBuilder $container)
+    protected function doConfigLoad(array $config, ContainerBuilder $container)
     {
-        if (!$container->hasDefinition('twig')) {
-            $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
-            $loader->load('twig.xml');
-
-            $this->addClassesToCompile(array(
-                'Twig_Environment',
-                'Twig_ExtensionInterface',
-                'Twig_Extension',
-                'Twig_Extension_Core',
-                'Twig_Extension_Escaper',
-                'Twig_Extension_Optimizer',
-                'Twig_LoaderInterface',
-                'Twig_Markup',
-                'Twig_TemplateInterface',
-                'Twig_Template',
-            ));
-        }
-
         // form resources
         foreach (array('resources', 'resource') as $key) {
             if (isset($config['form'][$key])) {
@@ -60,7 +65,7 @@ class TwigExtension extends Extension
 
         // globals
         $def = $container->getDefinition('twig');
-        $globals = $this->fixConfig($config, 'global');
+        $globals = $this->normalizeConfig($config, 'global');
         if (isset($globals[0])) {
             foreach ($globals as $global) {
                 if (isset($global['type']) && 'service' === $global['type']) {
@@ -83,7 +88,7 @@ class TwigExtension extends Extension
         unset($config['globals'], $config['global']);
 
         // extensions
-        $extensions = $this->fixConfig($config, 'extension');
+        $extensions = $this->normalizeConfig($config, 'extension');
         if (isset($extensions[0]) && is_array($extensions[0])) {
             foreach ($extensions as $extension) {
                 $container->getDefinition($extension['id'])->addTag('twig.extension');
@@ -124,22 +129,5 @@ class TwigExtension extends Extension
     public function getAlias()
     {
         return 'twig';
-    }
-
-    protected function fixConfig($config, $key)
-    {
-        $values = array();
-        if (isset($config[$key.'s'])) {
-            $values = $config[$key.'s'];
-        } elseif (isset($config[$key])) {
-            if (is_string($config[$key]) || !is_int(key($config[$key]))) {
-                // only one
-                $values = array($config[$key]);
-            } else {
-                $values = $config[$key];
-            }
-        }
-
-        return $values;
     }
 }

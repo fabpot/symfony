@@ -57,7 +57,7 @@ class YamlFileLoader extends FileLoader
                 $type = isset($config['type']) ? $config['type'] : null;
                 $prefix = isset($config['prefix']) ? $config['prefix'] : null;
                 $this->currentDir = dirname($path);
-                $file = $this->locator->locate($config['resource']);
+                $file = $this->locator->locate($config['resource'], $this->currentDir);
                 $collection->addCollection($this->import($file, $type), $prefix);
             } elseif (isset($config['pattern'])) {
                 $this->parseRoute($collection, $name, $config, $path);
@@ -75,7 +75,7 @@ class YamlFileLoader extends FileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return boolean True if this class supports the given resource, false otherwise
+     * @return Boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {

@@ -56,7 +56,7 @@ class XmlFileLoader extends FileLoader
                     $type = (string) $node->getAttribute('type');
                     $prefix = (string) $node->getAttribute('prefix');
                     $this->currentDir = dirname($path);
-                    $file = $this->locator->locate($resource);
+                    $file = $this->locator->locate($resource, $this->currentDir);
                     $collection->addCollection($this->import($file, $type), $prefix);
                     break;
                 default:
@@ -73,7 +73,7 @@ class XmlFileLoader extends FileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return boolean True if this class supports the given resource, false otherwise
+     * @return Boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {
