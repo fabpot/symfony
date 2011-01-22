@@ -1,9 +1,23 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\HttpFoundation;
 
 use Symfony\Component\HttpFoundation\FileBag;
 
+/**
+ * FileBagTest.
+ *
+ * @author Bulat Shakirzyanov <mallluhuct@gmail.com>
+ */
 class FileBagTest extends \PHPUnit_Framework_TestCase
 {
     public function testShouldIgnoreNonArrayValues()

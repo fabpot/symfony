@@ -14,7 +14,7 @@ namespace Symfony\Component\HttpFoundation;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
- * HeaderBag is a container for HTTP headers.
+ * FileBag is a container for HTTP headers.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  * @author Bulat Shakirzyanov <mallluhuct@gmail.com>
