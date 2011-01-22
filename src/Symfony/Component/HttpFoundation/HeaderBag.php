@@ -114,10 +114,6 @@ class HeaderBag
      */
     public function set($key, $values, $replace = true)
     {
-        if ('http_' === strtolower(substr($key, 0, 5))) {
-            $key = substr($key, 5);
-        }
-
         $key = strtr(strtolower($key), '_', '-');
 
         if (!is_array($values)) {
