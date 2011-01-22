@@ -20,8 +20,26 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 interface NormalizerInterface
 {
+    /**
+     * Normalizes an object into a set of arrays/scalars
+     *
+     * @param object $object object to normalize
+     * @param string $format format the normalization result will be encoded as
+     * @param array $properties a list of properties to extract, if null all properties are returned
+     * @return array|scalar
+     */
     function normalize($object, $format, $properties = null);
+
+    /**
+     * Denormalizes data back into an object of the given class
+     *
+     * @param mixed $data data to restore
+     * @param string $class the expected class to instantiate
+     * @param string $format format the given data was extracted from
+     * @return object
+     */
     function denormalize($data, $class, $format = null);
+
     function supports(\ReflectionClass $class, $format = null);
     function setSerializer(SerializerInterface $serializer);
     function getSerializer();

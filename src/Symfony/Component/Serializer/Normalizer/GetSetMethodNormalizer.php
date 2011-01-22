@@ -14,14 +14,36 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 
 /**
+ * Converts between objects with getter and setter methods and arrays.
+ *
+ * The normalization process looks at all public methods and calls the ones
+ * which have a name starting with get and take no parameters. The result is a
+ * map from property names (method name stripped of the get prefix and converted
+ * to lower case) to property values. Property values are normalized through the
+ * serializer.
+ *
+ * The denormalization first looks at the constructor of the given class to see
+ * if any of the parameters have the same name as one of the properties. The
+ * constructor is then called with all parameters or an exception is thrown if
+ * any required parameters were not present as properties. Then the denormalizer
+ * walks through the given map of property names to property values to see if a
+ * setter method exists for any of the properties. If a setter exists it is
+ * called with the property value. No automatic denormalization of the value
+ * takes place.
+ *
  * @author Nils Adermann <naderman@naderman.de>
  */
 class GetSetMethodNormalizer implements NormalizerInterface
 {
     protected $serializer;
 
+    /**
+     * {@inheritdoc}
+     */
     public function normalize($object, $format, $properties = null)
     {
+        $propertyMap = (null === $properties) ? null : array_flip(array_map('strtolower', $properties));
+
         $reflectionObject = new \ReflectionObject($object);
         $reflectionMethods = $reflectionObject->getMethods(\ReflectionMethod::IS_PUBLIC);
 
@@ -29,19 +51,24 @@ class GetSetMethodNormalizer implements NormalizerInterface
         foreach ($reflectionMethods as $method) {
             if ($this->isGetMethod($method)) {
                 $attributeName = strtolower(substr($method->getName(), 3));
-                $attributeValue = $method->invoke($object);
 
-                if (!is_scalar($attributeValue)) {
-                    $attributeValue = $this->serializer->normalize($attributeValue, $format);
+                if (null === $propertyMap || isset($propertyMap[$attributeName])) {
+                    $attributeValue = $method->invoke($object);
+                    if (!is_scalar($attributeValue)) {
+                        $attributeValue = $this->serializer->normalize($attributeValue, $format);
+                    }
+
+                    $attributes[$attributeName] = $attributeValue;
                 }
-
-                $attributes[$attributeName] = $attributeValue;
             }
         }
 
         return $attributes;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function denormalize($data, $class, $format = null)
     {
         $reflectionClass = new \ReflectionClass($class);
@@ -74,16 +101,22 @@ class GetSetMethodNormalizer implements NormalizerInterface
         }
 
         foreach ($data as $attribute => $value) {
-            // call unserialize on $value?
-            // ignore non existant setters?
-            $object->{'set' . $attribute}($value);
+            $setter = 'set' . $attribute;
+            if (method_exists($object, $setter)) {
+                $object->$setter($value);
+            }
         }
 
         return $object;
     }
 
     /**
-     * Checks if the given class has any getter method.
+     * Checks if the given class has any get{Property} method.
+     *
+     * @param  ReflectionClass $class  A ReflectionClass instance of the class
+     *                                 to serialize into or from.
+     * @param  string          $format The format being (de-)serialized from or into.
+     * @return bool                    Whether the class has any getters.
      */
     public function supports(\ReflectionClass $class, $format = null)
     {
@@ -110,8 +143,8 @@ class GetSetMethodNormalizer implements NormalizerInterface
     /**
      * Checks if a method's name is get.* and can be called without parameters.
      *
-     * @param  ReflectionMethod $method The method to check
-     * @return bool                     Whether the method is a getter.
+     * @param ReflectionMethod $method the method to check
+     * @return bool whether the method is a getter.
      */
     protected function isGetMethod(\ReflectionMethod $method)
     {
