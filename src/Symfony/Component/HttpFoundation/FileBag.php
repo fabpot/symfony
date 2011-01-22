@@ -48,7 +48,7 @@ class FileBag extends ParameterBag
      * (non-PHPdoc)
      * @see Symfony\Component\HttpFoundation\ParameterBag::add()
      */
-    public function add(array $files)
+    public function add(array $files = array())
     {
         foreach ($files as $key => $file) {
             $this->set($key, $file);
