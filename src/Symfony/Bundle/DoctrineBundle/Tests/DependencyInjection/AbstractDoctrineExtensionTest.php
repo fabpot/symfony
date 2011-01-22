@@ -23,24 +23,24 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 {
     abstract protected function loadFromFile(ContainerBuilder $container, $file);
 
-    public function testDbalOverrideDefaultConnection()
-    {
-        $container = $this->getContainer();
-        $loader = new DoctrineExtension();
-
-        $loader->dbalLoad(array(array(), array('default_connection' => 'foo'), array()), $container);
-
-        // doctrine.dbal.default_connection
-        $this->assertEquals('foo', $container->getParameter('doctrine.dbal.default_connection'), '->dbalLoad() overrides existing configuration options');
-    }
-
     public function testDbalLoad()
     {
         $container = $this->getContainer();
         $loader = new DoctrineExtension();
-        $loader->dbalLoad(array(array('password' => 'foo')), $container);
 
-        $loader->dbalLoad(array(array(), array('default_connection' => 'foo'), array()), $container);
+        $loader->dbalLoad(array(array()), $container);
+        $this->assertEquals('Symfony\\Bundle\\DoctrineBundle\\DataCollector\\DoctrineDataCollector', $container->getParameter('doctrine.data_collector.class'), '->dbalLoad() loads the dbal.xml file if not already loaded');
+
+        // doctrine.dbal.default_connection
+        $this->assertEquals('default', $container->getParameter('doctrine.dbal.default_connection'), '->dbalLoad() overrides existing configuration options');
+        $loader->dbalLoad(array(array('default_connection' => 'foo')), $container);
+        $this->assertEquals('foo', $container->getParameter('doctrine.dbal.default_connection'), '->dbalLoad() overrides existing configuration options');
+        $loader->dbalLoad(array(array()), $container);
+        $this->assertEquals('foo', $container->getParameter('doctrine.dbal.default_connection'), '->dbalLoad() overrides existing configuration options');
+
+        $container = $this->getContainer();
+        $loader = new DoctrineExtension();
+        $loader->dbalLoad(array(array('password' => 'foo')), $container);
 
         $arguments = $container->getDefinition('doctrine.dbal.default_connection')->getArguments();
         $config = $arguments[0];
@@ -229,12 +229,10 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, array(
             array(
-                'host' => 'localhost',
                 'driver' => 'pdo_mysql',
                 'driverOptions' => array(),
+                'host' => 'localhost',
                 'user' => 'root',
-                'password' => null,
-                'port' => null,
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
             new Reference('doctrine.dbal.default_connection.event_manager')
@@ -267,13 +265,12 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $this->assertDICConstructorArguments($definition, array(
             array(
-                'host' => 'localhost',
                 'driver' => 'pdo_sqlite',
                 'driverOptions' => array(),
-                'user' => 'sqlite_user',
-                'port' => null,
-                'password' => 'sqlite_s3cr3t',
                 'dbname' => 'sqlite_db',
+                'host' => 'localhost',
+                'user' => 'sqlite_user',
+                'password' => 'sqlite_s3cr3t',
                 'memory' => true,
             ),
             new Reference('doctrine.dbal.default_connection.configuration'),
