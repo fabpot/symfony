@@ -23,12 +23,20 @@ class FileBag extends ParameterBag
 {
     private $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
 
+    /**
+     * (non-PHPdoc)
+     * @see Symfony\Component\HttpFoundation\ParameterBag::replace()
+     */
     public function replace(array $files = array())
     {
         $this->parameters = array();
         $this->add($files);
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see Symfony\Component\HttpFoundation\ParameterBag::set()
+     */
     public function set($key, $value)
     {
         if (is_array($value)) {
@@ -36,6 +44,10 @@ class FileBag extends ParameterBag
         }
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see Symfony\Component\HttpFoundation\ParameterBag::add()
+     */
     public function add(array $files)
     {
         foreach ($files as $key => $file) {
@@ -103,11 +115,12 @@ class FileBag extends ParameterBag
             unset($files[$k]);
         }
         foreach (array_keys($data['name']) as $key) {
-            $files[$key] = $this->fixPhpFilesArray(
-                array('error' => $data['error'][$key],
-                'name' => $data['name'][$key], 'type' => $data['type'][$key],
+            $files[$key] = $this->fixPhpFilesArray(array(
+                'error'    => $data['error'][$key],
+                'name'     => $data['name'][$key], 'type' => $data['type'][$key],
                 'tmp_name' => $data['tmp_name'][$key],
-                'size' => $data['size'][$key]));
+                'size'     => $data['size'][$key]
+            ));
         }
         return $files;
     }
