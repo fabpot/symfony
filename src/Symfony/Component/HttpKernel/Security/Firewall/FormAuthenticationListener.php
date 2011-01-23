@@ -12,6 +12,7 @@
 namespace Symfony\Component\HttpKernel\Security\Firewall;
 
 use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesInterface;
+use Symfony\Component\HttpKernel\Security\RememberMe\RememberMeServicesAwareInterface;
 use Symfony\Component\Security\SecurityContext;
 use Symfony\Component\Security\Authentication\AuthenticationManagerInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
@@ -28,7 +29,7 @@ use Symfony\Component\Security\Authentication\Token\TokenInterface;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-abstract class FormAuthenticationListener
+abstract class FormAuthenticationListener implements RememberMeServicesAwareInterface
 {
     protected $securityContext;
     protected $authenticationManager;

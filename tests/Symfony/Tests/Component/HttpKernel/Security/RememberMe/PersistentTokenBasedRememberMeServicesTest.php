@@ -186,8 +186,7 @@ class PersistentTokenBasedRememberMeServicesTest extends \PHPUnit_Framework_Test
 
         try {
             $service->autoLogin($request);
-        }
-        catch (CookieTheftException $theft) {
+        } catch (CookieTheftException $theft) {
             return;
         }
 

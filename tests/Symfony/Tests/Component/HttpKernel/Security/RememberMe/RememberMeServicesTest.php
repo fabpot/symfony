@@ -192,6 +192,7 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
     public function testLoginSuccessWhenRememberMeParameterIsPositive($value)
     {
         $service = $this->getService(null, array('name' => 'foo', 'always_remember_me' => false, 'remember_me_parameter' => 'foo'));
+
         $request = new Request;
         $request->request->set('foo', $value);
         $response = new Response;
@@ -209,10 +210,10 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
     public function getPositiveRememberMeParameterValues()
     {
         return array(
-        	array('true'),
-        	array('1'),
-        	array('on'),
-        	array('yes'),
+            array('true'),
+            array('1'),
+            array('on'),
+            array('yes'),
         );
     }
 
@@ -221,7 +222,7 @@ class RememberMeServicesTest extends \PHPUnit_Framework_TestCase
         $service = $this->getService();
 
         $token = $this->getMock(
-        	'Symfony\Component\Security\Authentication\Token\RememberMeToken',
+            'Symfony\Component\Security\Authentication\Token\RememberMeToken',
             array(),
             array(),
             'NonFunctionalRememberMeTokenMockClass',

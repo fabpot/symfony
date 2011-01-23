@@ -48,6 +48,7 @@ class RememberMeFactory implements SecurityFactoryInterface
         $rememberMeServices = $container->setDefinition($rememberMeServicesId.$id, clone $container->getDefinition($rememberMeServicesId));
         $arguments = $rememberMeServices->getArguments();
         $arguments[0] = new Reference($userProvider);
+
         $rememberMeServices->setArguments($arguments);
 
         if (!isset($config['service'])) {
@@ -66,11 +67,14 @@ class RememberMeFactory implements SecurityFactoryInterface
             $rememberMeServices->setMethodCalls($methodCalls);
         }
 
-        // attach to form listener
-        $container
-            ->getDefinition('security.authentication.listener.form.'.$id)
-            ->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServicesId.$id)))
-        ;
+        // attach to rememberme aware listeners
+        $tags = $container->findTaggedServiceIds('security.listener.rememberme_aware_'.$id);
+        foreach (array_keys($tags) as $service) {
+            $container
+                ->getDefinition($service)
+                ->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServicesId.$id)))
+            ;
+        }
 
         // remember-me listener
         $listenerId = 'security.authentication.listener.rememberme.'.$id;

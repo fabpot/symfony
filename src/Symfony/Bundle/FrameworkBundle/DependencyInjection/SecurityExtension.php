@@ -12,7 +12,6 @@
 namespace Symfony\Bundle\FrameworkBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Alias;
-use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Resource\FileResource;
@@ -324,9 +323,17 @@ class SecurityExtension extends Extension
                 if (array_key_exists($key, $firewall) && $firewall[$key] !== false) {
                     $userProvider = isset($firewall[$key]['provider']) ? $this->getUserProviderId($firewall[$key]['provider']) : $defaultProvider;
 
-                    list($provider, $listener, $defaultEntryPoint) = $factory->create($container, $id, $firewall[$key], $userProvider, $defaultEntryPoint);
+                    list($provider, $listenerId, $defaultEntryPoint) = $factory->create($container, $id, $firewall[$key], $userProvider, $defaultEntryPoint);
 
-                    $listeners[] = new Reference($listener);
+                    if (in_array('remember_me', $positions)) {
+                        $listener = $container->getDefinition($listenerId);
+                        $tags = $listener->getTags();
+                        if (isset($tags['security.listener.rememberme_aware'])) {
+                            $listener->addTag('security.listener.rememberme_aware_'.$id);
+                        }
+                    }
+
+                    $listeners[] = new Reference($listenerId);
                     $providers[] = new Reference($provider);
                     $hasListeners = true;
                 }

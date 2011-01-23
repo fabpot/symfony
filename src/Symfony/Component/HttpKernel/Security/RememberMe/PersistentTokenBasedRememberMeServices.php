@@ -68,35 +68,27 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
                 throw new \RuntimeException('RememberMeToken must contain a PersistentTokenInterface implementation when used as login.');
             }
 
-            $newTokenValue = $this->generateRandomValue();
-            $this->tokenProvider->updateToken($persistentToken->getSeries(), $newTokenValue, new \DateTime());
+            $series = $persistentToken->getSeries();
+            $tokenValue = $this->generateRandomValue();
 
-            $response->headers->setCookie(new Cookie(
-                $this->options['name'],
-                $this->generateCookieValue($persistentToken->getSeries(), $newTokenValue),
-                time() + $this->options['lifetime'],
-                $this->options['path'],
-                $this->options['domain'],
-                $this->options['secure'],
-                $this->options['httponly']
-            ));
+            $this->tokenProvider->updateToken($series, $tokenValue, new \DateTime());
         } else {
             $series = $this->generateRandomValue();
             $tokenValue = $this->generateRandomValue();
 
             $persistentToken = new PersistentToken((string) $token, $series, $tokenValue, new \DateTime());
             $this->tokenProvider->createNewToken($persistentToken);
-
-            $response->headers->setCookie(new Cookie(
-                $this->options['name'],
-                $this->generateCookieValue($series, $tokenValue),
-                time() + $this->options['lifetime'],
-                $this->options['path'],
-                $this->options['domain'],
-                $this->options['secure'],
-                $this->options['httponly']
-            ));
         }
+
+        $response->headers->setCookie(
+            $this->options['name'],
+            $this->generateCookieValue($series, $tokenValue),
+            $this->options['domain'],
+            time() + $this->options['lifetime'],
+            $this->options['path'],
+            $this->options['secure'],
+            $this->options['httponly']
+        );
     }
 
     /**

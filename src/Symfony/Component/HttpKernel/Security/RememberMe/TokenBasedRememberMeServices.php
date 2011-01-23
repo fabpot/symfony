@@ -97,7 +97,17 @@ class TokenBasedRememberMeServices extends RememberMeServices
         $expires = time() + $this->options['lifetime'];
         $value = $this->generateCookieValue($user->getUsername(), $expires, $user->getPassword());
 
-        $response->headers->setCookie(new Cookie($this->options['name'], $value, $expires, $this->options['path'], $this->options['domain'], $this->options['secure'], $this->options['httponly']));
+        $response->headers->setCookie(
+            new Cookie(
+                $this->options['name'],
+                $value,
+                $expires,
+                $this->options['path'],
+                $this->options['domain'],
+                $this->options['secure'],
+                $this->options['httponly']
+            )
+        );
     }
 
     /**
