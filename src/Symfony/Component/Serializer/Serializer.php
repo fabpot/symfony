@@ -58,6 +58,9 @@ class Serializer implements SerializerInterface
      */
     public function normalizeObject($object, $format, $properties = null)
     {
+        if (!$this->normalizers) {
+            throw new \LogicException('You must register at least one normalizer to be able to normalize objects.');
+        }
         $class = get_class($object);
         if (isset($this->normalizerCache[$class][$format])) {
             return $normalizer->normalize($object, $format, $properties);
@@ -69,7 +72,7 @@ class Serializer implements SerializerInterface
                 return $normalizer->normalize($object, $format, $properties);
             }
         }
-        throw new \UnexpectedValueException('Could not serialize object of type '.$class);
+        throw new \UnexpectedValueException('Could not normalize object of type '.$class.', no supporting normalizer found.');
     }
 
     /**
@@ -82,6 +85,9 @@ class Serializer implements SerializerInterface
      */
     public function denormalizeObject($data, $class, $format = null)
     {
+        if (!$this->normalizers) {
+            throw new \LogicException('You must register at least one normalizer to be able to denormalize objects.');
+        }
         if (isset($this->normalizerCache[$class][$format])) {
             return $normalizer->denormalize($data, $format);
         }
@@ -92,7 +98,7 @@ class Serializer implements SerializerInterface
                 return $normalizer->denormalize($data, $class, $format);
             }
         }
-        throw new \UnexpectedValueException('Could not deserialize object of type '.$class);
+        throw new \UnexpectedValueException('Could not denormalize object of type '.$class.', no supporting normalizer found.');
     }
 
     /**
@@ -113,7 +119,7 @@ class Serializer implements SerializerInterface
         if (is_object($data)) {
             return $this->normalizeObject($data, $format);
         }
-        throw new \UnexpectedValueException('An unexpected value could not be serialized: '.var_export($data, true));
+        throw new \UnexpectedValueException('An unexpected value could not be normalized: '.var_export($data, true));
     }
 
     /**
@@ -126,7 +132,7 @@ class Serializer implements SerializerInterface
     public function encode($data, $format)
     {
         if (!isset($this->encoders[$format])) {
-            throw new \UnexpectedValueException('Could not find an encoder for the '.$format.' format');
+            throw new \UnexpectedValueException('No encoder registered for the '.$format.' format');
         }
         return $this->encoders[$format]->encode($data, $format);
     }
@@ -141,7 +147,7 @@ class Serializer implements SerializerInterface
     public function decode($data, $format)
     {
         if (!isset($this->encoders[$format])) {
-            throw new \UnexpectedValueException('Could not find a decoder for the '.$format.' format');
+            throw new \UnexpectedValueException('No encoder registered to decode the '.$format.' format');
         }
         return $this->encoders[$format]->decode($data, $format);
     }
