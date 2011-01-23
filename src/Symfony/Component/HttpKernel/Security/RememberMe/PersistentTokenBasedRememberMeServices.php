@@ -1,8 +1,8 @@
 <?php
+
 namespace Symfony\Component\HttpKernel\Security\RememberMe;
 
 use Symfony\Component\HttpFoundation\Cookie;
-
 use Symfony\Component\Security\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +29,19 @@ use Symfony\Component\Security\Authentication\RememberMe\PersistentToken;
  */
 class PersistentTokenBasedRememberMeServices extends RememberMeServices
 {
+    protected $tokenProvider;
+
+    /**
+     * Sets the token provider
+     *
+     * @param TokenProviderInterface $tokenProvider
+     * @return void
+     */
+    public function setTokenProvider(TokenProviderInterface $tokenProvider)
+    {
+        $this->tokenProvider = $tokenProvider;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -51,7 +64,7 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
             throw new AuthenticationException('The cookie has expired.');
         }
 
-        $user = $this->userProvider->loadUserByUsername($persistentToken->getUsername());
+        $user = $this->getUserProvider($persistentToken->getClass())->loadUserByUsername($persistentToken->getUsername());
         $authenticationToken = new RememberMeToken($user, $this->key);
         $authenticationToken->setPersistentToken($persistentToken);
 
@@ -76,8 +89,15 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
             $series = $this->generateRandomValue();
             $tokenValue = $this->generateRandomValue();
 
-            $persistentToken = new PersistentToken((string) $token, $series, $tokenValue, new \DateTime());
-            $this->tokenProvider->createNewToken($persistentToken);
+            $this->tokenProvider->createNewToken(
+                new PersistentToken(
+                    get_class($user = $token->getUser()),
+                    $user->getUsername(),
+                    $series,
+                    $tokenValue,
+                    new \DateTime()
+                )
+            );
         }
 
         $response->headers->setCookie(

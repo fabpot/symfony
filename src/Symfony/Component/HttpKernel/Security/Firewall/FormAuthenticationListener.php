@@ -29,7 +29,7 @@ use Symfony\Component\Security\Authentication\Token\TokenInterface;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-abstract class FormAuthenticationListener implements RememberMeServicesAwareInterface
+abstract class FormAuthenticationListener implements ListenerInterface
 {
     protected $securityContext;
     protected $authenticationManager;

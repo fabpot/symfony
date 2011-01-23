@@ -325,14 +325,6 @@ class SecurityExtension extends Extension
 
                     list($provider, $listenerId, $defaultEntryPoint) = $factory->create($container, $id, $firewall[$key], $userProvider, $defaultEntryPoint);
 
-                    if (in_array('remember_me', $positions)) {
-                        $listener = $container->getDefinition($listenerId);
-                        $tags = $listener->getTags();
-                        if (isset($tags['security.listener.rememberme_aware'])) {
-                            $listener->addTag('security.listener.rememberme_aware_'.$id);
-                        }
-                    }
-
                     $listeners[] = new Reference($listenerId);
                     $providers[] = new Reference($provider);
                     $hasListeners = true;

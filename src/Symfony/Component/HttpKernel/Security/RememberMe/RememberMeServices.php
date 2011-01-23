@@ -2,6 +2,8 @@
 
 namespace Symfony\Component\HttpKernel\Security\RememberMe;
 
+use Symfony\Component\Security\User\AccountInterface;
+
 use Symfony\Component\Security\Authentication\RememberMe\TokenProviderInterface;
 use Symfony\Component\Security\Authentication\Token\RememberMeToken;
 use Symfony\Component\HttpKernel\Security\Logout\LogoutHandlerInterface;
@@ -30,92 +32,28 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
 {
     const COOKIE_DELIMITER = ':';
 
-    protected $userProvider;
+    protected $userProviders;
     protected $options;
     protected $logger;
-    protected $tokenProvider;
     protected $key;
 
     /**
      * Constructor
      *
-     * @param UserProviderInterface $userProvider
+     * @param array $userProviders
      * @param array $options
      * @param LoggerInterface $logger
      */
-    public function __construct(UserProviderInterface $userProvider, array $options = array(), LoggerInterface $logger = null)
+    public function __construct(array $userProviders, $key, array $options = array(), LoggerInterface $logger = null)
     {
-        $this->userProvider = $userProvider;
+        if (empty($key)) {
+            throw new \InvalidArgumentException('$key must not be empty.');
+        }
+
+        $this->userProviders = $userProviders;
+        $this->key = $key;
         $this->options = $options;
         $this->logger = $logger;
-    }
-
-    /**
-     * Returns the user provider implementation
-     * @return UserProviderInterface
-     */
-    public function getUserProvider()
-    {
-        return $this->userProvider;
-    }
-
-    /**
-     * Returns the options
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * Returns the logger implementation
-     * @return LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * Sets the private remember-me key
-     *
-     * @param string $key
-     * @return void
-     */
-    public function setKey($key)
-    {
-        $this->key = $key;
-    }
-
-    /**
-     * Returns the private remember-me key
-     * @return string
-     */
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    /**
-     * Sets the token provider
-     *
-     * @param TokenProviderInterface $tokenProvider
-     * @return void
-     */
-    public function setTokenProvider(TokenProviderInterface $tokenProvider)
-    {
-        $this->tokenProvider = $tokenProvider;
-    }
-
-    /**
-     * Returns the token provider
-     *
-     * @return TokenProviderInterface
-     */
-    public function getTokenProvider()
-    {
-        return $this->tokenProvider;
     }
 
     /**
@@ -147,50 +85,6 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
         }
 
         return $token;
-    }
-
-    /**
-     * Subclasses should validate the cookie and do any additional processing
-     * that is required. This is called from autoLogin().
-     *
-     * @param array $cookieParts
-     * @param Request $request
-     * @return TokenInterface
-     */
-    abstract protected function processAutoLoginCookie(array $cookieParts, Request $request);
-
-    /**
-     * This is called after a user has been logged in successfully, and has
-     * requested remember-me capabilities. The implementation usually sets a
-     * cookie and possibly stores a persistent record of it.
-     *
-     * @param Request $request
-     * @param Response $response
-     * @param TokenInterface $token
-     * @return void
-     */
-    abstract protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
-
-    /**
-     * Decodes the raw cookie value
-     *
-     * @param string $rawCookie
-     * @return array
-     */
-    protected function decodeCookie($rawCookie)
-    {
-        return explode(self::COOKIE_DELIMITER, base64_decode($rawCookie));
-    }
-
-    /**
-     * Encodes the cookie parts
-     *
-     * @param array $cookieParts
-     * @return string
-     */
-    protected function encodeCookie(array $cookieParts)
-    {
-        return base64_encode(implode(self::COOKIE_DELIMITER, $cookieParts));
     }
 
     /**
@@ -231,6 +125,10 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
     public function loginSuccess(Request $request, Response $response, TokenInterface $token)
     {
         if (!$token instanceof RememberMeToken) {
+            if (!$token->getUser() instanceof AccountInterface) {
+                throw new \RuntimeException('Only tokens which contain AccountInterface implementations are compatible with remember-me.');
+            }
+
             if (!$this->isRememberMeRequested($request)) {
                 if (null !== $this->logger) {
                     $this->logger->debug('Remember-me was not requested.');
@@ -247,6 +145,61 @@ abstract class RememberMeServices implements RememberMeServicesInterface, Logout
         }
 
         $this->onLoginSuccess($request, $response, $token);
+    }
+
+    /**
+     * Subclasses should validate the cookie and do any additional processing
+     * that is required. This is called from autoLogin().
+     *
+     * @param array $cookieParts
+     * @param Request $request
+     * @return TokenInterface
+     */
+    abstract protected function processAutoLoginCookie(array $cookieParts, Request $request);
+
+    /**
+     * This is called after a user has been logged in successfully, and has
+     * requested remember-me capabilities. The implementation usually sets a
+     * cookie and possibly stores a persistent record of it.
+     *
+     * @param Request $request
+     * @param Response $response
+     * @param TokenInterface $token
+     * @return void
+     */
+    abstract protected function onLoginSuccess(Request $request, Response $response, TokenInterface $token);
+
+    protected function getUserProvider($class)
+    {
+        foreach ($this->userProviders as $provider) {
+            if ($provider->supportsClass($class)) {
+                return $provider;
+            }
+        }
+
+        throw new \RuntimeException(sprintf('There is no user provider that supports class "%s".', $class));
+    }
+
+    /**
+     * Decodes the raw cookie value
+     *
+     * @param string $rawCookie
+     * @return array
+     */
+    protected function decodeCookie($rawCookie)
+    {
+        return explode(self::COOKIE_DELIMITER, base64_decode($rawCookie));
+    }
+
+    /**
+     * Encodes the cookie parts
+     *
+     * @param array $cookieParts
+     * @return string
+     */
+    protected function encodeCookie(array $cookieParts)
+    {
+        return base64_encode(implode(self::COOKIE_DELIMITER, $cookieParts));
     }
 
     /**

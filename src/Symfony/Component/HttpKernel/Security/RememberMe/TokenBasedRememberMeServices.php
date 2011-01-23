@@ -34,12 +34,23 @@ class TokenBasedRememberMeServices extends RememberMeServices
      */
     protected function processAutoLoginCookie(array $cookieParts, Request $request)
     {
-        if (count($cookieParts) !== 3) {
+        if (count($cookieParts) !== 4) {
             throw new AuthenticationException('The cookie is invalid.');
         }
 
-        list($username, $expires, $hash) = $cookieParts;
-        $user = $this->userProvider->loadUserByUsername($username);
+        list($class, $username, $expires, $hash) = $cookieParts;
+        if (false === $username = base64_decode($username, true)) {
+            throw new AuthenticationException('$username contains a character from outside the base64 alphabet.');
+        }
+        try {
+            $user = $this->getUserProvider($class)->loadUserByUsername($username);
+        } catch (\Exception $ex) {
+            if (!$ex instanceof AuthenticationException) {
+                $ex = new AuthenticationException($ex->getMessage(), $ex->getCode(), $ex);
+            }
+
+            throw $ex;
+        }
 
         if (!$user instanceof AccountInterface) {
             throw new \RuntimeException(sprintf('The UserProviderInterface implementation must return an instance of AccountInterface, but returned "%s".', get_class($user)));
@@ -69,12 +80,12 @@ class TokenBasedRememberMeServices extends RememberMeServices
      */
     protected function compareHashes($hash1, $hash2)
     {
-        if (strlen($hash1) !== strlen($hash2)) {
+        if (strlen($hash1) !== $c = strlen($hash2)) {
             return false;
         }
 
         $result = 0;
-        for ($i = 0; $i < strlen($hash1); $i++) {
+        for ($i = 0; $i < $c; $i++) {
             $result |= ord($hash1[$i]) ^ ord($hash2[$i]);
         }
 
@@ -95,7 +106,7 @@ class TokenBasedRememberMeServices extends RememberMeServices
         }
 
         $expires = time() + $this->options['lifetime'];
-        $value = $this->generateCookieValue($user->getUsername(), $expires, $user->getPassword());
+        $value = $this->generateCookieValue(get_class($user), $user->getUsername(), $expires, $user->getPassword());
 
         $response->headers->setCookie(
             new Cookie(
@@ -113,36 +124,35 @@ class TokenBasedRememberMeServices extends RememberMeServices
     /**
      * Generates the cookie value
      *
+     * @param strign $class
      * @param string $username The username
      * @param integer $expires The unixtime when the cookie expires
      * @param string $password The encoded password
      * @throws \RuntimeException if username contains invalid chars
      * @return string
      */
-    protected function generateCookieValue($username, $expires, $password)
+    protected function generateCookieValue($class, $username, $expires, $password)
     {
-        if (false !== strpos($username, self::COOKIE_DELIMITER)) {
-            throw new \RuntimeException(sprintf('The username must not contain "%s".', self::COOKIE_DELIMITER));
-        }
-
-        return $this->encodeCookie(array($username, $expires, $this->generateCookieHash($username, $expires, $password)));
+        return $this->encodeCookie(array(
+            $class,
+            base64_encode($username),
+            $expires,
+            $this->generateCookieHash($class, $username, $expires, $password)
+        ));
     }
 
     /**
      * Generates a hash for the cookie to ensure it is not being tempered with
      *
+     * @param string $class
      * @param string $username The username
      * @param integer $expires The unixtime when the cookie expires
      * @param string $password The encoded password
      * @throws \RuntimeException when the private key is empty
      * @return string
      */
-    protected function generateCookieHash($username, $expires, $password)
+    protected function generateCookieHash($class, $username, $expires, $password)
     {
-        if (0 === strlen($this->key)) {
-            throw new \RuntimeException('"security.rememberme.key" must not be empty.');
-        }
-
-        return hash('sha256', $username.self::COOKIE_DELIMITER.$expires.self::COOKIE_DELIMITER.$password.self::COOKIE_DELIMITER.$this->key);
+        return hash('sha256', $class.$username.$expires.$password.$this->key);
     }
 }

@@ -40,7 +40,6 @@
             <argument type="service" id="security.authentication.manager" />
             <argument>%security.authentication.form.options%</argument>
             <argument type="service" id="logger" on-invalid="null" />
-            <tag name="security.listener.rememberme_aware" />
         </service>
 
         <service id="security.authentication.listener.rememberme" class="%security.authentication.listener.rememberme.class%" public="false">
@@ -74,6 +73,7 @@
         
         <service id="security.authentication.rememberme.services.simplehash" class="%security.authentication.rememberme.services.simplehash.class%" public="false">
             <argument type="service" id="security.user.provider.in_memory" />
+            <argument>%security.rememberme.key%</argument>
             <argument type="collection">
                 <argument key="name">%security.authentication.rememberme.services.options.name%</argument>
                 <argument key="lifetime">%security.authentication.rememberme.services.options.lifetime%</argument>
@@ -85,13 +85,11 @@
                 <argument key="remember_me_parameter">%security.authentication.rememberme.services.options.remember_me_parameter%</argument>
             </argument>
             <argument type="service" id="logger" on-invalid="null" />
-            <call method="setKey">
-                <argument>%security.rememberme.key%</argument>
-            </call>
         </service>
         
         <service id="security.authentication.rememberme.services.persistent" class="%security.authentication.rememberme.services.persistent.class%" public="false">
             <argument type="service" id="security.user.provider.in_memory" />
+            <argument>%security.rememberme.key%</argument>
             <argument type="collection">
                 <argument key="name">%security.authentication.rememberme.services.options.name%</argument>
                 <argument key="lifetime">%security.authentication.rememberme.services.options.lifetime%</argument>
@@ -103,12 +101,6 @@
                 <argument key="remember_me_parameter">%security.authentication.rememberme.services.options.remember_me_parameter%</argument>
             </argument>
             <argument type="service" id="logger" on-invalid="null" />
-            <call method="setTokenProvider">
-                <argument type="service" id="security.rememberme.token.provider.in_memory"></argument>
-            </call>
-            <call method="setKey">
-                <argument>%security.rememberme.key%</argument>
-            </call>
         </service>
 
         <service id="security.exception_listener" class="%security.exception_listener.class%" public="false">

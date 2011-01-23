@@ -52,7 +52,6 @@
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
         <parameter key="security.authentication.listener.rememberme.class">Symfony\Component\HttpKernel\Security\Firewall\RememberMeListener</parameter>
-        <parameter key="security.rememberme.key"></parameter>
         <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\Authentication\RememberMe\InMemoryTokenProvider</parameter>
         
         <parameter key="security.authentication.rememberme.services.persistent.class">Symfony\Component\HttpKernel\Security\RememberMe\PersistentTokenBasedRememberMeServices</parameter>

@@ -10,14 +10,19 @@ class RememberMeFactory implements SecurityFactoryInterface
 {
     public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint)
     {
-        // shared key between authentication provider, and token
-        $sharedKey = isset($config['key']) ? $config['key'] : new Parameter('security.rememberme.key');
+        if (!isset($config['key']) || empty($config['key'])) {
+            throw new \RuntimeException('A "key" must be defined for each remember-me section.');
+        }
+
+        if (isset($config['provider'])) {
+            throw new \RuntimeException('You must not set a user provider for remember-me.');
+        }
 
         // authentication provider
-        $authenticationProvider = 'security.authentication.provider.rememberme.'.$id;
+        $authenticationProviderId = 'security.authentication.provider.rememberme.'.$id;
         $container
-            ->register($authenticationProvider, '%security.authentication.provider.rememberme.class%')
-            ->setArguments(array(new Reference('security.account_checker'), $sharedKey))
+            ->register($authenticationProviderId, '%security.authentication.provider.rememberme.class%')
+            ->setArguments(array(new Reference('security.account_checker'), $config['key']))
             ->setPublic(false)
         ;
 
@@ -46,45 +51,43 @@ class RememberMeFactory implements SecurityFactoryInterface
         }
 
         $rememberMeServices = $container->setDefinition($rememberMeServicesId.$id, clone $container->getDefinition($rememberMeServicesId));
-        $arguments = $rememberMeServices->getArguments();
-        $arguments[0] = new Reference($userProvider);
+        $rememberMeServicesId .= '.'.$id;
+        $rememberMeServices->setArgument(1, $config['key']);
 
-        $rememberMeServices->setArguments($arguments);
+        if (!isset($config['service']) && isset($config['token-provider'])) {
+            $rememberMeServices->addMethodCall('setTokenProvider', array(
+                new Reference('security.rememberme.token.provider.'.$config['token-provider'])
+            ));
+        }
 
-        if (!isset($config['service'])) {
-            $methodCalls = array();
-            foreach ($rememberMeServices->getMethodCalls() as $call) {
-                list($method, $arguments) = $call;
-
-                if ('setTokenProvider' === $method) {
-                    $methodCalls[] = array($method, array(new Reference('security.rememberme.token.provider.'.$config['token-provider'])));
+        // attach to remember-me aware listeners
+        $userProviders = array();
+        foreach ($container->findTaggedServiceIds('security.listener.rememberme_aware') as $serviceId => $attributes) {
+            foreach ($attributes as $attribute) {
+                if (!isset($attribute['id']) || $attribute['id'] !== $id) {
+                    continue;
                 }
-                if ('setKey' === $method) {
-                    $methodCalls[] = array($method, array($sharedKey));
+
+                if (!isset($attribute['provider'])) {
+                    throw new \RuntimeException('Each "security.listener.rememberme_aware" tag must have a provider attribute.');
                 }
+
+                $userProviders[] = new Reference($attribute['provider']);
+                $container
+                    ->getDefinition($serviceId)
+                    ->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServicesId)))
+                ;
             }
-
-            $rememberMeServices->setMethodCalls($methodCalls);
         }
-
-        // attach to rememberme aware listeners
-        $tags = $container->findTaggedServiceIds('security.listener.rememberme_aware_'.$id);
-        foreach (array_keys($tags) as $service) {
-            $container
-                ->getDefinition($service)
-                ->addMethodCall('setRememberMeServices', array(new Reference($rememberMeServicesId.$id)))
-            ;
-        }
+        $rememberMeServices->setArgument(0, $userProviders);
 
         // remember-me listener
         $listenerId = 'security.authentication.listener.rememberme.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.rememberme'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($rememberMeServicesId.$id);
-        $arguments[2] = new Reference($authenticationProvider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($rememberMeServicesId));
+        $listener->setArgument(2, new Reference($authenticationProviderId));
 
-        return array($authenticationProvider, $listenerId, $defaultEntryPoint);
+        return array($authenticationProviderId, $listenerId, $defaultEntryPoint);
     }
 
     protected function getRememberMeServicesId($name)

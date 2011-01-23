@@ -33,6 +33,7 @@ class FormLoginFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.form.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
+        $listener->addTag('security.remember_me_aware', array('id' => $id, 'provider' => $provider));
         $arguments = $listener->getArguments();
         $arguments[1] = new Reference($provider);
         $listener->setArguments($arguments);
