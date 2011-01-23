@@ -16,15 +16,19 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class CustomNormalizer implements NormalizerInterface
+class CustomNormalizer extends AbstractNormalizer implements NormalizerInterface
 {
-    protected $manager;
-
+    /**
+     * {@inheritdoc}
+     */
     public function normalize($object, $format, $properties = null)
     {
         return $object->normalize($this, $format, $properties);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function denormalize($data, $class, $format = null)
     {
         $object = new $class;
@@ -32,18 +36,16 @@ class CustomNormalizer implements NormalizerInterface
         return $object;
     }
 
+    /**
+     * Checks if the given class implements the NormalizableInterface.
+     *
+     * @param  ReflectionClass $class  A ReflectionClass instance of the class
+     *                                 to serialize into or from.
+     * @param  string $format The format being (de-)serialized from or into.
+     * @return Boolean
+     */
     public function supports(\ReflectionClass $class, $format = null)
     {
         return $class->implementsInterface('Symfony\Component\Serializer\Normalizer\NormalizableInterface');
-    }
-
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    public function getSerializer()
-    {
-        return $this->serializer;
     }
 }

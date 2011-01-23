@@ -14,22 +14,27 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 
 /**
- * Encodes JSON data
+ * Abstract Encoder implementation
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class JsonEncoder extends AbstractEncoder implements EncoderInterface
+abstract class AbstractEncoder
 {
-    public function encode($data, $format)
+    protected $serializer;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setSerializer(SerializerInterface $serializer)
     {
-        if (!is_scalar($data)) {
-            $data = $this->serializer->normalize($data, $format);
-        }
-        return json_encode($data);
+        $this->serializer = $serializer;
     }
 
-    public function decode($data, $format)
+    /**
+     * {@inheritdoc}
+     */
+    public function getSerializer()
     {
-        return json_decode($data);
+        return $this->serializer;
     }
 }

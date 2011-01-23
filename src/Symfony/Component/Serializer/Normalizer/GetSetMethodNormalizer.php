@@ -33,10 +33,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class GetSetMethodNormalizer implements NormalizerInterface
+class GetSetMethodNormalizer extends AbstractNormalizer implements NormalizerInterface
 {
-    protected $serializer;
-
     /**
      * {@inheritdoc}
      */
@@ -115,8 +113,8 @@ class GetSetMethodNormalizer implements NormalizerInterface
      *
      * @param  ReflectionClass $class  A ReflectionClass instance of the class
      *                                 to serialize into or from.
-     * @param  string          $format The format being (de-)serialized from or into.
-     * @return bool                    Whether the class has any getters.
+     * @param  string $format The format being (de-)serialized from or into.
+     * @return Boolean Whether the class has any getters.
      */
     public function supports(\ReflectionClass $class, $format = null)
     {
@@ -130,21 +128,11 @@ class GetSetMethodNormalizer implements NormalizerInterface
         return false;
     }
 
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    public function getSerializer()
-    {
-        return $this->serializer;
-    }
-
     /**
      * Checks if a method's name is get.* and can be called without parameters.
      *
      * @param ReflectionMethod $method the method to check
-     * @return bool whether the method is a getter.
+     * @return Boolean whether the method is a getter.
      */
     protected function isGetMethod(\ReflectionMethod $method)
     {

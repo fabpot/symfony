@@ -20,10 +20,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  * @author John Wards <jwards@whiteoctober.co.uk>
  * @author Fabian Vogler <fabian@equivalence.ch>
  */
-class XmlEncoder implements EncoderInterface
+class XmlEncoder extends AbstractEncoder implements EncoderInterface
 {
     protected $dom;
-    protected $serializer;
     protected $format;
 
     public function encode($data, $format)
@@ -52,16 +51,6 @@ class XmlEncoder implements EncoderInterface
             return (string) $xml;
         }
         return $this->parseXml($xml);
-    }
-
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    public function getSerializer()
-    {
-        return $this->serializer;
     }
 
     /**
