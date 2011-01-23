@@ -15,7 +15,7 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
  */
 
 /**
- * Serializer serializes and unserializes data
+ * Serializer serializes and deserializes data
  *
  * objects are turned into arrays by normalizers
  * arrays are turned into various output formats by encoders
@@ -62,8 +62,9 @@ class Serializer implements SerializerInterface
         if (isset($this->normalizerCache[$class][$format])) {
             return $normalizer->normalize($object, $format, $properties);
         }
+        $reflClass = new \ReflectionClass($class);
         foreach ($this->normalizers as $normalizer) {
-            if ($normalizer->supports($class, $format)) {
+            if ($normalizer->supports($reflClass, $format)) {
                 $this->normalizerCache[$class][$format] = $normalizer;
                 return $normalizer->normalize($object, $format, $properties);
             }

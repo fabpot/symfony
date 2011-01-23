@@ -2,9 +2,10 @@
 
 namespace Symfony\Tests\Component\Serializer\Normalizer;
 
-use Symfony\Component\Serializer\Normalizer\Normalizable;
+require_once __DIR__.'/../Fixtures/ScalarDummy.php';
+
+use Symfony\Tests\Component\Serializer\Fixtures\ScalarDummy;
 use Symfony\Component\Serializer\Normalizer\CustomNormalizer;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /*
  * This file is part of the Symfony framework.
@@ -25,7 +26,7 @@ class CustomNormalizerTest extends \PHPUnit_Framework_TestCase
 
     public function testSerialize()
     {
-        $obj = new Dummy;
+        $obj = new ScalarDummy;
         $obj->foo = 'foo';
         $obj->xmlFoo = 'xml';
         $this->assertEquals('foo', $this->normalizer->normalize($obj, 'json'));
@@ -34,38 +35,18 @@ class CustomNormalizerTest extends \PHPUnit_Framework_TestCase
 
     public function testDeserialize()
     {
-        $obj = $this->normalizer->denormalize('foo', __NAMESPACE__.'\Dummy', 'xml');
+        $obj = $this->normalizer->denormalize('foo', get_class(new ScalarDummy), 'xml');
         $this->assertEquals('foo', $obj->xmlFoo);
         $this->assertNull($obj->foo);
 
-        $obj = $this->normalizer->denormalize('foo', __NAMESPACE__.'\Dummy', 'json');
+        $obj = $this->normalizer->denormalize('foo', get_class(new ScalarDummy), 'json');
         $this->assertEquals('foo', $obj->foo);
         $this->assertNull($obj->xmlFoo);
     }
 
     public function testSupports()
     {
-        $this->assertTrue($this->normalizer->supports(new \ReflectionClass(get_class(new Dummy))));
+        $this->assertTrue($this->normalizer->supports(new \ReflectionClass(get_class(new ScalarDummy))));
         $this->assertFalse($this->normalizer->supports(new \ReflectionClass('stdClass')));
-    }
-}
-
-class Dummy implements Normalizable
-{
-    public $foo;
-    public $xmlFoo;
-
-    public function normalize(NormalizerInterface $normalizer, $format, $properties = null)
-    {
-        return $format === 'xml' ? $this->xmlFoo : $this->foo;
-    }
-
-    public function denormalize(NormalizerInterface $normalizer, $data, $format = null)
-    {
-        if ($format === 'xml') {
-            $this->xmlFoo = $data;
-        } else {
-            $this->foo = $data;
-        }
     }
 }
