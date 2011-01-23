@@ -2,10 +2,10 @@
 
 namespace Symfony\Tests\Component\Serializer\Fixtures;
 
-use Symfony\Component\Serializer\Normalizer\Normalizable;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class ScalarDummy implements Normalizable
+class ScalarDummy implements NormalizableInterface
 {
     public $foo;
     public $xmlFoo;

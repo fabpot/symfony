@@ -19,7 +19,7 @@ namespace Symfony\Component\Serializer\Normalizer;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-interface Normalizable
+interface NormalizableInterface
 {
     function normalize(NormalizerInterface $normalizer, $format, $properties = null);
     function denormalize(NormalizerInterface $normalizer, $data, $format = null);

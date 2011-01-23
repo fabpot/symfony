@@ -34,7 +34,7 @@ class CustomNormalizer implements NormalizerInterface
 
     public function supports(\ReflectionClass $class, $format = null)
     {
-        return $class->implementsInterface('Symfony\Component\Serializer\Normalizer\Normalizable');
+        return $class->implementsInterface('Symfony\Component\Serializer\Normalizer\NormalizableInterface');
     }
 
     public function setSerializer(SerializerInterface $serializer)

@@ -2,10 +2,10 @@
 
 namespace Symfony\Tests\Component\Serializer\Fixtures;
 
-use Symfony\Component\Serializer\Normalizer\Normalizable;
+use Symfony\Component\Serializer\Normalizer\NormalizableInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class Dummy implements Normalizable
+class Dummy implements NormalizableInterface
 {
     public $foo;
     public $bar;

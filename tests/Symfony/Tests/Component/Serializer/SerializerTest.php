@@ -27,6 +27,7 @@ class SerializerTest extends \PHPUnit_Framework_TestCase
      */
     public function testNormalizeObjectNoMatch()
     {
+        $this->serializer->addNormalizer($this->getMock('Symfony\Component\Serializer\Normalizer\CustomNormalizer'));
         $this->serializer->normalizeObject(new \stdClass, 'xml');
     }
 
@@ -35,6 +36,7 @@ class SerializerTest extends \PHPUnit_Framework_TestCase
      */
     public function testDenormalizeObjectNoMatch()
     {
+        $this->serializer->addNormalizer($this->getMock('Symfony\Component\Serializer\Normalizer\CustomNormalizer'));
         $this->serializer->denormalizeObject('foo', 'stdClass');
     }
 
@@ -74,6 +76,7 @@ class SerializerTest extends \PHPUnit_Framework_TestCase
      */
     public function testNormalizeNoMatchObject()
     {
+        $this->serializer->addNormalizer($this->getMock('Symfony\Component\Serializer\Normalizer\CustomNormalizer'));
         $this->serializer->normalizeObject(new \stdClass, 'xml');
     }
 }
