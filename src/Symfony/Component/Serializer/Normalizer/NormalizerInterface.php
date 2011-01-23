@@ -40,7 +40,26 @@ interface NormalizerInterface
      */
     function denormalize($data, $class, $format = null);
 
+    /**
+     * Checks whether the given class is supported by this normalizer
+     *
+     * @param ReflectionClass $class
+     * @param string $format format the given data was extracted from
+     * @return Boolean
+     */
     function supports(\ReflectionClass $class, $format = null);
+
+    /**
+     * Sets the owning Serializer object
+     *
+     * @param SerializerInterface $serializer
+     */
     function setSerializer(SerializerInterface $serializer);
+
+    /**
+     * Gets the owning Serializer object
+     *
+     * @return SerializerInterface
+     */
     function getSerializer();
 }

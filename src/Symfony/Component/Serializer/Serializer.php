@@ -24,10 +24,6 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
  * $serializer->decode($data, 'xml')
  * $serializer->denormalizeObject($data, 'Class', 'xml')
  *
- * TODO:
- * - Use Validator comp to check which fields are mandatory during deserialization (?)
- *   - Alternatively we could use .NET-style @serialize:NonSerialized and @serialize:OptionalField on properties
- *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Serializer implements SerializerInterface
@@ -37,11 +33,7 @@ class Serializer implements SerializerInterface
     protected $normalizerCache = array();
 
     /**
-     * Serializes data in the appropriate format
-     *
-     * @param mixed $data any data
-     * @param string $format format name
-     * @return string
+     * {@inheritdoc}
      */
     public function serialize($data, $format)
     {
@@ -49,12 +41,7 @@ class Serializer implements SerializerInterface
     }
 
     /**
-     * Normalizes an object into a set of arrays/scalars
-     *
-     * @param object $object object to normalize
-     * @param string $format format name, present to give the option to normalizers to act differently based on formats
-     * @param array $properties a list of properties to extract, if null all properties are returned
-     * @return array|scalar
+     * {@inheritdoc}
      */
     public function normalizeObject($object, $format, $properties = null)
     {
@@ -76,12 +63,7 @@ class Serializer implements SerializerInterface
     }
 
     /**
-     * Denormalizes data back into an object of the given class
-     *
-     * @param mixed $data data to restore
-     * @param string $class the expected class to instantiate
-     * @param string $format format name, present to give the option to normalizers to act differently based on formats
-     * @return object
+     * {@inheritdoc}
      */
     public function denormalizeObject($data, $class, $format = null)
     {
@@ -102,11 +84,7 @@ class Serializer implements SerializerInterface
     }
 
     /**
-     * Normalizes any data into a set of arrays/scalars
-     *
-     * @param mixed $data data to normalize
-     * @param string $format format name, present to give the option to normalizers to act differently based on formats
-     * @return array|scalar
+     * {@inheritdoc}
      */
     public function normalize($data, $format)
     {
@@ -123,11 +101,7 @@ class Serializer implements SerializerInterface
     }
 
     /**
-     * Encodes data into the given format
-     *
-     * @param mixed $data data to encode
-     * @param string $format format name
-     * @return array|scalar
+     * {@inheritdoc}
      */
     public function encode($data, $format)
     {
@@ -138,11 +112,7 @@ class Serializer implements SerializerInterface
     }
 
     /**
-     * Decodes a string from the given format back into PHP data
-     *
-     * @param string $data data to decode
-     * @param string $format format name
-     * @return mixed
+     * {@inheritdoc}
      */
     public function decode($data, $format)
     {

@@ -20,6 +20,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class JsonEncoder extends AbstractEncoder implements EncoderInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function encode($data, $format)
     {
         if (!is_scalar($data)) {
@@ -28,6 +31,9 @@ class JsonEncoder extends AbstractEncoder implements EncoderInterface
         return json_encode($data);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function decode($data, $format)
     {
         return json_decode($data);

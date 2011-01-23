@@ -25,6 +25,9 @@ class XmlEncoder extends AbstractEncoder implements EncoderInterface
     protected $dom;
     protected $format;
 
+    /**
+     * {@inheritdoc}
+     */
     public function encode($data, $format)
     {
         if ($data instanceof \DOMDocument) {
@@ -44,6 +47,9 @@ class XmlEncoder extends AbstractEncoder implements EncoderInterface
         return $this->dom->saveXML();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function decode($data, $format)
     {
         $xml = simplexml_load_string($data);
