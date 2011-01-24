@@ -39,9 +39,7 @@ class FileBag extends ParameterBag
      */
     public function set($key, $value)
     {
-        if (is_array($value)) {
-            parent::set($key, $this->convertFileInformation($value));
-        }
+        parent::set($key, $this->convertFileInformation($value));
     }
 
     /**
@@ -62,25 +60,28 @@ class FileBag extends ParameterBag
      *
      * @return array A (multi-dimensional) array of UploadedFile instances
      */
-    protected function convertFileInformation(array $file)
+    protected function convertFileInformation($file)
     {
-        $file = $this->fixPhpFilesArray($file);
         if (is_array($file)) {
-            $keys = array_keys($file);
-            sort($keys);
-            if ($keys == $this->fileKeys) {
-                $file['error'] = (int) $file['error'];
-            }
-            if ($keys != $this->fileKeys) {
-                $file = array_map(array($this, 'convertFileInformation'), $file);
-            } else
-                if ($file['error'] === UPLOAD_ERR_NO_FILE) {
-                    $file = null;
-                } else {
-                    $file = new UploadedFile($file['tmp_name'], $file['name'],
-                    $file['type'], $file['size'], $file['error']);
+            $file = $this->fixPhpFilesArray($file);
+            if (is_array($file)) {
+                $keys = array_keys($file);
+                sort($keys);
+                if ($keys == $this->fileKeys) {
+                    $file['error'] = (int) $file['error'];
                 }
+                if ($keys != $this->fileKeys) {
+                    $file = array_map(array($this, 'convertFileInformation'), $file);
+                } else
+                    if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                        $file = null;
+                    } else {
+                        $file = new UploadedFile($file['tmp_name'], $file['name'],
+                        $file['type'], $file['size'], $file['error']);
+                    }
+            }
         }
+
         return $file;
     }
 
