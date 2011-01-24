@@ -66,8 +66,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     protected function mergeDbalConfig(array $configs, $container)
     {
-        $configs = array_reverse($configs);
-
         $supportedConnectionParams = array(
             'dbname'                => 'dbname',
             'host'                  => 'host',
@@ -216,8 +214,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
      */
     public function ormLoad(array $configs, ContainerBuilder $container)
     {
-        $configs = array_reverse($configs);
-
         $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
         $loader->load('orm.xml');
 

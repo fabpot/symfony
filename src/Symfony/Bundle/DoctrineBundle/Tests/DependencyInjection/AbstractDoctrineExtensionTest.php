@@ -441,16 +441,16 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
 
         $definition = $container->getDefinition('doctrine.orm.default_metadata_driver');
         $this->assertDICDefinitionMethodCallAt(0, $definition, 'addDriver', array(
-            new Reference('doctrine.orm.default_xml_metadata_driver'),
-            'DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle\Entity'
-        ));
-        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', array(
             new Reference('doctrine.orm.default_annotation_metadata_driver'),
             'DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\AnnotationsBundle\Entity'
         ));
+        $this->assertDICDefinitionMethodCallAt(1, $definition, 'addDriver', array(
+            new Reference('doctrine.orm.default_xml_metadata_driver'),
+            'DoctrineBundle\Tests\DependencyInjection\Fixtures\Bundles\XmlBundle\Entity'
+        ));
 
         $configDef = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($configDef, 'setAutoGenerateProxyClasses', array(true));
+        $this->assertDICDefinitionMethodCallOnce($configDef, 'setAutoGenerateProxyClasses', array( false ));
     }
 
     public function testEntityManagerMetadataCacheDriverConfiguration()
@@ -513,7 +513,7 @@ abstract class AbstractDoctrineExtensionTest extends TestCase
         $this->assertEquals('%doctrine.orm.cache.apc_class%', $cacheDefinition->getClass());
 
         $configDefinition = $container->getDefinition('doctrine.orm.default_configuration');
-        $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', array(false));
+        $this->assertDICDefinitionMethodCallOnce($configDefinition, 'setAutoGenerateProxyClasses', array(true));
     }
 
     public function testSingleEntityManagerMultipleMappingBundleDefinitions()
