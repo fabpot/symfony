@@ -35,7 +35,7 @@ interface OutputInterface
      * @param string|array $messages The message as an array of lines of a single string
      * @param integer      $type     The type of output
      */
-    public function writeln($messages, $type = 0);
+    function writeln($messages, $type = 0);
 
     /**
      * Sets the verbosity of the output.
