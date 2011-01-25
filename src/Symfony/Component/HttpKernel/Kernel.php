@@ -499,6 +499,8 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         $parameterBag = new ParameterBag($this->getKernelParameters());
 
         $container = new ContainerBuilder($parameterBag);
+        $container->set('kernel', $this);
+
         foreach ($this->bundles as $bundle) {
             $bundle->registerExtensions($container);
 
