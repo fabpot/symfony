@@ -33,9 +33,7 @@ class FormLoginFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.form.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($provider));
 
         $options = array(
             'check_path'                     => '/login_check',

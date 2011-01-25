@@ -33,9 +33,7 @@ class HttpDigestFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.digest.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.digest'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($userProvider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($userProvider));
 
         if (null === $defaultEntryPoint) {
             $defaultEntryPoint = 'security.authentication.digest_entry_point';

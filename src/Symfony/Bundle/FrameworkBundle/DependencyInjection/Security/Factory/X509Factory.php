@@ -33,9 +33,7 @@ class X509Factory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.x509.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.x509'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($provider));
 
         return array($provider, $listenerId, $defaultEntryPoint);
     }

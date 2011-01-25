@@ -33,9 +33,7 @@ class HttpBasicFactory implements SecurityFactoryInterface
         // listener
         $listenerId = 'security.authentication.listener.basic.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.basic'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($provider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($provider));
 
         if (isset($config['path'])) {
             $container->setParameter('security.authentication.form.path', $config['path']);

@@ -164,13 +164,11 @@ class SecurityExtension extends Extension
 
         // make the ContextListener aware of the configured user providers
         $definition = $container->getDefinition('security.context_listener');
-        $arguments = $definition->getArguments();
         $userProviders = array();
         foreach ($providerIds as $userProviderId) {
             $userProviders[] = new Reference($userProviderId);
         }
-        $arguments[1] = $userProviders;
-        $definition->setArguments($arguments);
+        $definition->setArgument(1, $userProviders);
 
         // load service templates
         $c = new ContainerBuilder($container->getParameterBag());
@@ -246,15 +244,13 @@ class SecurityExtension extends Extension
 
             $listeners[] = new Reference($listenerId);
 
-            $arguments = $listener->getArguments();
             if (isset($firewall['logout']['path'])) {
-                $arguments[1] = $firewall['logout']['path'];
+                $listener->setArgument(1, $firewall['logout']['path']);
             }
 
             if (isset($firewall['logout']['target'])) {
-                $arguments[2] = $firewall['logout']['target'];
+                $listener->setArgument(2, $firewall['logout']['target']);
             }
-            $listener->setArguments($arguments);
 
             if (!isset($firewall['stateless']) || !$firewall['stateless']) {
                 $listener->addMethodCall('addHandler', array(new Reference('security.logout.handler.session')));
@@ -566,9 +562,7 @@ class SecurityExtension extends Extension
         // Access listener
         $listenerId = 'security.access_listener.'.$id;
         $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.access_listener'));
-        $arguments = $listener->getArguments();
-        $arguments[3] = new Reference($authManager);
-        $listener->setArguments($arguments);
+        $listener->setArgument(3, new Reference($authManager));
 
         return $listenerId;
     }
@@ -577,9 +571,7 @@ class SecurityExtension extends Extension
     {
         $exceptionListenerId = 'security.exception_listener.'.$id;
         $listener = $container->setDefinition($exceptionListenerId, clone $container->getDefinition('security.exception_listener'));
-        $arguments = $listener->getArguments();
-        $arguments[2] = null === $defaultEntryPoint ? null : new Reference($defaultEntryPoint);
-        $listener->setArguments($arguments);
+        $listener->setArgument(2, null === $defaultEntryPoint ? null : new Reference($defaultEntryPoint));
 
         return $exceptionListenerId;
     }
@@ -590,9 +582,7 @@ class SecurityExtension extends Extension
 
         $switchUserListenerId = 'security.authentication.switchuser_listener.'.$id;
         $listener = $container->setDefinition($switchUserListenerId, clone $container->getDefinition('security.authentication.switchuser_listener'));
-        $arguments = $listener->getArguments();
-        $arguments[1] = new Reference($userProvider);
-        $listener->setArguments($arguments);
+        $listener->setArgument(1, new Reference($userProvider));
 
         if (isset($config['role'])) {
             $container->setParameter('security.authentication.switchuser.role', $config['role']);
