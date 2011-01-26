@@ -157,6 +157,10 @@ class Definition
      */
     public function setArgument($index, $argument)
     {
+        if (!is_int($index)) {
+            throw new \InvalidArgumentException(sprintf('The index "%s" is not an integer.', $index));
+        }
+
         if ($index < 0 || $index > count($this->arguments) - 1) {
             throw new \OutOfBoundsException(sprintf('The index "%d" is not in the range [0, %d].', $index, count($this->arguments) - 1));
         }
