@@ -37,11 +37,9 @@ abstract class AbstractFactory
     {
         $authProvider = clone $container->getDefinition($authProviderId);
 
-        $arguments = $authProvider->getArguments();
-        $arguments[] = new Reference($userProviderId);
-        $arguments[] = new Reference('security.account_checker');
-        $arguments[] = $id;
-        $authProvider->setArguments($arguments);
+        $authProvider->addArgument(new Reference($userProviderId));
+        $authProvider->addArgument(new Reference('security.account_checker'));
+        $authProvider->addArgument($id);
 
         $authProvider->setSynthetic(false);
         $authProvider->setPublic(false);

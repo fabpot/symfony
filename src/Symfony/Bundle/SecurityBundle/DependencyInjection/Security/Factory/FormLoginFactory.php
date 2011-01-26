@@ -33,9 +33,7 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
         $authProviderId = parent::createAuthProvider($container, $id, $authProviderId, $userProviderId);
 
         $authProvider = $container->getDefinition($authProviderId);
-        $arguments = $authProvider->getArguments();
-        $arguments[] = new Reference('security.encoder_factory');
-        $authProvider->setArguments($arguments);
+        $authProvider->addArgument(new Reference('security.encoder_factory'));
 
         return $authProviderId;
     }
