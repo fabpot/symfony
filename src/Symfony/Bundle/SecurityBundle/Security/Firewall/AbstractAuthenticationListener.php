@@ -152,9 +152,9 @@ abstract class AbstractAuthenticationListener implements ListenerInterface
             $response = $this->onFailure($event, $request, $failed);
         }
 
-        $event->setReturnValue($response);
+        $event->setProcessed();
 
-        return true;
+        return $response;
     }
 
     /**
