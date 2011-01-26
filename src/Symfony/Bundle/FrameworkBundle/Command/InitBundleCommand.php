@@ -36,7 +36,15 @@ class InitBundleCommand extends Command
                 new InputArgument('dir', InputArgument::REQUIRED, 'The directory where to create the bundle'),
             ))
             ->setName('init:bundle')
-        ;
+            ->setHelp(<<<EOT
+The <info>init:bundle</info> command generates a new bundle with a basic skeleton.
+
+  <info>./app/console init:bundle "Application\HelloBundle" src</info>
+
+The bundle namespace must end with "Bundle" (e.g. <comment>HelloBundle</comment>)
+and can be placed in any directory (e.g. <comment>src</comment>).
+EOT
+            );
     }
 
     /**
@@ -51,10 +59,18 @@ class InitBundleCommand extends Command
             throw new \InvalidArgumentException('The namespace must end with Bundle.');
         }
 
-        $bundle = strtr($namespace, array('\\' => ''));
+        // get the base bundle name from the namespace
+        $class = explode('\\', $namespace);
+        $bundle = $class[count($class) - 1];
 
         $dir = $input->getArgument('dir');
-        $targetDir = $dir . strtr($namespace, '\\', '/');
+
+        // filter out any trailing slash
+        if ('/' == substr($dir, -1, 1)) {
+            $dir = substr($dir, 0, -1);
+        }
+
+        $targetDir = $dir.'/'.strtr($namespace, '\\', '/');
         $output->writeln(sprintf('Initializing bundle "<info>%s</info>" in "<info>%s</info>"', $bundle, $dir));
 
         if (file_exists($targetDir)) {
