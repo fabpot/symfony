@@ -19,74 +19,48 @@ use Symfony\Component\DependencyInjection\Reference;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class FormLoginFactory implements SecurityFactoryInterface
+class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterface
 {
-    public function create(ContainerBuilder $container, $id, $config, $userProvider, $defaultEntryPoint)
+    public function __construct()
     {
-        $provider = 'security.authentication.provider.dao.'.$id;
-        $container
-            ->register($provider, '%security.authentication.provider.dao.class%')
-            ->setArguments(array(new Reference($userProvider), new Reference('security.account_checker'), $id, new Reference('security.encoder_factory')))
-            ->setPublic(false)
-            ->addTag('security.authentication_provider')
-        ;
+        $this->options['username_parameter'] = '_username';
+        $this->options['password_parameter'] = '_password';
+        $this->options['post_only'] = true;
+    }
 
-        // listener
-        $listenerId = 'security.authentication.listener.form.'.$id;
-        $listener = $container->setDefinition($listenerId, clone $container->getDefinition('security.authentication.listener.form'));
-        $listener->setArgument(3, $id);
+    protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
+    {
+        $authProviderId = parent::createAuthProvider($container, $id, $authProviderId, $userProviderId);
 
-        // add remember-me tag
-        $rememberMe = true;
-        if (isset($config['remember-me']) && false === $config['remember-me']) {
-            $rememberMe = false;
-        } else if (isset($config['remember_me']) && false === $config['remember_me']) {
-            $rememberMe = false;
-        }
-        if ($rememberMe) {
-            $listener->addTag('security.remember_me_aware', array('id' => $id, 'provider' => $userProvider));
-        }
+        $authProvider = $container->getDefinition($authProviderId);
+        $arguments = $authProvider->getArguments();
+        $arguments[] = new Reference('security.encoder_factory');
+        $authProvider->setArguments($arguments);
 
-        // generate options
-        $options = array(
-            'check_path'                     => '/login_check',
-            'login_path'                     => '/login',
-            'use_forward'                    => false,
-            'always_use_default_target_path' => false,
-            'default_target_path'            => '/',
-            'target_path_parameter'          => '_target_path',
-            'use_referer'                    => false,
-            'failure_path'                   => null,
-            'failure_forward'                => false,
-        );
-        foreach (array_keys($options) as $key) {
-            if (isset($config[$key])) {
-                $options[$key] = $config[$key];
-            }
-        }
-        $listener->setArgument(4, $options);
+        return $authProviderId;
+    }
 
-        // success handler
-        if (isset($config['success_handler'])) {
-            $config['success-handler'] = $config['success_handler'];
-        }
-        if (isset($config['success-handler'])) {
-            $listener->setArgument(5, new Reference($config['success-handler']));
-        }
+    public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPoint)
+    {
+        $authProviderId = $this->createAuthProvider($container, $id, 'security.authentication.provider.dao', $userProviderId);
 
-        // failure handler
-        if (isset($config['failure_handler'])) {
-            $config['failure-handler'] = $config['failure_handler'];
-        }
-        if (isset($config['failure-handler'])) {
-            $listener->setArgument(6, new Reference($config['failure-handler']));
-        }
+        $authProvider = $container->getDefinition($authProviderId);
+        $arguments = $authProvider->getArguments();
+        $arguments[] = new Reference('security.encoder_factory');
+        $authProvider->setArguments($arguments);
 
-        // form entry point
-        $entryPoint = $container->setDefinition($entryPointId = 'security.authentication.form_entry_point.'.$id, clone $container->getDefinition('security.authentication.form_entry_point'));
-        $entryPoint->setArguments(array($options['login_path'], $options['use_forward']));
+        $listenerId = $this->createListener($container, $id, 'security.authentication.listener.form', $userProviderId, $config);
 
-        return array($provider, $listenerId, $entryPointId);
+        $entryPointId = 'security.authentication.form_entry_point';
+        $entryPoint = clone $container->getDefinition($entryPointId);
+
+        $arguments = $container->getDefinition($listenerId)->getArguments();
+        $entryPoint->setArguments(array($arguments[4]['login_path'], $arguments[4]['use_forward']));
+
+        $entryPointId.= '.'.$id;
+        $container->setDefinition($entryPointId, $entryPoint);
+
+        return array($authProviderId, $listenerId, $entryPointId);
     }
 
     public function getPosition()

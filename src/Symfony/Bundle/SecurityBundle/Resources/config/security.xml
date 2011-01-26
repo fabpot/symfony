@@ -52,12 +52,12 @@
         <parameter key="security.authentication.listener.digest.class">Symfony\Bundle\SecurityBundle\Security\Firewall\DigestAuthenticationListener</parameter>
         <parameter key="security.authentication.listener.anonymous.class">Symfony\Bundle\SecurityBundle\Security\Firewall\AnonymousAuthenticationListener</parameter>
         
-        <parameter key="security.authentication.provider.anonymous">Symfony\Component\Security\Authentication\Provider\AnonymousAuthenticationProvider</parameter>
+        <parameter key="security.authentication.provider.anonymous.class">Symfony\Component\Security\Authentication\Provider\AnonymousAuthenticationProvider</parameter>
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
         <parameter key="security.authentication.listener.rememberme.class">Symfony\Bundle\SecurityBundle\Security\Firewall\RememberMeListener</parameter>
         <parameter key="security.rembemerme.token.provider.in_memory.class">Symfony\Component\Security\Authentication\RememberMe\InMemoryTokenProvider</parameter>
-        
+
         <parameter key="security.authentication.rememberme.services.persistent.class">Symfony\Bundle\SecurityBundle\Security\RememberMe\PersistentTokenBasedRememberMeServices</parameter>
         <parameter key="security.authentication.rememberme.services.simplehash.class">Symfony\Bundle\SecurityBundle\Security\RememberMe\TokenBasedRememberMeServices</parameter>
         <parameter key="security.authentication.rememberme.services.options.name">SYMFONY_REMEMBERME</parameter>
@@ -68,7 +68,7 @@
         <parameter key="security.authentication.rememberme.services.options.httponly">true</parameter>
         <parameter key="security.authentication.rememberme.services.options.always_remember_me">false</parameter>
         <parameter key="security.authentication.rememberme.services.options.remember_me_parameter">_remember_me</parameter>
-        
+
         <parameter key="security.channel_listener.class">Symfony\Bundle\SecurityBundle\Security\Firewall\ChannelListener</parameter>
 
         <parameter key="security.logout_listener.class">Symfony\Bundle\SecurityBundle\Security\Firewall\LogoutListener</parameter>
@@ -85,9 +85,9 @@
         <parameter key="security.access.decision_manager.strategy">affirmative</parameter>
         <parameter key="security.access.decision_manager.allow_if_all_abstain">false</parameter>
         <parameter key="security.access.decision_manager.allow_if_equal_granted_denied">true</parameter>
-        
+
         <parameter key="security.access.denied_url">/access_denied</parameter>
-        
+
         <parameter key="security.access.simple_role_voter.class">Symfony\Component\Security\Authorization\Voter\RoleVoter</parameter>
         <parameter key="security.access.authenticated_voter.class">Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter</parameter>
         <parameter key="security.access.role_hierarchy_voter.class">Symfony\Component\Security\Authorization\Voter\RoleHierarchyVoter</parameter>
@@ -120,7 +120,7 @@
         <service id="security.encoder_factory.generic" class="%security.encoder_factory.generic.class%" public="false">
             <argument type="collection"></argument>
         </service>
-        
+
         <service id="security.encoder_factory" alias="security.encoder_factory.generic"></service>
 
         <service id="security.logout.handler.session" class="%security.logout.handler.session.class%" public="false"></service>
@@ -134,11 +134,13 @@
         <service id="security.authentication.manager" class="%security.authentication.manager.class%" public="false">
             <argument type="collection" />
         </service>
-        
-        <service id="security.authentication.provider.anonymous" class="%security.authentication.provider.anonymous%" public="false">
+
+        <service id="security.authentication.provider.anonymous" class="%security.authentication.provider.anonymous.class%" public="false">
             <argument>%security.anonymous.key%</argument>
             <tag name="security.authentication_provider" />
         </service>
+
+        <service id="security.authentication.provider.dao" class="%security.authentication.provider.dao.class%" public="true" synthetic="true" />
 
         <service id="security.authentication.trust_resolver" class="%security.authentication.trust_resolver.class%" public="false">
             <argument>%security.authentication.trust_resolver.anonymous_class%</argument>
