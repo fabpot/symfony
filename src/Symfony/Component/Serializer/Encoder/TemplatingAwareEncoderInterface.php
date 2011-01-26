@@ -18,7 +18,7 @@ use Symfony\Component\Templating\EngineInterface;
  *
  * @author Lukas Smith <smith@pooteeweet.org>
  */
-interface TemplatingAwareEncoderInterface
+interface TemplatingAwareEncoderInterface extends EncoderInterface
 {
     /**
      * Sets the Templating object

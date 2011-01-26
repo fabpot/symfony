@@ -18,7 +18,7 @@ use Symfony\Component\Templating\EngineInterface;
  *
  * @author Lukas Smith <smith@pooteeweet.org>
  */
-class HtmlEncoder extends AbstractEncoder implements TemplatingAwareEncoderInterface
+class HtmlEncoder extends XMLEncoder implements TemplatingAwareEncoderInterface
 {
     protected $templating;
     protected $template;
@@ -61,21 +61,9 @@ class HtmlEncoder extends AbstractEncoder implements TemplatingAwareEncoderInter
     public function encode($data, $format)
     {
         if (null === $this->template) {
-            throw new \Exception('TODO find something smart to do here');
+            throw new \UnexpectedValueException('A template must be provided to encode to HTML');
         }
 
         return $this->templating->render($this->template, (array)$data);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function decode($data, $format)
-    {
-        $xml = simplexml_load_string($data);
-        if (!$xml->count()) {
-            return (string) $xml;
-        }
-        return $this->parseXml($xml);
     }
 }
