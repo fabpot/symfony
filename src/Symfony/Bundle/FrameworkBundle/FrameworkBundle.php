@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\HttpKernel\ClassCollectionLoader;
+use Symfony\Component\ClassLoader\ClassCollectionLoader;
 
 /**
  * Bundle.
