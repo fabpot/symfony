@@ -36,6 +36,13 @@ interface BundleInterface
     function getParent();
 
     /**
+     * Returns the bundle priority.
+     *
+     * @return integer The Bundle priority
+     */
+    function getPriority();
+
+    /**
      * Returns the bundle name (the class short name).
      *
      * @return string The Bundle name

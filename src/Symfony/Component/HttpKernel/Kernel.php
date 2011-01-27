@@ -334,19 +334,37 @@ abstract class Kernel implements KernelInterface
 
     protected function initializeBundles()
     {
-        // init bundles
         $this->bundles = array();
-        $this->bundleMap = array();
+        $bundleMap = array();
         foreach ($this->registerBundles() as $bundle) {
             $name = $bundle->getName();
+            $priority = $bundle->getPriority();
             $this->bundles[$name] = $bundle;
-            if (!isset($this->bundleMap[$name])) {
-                $this->bundleMap[$name] = array();
+            if (!isset($bundleMap[$name][$priority])) {
+                if (!isset($bundleMap[$name])) {
+                    $bundleMap[$name] = array();
+                }
+                $bundleMap[$name][$priority] = array();
             }
-            $this->bundleMap[$name][] = $bundle;
+            $bundleMap[$name][$priority][] = $bundle;
         }
 
-        // inheritance
+        $this->bundleMap = array();
+        foreach ($bundleMap as $name => $map) {
+            krsort($map);
+            $this->bundleMap[$name] = current($map);
+            while (($bundles = next($map)) !== false) {
+                foreach ($bundles as $bundle) {
+                    $this->bundleMap[$name][] = $bundle;
+                }
+            }
+        }
+
+        $this->resolveBundlesInheritance();
+    }
+
+    protected function resolveBundlesInheritance()
+    {
         $extended = array();
         foreach ($this->bundles as $name => $bundle) {
             $parent = $bundle;

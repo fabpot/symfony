@@ -51,6 +51,16 @@ abstract class Bundle extends ContainerAware implements BundleInterface
     }
 
     /**
+     * Returns the bundle priority.
+     *
+     * @return integer The Bundle priority
+     */
+    public function getPriority()
+    {
+        return 0;
+    }
+
+    /**
      * Returns the bundle name (the class short name).
      *
      * @return string The Bundle name

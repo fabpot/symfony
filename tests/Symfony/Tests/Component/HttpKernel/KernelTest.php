@@ -212,11 +212,43 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel->initializeBundles();
     }
 
+    public function testInitializeBundlesPriority()
+    {
+        require_once __DIR__ . '/Fixtures/Bundle1/Bundle.php';
+        require_once __DIR__ . '/Fixtures/Bundle2/Bundle.php';
+
+        $bundle1 = new \Bundle1\Bundle();
+        $bundle2 = new \Bundle2\Bundle();
+        $bundle3 = $this->getBundle(null, '', 'Bundle');
+
+        $kernel = $this->getKernel();
+        $kernel
+            ->expects($this->once())
+            ->method('registerBundles')
+            ->will($this->returnValue(array($bundle1, $bundle2)))
+        ;
+        $kernel->initializeBundles();
+        $bundles = $kernel->getBundles();
+        $this->assertEquals($bundle2, $bundles['Bundle']);
+        //$this->assertEquals(array('Bundle' => array($bundle2, $bundle1)), $kernel->getBundleMap());
+
+        $kernel = $this->getKernel();
+        $kernel
+            ->expects($this->once())
+            ->method('registerBundles')
+            ->will($this->returnValue(array($bundle1, $bundle3)))
+        ;
+        $kernel->initializeBundles();
+        $bundles = $kernel->getBundles();
+        $this->assertEquals($bundle3, $bundles['Bundle']);
+        $this->assertEquals(array('Bundle' => array($bundle1, $bundle3)), $kernel->getBundleMap());
+    }
+
     protected function getBundle($dir = null, $parent = null, $className = null)
     {
         $bundle = $this
             ->getMockBuilder('Symfony\Tests\Component\HttpKernel\KernelForTest')
-            ->setMethods(array('getPath', 'getParent', 'getName'))
+            ->setMethods(array('getPath', 'getParent', 'getPriority', 'getName'))
             ->disableOriginalConstructor()
         ;
 
@@ -230,6 +262,12 @@ class KernelTest extends \PHPUnit_Framework_TestCase
             ->expects($this->any())
             ->method('getName')
             ->will($this->returnValue(get_class($bundle)))
+        ;
+
+        $bundle
+            ->expects($this->any())
+            ->method('getPriority')
+            ->will($this->returnValue(0))
         ;
 
         if (null !== $dir) {
