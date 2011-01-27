@@ -151,8 +151,14 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
                 $stmt->bindValue($arg, $val, is_int($val) ? \SQLITE3_INTEGER : \SQLITE3_TEXT);
             }
 
-            $res = $stmt->execute();
+            // the sqlite driver raise a php warning ...
+            $res = @$stmt->execute();
+            if(!$res) {
+                throw new \RuntimeException($db->lastErrorMsg());
+            }
+
             $res->finalize();
+
         } else {
             foreach ($args as $arg => $val) {
                 $stmt->bindValue($arg, $val, is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
