@@ -33,13 +33,33 @@ abstract class AbstractFactory
         'failure_forward'                => false,
     );
 
+    protected $authProviderId;
+    protected $listenerId;
+    protected $entryPointId;
+
+    public function __construct($authProviderId = null, $listenerId = null, $entryPointId = null)
+    {
+        $this->authProviderId = $authProviderId;
+        $this->listenerId = $listenerId;
+        $this->entryPointId = $entryPointId;
+    }
+
     public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPointId)
     {
-        $authProviderId = $this->createAuthProvider($container, $id, 'security.authentication.provider.dao', $userProviderId);
+        if ($userProviderId !== $this->authProviderId) {
+            $authProviderId = $this->createAuthProvider($container, $id, $this->authProviderId, $userProviderId);
+        }
 
-        $listenerId = $this->createListener($container, $id, 'security.authentication.listener.form', $userProviderId, $config);
+        $listenerId = $this->createListener($container, $id, $this->listenerId, $userProviderId, $config);
 
-        return array($authProviderId, $listenerId, $defaultEntryPointId);
+        $entryPointId = null === $defaultEntryPointId ? $this->defaultEntryPointId : $defaultEntryPointId;
+
+        return array($authProviderId, $listenerId, $entryPointId);
+    }
+
+    public function addOption($name, $default = null)
+    {
+        $this->options[$name] = $default;
     }
 
     protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
@@ -94,7 +114,7 @@ abstract class AbstractFactory
         return $listenerId;
     }
 
-    public function createEntryPoint($container, $id, $config, $entryPointId)
+    protected function createEntryPoint($container, $id, $config, $entryPointId)
     {
         $entryPoint = clone $container->getDefinition($entryPointId);
 
@@ -113,11 +133,6 @@ abstract class AbstractFactory
         }
 
         return true;
-    }
-
-    protected function addOption($name, $default = null)
-    {
-        $this->options[$name] = $default;
     }
 
     protected function getOptionsFromConfig($config)
