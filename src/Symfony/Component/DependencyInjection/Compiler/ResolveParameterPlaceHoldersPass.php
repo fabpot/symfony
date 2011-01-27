@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\DependencyInjection\Compiler;
 
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -68,9 +69,20 @@ class ResolveParameterPlaceHoldersPass implements CompilerPassInterface
             return $resolved;
         } else if (is_string($value)) {
             return $this->resolveString($value);
+        } else if ($value instanceof Reference) {
+            return $this->resolveReference($value);
         } else {
             return $value;
         }
+    }
+
+    public function resolveReference(Reference $value)
+    {
+        if (preg_match('/^%[^%]+%$/', (string) $value)) {
+            return new Reference($this->resolveString((string)$value), $value->getInvalidBehavior(), $value->isStrict());
+        }
+
+        return $value;
     }
 
     public function resolveString($value)
