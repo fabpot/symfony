@@ -33,6 +33,17 @@ abstract class AbstractFactory
         'failure_forward'                => false,
     );
 
+    public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPointId)
+    {
+        $authProviderId = $this->createAuthProvider($container, $id, 'security.authentication.provider.dao', $userProviderId);
+
+        $listenerId = $this->createListener($container, $id, 'security.authentication.listener.form', $userProviderId, $config);
+
+        $entryPointId = $this->createEntryPoint($container, $id, $config, 'security.authentication.form_entry_point');
+
+        return array($authProviderId, $listenerId, $entryPointId);
+    }
+
     protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
     {
         $authProvider = clone $container->getDefinition($authProviderId);
@@ -75,7 +86,7 @@ abstract class AbstractFactory
             $listener->setArgument(6, new Reference($config['failure-handler']));
         }
 
-        if ($this->getRememberMeFromConfig($config)) {
+        if ($this->isRememberMeAware($config)) {
             $listener->addTag('security.remember_me_aware', array('id' => $id, 'provider' => $userProviderId));
         }
 
@@ -85,7 +96,17 @@ abstract class AbstractFactory
         return $listenerId;
     }
 
-    protected function getRememberMeFromConfig($config)
+    public function createEntryPoint($container, $id, $config, $entryPointId)
+    {
+        $entryPoint = clone $container->getDefinition($entryPointId);
+
+        $entryPointId.= '.'.$id;
+        $container->setDefinition($entryPointId, $entryPoint);
+
+        return $entryPointId;
+    }
+
+    protected function isRememberMeAware($config)
     {
         if (array_key_exists('remember-me', $config) && false === $config['remember-me']) {
             return false;
@@ -94,6 +115,11 @@ abstract class AbstractFactory
         }
 
         return true;
+    }
+
+    protected function addOption($name, $default = null)
+    {
+        $this->options[$name] = $default;
     }
 
     protected function getOptionsFromConfig($config)

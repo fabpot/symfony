@@ -23,9 +23,9 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
 {
     public function __construct()
     {
-        $this->options['username_parameter'] = '_username';
-        $this->options['password_parameter'] = '_password';
-        $this->options['post_only'] = true;
+        $this->addOption('username_parameter', '_username');
+        $this->addOption('password_parameter', '_password');
+        $this->addOption('post_only', true);
     }
 
     protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
@@ -38,25 +38,26 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
         return $authProviderId;
     }
 
+    public function createEntryPoint($container, $id, $config, $entryPointId)
+    {
+        $entryPointId = parent::createEntryPoint($container, $id, $config, $entryPointId);
+
+        $entryPoint = clone $container->getDefinition($entryPointId);
+
+        $entryPoint->setArguments(array($config['login_path'], $config['use_forward']));
+
+        $entryPointId.= '.'.$id;
+        $container->setDefinition($entryPointId, $entryPoint);
+    }
+
     public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPoint)
     {
         $authProviderId = $this->createAuthProvider($container, $id, 'security.authentication.provider.dao', $userProviderId);
 
-        $authProvider = $container->getDefinition($authProviderId);
-        $arguments = $authProvider->getArguments();
-        $arguments[] = new Reference('security.encoder_factory');
-        $authProvider->setArguments($arguments);
-
         $listenerId = $this->createListener($container, $id, 'security.authentication.listener.form', $userProviderId, $config);
 
-        $entryPointId = 'security.authentication.form_entry_point';
-        $entryPoint = clone $container->getDefinition($entryPointId);
-
         $arguments = $container->getDefinition($listenerId)->getArguments();
-        $entryPoint->setArguments(array($arguments[4]['login_path'], $arguments[4]['use_forward']));
-
-        $entryPointId.= '.'.$id;
-        $container->setDefinition($entryPointId, $entryPoint);
+        $entryPointId = $this->createEntryPoint($container, $id, $arguments[4], 'security.authentication.form_entry_point');
 
         return array($authProviderId, $listenerId, $entryPointId);
     }
