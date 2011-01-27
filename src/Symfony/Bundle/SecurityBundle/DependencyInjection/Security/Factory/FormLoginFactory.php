@@ -23,7 +23,7 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
 {
     protected $authProviderId = 'security.authentication.provider.dao';
     protected $listenerId = 'security.authentication.listener.form';
-    protected $entryPointId = 'security.authentication.listener.form';
+    protected $entryPointId = 'security.authentication.form_entry_point';
 
     public function __construct($authProviderId = null, $listenerId = null, $entryPointId = null)
     {
