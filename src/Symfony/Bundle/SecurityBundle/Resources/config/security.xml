@@ -52,7 +52,7 @@
         <parameter key="security.authentication.listener.digest.class">Symfony\Component\Security\Http\Firewall\DigestAuthenticationListener</parameter>
         <parameter key="security.authentication.listener.anonymous.class">Symfony\Component\Security\Http\Firewall\AnonymousAuthenticationListener</parameter>
         
-        <parameter key="security.authentication.provider.anonymous">Symfony\Component\Security\Core\Authentication\Provider\AnonymousAuthenticationProvider</parameter>
+        <parameter key="security.authentication.provider.anonymous.class">Symfony\Component\Security\Core\Authentication\Provider\AnonymousAuthenticationProvider</parameter>
         <parameter key="security.anonymous.key">SomeRandomValue</parameter>
 
         <parameter key="security.authentication.listener.rememberme.class">Symfony\Component\Security\Http\Firewall\RememberMeListener</parameter>
@@ -135,10 +135,12 @@
             <argument type="collection" />
         </service>
         
-        <service id="security.authentication.provider.anonymous" class="%security.authentication.provider.anonymous%" public="false">
+        <service id="security.authentication.provider.anonymous" class="%security.authentication.provider.anonymous.class%" public="false">
             <argument>%security.anonymous.key%</argument>
             <tag name="security.authentication_provider" />
         </service>
+
+        <service id="security.authentication.provider.dao" class="%security.authentication.provider.dao.class%" public="true" synthetic="true" />
 
         <service id="security.authentication.trust_resolver" class="%security.authentication.trust_resolver.class%" public="false">
             <argument>%security.authentication.trust_resolver.anonymous_class%</argument>
