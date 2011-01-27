@@ -30,6 +30,48 @@ use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineEx
  */
 class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 {
+    protected $mongodbOptions = array(
+        'mappings'                  => array(),
+        'default_document_manager'  => 'default',
+        'default_connection'        => 'default',
+        'metadata_cache_driver'     => 'array',
+        'server'                    => null,
+        'options'                   => array(),
+        'connections'               => array(),
+        'document_managers'         => array(),
+    );
+
+    /**
+     * Responds to the doctrine_odm.mongodb configuration parameter.
+     * 
+     * Available options:
+     *
+     *  * mappings                  An array of bundle names (as the key)
+     *                              and mapping configuration (as the value).
+     *  * default_document_manager  The name of the document manager that should be
+     *                              marked as the default. Default: default.
+     *  * default_connection        If using a single connection, the name to give
+     *                              to that connection. Default: default.
+     *  * metadata_cache_driver     Options: array (default), apc, memcache, xcache
+     *  * server                    The server if only specifying one connection
+     *                              (e.g. mongodb://localhost:27017)
+     *  * options                   The connections options if only specifying
+     *                              one connection.
+     *  * document_managers         An array of document manager names and
+     *                              configuration.
+     *
+     * All other options in the mongodb.xml resource can also be overridden.
+     * The most common options include:
+     *
+     *  * default_database          The database for a document manager that didn't
+     *                              explicitly set a database. Default: default;
+     *  * proxy_namespace           Namespace of the generated proxies. Default: Proxies
+     *  * auto_generate_proxy_classes Whether to always regenerate the proxt classes.
+     *                              Default: false.
+     *  * hydrator_namespace        Namespace of the generated proxies. Default: Hydrators
+     *  * auto_generate_hydrator_classes Whether to always regenerate the proxt classes.
+     *                              Default: false.
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         foreach ($configs as $config) {
@@ -69,26 +111,29 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             $loader->load('mongodb.xml');
         }
 
-        // Allow these application configuration options to override the defaults
-        $options = array(
-            'default_document_manager',
-            'default_connection',
-            'metadata_cache_driver',
-            'proxy_namespace',
-            'auto_generate_proxy_classes',
-            'hydrator_namespace',
-            'auto_generate_hydrator_classes',
-            'default_database',
-        );
-        foreach ($options as $key) {
-            if (isset($config[$key])) {
-                $container->setParameter('doctrine.odm.mongodb.'.$key, $config[$key]);
+        // merge in the actual mongodbOptions
+        foreach ($this->mongodbOptions as $name => $val) {
+            if (array_key_exists($name, $config)) {
+                $this->mongodbOptions[$name] = $config[$name];
+                unset($config[$name]);
             }
 
-            $nKey = str_replace('_', '-', $key);
-            if (isset($config[$nKey])) {
-                $container->setParameter('doctrine.odm.mongodb.'.$key, $config[$nKey]);
+            // allow for dashed-config-values
+            $nKey = str_replace('_', '-', $name);
+            if (array_key_exists($nKey, $config)) {
+                $this->mongodbOptions[$name] = $config[$nKey];
+                unset($config[$nKey]);
             }
+        }
+
+        foreach ($config as $name => $val) {
+            // create the would-be key, replace dashes (-) with underscores(_)
+            $key = 'doctrine.odm.mongodb.'.str_replace('-', '_', $name);
+            if (!$container->hasParameter($key)) {
+                throw new \InvalidArgumentException(sprintf('Unknown MongoDB configuration parameter "%s"', $name));
+            }
+
+            $container->setParameter($key, $val);
         }
     }
 
@@ -116,7 +161,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     protected function loadDocumentManager(array $documentManager, ContainerBuilder $container)
     {
-        $defaultDocumentManager = $container->getParameter('doctrine.odm.mongodb.default_document_manager');
+        $defaultDocumentManager = $this->mongodbOptions['default_document_manager'];
         $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : '%doctrine.odm.mongodb.default_database%';
         $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
 
@@ -191,7 +236,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     protected function getDocumentManagers(array $config, ContainerBuilder $container)
     {
-        $defaultDocumentManager = $container->getParameter('doctrine.odm.mongodb.default_document_manager');
+        $defaultDocumentManager = $this->mongodbOptions['default_document_manager'];
 
         $documentManagers = array();
 
@@ -199,8 +244,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             $config['document_managers'] = $config['document-managers'];
         }
 
-        if (isset($config['document_managers'])) {
-            $configDocumentManagers = $config['document_managers'];
+        if (isset($config['document_managers']) && $configDocumentManagers = $config['document_managers']) {
 
             if (isset($config['document_managers']['document-manager'])) {
                 $config['document_managers']['document_manager'] = $config['document_managers']['document-manager'];
@@ -227,7 +271,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     protected function loadDocumentManagerMetadataCacheDriver(array $documentManager, ContainerBuilder $container)
     {
-        $metadataCacheDriver = $container->getParameter('doctrine.odm.mongodb.metadata_cache_driver');
+        $metadataCacheDriver = $this->mongodbOptions['metadata_cache_driver'];
         $dmMetadataCacheDriver = isset($documentManager['metadata-cache-driver']) ? $documentManager['metadata-cache-driver'] : (isset($documentManager['metadata_cache_driver']) ? $documentManager['metadata_cache_driver'] : $metadataCacheDriver);
         $type = is_array($dmMetadataCacheDriver) && isset($dmMetadataCacheDriver['type']) ? $dmMetadataCacheDriver['type'] : $dmMetadataCacheDriver;
 
@@ -275,11 +319,10 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     protected function getConnections(array $config, ContainerBuilder $container)
     {
-        $defaultConnection = $container->getParameter('doctrine.odm.mongodb.default_connection');
+        $defaultConnection = $this->mongodbOptions['default_connection'];
 
         $connections = array();
-        if (isset($config['connections'])) {
-            $configConnections = $config['connections'];
+        if (isset($config['connections']) && $configConnections = $config['connections']) {
             if (isset($config['connections']['connection']) && isset($config['connections']['connection'][0])) {
                 // Multiple connections
                 $configConnections = $config['connections']['connection'];
