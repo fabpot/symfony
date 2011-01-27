@@ -39,9 +39,7 @@ abstract class AbstractFactory
 
         $listenerId = $this->createListener($container, $id, 'security.authentication.listener.form', $userProviderId, $config);
 
-        $entryPointId = $this->createEntryPoint($container, $id, $config, 'security.authentication.form_entry_point');
-
-        return array($authProviderId, $listenerId, $entryPointId);
+        return array($authProviderId, $listenerId, $defaultEntryPointId);
     }
 
     protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)

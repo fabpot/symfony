@@ -50,7 +50,7 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
         $container->setDefinition($entryPointId, $entryPoint);
     }
 
-    public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPoint)
+    public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPointId)
     {
         $authProviderId = $this->createAuthProvider($container, $id, 'security.authentication.provider.dao', $userProviderId);
 
