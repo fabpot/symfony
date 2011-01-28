@@ -330,10 +330,10 @@ abstract class Kernel implements KernelInterface
     /**
      * Initialize the data structures related to the bundle management:
      *  - the bundle property maps a bundle name to a bundle instance,
-     *  - the bundleMap property maps a bundle name to the bundle inheritance hierarchy.
+     *  - the bundleMap property maps a bundle name to the bundle inheritance hierarchy (most derived bundle first).
      *
      * @throws \LogicException if two bundles share a common name
-     * @throws \LogicException if a bundle tries to extend a non-existing bundle
+     * @throws \LogicException if a bundle tries to extend a non-existing or not yet registered bundle
      * @throws \LogicException if two bundles extend the same ancestor
      *
      */
@@ -346,7 +346,11 @@ abstract class Kernel implements KernelInterface
             $name = $bundle->getName();
             if (isset($this->bundles[$name])) {
                 throw new \LogicException(sprintf('Trying to register two bundles with the same name "%s"', $name));
-            } 
+            }
+            $parentName = $bundle->getParent();
+            if (null !== $parentName && !isset($this->bundles[$parentName])) {
+                throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not (yet) registered.', $name, $parentName));
+            }
             $this->bundles[$name] = $bundle;
             $this->bundleMap[$name] = array($bundle);
         }
@@ -357,10 +361,6 @@ abstract class Kernel implements KernelInterface
             $parent = $bundle;
             $first = true;
             while ($parentName = $parent->getParent()) {
-                if (!isset($this->bundles[$parentName])) {
-                    throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not registered.', $name, $parentName));
-                }
-
                 if ($first && isset($extended[$parentName])) {
                     throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $extended[$parentName]));
                 }

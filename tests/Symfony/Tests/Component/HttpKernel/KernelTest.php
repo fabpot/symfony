@@ -167,7 +167,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel
             ->expects($this->once())
             ->method('registerBundles')
-            ->will($this->returnValue(array($parent, $grandparent, $child)))
+            ->will($this->returnValue(array($grandparent, $parent, $child)))
         ;
 
         $kernel->initializeBundles();
@@ -190,6 +190,23 @@ class KernelTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('registerBundles')
             ->will($this->returnValue(array($child)))
+        ;
+        $kernel->initializeBundles();
+    }
+
+    /**
+     * @expectedException \LogicException
+     */
+    public function testInitializeBundlesThrowsExceptionWhenAParentIsNotRegisteredYet()
+    {
+        $parent = $this->getBundle(null, null, 'ParentCCBundle');
+        $child = $this->getBundle(null, 'ParentCCBundle', 'ChildCCBundle');
+
+        $kernel = $this->getKernel();
+        $kernel
+            ->expects($this->once())
+            ->method('registerBundles')
+            ->will($this->returnValue(array($child, $parent)))
         ;
         $kernel->initializeBundles();
     }
