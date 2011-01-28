@@ -265,11 +265,6 @@ class Session implements \Serializable
         }
     }
 
-    public function __destruct()
-    {
-        $this->save();
-    }
-
     public function serialize()
     {
         return serialize(array($this->storage, $this->options));

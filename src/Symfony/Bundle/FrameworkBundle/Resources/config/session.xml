@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.symfony-project.org/schema/dic/services http://www.symfony-project.org/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="session.class">Symfony\Component\HttpFoundation\Session</parameter>
+        <parameter key="session.class">Symfony\Bundle\FrameworkBundle\HttpFoundation\Session</parameter>
         <parameter key="session.default_locale">en</parameter>
         <parameter key="session.storage.native.class">Symfony\Component\HttpFoundation\SessionStorage\NativeSessionStorage</parameter>
         <parameter key="session.storage.native.options" type="collection" />
@@ -21,6 +21,9 @@
             <argument type="collection">
                 <argument key="default_locale">%session.default_locale%</argument>
             </argument>
+            <call method="connect">
+                <argument type="service" id="event_dispatcher" />
+            </call>
         </service>
 
         <service id="session.storage.native" class="%session.storage.native.class%" public="false">
