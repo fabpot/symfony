@@ -101,7 +101,7 @@ class UrlMatcher implements UrlMatcherInterface
     protected function normalizeUrl($url)
     {
         // ensure that the URL starts with a /
-        if ('/' !== substr($url, 0, 1)) {
+        if ('' !== $url && '/' !== substr($url, 0, 1)) {
             $url = '/'.$url;
         }
 
