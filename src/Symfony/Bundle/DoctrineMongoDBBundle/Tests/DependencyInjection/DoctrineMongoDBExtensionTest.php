@@ -47,23 +47,50 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider optionProvider
+     * @param array $configs The source array of configuration arrays
+     * @param array $correctValues A key-value pair of end values to check
      */
-    public function testOptionMerge($inputOption, $endOption, $value)
+    public function testMergeOptions(array $configs, array $correctValues)
     {
-        $container = $this->getMock('Symfony\Component\DependencyInjection\ContainerBuilder');
         $loader = new DoctrineMongoDBExtensionStub();
-        $loader->mongodbLoad(array(array($inputOption => $value)), $container);
 
-        $options = $loader->getMongodbOptions();
-        $this->assertEquals($options[$endOption], $value);
+        $options = $loader->mergeOptions($configs);
+        foreach ($correctValues as $key => $correctVal)
+        {
+            $this->assertEquals($correctVal, $options[$key]);
+        }
     }
 
     public function optionProvider()
     {
-        return array(
-            array('default_document_manager', 'default_document_manager', 'foo'),
-            array('default-document-manager', 'default_document_manager', 'bar'),
+        $cases = array();
+
+        // single config, testing normal option setting
+        $cases[] = array(
+            array(
+                array('default_document_manager' => 'foo'),
+            ),
+            array('default_document_manager' => 'foo')
         );
+
+        // single config, testing normal option setting with dashes
+        $cases[] = array(
+            array(
+                array('default-document-manager' => 'bar'),
+            ),
+            array('default_document_manager' => 'bar')
+        );
+
+        // testing the normal override merging - the later config array wins
+        $cases[] = array(
+            array(
+                array('default_document_manager' => 'foo'),
+                array('default_document_manager' => 'baz'),
+            ),
+            array('default_document_manager' => 'baz')
+        );
+
+        return $cases;
     }
 }
 

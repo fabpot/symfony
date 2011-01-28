@@ -30,22 +30,6 @@ use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineEx
  */
 class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 {
-    protected $mongodbOptions = array(
-        'mappings'                          => array(),
-        'default_document_manager'          => 'default',
-        'default_connection'                => 'default',
-        'metadata_cache_driver'             => 'array',
-        'server'                            => null,
-        'options'                           => array(),
-        'connections'                       => array(),
-        'document_managers'                 => array(),
-        'default_database'                  => null,
-        'proxy_namespace'                   => null,
-        'auto_generate_proxy_classes'       => null,
-        'hydrator_namespace'                => null,
-        'auto_generate_hydrator_classes'    => null,
-    );
-
     /**
      * Responds to the doctrine_odm.mongodb configuration parameter.
      * 
@@ -76,70 +60,87 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
+        // Load DoctrineMongoDBBundle/Resources/config/mongodb.xml
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('mongodb.xml');
+
+        // merge all the configs into one options array
+        $options = $this->mergeOptions($configs);
+
+        // set some options as parameters and unset them
+        $options = $this->overrideParameters($options, $container);
+        $this->loadConnections($options, $container);
+        $this->loadDocumentManagers($options, $container);
+        $this->loadConstraints($options, $container);
+    }
+
+    /**
+     * Merges a set of configuration arrays and returns the result.
+     *
+     * This method internally specifies the available options and their
+     * default values. Given an array of configuration arrays, this method
+     * intelligently merges those configuration values and returns the final,
+     * flattened product.
+     *
+     * The top-level of the returned array is normalized to turn all dashes
+     * (-) into underscores (_). The input configuration keys can use either
+     * format.
+     *
+     * @param array $configs An array of option arrays that will be merged in
+     * @return The flattened, normalized options array
+     * @throws InvalidArgumentException When an unrecognized option is found
+     */
+    public function mergeOptions(array $configs)
+    {
+        // The default and available options. These are very specific to this method.
+        $options = array(
+            'mappings'                          => array(),
+            'default_document_manager'          => 'default',
+            'default_connection'                => 'default',
+            'metadata_cache_driver'             => 'array',
+            'server'                            => null,
+            'options'                           => array(),
+            'connections'                       => array(),
+            'document_managers'                 => array(),
+            'default_database'                  => null,
+            'proxy_namespace'                   => null,
+            'auto_generate_proxy_classes'       => null,
+            'hydrator_namespace'                => null,
+            'auto_generate_hydrator_classes'    => null,
+        );
+
         foreach ($configs as $config) {
-            $this->doMongodbLoad($config, $container);
-        }
-    }
 
-    /**
-     * Loads the MongoDB ODM configuration.
-     *
-     * Usage example:
-     *
-     *     <doctrine:mongodb server="mongodb://localhost:27017" />
-     *
-     * @param array $config An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function doMongodbLoad($config, ContainerBuilder $container)
-    {
-        $this->loadDefaults($config, $container);
-        $this->overrideParameters($container);
-        $this->loadConnections($config, $container);
-        $this->loadDocumentManagers($config, $container);
-        $this->loadConstraints($config, $container);
-    }
+            // loop through each available option, look for it on the config array
+            foreach ($options as $name => $val) {
+                if (array_key_exists($name, $config)) {
+                    $options[$name] = $config[$name];
+                    unset($config[$name]);
+                }
 
-    /**
-     * Loads the default configuration.
-     *
-     * @param array $config An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function loadDefaults(array $config, ContainerBuilder $container)
-    {
-        if (!$container->hasDefinition('doctrine.odm.mongodb.metadata.annotation')) {
-            // Load DoctrineMongoDBBundle/Resources/config/mongodb.xml
-            $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-            $loader->load('mongodb.xml');
-        }
-
-        // merge in the actual mongodbOptions
-        foreach ($this->mongodbOptions as $name => $val) {
-            if (array_key_exists($name, $config)) {
-                $this->mongodbOptions[$name] = $config[$name];
-                unset($config[$name]);
+                // allow for dashed-config-values
+                $nKey = str_replace('_', '-', $name);
+                if (array_key_exists($nKey, $config)) {
+                    $options[$name] = $config[$nKey];
+                    unset($config[$nKey]);
+                }
             }
 
-            // allow for dashed-config-values
-            $nKey = str_replace('_', '-', $name);
-            if (array_key_exists($nKey, $config)) {
-                $this->mongodbOptions[$name] = $config[$nKey];
-                unset($config[$nKey]);
+            if (count($config) > 0) {
+                throw new \InvalidArgumentException('The following options are not supported: '.implode(', ', $config));
             }
         }
 
-        if (count($config) > 0) {
-            throw new \InvalidArgumentException('The following options are not supported: '.implode(', ', $config));
-        }
+        return $options;
     }
 
     /**
      * Uses some of the extension options to override DI extension parameters.
      *
+     * @param array $options The available configuration options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function overrideParameters(ContainerBuilder $container)
+    protected function overrideParameters($options, ContainerBuilder $container)
     {
         $overrides = array(
             'default_database',
@@ -150,27 +151,34 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         );
 
         foreach ($overrides as $key) {
-            if (isset($this->mongodbOptions[$key])) {
-                // create the would-be key
-                $configKey = 'doctrine.odm.mongodb.'.$key;
+            if (isset($options[$key])) {
+                $container->setParameter('doctrine.odm.mongodb.'.$key, $options[$key]);
 
-                $container->setParameter($configKey, $this->mongodbOptions[$key]);
+                // the option should not be used, the parameter should be referenced
+                unset($options[$key]);
             }
         }
+
+        return $options;
     }
 
     /**
      * Loads the document managers configuration.
      *
-     * @param array $config An array of configuration settings
+     * @param array $options An array of extension options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManagers(array $config, ContainerBuilder $container)
+    protected function loadDocumentManagers(array $options, ContainerBuilder $container)
     {
-        $documentManagers = $this->getDocumentManagers($config, $container);
+        $documentManagers = $this->getDocumentManagers($options, $container);
         foreach ($documentManagers as $name => $documentManager) {
             $documentManager['name'] = $name;
-            $this->loadDocumentManager($documentManager, $container);
+            $this->loadDocumentManager(
+                $options['default_document_manager'],
+                $options['metadata_cache_driver'],
+                $documentManager,
+                $container
+            );
         }
         $container->setParameter('doctrine.odm.mongodb.document_managers', array_keys($documentManagers));
     }
@@ -178,12 +186,13 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     /**
      * Loads a document manager configuration.
      *
-     * @param array $documentManager        A document manager configuration array
+     * @param string $defaultManagerName  The name of the default manager
+     * @param string $defaultMetadataCacheDriver The name of the default metadata cache driver
+     * @param array $documentManager      A document manager configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManager(array $documentManager, ContainerBuilder $container)
+    protected function loadDocumentManager($defaultManagerName, $defaultMetadataCacheDriver, array $documentManager, ContainerBuilder $container)
     {
-        $defaultDocumentManager = $this->mongodbOptions['default_document_manager'];
         $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : '%doctrine.odm.mongodb.default_database%';
         $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
 
@@ -195,7 +204,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         }
 
         $this->loadDocumentManagerBundlesMappingInformation($documentManager, $odmConfigDef, $container);
-        $this->loadDocumentManagerMetadataCacheDriver($documentManager, $container);
+        $this->loadDocumentManagerMetadataCacheDriver($defaultMetadataCacheDriver, $documentManager, $container);
 
         $methods = array(
             'setMetadataCacheImpl' => new Reference(sprintf('doctrine.odm.mongodb.%s_metadata_cache', $documentManager['name'])),
@@ -238,7 +247,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $odmDmDef->addTag('doctrine.odm.mongodb.document_manager');
         $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_document_manager', $documentManager['name']), $odmDmDef);
 
-        if ($documentManager['name'] == $defaultDocumentManager) {
+        if ($documentManager['name'] == $defaultManagerName) {
             $container->setAlias(
                 'doctrine.odm.mongodb.document_manager',
                 new Alias(sprintf('doctrine.odm.mongodb.%s_document_manager', $documentManager['name']))
@@ -253,48 +262,49 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     /**
      * Gets the configured document managers.
      *
-     * @param array $config An array of configuration settings
+     * @param array $options An array of configuration options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function getDocumentManagers(array $config, ContainerBuilder $container)
+    protected function getDocumentManagers(array $options, ContainerBuilder $container)
     {
-        $defaultDocumentManager = $this->mongodbOptions['default_document_manager'];
+        $defaultDocumentManager = $options['default_document_manager'];
 
         $documentManagers = array();
 
-        if (isset($config['document-managers'])) {
-            $config['document_managers'] = $config['document-managers'];
+        if (isset($options['document-managers'])) {
+            $options['document_managers'] = $options['document-managers'];
         }
 
-        if (isset($config['document_managers']) && $configDocumentManagers = $config['document_managers']) {
+        if (isset($options['document_managers']) && $configDocumentManagers = $options['document_managers']) {
 
-            if (isset($config['document_managers']['document-manager'])) {
-                $config['document_managers']['document_manager'] = $config['document_managers']['document-manager'];
+            if (isset($options['document_managers']['document-manager'])) {
+                $options['document_managers']['document_manager'] = $options['document_managers']['document-manager'];
             }
 
-            if (isset($config['document_managers']['document_manager']) && isset($config['document_managers']['document_manager'][0])) {
+            if (isset($options['document_managers']['document_manager']) && isset($options['document_managers']['document_manager'][0])) {
                 // Multiple document managers
-                $configDocumentManagers = $config['document_managers']['document_manager'];
+                $configDocumentManagers = $options['document_managers']['document_manager'];
             }
             foreach ($configDocumentManagers as $name => $documentManager) {
                 $documentManagers[isset($documentManager['id']) ? $documentManager['id'] : $name] = $documentManager;
             }
         } else {
-            $documentManagers = array($defaultDocumentManager => $config);
+            $documentManagers = array($defaultDocumentManager => $options);
         }
+
         return $documentManagers;
     }
 
     /**
      * Loads the configured document manager metadata cache driver.
      *
+     * @param string $defaultMetadataCacheDriver Driver name for the default metadata cache
      * @param array $config        A configured document manager array
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManagerMetadataCacheDriver(array $documentManager, ContainerBuilder $container)
+    protected function loadDocumentManagerMetadataCacheDriver($defaultMetadataCacheDriver, array $documentManager, ContainerBuilder $container)
     {
-        $metadataCacheDriver = $this->mongodbOptions['metadata_cache_driver'];
-        $dmMetadataCacheDriver = isset($documentManager['metadata-cache-driver']) ? $documentManager['metadata-cache-driver'] : (isset($documentManager['metadata_cache_driver']) ? $documentManager['metadata_cache_driver'] : $metadataCacheDriver);
+        $dmMetadataCacheDriver = isset($documentManager['metadata-cache-driver']) ? $documentManager['metadata-cache-driver'] : (isset($documentManager['metadata_cache_driver']) ? $documentManager['metadata_cache_driver'] : $defaultMetadataCacheDriver);
         $type = is_array($dmMetadataCacheDriver) && isset($dmMetadataCacheDriver['type']) ? $dmMetadataCacheDriver['type'] : $dmMetadataCacheDriver;
 
         if ('memcache' === $type) {
@@ -316,12 +326,12 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     /**
      * Loads the configured connections.
      *
-     * @param array $config An array of configuration settings
+     * @param array $options An array of configuration options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadConnections(array $config, ContainerBuilder $container)
+    protected function loadConnections(array $options, ContainerBuilder $container)
     {
-        $connections = $this->getConnections($config, $container);
+        $connections = $this->getConnections($options, $container);
         foreach ($connections as $name => $connection) {
             $odmConnArgs = array(
                 isset($connection['server']) ? $connection['server'] : null,
@@ -336,24 +346,24 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     /**
      * Gets the configured connections.
      *
-     * @param array $config An array of configuration settings
+     * @param array $options An array of configuration options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function getConnections(array $config, ContainerBuilder $container)
+    protected function getConnections(array $options, ContainerBuilder $container)
     {
-        $defaultConnection = $this->mongodbOptions['default_connection'];
+        $defaultConnection = $options['default_connection'];
 
         $connections = array();
-        if (isset($config['connections']) && $configConnections = $config['connections']) {
-            if (isset($config['connections']['connection']) && isset($config['connections']['connection'][0])) {
+        if (isset($options['connections']) && $configConnections = $options['connections']) {
+            if (isset($options['connections']['connection']) && isset($options['connections']['connection'][0])) {
                 // Multiple connections
-                $configConnections = $config['connections']['connection'];
+                $configConnections = $options['connections']['connection'];
             }
             foreach ($configConnections as $name => $connection) {
                 $connections[isset($connection['id']) ? $connection['id'] : $name] = $connection;
             }
         } else {
-            $connections = array($defaultConnection => $config);
+            $connections = array($defaultConnection => $options);
         }
         return $connections;
     }
@@ -423,16 +433,25 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         }
     }
 
+    /**
+     * @see AbstractDoctrineExtension
+     */
     protected function getObjectManagerElementName($name)
     {
         return 'doctrine.odm.mongodb.' . $name;
     }
 
+    /**
+     * @see AbstractDoctrineExtension
+     */
     protected function getMappingObjectDefaultName()
     {
         return 'Document';
     }
 
+    /**
+     * @see AbstractDoctrineExtension
+     */
     protected function getMappingResourceConfigDirectory()
     {
         return 'Resources/config/doctrine/metadata/mongodb';
