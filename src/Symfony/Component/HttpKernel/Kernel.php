@@ -356,18 +356,20 @@ abstract class Kernel implements KernelInterface
         }
 
         // inheritance
-        $extended = array();
+        $directChildren = array();
         foreach ($this->bundles as $name => $bundle) {
             $parent = $bundle;
-            $first = true;
+            $directAncestor = true;
             while ($parentName = $parent->getParent()) {
-                if ($first && isset($extended[$parentName])) {
-                    throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $extended[$parentName]));
+                if ($directAncestor) {
+                    if (isset($directChildren[$parentName])) {
+                        throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $directChildren[$parentName]));
+                    }                    
+                    $directChildren[$parentName] = $name;
+                    $directAncestor = false;
                 }
-
-                $first = false;
-                $parent = $this->bundles[$parentName];
-                $extended[$parentName] = $name;
+                
+                $parent = $this->bundles[$parentName];                
                 array_unshift($this->bundleMap[$parentName], $bundle);
             }
         }
