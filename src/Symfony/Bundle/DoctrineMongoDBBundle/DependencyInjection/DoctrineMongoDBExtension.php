@@ -31,14 +31,19 @@ use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineEx
 class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 {
     protected $mongodbOptions = array(
-        'mappings'                  => array(),
-        'default_document_manager'  => 'default',
-        'default_connection'        => 'default',
-        'metadata_cache_driver'     => 'array',
-        'server'                    => null,
-        'options'                   => array(),
-        'connections'               => array(),
-        'document_managers'         => array(),
+        'mappings'                          => array(),
+        'default_document_manager'          => 'default',
+        'default_connection'                => 'default',
+        'metadata_cache_driver'             => 'array',
+        'server'                            => null,
+        'options'                           => array(),
+        'connections'                       => array(),
+        'document_managers'                 => array(),
+        'default_database'                  => null,
+        'proxy_namespace'                   => null,
+        'auto_generate_proxy_classes'       => null,
+        'hydrator_namespace'                => null,
+        'auto_generate_hydrator_classes'    => null,
     );
 
     /**
@@ -57,12 +62,9 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      *                              (e.g. mongodb://localhost:27017)
      *  * options                   The connections options if only specifying
      *                              one connection.
+     *  * connections               An array of each connection and its configuration
      *  * document_managers         An array of document manager names and
      *                              configuration.
-     *
-     * All other options in the mongodb.xml resource can also be overridden.
-     * The most common options include:
-     *
      *  * default_database          The database for a document manager that didn't
      *                              explicitly set a database. Default: default;
      *  * proxy_namespace           Namespace of the generated proxies. Default: Proxies
@@ -92,6 +94,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     protected function doMongodbLoad($config, ContainerBuilder $container)
     {
         $this->loadDefaults($config, $container);
+        $this->overrideParameters($container);
         $this->loadConnections($config, $container);
         $this->loadDocumentManagers($config, $container);
         $this->loadConstraints($config, $container);
@@ -126,14 +129,33 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             }
         }
 
-        foreach ($config as $name => $val) {
-            // create the would-be key, replace dashes (-) with underscores(_)
-            $key = 'doctrine.odm.mongodb.'.str_replace('-', '_', $name);
-            if (!$container->hasParameter($key)) {
-                throw new \InvalidArgumentException(sprintf('Unknown MongoDB configuration parameter "%s"', $name));
-            }
+        if (count($config) > 0) {
+            throw new \InvalidArgumentException('The following options are not supported: '.implode(', ', $config));
+        }
+    }
 
-            $container->setParameter($key, $val);
+    /**
+     * Uses some of the extension options to override DI extension parameters.
+     *
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     */
+    protected function overrideParameters(ContainerBuilder $container)
+    {
+        $overrides = array(
+            'default_database',
+            'proxy_namespace',
+            'auto_generate_proxy_classes',
+            'hydrator_namespace',
+            'auto_generate_hydrator_classes',
+        );
+
+        foreach ($overrides as $key) {
+            if (isset($this->mongodbOptions[$key])) {
+                // create the would-be key
+                $configKey = 'doctrine.odm.mongodb.'.$key;
+
+                $container->setParameter($configKey, $this->mongodbOptions[$key]);
+            }
         }
     }
 
