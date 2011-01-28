@@ -91,6 +91,9 @@ EOF
 
     public function match(\$url)
     {
+        if ('' === \$url) {
+            throw new \\UnexpectedValueException("Empty url received, check that your request object is created using Request::createFromGlobals() in your front controller (app*.php)");
+        }
         \$url = \$this->normalizeUrl(\$url);
 
 $code
