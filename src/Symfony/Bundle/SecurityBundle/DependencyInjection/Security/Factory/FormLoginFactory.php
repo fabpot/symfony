@@ -21,27 +21,13 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterface
 {
-    protected $authProviderId = 'security.authentication.provider.dao';
-    protected $listenerId = 'security.authentication.listener.form';
-    protected $entryPointId = 'security.authentication.form_entry_point';
-
-    public function __construct($authProviderId = null, $listenerId = null, $entryPointId = null)
+    public function __construct($authProviderId, $listenerId, $entryPointId)
     {
         parent::__construct($authProviderId, $listenerId, $entryPointId);
 
         $this->addOption('username_parameter', '_username');
         $this->addOption('password_parameter', '_password');
         $this->addOption('post_only', true);
-    }
-
-    public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPointId)
-    {
-        list($authProviderId, $listenerId, $entryPointId) = parent::create($container, $id, $config, $userProviderId, $defaultEntryPointId);
-
-        $arguments = $container->getDefinition($listenerId)->getArguments();
-        $entryPointId = $this->createEntryPoint($container, $id, $arguments[4], $entryPointId);
-
-        return array($authProviderId, $listenerId, $entryPointId);
     }
 
     public function getPosition()
@@ -54,7 +40,7 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
         return 'form-login';
     }
 
-    protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
+    protected function createAuthProvider($container, $id, $options, $authProviderId, $userProviderId)
     {
         $authProviderId = parent::createAuthProvider($container, $id, $authProviderId, $userProviderId);
 
@@ -64,13 +50,13 @@ class FormLoginFactory extends AbstractFactory implements SecurityFactoryInterfa
         return $authProviderId;
     }
 
-    protected function createEntryPoint($container, $id, $config, $entryPointId)
+    protected function createEntryPoint($container, $id, $options, $entryPointId)
     {
-        $entryPointId = parent::createEntryPoint($container, $id, $config, $entryPointId);
+        $entryPointId = null === $this->entryPointId ? $entryPointId : $this->entryPointId;
 
         $entryPoint = clone $container->getDefinition($entryPointId);
 
-        $entryPoint->setArguments(array($config['login_path'], $config['use_forward']));
+        $entryPoint->setArguments(array($options['login_path'], $options['use_forward']));
 
         $entryPointId.= '.'.$id;
         $container->setDefinition($entryPointId, $entryPoint);

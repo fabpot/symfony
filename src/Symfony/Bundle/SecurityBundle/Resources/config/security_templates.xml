@@ -6,6 +6,9 @@
 
     <services>
         <service id="security.authentication.factory.form" class="Symfony\Bundle\SecurityBundle\DependencyInjection\Security\Factory\FormLoginFactory" public="false">
+            <argument>security.authentication.provider.dao</argument>
+            <argument>security.authentication.listener.form</argument>
+            <argument>security.authentication.form_entry_point</argument>
             <tag name="security.listener.factory" />
         </service>
 

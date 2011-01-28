@@ -140,7 +140,7 @@
             <tag name="security.authentication_provider" />
         </service>
 
-        <service id="security.authentication.provider.dao" class="%security.authentication.provider.dao.class%" public="true" synthetic="true" />
+        <service id="security.authentication.provider.dao" class="%security.authentication.provider.dao.class%" />
 
         <service id="security.authentication.trust_resolver" class="%security.authentication.trust_resolver.class%" public="false">
             <argument>%security.authentication.trust_resolver.anonymous_class%</argument>

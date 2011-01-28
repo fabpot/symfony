@@ -37,22 +37,28 @@ abstract class AbstractFactory
     protected $listenerId;
     protected $entryPointId;
 
-    public function __construct($authProviderId = null, $listenerId = null, $entryPointId = null)
+    public function __construct($authProviderId, $listenerId, $entryPointId = null)
     {
-        $this->authProviderId = $authProviderId ?: $this->authProviderId;
-        $this->listenerId = $listenerId ?: $this->listenerId;
-        $this->entryPointId = $entryPointId ?: $this->entryPointId;
+        $this->authProviderId = $authProviderId;
+        $this->listenerId = $listenerId;
+        $this->entryPointId = $entryPointId;
     }
 
     public function create(ContainerBuilder $container, $id, $config, $userProviderId, $defaultEntryPointId)
     {
+        $options = $this->getOptionsFromConfig($config);
+
         if ($userProviderId !== $this->authProviderId) {
-            $authProviderId = $this->createAuthProvider($container, $id, $this->authProviderId, $userProviderId);
+            $authProviderId = $this->createAuthProvider($container, $id, $options, $this->authProviderId, $userProviderId);
         }
 
-        $listenerId = $this->createListener($container, $id, $this->listenerId, $userProviderId, $config);
+        $listenerId = $this->createListener($container, $id, $options, $this->listenerId, $userProviderId);
 
-        $entryPointId = null === $defaultEntryPointId ? $this->entryPointId : $defaultEntryPointId;
+        if ($this->isRememberMeAware($config)) {
+            $container->getDefinition($listenerId)->addTag('security.remember_me_aware', array('id' => $id, 'provider' => $userProviderId));
+        }
+
+        $entryPointId = $this->createEntryPoint($container, $id, $options, $defaultEntryPointId);
 
         return array($authProviderId, $listenerId, $entryPointId);
     }
@@ -62,7 +68,7 @@ abstract class AbstractFactory
         $this->options[$name] = $default;
     }
 
-    protected function createAuthProvider($container, $id, $authProviderId, $userProviderId)
+    protected function createAuthProvider($container, $id, $options, $authProviderId, $userProviderId)
     {
         $authProvider = clone $container->getDefinition($authProviderId);
 
@@ -70,8 +76,6 @@ abstract class AbstractFactory
         $authProvider->addArgument(new Reference('security.account_checker'));
         $authProvider->addArgument($id);
 
-        $authProvider->setSynthetic(false);
-        $authProvider->setPublic(false);
         $authProvider->addTag('security.authentication_provider');
 
         $authProviderId.= '.'.$id;
@@ -80,13 +84,13 @@ abstract class AbstractFactory
         return $authProviderId;
     }
 
-    protected function createListener($container, $id, $listenerId, $userProviderId, $config)
+    protected function createListener($container, $id, $options, $listenerId)
     {
         $listener = clone $container->getDefinition($listenerId);
 
         $listener->setArgument(3, $id);
 
-        $listener->setArgument(4, $this->getOptionsFromConfig($config));
+        $listener->setArgument(4, $options);
 
         // success handler
         if (isset($config['success_handler'])) {
@@ -104,23 +108,14 @@ abstract class AbstractFactory
             $listener->setArgument(6, new Reference($config['failure-handler']));
         }
 
-        if ($this->isRememberMeAware($config)) {
-            $listener->addTag('security.remember_me_aware', array('id' => $id, 'provider' => $userProviderId));
-        }
-
         $listenerId.= '.'.$id;
         $container->setDefinition($listenerId, $listener);
 
         return $listenerId;
     }
 
-    protected function createEntryPoint($container, $id, $config, $entryPointId)
+    protected function createEntryPoint($container, $id, $options, $entryPointId)
     {
-        $entryPoint = clone $container->getDefinition($entryPointId);
-
-        $entryPointId.= '.'.$id;
-        $container->setDefinition($entryPointId, $entryPoint);
-
         return $entryPointId;
     }
 
