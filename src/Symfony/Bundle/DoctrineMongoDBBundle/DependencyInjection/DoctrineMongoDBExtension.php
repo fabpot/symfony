@@ -112,16 +112,16 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         foreach ($configs as $config) {
 
             // loop through each available option, look for it on the config array
-            foreach ($options as $name => $val) {
-                if (array_key_exists($name, $config)) {
-                    $options[$name] = $config[$name];
-                    unset($config[$name]);
+            foreach ($options as $key => $val) {
+                if (array_key_exists($key, $config)) {
+                    $options[$key] = $this->processOptionMerge($key, $val, $config[$key]);
+                    unset($config[$key]);
                 }
 
-                // allow for dashed-config-values
-                $nKey = str_replace('_', '-', $name);
+                // allow for a config key using dashed separators
+                $nKey = str_replace('_', '-', $key);
                 if (array_key_exists($nKey, $config)) {
-                    $options[$name] = $config[$nKey];
+                    $options[$key] = $this->processOptionMerge($key, $val, $config[$nKey]);
                     unset($config[$nKey]);
                 }
             }
@@ -132,6 +132,28 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         }
 
         return $options;
+    }
+
+    /**
+     * Merges an existing and new option value together for a given option.
+     *
+     * This method can be written to perform complex merging for specific
+     * options and simple merging for other options.
+     *
+     * @param  string $option   The name of the option that needs to be merged
+     * @param  mixed $current   The value of the option before the merge
+     * @param  mixed $new       The new value that needs to be merged in
+     * @return mixed The merged value
+     */
+    protected function processOptionMerge($option, $current, $new)
+    {
+        // process the merge of the config value ($newVal)
+        switch ($option)
+        {
+            default:
+                // just override the previous value with the new one
+                return $new;
+        }
     }
 
     /**
