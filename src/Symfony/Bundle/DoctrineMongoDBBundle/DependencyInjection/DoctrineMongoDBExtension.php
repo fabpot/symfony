@@ -111,18 +111,12 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 
         foreach ($configs as $config) {
 
+            $config = self::normalizeKeys($config);
             // loop through each available option, look for it on the config array
             foreach ($options as $key => $val) {
                 if (array_key_exists($key, $config)) {
                     $options[$key] = $this->processOptionMerge($key, $val, $config[$key]);
                     unset($config[$key]);
-                }
-
-                // allow for a config key using dashed separators
-                $nKey = str_replace('_', '-', $key);
-                if (array_key_exists($nKey, $config)) {
-                    $options[$key] = $this->processOptionMerge($key, $val, $config[$nKey]);
-                    unset($config[$nKey]);
                 }
             }
 
