@@ -281,4 +281,9 @@ class Session implements \Serializable
     {
         return isset($this->options['default_locale']) ? $this->options['default_locale'] : 'en';
     }
+
+    public function __destruct()
+    {
+        $this->save();
+    }
 }

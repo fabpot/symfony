@@ -46,4 +46,8 @@ class Session extends BaseSession
         $this->save();
         return $response;
     }
+
+    public function __destruct()
+    {
+    }
 }
