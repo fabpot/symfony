@@ -331,7 +331,7 @@ interface BundleInterface
     function getParent();
     function getName();
     function getNamespace();
-    function getPath();
+    function getNormalizedPath();
 }
 }
 namespace Symfony\Component\HttpKernel\Bundle
@@ -358,12 +358,17 @@ abstract class Bundle extends ContainerAware implements BundleInterface
         if (null !== $this->name) {
             return $this->name;
         }
-        $pos = strrpos(get_class($this), '\\');
-        return $this->name = substr(get_class($this), $pos ? $pos + 1 : 0);
+        $name = get_class($this);
+        $pos = strrpos($name, '\\');
+        return $this->name = false === $pos ? $name :  substr($name, $pos + 1);
+    }
+    final public function getNormalizedPath()
+    {
+        return strtr($this->getPath(), '\\', '/');
     }
     public function registerExtensions(ContainerBuilder $container)
     {
-        if (!$dir = realpath($this->getPath().'/DependencyInjection')) {
+        if (!$dir = realpath($this->getNormalizedPath().'/DependencyInjection')) {
             return;
         }
         $finder = new Finder();
@@ -376,7 +381,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
     }
     public function registerCommands(Application $application)
     {
-        if (!$dir = realpath($this->getPath().'/Command')) {
+        if (!$dir = realpath($this->getNormalizedPath().'/Command')) {
             return;
         }
         $finder = new Finder();
@@ -389,6 +394,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
             }
         }
     }
+    abstract protected function getPath();
 }
 }
 namespace Symfony\Component\HttpKernel\Debug
@@ -672,7 +678,7 @@ abstract class Kernel implements KernelInterface
             $files[] = $file;
         }
         foreach ($this->getBundle($bundle, false) as $bundle) {
-            if (file_exists($file = $bundle->getPath().'/'.$path)) {
+            if (file_exists($file = $bundle->getNormalizedPath().'/'.$path)) {
                 if ($first) {
                     return $file;
                 }
@@ -1937,7 +1943,7 @@ class UniversalClassLoader
         if ('\\' === $class[0]) {
             $class = substr($class, 1);
         }
-        if (false !== ($pos = strripos($class, '\\'))) {
+        if (false !== ($pos = strrpos($class, '\\'))) {
                         $namespace = substr($class, 0, $pos);
             foreach ($this->namespaces as $ns => $dir) {
                 if (0 === strpos($namespace, $ns)) {
