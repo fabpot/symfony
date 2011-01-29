@@ -21,8 +21,6 @@ use Symfony\Component\DependencyInjection\Reference;
 
 abstract class AbstractMongoDBExtensionTest extends TestCase
 {
-    abstract protected function loadFromFile(ContainerBuilder $container, $file);
-
     public function testDependencyInjectionConfigurationDefaults()
     {
         $container = $this->getContainer();
@@ -347,4 +345,6 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
             'kernel.cache_dir'   => sys_get_temp_dir(),
         )));
     }
+
+    abstract protected function loadFromFile(ContainerBuilder $container, $file);
 }

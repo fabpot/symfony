@@ -17,20 +17,6 @@ class DoctrineMongoDBUniqueValidatorTest extends \PHPUnit_Framework_TestCase
     private $classMetadata;
     private $uniqueFieldName = 'unique';
 
-    public function setUp()
-    {
-        $this->classMetadata = $this->getClassMetadata();
-        $this->repository = $this->getDocumentRepository();
-        $this->dm = $this->getDocumentManager($this->classMetadata, $this->repository);
-        $container = $this->getContainer();
-        $this->validator = new DoctrineMongoDBUniqueValidator($container);
-    }
-
-    public function tearDown()
-    {
-        unset($this->validator, $this->dm, $this->repository, $this->classMetadata);
-    }
-
     /**
      * @dataProvider getFieldsPathsValuesDocumentsAndReturns
      */
@@ -88,31 +74,18 @@ class DoctrineMongoDBUniqueValidatorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    private function getContainer()
+    protected function setUp()
     {
-        $container = $this->getMock('Symfony\Component\DependencyInjection\ContainerInterface');
-
-        $container->expects($this->once())
-            ->method('get')
-            ->will($this->returnValue($this->dm));
-
-        return $container;
+        $this->classMetadata = $this->getClassMetadata();
+        $this->repository = $this->getDocumentRepository();
+        $this->dm = $this->getDocumentManager($this->classMetadata, $this->repository);
+        $container = $this->getContainer();
+        $this->validator = new DoctrineMongoDBUniqueValidator($container);
     }
 
-    private function getDocumentManager(ClassMetadata $classMetadata, DocumentRepository $repository)
+    protected function tearDown()
     {
-        $dm = $this->getMockBuilder('Doctrine\ODM\MongoDB\DocumentManager')
-            ->disableOriginalConstructor()
-            ->setMethods(array('getClassMetadata', 'getRepository'))
-            ->getMock();
-        $dm->expects($this->any())
-            ->method('getClassMetadata')
-            ->will($this->returnValue($classMetadata));
-        $dm->expects($this->any())
-            ->method('getRepository')
-            ->will($this->returnValue($repository));
-
-        return $dm;
+        unset($this->validator, $this->dm, $this->repository, $this->classMetadata);
     }
 
     protected function getDocumentRepository()
@@ -151,5 +124,32 @@ class DoctrineMongoDBUniqueValidatorTest extends \PHPUnit_Framework_TestCase
         $document->id = 1;
 
         return $document;
+    }
+
+    private function getContainer()
+    {
+        $container = $this->getMock('Symfony\Component\DependencyInjection\ContainerInterface');
+
+        $container->expects($this->once())
+            ->method('get')
+            ->will($this->returnValue($this->dm));
+
+        return $container;
+    }
+
+    private function getDocumentManager(ClassMetadata $classMetadata, DocumentRepository $repository)
+    {
+        $dm = $this->getMockBuilder('Doctrine\ODM\MongoDB\DocumentManager')
+            ->disableOriginalConstructor()
+            ->setMethods(array('getClassMetadata', 'getRepository'))
+            ->getMock();
+        $dm->expects($this->any())
+            ->method('getClassMetadata')
+            ->will($this->returnValue($classMetadata));
+        $dm->expects($this->any())
+            ->method('getRepository')
+            ->will($this->returnValue($repository));
+
+        return $dm;
     }
 }

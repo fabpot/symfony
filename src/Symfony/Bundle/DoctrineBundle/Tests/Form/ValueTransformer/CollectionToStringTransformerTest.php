@@ -22,25 +22,6 @@ class CollectionToStringTransformerTest extends \Symfony\Bundle\DoctrineBundle\T
      */
     private $em;
 
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->em = $this->createTestEntityManager();
-
-        $schemaTool = new SchemaTool($this->em);
-        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
-        try {
-            $schemaTool->dropSchema($classes);
-        } catch(\Exception $e) {
-
-        }
-        try {
-            $schemaTool->createSchema($classes);
-        } catch(\Exception $e) {
-            echo $e->getMessage();
-        }
-    }
-
     public function testNoEntityManagerThrowsException()
     {
         $this->setExpectedException('Symfony\Component\Form\Exception\MissingOptionsException');
@@ -203,6 +184,24 @@ class CollectionToStringTransformerTest extends \Symfony\Bundle\DoctrineBundle\T
         $this->assertEquals(1, count($tags));
     }
 
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->em = $this->createTestEntityManager();
+
+        $schemaTool = new SchemaTool($this->em);
+        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
+        try {
+            $schemaTool->dropSchema($classes);
+        } catch(\Exception $e) {
+
+        }
+        try {
+            $schemaTool->createSchema($classes);
+        } catch(\Exception $e) {
+            echo $e->getMessage();
+        }
+    }
 }
 
 /** @Entity */

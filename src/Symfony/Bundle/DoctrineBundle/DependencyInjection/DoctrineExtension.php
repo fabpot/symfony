@@ -56,6 +56,74 @@ class DoctrineExtension extends AbstractDoctrineExtension
     }
 
     /**
+     * Loads the Doctrine ORM configuration.
+     *
+     * Usage example:
+     *
+     *     <doctrine:orm id="mydm" connection="myconn" />
+     *
+     * @param array $config An array of configuration settings
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     */
+    public function ormLoad(array $configs, ContainerBuilder $container)
+    {
+        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
+        $loader->load('orm.xml');
+
+        $config = $this->mergeOrmConfig($configs, $container);
+        
+        $options = array('default_entity_manager', 'default_connection', 'auto_generate_proxy_classes');
+        foreach ($options as $key) {
+            $container->setParameter('doctrine.orm.'.$key, $config[$key]);
+        }
+
+        foreach ($config['entity_managers'] as $entityManager) {
+            $this->loadOrmEntityManager($entityManager, $container);
+
+            if ($entityManager['name'] == $config['default_entity_manager']) {
+                $container->setAlias(
+                    'doctrine.orm.entity_manager',
+                    sprintf('doctrine.orm.%s_entity_manager', $entityManager['name'])
+                );
+            }
+        }
+
+        $container->setParameter('doctrine.orm.entity_managers', array_keys($config['entity_managers']));
+    }
+
+    /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    /**
+     * Returns the namespace to be used for this extension (XML namespace).
+     *
+     * @return string The XML namespace
+     */
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/doctrine';
+    }
+
+    /**
+     * Returns the recommended alias to use in XML.
+     *
+     * This alias is also the mandatory prefix to use when using YAML.
+     *
+     * @return string The alias
+     */
+    public function getAlias()
+    {
+        return 'doctrine';
+    }
+
+    /**
      * Merges a set of exclusive independent DBAL configurations into another.
      *
      * Beginning from the default settings this method acts as incremental merge
@@ -217,42 +285,6 @@ class DoctrineExtension extends AbstractDoctrineExtension
             new Reference(sprintf('doctrine.dbal.%s_connection.configuration', $connection['name'])),
             new Reference(sprintf('doctrine.dbal.%s_connection.event_manager', $connection['name']))
         ));
-    }
-
-    /**
-     * Loads the Doctrine ORM configuration.
-     *
-     * Usage example:
-     *
-     *     <doctrine:orm id="mydm" connection="myconn" />
-     *
-     * @param array $config An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    public function ormLoad(array $configs, ContainerBuilder $container)
-    {
-        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
-        $loader->load('orm.xml');
-
-        $config = $this->mergeOrmConfig($configs, $container);
-        
-        $options = array('default_entity_manager', 'default_connection', 'auto_generate_proxy_classes');
-        foreach ($options as $key) {
-            $container->setParameter('doctrine.orm.'.$key, $config[$key]);
-        }
-
-        foreach ($config['entity_managers'] as $entityManager) {
-            $this->loadOrmEntityManager($entityManager, $container);
-
-            if ($entityManager['name'] == $config['default_entity_manager']) {
-                $container->setAlias(
-                    'doctrine.orm.entity_manager',
-                    sprintf('doctrine.orm.%s_entity_manager', $entityManager['name'])
-                );
-            }
-        }
-
-        $container->setParameter('doctrine.orm.entity_managers', array_keys($config['entity_managers']));
     }
 
     protected function mergeOrmConfig(array $configs, $container)
@@ -531,37 +563,5 @@ class DoctrineExtension extends AbstractDoctrineExtension
         $cacheDef->setPublic(false);
         $cacheDef->addMethodCall('setNamespace', array('sf2orm_'.$entityManager['name']));
         return $cacheDef;
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    /**
-     * Returns the namespace to be used for this extension (XML namespace).
-     *
-     * @return string The XML namespace
-     */
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/doctrine';
-    }
-
-    /**
-     * Returns the recommended alias to use in XML.
-     *
-     * This alias is also the mandatory prefix to use when using YAML.
-     *
-     * @return string The alias
-     */
-    public function getAlias()
-    {
-        return 'doctrine';
     }
 }

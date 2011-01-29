@@ -57,6 +57,25 @@ class DoctrineConverter implements ConverterInterface
         $request->attributes->set($parameter->getName(), $object);
     }
 
+    /**
+     * Returns boolean true if the ReflectionClass is supported, false otherwise
+     *
+     * @param  \ReflectionParameter $parameter
+     *
+     * @return Boolean
+     */
+    public function supports(\ReflectionClass $class)
+    {
+        // Doctrine Entity?
+        try {
+            $this->manager->getClassMetadata($class->getName());
+
+            return true;
+        } catch (MappingException $e) {
+            return false;
+        }
+    }
+
     protected function find($class, Request $request)
     {
         if (!$request->attributes->has('id')) {
@@ -81,24 +100,5 @@ class DoctrineConverter implements ConverterInterface
         }
 
         return $this->manager->getRepository($class)->findOneBy($criteria);
-    }
-
-    /**
-     * Returns boolean true if the ReflectionClass is supported, false otherwise
-     *
-     * @param  \ReflectionParameter $parameter
-     *
-     * @return Boolean
-     */
-    public function supports(\ReflectionClass $class)
-    {
-        // Doctrine Entity?
-        try {
-            $this->manager->getClassMetadata($class->getName());
-
-            return true;
-        } catch (MappingException $e) {
-            return false;
-        }
     }
 }

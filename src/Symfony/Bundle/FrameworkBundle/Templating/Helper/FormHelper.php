@@ -47,30 +47,6 @@ class FormHelper extends Helper
         return implode('', array_map(array($this, 'attributesCallback'), array_keys($attributes), array_values($attributes)));
     }
 
-    private function attribute($name, $value)
-    {
-        return sprintf('%s="%s"', $name, true === $value ? $name : $value);
-    }
-
-    /**
-     * Prepares an attribute key and value for HTML representation.
-     *
-     * It removes empty attributes, except for the value one.
-     *
-     * @param  string $name   The attribute name
-     * @param  string $value  The attribute value
-     *
-     * @return string The HTML representation of the HTML key attribute pair.
-     */
-    private function attributesCallback($name, $value)
-    {
-        if (false === $value || null === $value || ('' === $value && 'value' != $name)) {
-            return '';
-        } else {
-            return ' '.$this->attribute($name, $value);
-        }
-    }
-
     /**
      * Renders the form tag.
      *
@@ -192,5 +168,29 @@ class FormHelper extends Helper
         self::$cache[$fqClassName] = $template;
 
         return $template;
+    }
+
+    private function attribute($name, $value)
+    {
+        return sprintf('%s="%s"', $name, true === $value ? $name : $value);
+    }
+
+    /**
+     * Prepares an attribute key and value for HTML representation.
+     *
+     * It removes empty attributes, except for the value one.
+     *
+     * @param  string $name   The attribute name
+     * @param  string $value  The attribute value
+     *
+     * @return string The HTML representation of the HTML key attribute pair.
+     */
+    private function attributesCallback($name, $value)
+    {
+        if (false === $value || null === $value || ('' === $value && 'value' != $name)) {
+            return '';
+        } else {
+            return ' '.$this->attribute($name, $value);
+        }
     }
 }

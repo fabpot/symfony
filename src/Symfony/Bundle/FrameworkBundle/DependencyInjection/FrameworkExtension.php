@@ -37,6 +37,26 @@ class FrameworkExtension extends Extension
     }
 
     /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/symfony';
+    }
+
+    public function getAlias()
+    {
+        return 'app';
+    }
+
+    /**
      * Loads the web configuration.
      *
      * @param array            $config    An array of configuration settings
@@ -615,25 +635,5 @@ class FrameworkExtension extends Extension
         } elseif ($container->hasDefinition('validator')) {
             $container->getDefinition('validator')->clearTags();
         }
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/symfony';
-    }
-
-    public function getAlias()
-    {
-        return 'app';
     }
 }

@@ -24,24 +24,6 @@ class DoctrineConverterTest extends TestCase
      */
     protected $em;
 
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->em = $this->createTestEntityManager();
-
-        $schemaTool = new SchemaTool($this->em);
-        $classes = array($this->em->getClassMetadata(__NAMESPACE__.'\Article'));
-        try {
-            $schemaTool->dropSchema($classes);
-        } catch(\Exception $e) {
-        }
-
-        try {
-            $schemaTool->createSchema($classes);
-        } catch(\Exception $e) {
-        }
-    }
-
     public function testSupports()
     {
         $converter = new DoctrineConverter($this->em);
@@ -134,6 +116,23 @@ class DoctrineConverterTest extends TestCase
         $converter->apply($request, $reflectionParam);
     }
 
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->em = $this->createTestEntityManager();
+
+        $schemaTool = new SchemaTool($this->em);
+        $classes = array($this->em->getClassMetadata(__NAMESPACE__.'\Article'));
+        try {
+            $schemaTool->dropSchema($classes);
+        } catch(\Exception $e) {
+        }
+
+        try {
+            $schemaTool->createSchema($classes);
+        } catch(\Exception $e) {
+        }
+    }
 
     protected function createArticleFixtures()
     {

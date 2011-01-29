@@ -22,24 +22,6 @@ class CollectionToChoiceTransformerTest extends \Symfony\Bundle\DoctrineBundle\T
      */
     private $em;
 
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->em = $this->createTestEntityManager();
-
-        $schemaTool = new SchemaTool($this->em);
-        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
-        try {
-            $schemaTool->dropSchema($classes);
-        } catch(\Exception $e) {
-
-        }
-        try {
-            $schemaTool->createSchema($classes);
-        } catch(\Exception $e) {
-        }
-    }
-
     public function testCreateWithoutEntityManagerThrowsException()
     {
         $this->setExpectedException('Symfony\Component\Form\Exception\MissingOptionsException');
@@ -137,5 +119,23 @@ class CollectionToChoiceTransformerTest extends \Symfony\Bundle\DoctrineBundle\T
         $newCol = $transformer->reverseTransform(array(1), $tags);
         $this->assertEquals(1, count($newCol));
         $this->assertFalse($newCol->contains($this->em->find('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag', 2)));
+    }
+
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->em = $this->createTestEntityManager();
+
+        $schemaTool = new SchemaTool($this->em);
+        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
+        try {
+            $schemaTool->dropSchema($classes);
+        } catch(\Exception $e) {
+
+        }
+        try {
+            $schemaTool->createSchema($classes);
+        } catch(\Exception $e) {
+        }
     }
 }

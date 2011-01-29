@@ -50,6 +50,26 @@ class SecurityExtension extends Extension
     }
 
     /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/security';
+    }
+
+    public function getAlias()
+    {
+        return 'security';
+    }
+
+    /**
      * Loads the web configuration.
      *
      * @param array            $config    An array of configuration settings
@@ -685,25 +705,5 @@ class SecurityExtension extends Extension
             $container->remove('security.acl.cache.doctrine');
             $container->removeAlias('security.acl.cache.doctrine.cache_impl');
         }
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/security';
-    }
-
-    public function getAlias()
-    {
-        return 'security';
     }
 }

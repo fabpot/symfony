@@ -16,8 +16,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 abstract class SecurityExtensionTest extends \PHPUnit_Framework_TestCase
 {
-    abstract protected function loadFromFile(ContainerBuilder $container, $file);
-
     public function testRolesHierarchy()
     {
         $container = $this->getContainer('hierarchy');
@@ -122,4 +120,6 @@ abstract class SecurityExtensionTest extends \PHPUnit_Framework_TestCase
 
         return $container;
     }
+
+    abstract protected function loadFromFile(ContainerBuilder $container, $file);
 }

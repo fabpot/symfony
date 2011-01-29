@@ -19,21 +19,6 @@ class MustacheTest extends TestCase
 {
     protected $dir;
 
-    protected function setUp()
-    {
-        $dir = __DIR__.'/fixtures/';
-
-        $this->dir = sys_get_temp_dir().'/mustache';
-        $filesystem = new Filesystem();
-        $filesystem->mirror($dir, $this->dir);
-    }
-
-    protected function tearDown()
-    {
-        $filesystem = new Filesystem();
-        $filesystem->remove($this->dir);
-    }
-
     public function testRenderString()
     {
         $template = 'Hi {{ you }}, my name is {{ me }}!';
@@ -55,5 +40,20 @@ class MustacheTest extends TestCase
 
         $this->assertEquals('Hello Fabien', file_get_contents($this->dir.'/template.txt'), '::renderDir() renders a directory');
         $this->assertEquals('Hello Fabien', file_get_contents($this->dir.'/foo/bar.txt'), '::renderDir() renders a directory');
+    }
+
+    protected function setUp()
+    {
+        $dir = __DIR__.'/fixtures/';
+
+        $this->dir = sys_get_temp_dir().'/mustache';
+        $filesystem = new Filesystem();
+        $filesystem->mirror($dir, $this->dir);
+    }
+
+    protected function tearDown()
+    {
+        $filesystem = new Filesystem();
+        $filesystem->remove($this->dir);
     }
 }

@@ -36,20 +36,6 @@ use Doctrine\Common\Collections\Collection;
  */
 class CollectionToStringTransformer extends BaseValueTransformer
 {
-    protected function configure()
-    {
-        $this->addOption('trim', true);
-        $this->addOption('separator', ',');
-        $this->addOption('explode_callback', 'explode');
-        $this->addOption('implode_callback', 'implode');
-        $this->addOption('create_instance_callback', null);
-        $this->addRequiredOption('em');
-        $this->addRequiredOption('class_name');
-        $this->addRequiredOption('field_name');
-
-        parent::configure();
-    }
-
     /**
      * @param string     $value
      * @param Collection $collection
@@ -153,5 +139,19 @@ class CollectionToStringTransformer extends BaseValueTransformer
         $callback = $this->getOption('implode_callback');
 
         return call_user_func($callback, $this->getOption('separator'), $values);
+    }
+
+    protected function configure()
+    {
+        $this->addOption('trim', true);
+        $this->addOption('separator', ',');
+        $this->addOption('explode_callback', 'explode');
+        $this->addOption('implode_callback', 'implode');
+        $this->addOption('create_instance_callback', null);
+        $this->addRequiredOption('em');
+        $this->addRequiredOption('class_name');
+        $this->addRequiredOption('field_name');
+
+        parent::configure();
     }
 }

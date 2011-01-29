@@ -21,14 +21,6 @@ use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
  */
 class CollectionToChoiceTransformer extends BaseValueTransformer
 {
-    protected function configure()
-    {
-        $this->addRequiredOption('em');
-        $this->addRequiredOption('className');
-
-        parent::configure();
-    }
-
     /**
      * @param array $ids
      * @param Collection $collection
@@ -84,5 +76,13 @@ class CollectionToChoiceTransformer extends BaseValueTransformer
         }
 
         return $ids;
+    }
+
+    protected function configure()
+    {
+        $this->addRequiredOption('em');
+        $this->addRequiredOption('className');
+
+        parent::configure();
     }
 }

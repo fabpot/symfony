@@ -23,14 +23,6 @@ use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
  */
 class EntityToIDTransformer extends BaseValueTransformer
 {
-    protected function configure()
-    {
-        $this->addRequiredOption('em');
-        $this->addRequiredOption('className');
-
-        parent::configure();
-    }
-
     /**
      * Reverse Transforming the selected id value to an Doctrine Entity.
      *
@@ -60,5 +52,13 @@ class EntityToIDTransformer extends BaseValueTransformer
         }
 
         return current( $this->getOption('em')->getUnitOfWork()->getEntityIdentifier($entity) );
+    }
+
+    protected function configure()
+    {
+        $this->addRequiredOption('em');
+        $this->addRequiredOption('className');
+
+        parent::configure();
     }
 }

@@ -37,6 +37,36 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     }
 
     /**
+     * Returns the namespace to be used for this extension (XML namespace).
+     *
+     * @return string The XML namespace
+     */
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/doctrine/odm/mongodb';
+    }
+
+    /**
+     * @return string
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    /**
+     * Returns the recommended alias to use in XML.
+     *
+     * This alias is also the mandatory prefix to use when using YAML.
+     *
+     * @return string The alias
+     */
+    public function getAlias()
+    {
+        return 'doctrine_odm';
+    }
+
+    /**
      * Loads the MongoDB ODM configuration.
      *
      * Usage example:
@@ -369,35 +399,5 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     protected function getMappingResourceConfigDirectory()
     {
         return 'Resources/config/doctrine/metadata/mongodb';
-    }
-
-    /**
-     * Returns the namespace to be used for this extension (XML namespace).
-     *
-     * @return string The XML namespace
-     */
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/doctrine/odm/mongodb';
-    }
-
-    /**
-     * @return string
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    /**
-     * Returns the recommended alias to use in XML.
-     *
-     * This alias is also the mandatory prefix to use when using YAML.
-     *
-     * @return string The alias
-     */
-    public function getAlias()
-    {
-        return 'doctrine_odm';
     }
 }

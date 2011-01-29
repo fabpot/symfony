@@ -47,6 +47,26 @@ class TwigExtension extends Extension
     }
 
     /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/twig';
+    }
+
+    public function getAlias()
+    {
+        return 'twig';
+    }
+
+    /**
      * Loads the Twig configuration.
      *
      * @param array            $config    An array of configuration settings
@@ -117,25 +137,5 @@ class TwigExtension extends Extension
         }
 
         $container->setParameter('twig.options', array_replace($container->getParameter('twig.options'), $config));
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/twig';
-    }
-
-    public function getAlias()
-    {
-        return 'twig';
     }
 }

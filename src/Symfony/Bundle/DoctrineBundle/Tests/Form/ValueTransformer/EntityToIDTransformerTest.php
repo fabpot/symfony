@@ -22,25 +22,6 @@ class EntityToIDTransformerTest extends \Symfony\Bundle\DoctrineBundle\Tests\Tes
      */
     private $em;
 
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->em = $this->createTestEntityManager();
-
-        $schemaTool = new SchemaTool($this->em);
-        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
-        try {
-            $schemaTool->dropSchema($classes);
-        } catch(\Exception $e) {
-
-        }
-        try {
-            $schemaTool->createSchema($classes);
-        } catch(\Exception $e) {
-            
-        }
-    }
-
     public function testRequiredEntityManager()
     {
         $this->setExpectedException('Symfony\Component\Form\Exception\MissingOptionsException');
@@ -96,5 +77,24 @@ class EntityToIDTransformerTest extends \Symfony\Bundle\DoctrineBundle\Tests\Tes
         $this->em->flush();
 
         $this->assertSame($tag, $transformer->reverseTransform(1, null));
+    }
+
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->em = $this->createTestEntityManager();
+
+        $schemaTool = new SchemaTool($this->em);
+        $classes = array($this->em->getClassMetadata('Symfony\Bundle\DoctrineBundle\Tests\Form\ValueTransformer\Tag'));
+        try {
+            $schemaTool->dropSchema($classes);
+        } catch(\Exception $e) {
+
+        }
+        try {
+            $schemaTool->createSchema($classes);
+        } catch(\Exception $e) {
+            
+        }
     }
 }

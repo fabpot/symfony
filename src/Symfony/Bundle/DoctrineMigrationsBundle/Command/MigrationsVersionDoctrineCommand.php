@@ -24,6 +24,13 @@ use Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand;
  */
 class MigrationsVersionDoctrineCommand extends VersionCommand
 {
+    public function execute(InputInterface $input, OutputInterface $output)
+    {
+        DoctrineCommand::setApplicationEntityManager($this->application, $input->getOption('em'));
+
+        parent::execute($input, $output);
+    }
+
     protected function configure()
     {
         parent::configure();
@@ -33,12 +40,5 @@ class MigrationsVersionDoctrineCommand extends VersionCommand
             ->addOption('bundle', null, InputOption::VALUE_REQUIRED, 'The bundle to load migrations configuration from.')
             ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command.')
         ;
-    }
-
-    public function execute(InputInterface $input, OutputInterface $output)
-    {
-        DoctrineCommand::setApplicationEntityManager($this->application, $input->getOption('em'));
-
-        parent::execute($input, $output);
     }
 }

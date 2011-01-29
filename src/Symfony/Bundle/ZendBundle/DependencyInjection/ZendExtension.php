@@ -48,6 +48,26 @@ class ZendExtension extends Extension
     }
 
     /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/zend';
+    }
+
+    public function getAlias()
+    {
+        return 'zend';
+    }
+
+    /**
      * Loads the logger configuration.
      *
      * Usage example:
@@ -77,25 +97,5 @@ class ZendExtension extends Extension
                 $container->findDefinition('zend.logger')->addMethodCall('registerErrorHandler');
             }
         }
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/zend';
-    }
-
-    public function getAlias()
-    {
-        return 'zend';
     }
 }

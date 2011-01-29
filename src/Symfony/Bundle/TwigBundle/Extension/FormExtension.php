@@ -223,6 +223,16 @@ class FormExtension extends \Twig_Extension
     }
 
     /**
+     * Returns the name of the extension.
+     *
+     * @return string The extension name
+     */
+    public function getName()
+    {
+        return 'form';
+    }
+
+    /**
      * @param FieldInterface $field The field to get the widget for
      * @param array $resources An array of template resources
      * @return array
@@ -287,15 +297,5 @@ class FormExtension extends \Twig_Extension
         }
 
         return $blocks;
-    }
-
-    /**
-     * Returns the name of the extension.
-     *
-     * @return string The extension name
-     */
-    public function getName()
-    {
-        return 'form';
     }
 }

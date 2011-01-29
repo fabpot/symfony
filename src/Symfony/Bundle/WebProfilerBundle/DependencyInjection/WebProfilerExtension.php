@@ -40,6 +40,26 @@ class WebProfilerExtension extends Extension
     }
 
     /**
+     * Returns the base path for the XSD files.
+     *
+     * @return string The XSD base path
+     */
+    public function getXsdValidationBasePath()
+    {
+        return __DIR__.'/../Resources/config/schema';
+    }
+
+    public function getNamespace()
+    {
+        return 'http://www.symfony-project.org/schema/dic/webprofiler';
+    }
+
+    public function getAlias()
+    {
+        return 'webprofiler';
+    }
+
+    /**
      * Loads the web profiler configuration.
      *
      * @param array            $config    An array of configuration settings
@@ -65,25 +85,5 @@ class WebProfilerExtension extends Extension
                 $container->setParameter('debug.toolbar.intercept_redirects', (Boolean) $config[$key]);
             }
         }
-    }
-
-    /**
-     * Returns the base path for the XSD files.
-     *
-     * @return string The XSD base path
-     */
-    public function getXsdValidationBasePath()
-    {
-        return __DIR__.'/../Resources/config/schema';
-    }
-
-    public function getNamespace()
-    {
-        return 'http://www.symfony-project.org/schema/dic/webprofiler';
-    }
-
-    public function getAlias()
-    {
-        return 'webprofiler';
     }
 }
