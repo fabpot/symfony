@@ -12,6 +12,7 @@
 namespace Symfony\Tests\Component\HttpKernel;
 
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\DependencyInjection\Loader\LoaderInterface;
 
 class KernelTest extends \PHPUnit_Framework_TestCase
@@ -249,7 +250,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
     protected function getBundle($dir = null, $parent = null, $className = null, $bundleName = null)
     {
         $bundle = $this
-            ->getMockBuilder('Symfony\Tests\Component\HttpKernel\KernelForTest')
+            ->getMockBuilder('Symfony\Tests\Component\HttpKernel\BundleForTest')
             ->setMethods(array('getPath', 'getParent', 'getName'))
             ->disableOriginalConstructor()
         ;
@@ -258,7 +259,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
             $bundle->setMockClassName($className);
         }
 
-        $bundle = $bundle->getMock();
+        $bundle = $bundle->getMockForAbstractClass();
 
         $bundle
             ->expects($this->any())
@@ -328,4 +329,9 @@ class KernelForTest extends Kernel
     {
         parent::initializeBundles();
     }
+}
+
+abstract class BundleForTest implements BundleInterface
+{
+    // We can not extend Symfony\Component\HttpKernel\Bundle\Bundle as we want to mock getName() which is final
 }
