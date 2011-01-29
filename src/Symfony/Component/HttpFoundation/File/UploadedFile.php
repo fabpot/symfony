@@ -125,6 +125,22 @@ class UploadedFile extends File
     /**
      * @inheritDoc
      */
+    public function move($directory, $name = null)
+    {
+        if (!$this->moved) {
+            $this->doMove($directory, $this->originalName);
+
+            if (null !== $name) {
+                $this->rename($name);
+            }
+        } else {
+            parent::move($directory, $name);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function doMove($directory, $filename)
     {
         if (!$this->moved) {
@@ -138,22 +154,6 @@ class UploadedFile extends File
             $this->path = realpath($newPath);
         } else {
             parent::doMove($directory, $filename);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function move($directory, $name = null)
-    {
-        if (!$this->moved) {
-            $this->doMove($directory, $this->originalName);
-
-            if (null !== $name) {
-                $this->rename($name);
-            }
-        } else {
-            parent::move($directory, $name);
         }
     }
 }

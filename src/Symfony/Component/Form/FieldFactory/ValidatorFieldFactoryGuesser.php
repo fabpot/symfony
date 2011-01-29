@@ -68,35 +68,6 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
     }
 
     /**
-     * Iterates over the constraints of a property, executes a constraints on
-     * them and returns the best guess
-     *
-     * @param object $object      The object to read the constraints from
-     * @param string $property    The property for which to find constraints
-     * @param \Closure $guessForConstraint   The closure that returns a guess
-     *                            for a given constraint
-     * @return FieldFactoryGuess  The guessed value with the highest confidence
-     */
-    protected function guess($object, $property, \Closure $guessForConstraint)
-    {
-        $guesses = array();
-        $classMetadata = $this->metadataFactory->getClassMetadata(get_class($object));
-        $memberMetadatas = $classMetadata->getMemberMetadatas($property);
-
-        foreach ($memberMetadatas as $memberMetadata) {
-            $constraints = $memberMetadata->getConstraints();
-
-            foreach ($constraints as $constraint) {
-                if ($guess = $guessForConstraint($constraint)) {
-                    $guesses[] = $guess;
-                }
-            }
-        }
-
-        return FieldFactoryGuess::getBestGuess($guesses);
-    }
-
-    /**
      * Guesses a field class name for a given constraint
      *
      * @param  Constraint $constraint  The constraint to guess for
@@ -303,5 +274,34 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
         }
+    }
+
+    /**
+     * Iterates over the constraints of a property, executes a constraints on
+     * them and returns the best guess
+     *
+     * @param object $object      The object to read the constraints from
+     * @param string $property    The property for which to find constraints
+     * @param \Closure $guessForConstraint   The closure that returns a guess
+     *                            for a given constraint
+     * @return FieldFactoryGuess  The guessed value with the highest confidence
+     */
+    protected function guess($object, $property, \Closure $guessForConstraint)
+    {
+        $guesses = array();
+        $classMetadata = $this->metadataFactory->getClassMetadata(get_class($object));
+        $memberMetadatas = $classMetadata->getMemberMetadatas($property);
+
+        foreach ($memberMetadatas as $memberMetadata) {
+            $constraints = $memberMetadata->getConstraints();
+
+            foreach ($constraints as $constraint) {
+                if ($guess = $guessForConstraint($constraint)) {
+                    $guesses[] = $guess;
+                }
+            }
+        }
+
+        return FieldFactoryGuess::getBestGuess($guesses);
     }
 }

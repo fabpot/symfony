@@ -29,27 +29,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
 {
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('date_format', self::MEDIUM);
-        $this->addOption('time_format', self::SHORT);
-        $this->addOption('input_timezone', 'UTC');
-        $this->addOption('output_timezone', 'UTC');
-
-        if (!in_array($this->getOption('date_format'), self::$formats, true)) {
-            throw new \InvalidArgumentException(sprintf('The option "date_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
-        }
-
-        if (!in_array($this->getOption('time_format'), self::$formats, true)) {
-            throw new \InvalidArgumentException(sprintf('The option "time_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
-        }
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a normalized date into a localized date string/array.
      *
      * @param  DateTime $dateTime  Normalized date.
@@ -113,6 +92,27 @@ class DateTimeToLocalizedStringTransformer extends BaseDateTimeTransformer
         }
 
         return $dateTime;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('date_format', self::MEDIUM);
+        $this->addOption('time_format', self::SHORT);
+        $this->addOption('input_timezone', 'UTC');
+        $this->addOption('output_timezone', 'UTC');
+
+        if (!in_array($this->getOption('date_format'), self::$formats, true)) {
+            throw new \InvalidArgumentException(sprintf('The option "date_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
+        }
+
+        if (!in_array($this->getOption('time_format'), self::$formats, true)) {
+            throw new \InvalidArgumentException(sprintf('The option "time_format" is expected to be one of "%s". Is "%s"', implode('", "', self::$formats), $this->getOption('time_format')));
+        }
+
+        parent::configure();
     }
 
     /**

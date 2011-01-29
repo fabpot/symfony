@@ -62,6 +62,47 @@ class ArgvInput extends Input
     }
 
     /**
+     * Returns the first argument from the raw parameters (not parsed).
+     *
+     * @return string The value of the first argument or null otherwise
+     */
+    public function getFirstArgument()
+    {
+        foreach ($this->tokens as $token) {
+            if ($token && '-' === $token[0]) {
+                continue;
+            }
+
+            return $token;
+        }
+    }
+
+    /**
+     * Returns true if the raw parameters (not parsed) contains a value.
+     *
+     * This method is to be used to introspect the input parameters
+     * before it has been validated. It must be used carefully.
+     *
+     * @param string|array $values The value(s) to look for in the raw parameters (can be an array)
+     *
+     * @return Boolean true if the value is contained in the raw parameters
+     */
+    public function hasParameterOption($values)
+    {
+        if (!is_array($values)) {
+            $values = array($values);
+        }
+
+        foreach ($this->tokens as $v) {
+            if (in_array($v, $values)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Processes command line arguments.
      */
     protected function parse()
@@ -210,46 +251,5 @@ class ArgvInput extends Input
         }
 
         $this->options[$name] = $value;
-    }
-
-    /**
-     * Returns the first argument from the raw parameters (not parsed).
-     *
-     * @return string The value of the first argument or null otherwise
-     */
-    public function getFirstArgument()
-    {
-        foreach ($this->tokens as $token) {
-            if ($token && '-' === $token[0]) {
-                continue;
-            }
-
-            return $token;
-        }
-    }
-
-    /**
-     * Returns true if the raw parameters (not parsed) contains a value.
-     *
-     * This method is to be used to introspect the input parameters
-     * before it has been validated. It must be used carefully.
-     *
-     * @param string|array $values The value(s) to look for in the raw parameters (can be an array)
-     *
-     * @return Boolean true if the value is contained in the raw parameters
-     */
-    public function hasParameterOption($values)
-    {
-        if (!is_array($values)) {
-            $values = array($values);
-        }
-
-        foreach ($this->tokens as $v) {
-            if (in_array($v, $values)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

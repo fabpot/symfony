@@ -40,6 +40,58 @@ class FileField extends FieldGroup
     protected $uploadComplete = true;
 
     /**
+     * Returns the original name of the uploaded file
+     *
+     * @return string
+     */
+    public function getOriginalName()
+    {
+        $data = $this->getNormalizedData();
+
+        return $data['original_name'];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isMultipart()
+    {
+        return true;
+    }
+
+    /**
+     * Returns true if the size of the uploaded file exceeds the
+     * upload_max_filesize directive in php.ini
+     *
+     * @return Boolean
+     */
+    public function isIniSizeExceeded()
+    {
+        return $this->iniSizeExceeded;
+    }
+
+    /**
+     * Returns true if the size of the uploaded file exceeds the
+     * MAX_FILE_SIZE directive specified in the HTML form
+     *
+     * @return Boolean
+     */
+    public function isFormSizeExceeded()
+    {
+        return $this->formSizeExceeded;
+    }
+
+    /**
+     * Returns true if the file was completely uploaded
+     *
+     * @return Boolean
+     */
+    public function isUploadComplete()
+    {
+        return $this->uploadComplete;
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected function configure()
@@ -151,57 +203,5 @@ class FileField extends FieldGroup
     protected function getTmpName($token)
     {
         return md5(session_id() . $this->getOption('secret') . $token);
-    }
-
-    /**
-     * Returns the original name of the uploaded file
-     *
-     * @return string
-     */
-    public function getOriginalName()
-    {
-        $data = $this->getNormalizedData();
-
-        return $data['original_name'];
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function isMultipart()
-    {
-        return true;
-    }
-
-    /**
-     * Returns true if the size of the uploaded file exceeds the
-     * upload_max_filesize directive in php.ini
-     *
-     * @return Boolean
-     */
-    public function isIniSizeExceeded()
-    {
-        return $this->iniSizeExceeded;
-    }
-
-    /**
-     * Returns true if the size of the uploaded file exceeds the
-     * MAX_FILE_SIZE directive specified in the HTML form
-     *
-     * @return Boolean
-     */
-    public function isFormSizeExceeded()
-    {
-        return $this->formSizeExceeded;
-    }
-
-    /**
-     * Returns true if the file was completely uploaded
-     *
-     * @return Boolean
-     */
-    public function isUploadComplete()
-    {
-        return $this->uploadComplete;
     }
 }

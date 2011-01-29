@@ -113,16 +113,6 @@ class Field extends Configurable implements FieldInterface
     }
 
     /**
-     * Returns the data transformed by the value transformer
-     *
-     * @return string
-     */
-    protected function getTransformedData()
-    {
-        return $this->transformedData;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function setPropertyPath($propertyPath)
@@ -291,22 +281,6 @@ class Field extends Configurable implements FieldInterface
     }
 
     /**
-     * Processes the bound reverse-transformed data.
-     *
-     * This method can be overridden if you want to modify the data entered
-     * by the user. Note that the data is already in reverse transformed format.
-     *
-     * This method will not be called if reverse transformation fails.
-     *
-     * @param  mixed $data
-     * @return mixed
-     */
-    protected function processData($data)
-    {
-        return $data;
-    }
-
-    /**
      * Returns the data in the format needed for the underlying object.
      *
      * @return mixed
@@ -314,18 +288,6 @@ class Field extends Configurable implements FieldInterface
     public function getData()
     {
         return $this->data;
-    }
-
-    /**
-     * Returns the normalized data of the field.
-     *
-     * @return mixed  When the field is not bound, the default data is returned.
-     *                When the field is bound, the normalized bound data is
-     *                returned if the field is valid, null otherwise.
-     */
-    protected function getNormalizedData()
-    {
-        return $this->normalizedData;
     }
 
     /**
@@ -390,6 +352,58 @@ class Field extends Configurable implements FieldInterface
     public function getErrors()
     {
         return $this->errors;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function updateFromProperty(&$objectOrArray)
+    {
+        // TODO throw exception if not object or array
+
+        if ($this->propertyPath !== null) {
+            $this->setData($this->propertyPath->getValue($objectOrArray));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function updateProperty(&$objectOrArray)
+    {
+        // TODO throw exception if not object or array
+
+        if ($this->propertyPath !== null) {
+            $this->propertyPath->setValue($objectOrArray, $this->getData());
+        }
+    }
+
+    /**
+     * Processes the bound reverse-transformed data.
+     *
+     * This method can be overridden if you want to modify the data entered
+     * by the user. Note that the data is already in reverse transformed format.
+     *
+     * This method will not be called if reverse transformation fails.
+     *
+     * @param  mixed $data
+     * @return mixed
+     */
+    protected function processData($data)
+    {
+        return $data;
+    }
+
+    /**
+     * Returns the normalized data of the field.
+     *
+     * @return mixed  When the field is not bound, the default data is returned.
+     *                When the field is bound, the normalized bound data is
+     *                returned if the field is valid, null otherwise.
+     */
+    protected function getNormalizedData()
+    {
+        return $this->normalizedData;
     }
 
     /**
@@ -507,26 +521,12 @@ class Field extends Configurable implements FieldInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the data transformed by the value transformer
+     *
+     * @return string
      */
-    public function updateFromProperty(&$objectOrArray)
+    protected function getTransformedData()
     {
-        // TODO throw exception if not object or array
-
-        if ($this->propertyPath !== null) {
-            $this->setData($this->propertyPath->getValue($objectOrArray));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function updateProperty(&$objectOrArray)
-    {
-        // TODO throw exception if not object or array
-
-        if ($this->propertyPath !== null) {
-            $this->propertyPath->setValue($objectOrArray, $this->getData());
-        }
+        return $this->transformedData;
     }
 }

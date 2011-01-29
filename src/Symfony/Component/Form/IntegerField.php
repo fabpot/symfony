@@ -38,6 +38,14 @@ class IntegerField extends NumberField
     /**
      * {@inheritDoc}
      */
+    public function getData()
+    {
+        return (int)parent::getData();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
         $this->addOption('precision', 0);
@@ -46,13 +54,5 @@ class IntegerField extends NumberField
         $this->addOption('rounding-mode', NumberToLocalizedStringTransformer::ROUND_DOWN);
 
         parent::configure();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getData()
-    {
-        return (int)parent::getData();
     }
 }

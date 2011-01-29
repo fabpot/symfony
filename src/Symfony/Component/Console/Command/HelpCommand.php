@@ -27,6 +27,11 @@ class HelpCommand extends Command
 {
     protected $command;
 
+    public function setCommand(Command $command)
+    {
+        $this->command = $command;
+    }
+
     /**
      * @see Command
      */
@@ -52,11 +57,6 @@ You can also output the help as XML by using the <comment>--xml</comment> option
   <info>./symfony help --xml list</info>
 EOF
             );
-    }
-
-    public function setCommand(Command $command)
-    {
-        $this->command = $command;
     }
 
     /**

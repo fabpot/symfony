@@ -222,68 +222,6 @@ abstract class Client
     }
 
     /**
-     * Makes a request in another process.
-     *
-     * @param Request $request A Request instance
-     *
-     * @return Response A Response instance
-     *
-     * @throws \RuntimeException When processing returns exit code
-     */
-    protected function doRequestInProcess($request)
-    {
-        $process = new PhpProcess($this->getScript($request));
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new \RuntimeException($process->getErrorOutput());
-        }
-
-        return unserialize($process->getOutput());
-    }
-
-    /**
-     * Makes a request.
-     *
-     * @param Request $request A Request instance
-     *
-     * @return Response A Response instance
-     */
-    abstract protected function doRequest($request);
-
-    /**
-     * Returns the script to execute when the request must be insulated.
-     *
-     * @param Request $request A Request instance
-     *
-     * @throws \LogicException When this abstract class is not implemented
-     */
-    protected function getScript($request)
-    {
-        // @codeCoverageIgnoreStart
-        throw new \LogicException('To insulate requests, you need to override the getScript() method.');
-        // @codeCoverageIgnoreEnd
-    }
-
-    protected function filterRequest(Request $request)
-    {
-        return $request;
-    }
-
-    protected function filterResponse($response)
-    {
-        return $response;
-    }
-
-    protected function createCrawlerFromContent($uri, $content, $type)
-    {
-        $crawler = new Crawler(null, $uri);
-        $crawler->addContent($content, $type);
-
-        return $crawler;
-    }
-
-    /**
      * Goes back in the browser history.
      */
     public function back()
@@ -334,6 +272,59 @@ abstract class Client
         $this->history->clear();
     }
 
+    /**
+     * Makes a request in another process.
+     *
+     * @param Request $request A Request instance
+     *
+     * @return Response A Response instance
+     *
+     * @throws \RuntimeException When processing returns exit code
+     */
+    protected function doRequestInProcess($request)
+    {
+        $process = new PhpProcess($this->getScript($request));
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new \RuntimeException($process->getErrorOutput());
+        }
+
+        return unserialize($process->getOutput());
+    }
+
+    /**
+     * Returns the script to execute when the request must be insulated.
+     *
+     * @param Request $request A Request instance
+     *
+     * @throws \LogicException When this abstract class is not implemented
+     */
+    protected function getScript($request)
+    {
+        // @codeCoverageIgnoreStart
+        throw new \LogicException('To insulate requests, you need to override the getScript() method.');
+        // @codeCoverageIgnoreEnd
+    }
+
+    protected function filterRequest(Request $request)
+    {
+        return $request;
+    }
+
+    protected function filterResponse($response)
+    {
+        return $response;
+    }
+
+    protected function createCrawlerFromContent($uri, $content, $type)
+    {
+        $crawler = new Crawler(null, $uri);
+        $crawler->addContent($content, $type);
+
+        return $crawler;
+    }
+
     protected function getAbsoluteUri($uri)
     {
         // already absolute?
@@ -380,4 +371,13 @@ abstract class Client
     {
         return $this->request($request->getMethod(), $request->getUri(), $request->getParameters(), array(), $request->getFiles(), $request->getServer(), $changeHistory);
     }
+
+    /**
+     * Makes a request.
+     *
+     * @param Request $request A Request instance
+     *
+     * @return Response A Response instance
+     */
+    abstract protected function doRequest($request);
 }

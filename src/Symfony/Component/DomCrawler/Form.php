@@ -269,45 +269,6 @@ class Form implements \ArrayAccess
         return $this->fields;
     }
 
-    protected function initialize()
-    {
-        $this->fields = array();
-
-        $document = new \DOMDocument('1.0', 'UTF-8');
-        $node = $document->importNode($this->node, true);
-        $button = $document->importNode($this->button, true);
-        $root = $document->appendChild($document->createElement('_root'));
-        $root->appendChild($node);
-        $root->appendChild($button);
-        $xpath = new \DOMXPath($document);
-
-        foreach ($xpath->query('descendant::input | descendant::textarea | descendant::select', $root) as $node) {
-            if ($node->hasAttribute('disabled') || !$node->hasAttribute('name')) {
-                continue;
-            }
-
-            $nodeName = $node->nodeName;
-
-            if ($node === $button) {
-                $this->set(new Field\InputFormField($node));
-            } elseif ('select' == $nodeName || 'input' == $nodeName && 'checkbox' == $node->getAttribute('type')) {
-                $this->set(new Field\ChoiceFormField($node));
-            } elseif ('input' == $nodeName && 'radio' == $node->getAttribute('type')) {
-                if ($this->has($node->getAttribute('name'))) {
-                    $this->get($node->getAttribute('name'))->addChoice($node);
-                } else {
-                    $this->set(new Field\ChoiceFormField($node));
-                }
-            } elseif ('input' == $nodeName && 'file' == $node->getAttribute('type')) {
-                $this->set(new Field\FileFormField($node));
-            } elseif ('input' == $nodeName && !in_array($node->getAttribute('type'), array('submit', 'button', 'image'))) {
-                $this->set(new Field\InputFormField($node));
-            } elseif ('textarea' == $nodeName) {
-                $this->set(new Field\TextareaFormField($node));
-            }
-        }
-    }
-
     /**
      * Returns true if the named field exists.
      *
@@ -363,5 +324,44 @@ class Form implements \ArrayAccess
     public function offsetUnset($name)
     {
         throw new \LogicException('The Form fields cannot be removed.');
+    }
+
+    protected function initialize()
+    {
+        $this->fields = array();
+
+        $document = new \DOMDocument('1.0', 'UTF-8');
+        $node = $document->importNode($this->node, true);
+        $button = $document->importNode($this->button, true);
+        $root = $document->appendChild($document->createElement('_root'));
+        $root->appendChild($node);
+        $root->appendChild($button);
+        $xpath = new \DOMXPath($document);
+
+        foreach ($xpath->query('descendant::input | descendant::textarea | descendant::select', $root) as $node) {
+            if ($node->hasAttribute('disabled') || !$node->hasAttribute('name')) {
+                continue;
+            }
+
+            $nodeName = $node->nodeName;
+
+            if ($node === $button) {
+                $this->set(new Field\InputFormField($node));
+            } elseif ('select' == $nodeName || 'input' == $nodeName && 'checkbox' == $node->getAttribute('type')) {
+                $this->set(new Field\ChoiceFormField($node));
+            } elseif ('input' == $nodeName && 'radio' == $node->getAttribute('type')) {
+                if ($this->has($node->getAttribute('name'))) {
+                    $this->get($node->getAttribute('name'))->addChoice($node);
+                } else {
+                    $this->set(new Field\ChoiceFormField($node));
+                }
+            } elseif ('input' == $nodeName && 'file' == $node->getAttribute('type')) {
+                $this->set(new Field\FileFormField($node));
+            } elseif ('input' == $nodeName && !in_array($node->getAttribute('type'), array('submit', 'button', 'image'))) {
+                $this->set(new Field\InputFormField($node));
+            } elseif ('textarea' == $nodeName) {
+                $this->set(new Field\TextareaFormField($node));
+            }
+        }
     }
 }

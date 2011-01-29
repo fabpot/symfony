@@ -46,6 +46,21 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
     /**
      * {@inheritDoc}
      */
+    public function logout(Request $request, Response $response, TokenInterface $token)
+    {
+        parent::logout($request, $response, $token);
+
+        if (null !== ($cookie = $request->cookies->get($this->options['name']))
+            && count($parts = $this->decodeCookie($cookie)) === 2
+        ) {
+            list($series, $tokenValue) = $parts;
+            $this->tokenProvider->deleteTokenBySeries($series);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function processAutoLoginCookie(array $cookieParts, Request $request)
     {
         if (count($cookieParts) !== 2) {
@@ -112,21 +127,6 @@ class PersistentTokenBasedRememberMeServices extends RememberMeServices
                 $this->options['httponly']
             )
         );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function logout(Request $request, Response $response, TokenInterface $token)
-    {
-        parent::logout($request, $response, $token);
-
-        if (null !== ($cookie = $request->cookies->get($this->options['name']))
-            && count($parts = $this->decodeCookie($cookie)) === 2
-        ) {
-            list($series, $tokenValue) = $parts;
-            $this->tokenProvider->deleteTokenBySeries($series);
-        }
     }
 
     /**

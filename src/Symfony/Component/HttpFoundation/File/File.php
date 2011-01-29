@@ -612,24 +612,6 @@ class File
     }
 
     /**
-     * Moves the file to a new directory and gives it a new filename
-     *
-     * @param  string $directory   The new directory
-     * @param  string $filename    The new file name
-     * @throws FileException       When the file could not be moved
-     */
-    protected function doMove($directory, $filename)
-    {
-        $newPath = $directory . DIRECTORY_SEPARATOR . $filename;
-
-        if (!rename($this->getPath(), $newPath)) {
-            throw new FileException(sprintf('Could not move file %s to %s', $this->getPath(), $newPath));
-        }
-
-        $this->path = realpath($newPath);
-    }
-
-    /**
      * Moves the file to a new location.
      *
      * @param string $directory   The destination folder
@@ -652,5 +634,23 @@ class File
     public function rename($name)
     {
         $this->doMove($this->getDirectory(), $name);
+    }
+
+    /**
+     * Moves the file to a new directory and gives it a new filename
+     *
+     * @param  string $directory   The new directory
+     * @param  string $filename    The new file name
+     * @throws FileException       When the file could not be moved
+     */
+    protected function doMove($directory, $filename)
+    {
+        $newPath = $directory . DIRECTORY_SEPARATOR . $filename;
+
+        if (!rename($this->getPath(), $newPath)) {
+            throw new FileException(sprintf('Could not move file %s to %s', $this->getPath(), $newPath));
+        }
+
+        $this->path = realpath($newPath);
     }
 }

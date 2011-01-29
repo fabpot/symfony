@@ -89,6 +89,68 @@ class DateField extends HybridField
      */
     protected $formatter;
 
+    public function getPattern()
+    {
+        // set order as specified in the pattern
+        if ($this->getOption('pattern')) {
+            return $this->getOption('pattern');
+        }
+
+        // set right order with respect to locale (e.g.: de_DE=dd.MM.yy; en_US=M/d/yy)
+        // lookup various formats at http://userguide.icu-project.org/formatparse/datetime
+        if (preg_match('/^([yMd]+).+([yMd]+).+([yMd]+)$/', $this->formatter->getPattern())) {
+            return preg_replace(array('/y+/', '/M+/', '/d+/'), array('{{ year }}', '{{ month }}', '{{ day }}'), $this->formatter->getPattern());
+        }
+
+        // default fallback
+        return '{{ year }}-{{ month }}-{{ day }}';
+    }
+
+    /**
+     * Returns whether the year of the field's data is valid
+     *
+     * The year is valid if it is contained in the list passed to the field's
+     * option "years".
+     *
+     * @return Boolean
+     */
+    public function isYearWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('Y'), $this->getOption('years'));
+    }
+
+    /**
+     * Returns whether the month of the field's data is valid
+     *
+     * The month is valid if it is contained in the list passed to the field's
+     * option "months".
+     *
+     * @return Boolean
+     */
+    public function isMonthWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('m'), $this->getOption('months'));
+    }
+
+    /**
+     * Returns whether the day of the field's data is valid
+     *
+     * The day is valid if it is contained in the list passed to the field's
+     * option "days".
+     *
+     * @return Boolean
+     */
+    public function isDayWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('d'), $this->getOption('days'));
+    }
+
     protected function configure()
     {
         $this->addOption('widget', self::CHOICE, self::$widgets);
@@ -204,23 +266,6 @@ class DateField extends HybridField
         return $choices;
     }
 
-    public function getPattern()
-    {
-        // set order as specified in the pattern
-        if ($this->getOption('pattern')) {
-            return $this->getOption('pattern');
-        }
-
-        // set right order with respect to locale (e.g.: de_DE=dd.MM.yy; en_US=M/d/yy)
-        // lookup various formats at http://userguide.icu-project.org/formatparse/datetime
-        if (preg_match('/^([yMd]+).+([yMd]+).+([yMd]+)$/', $this->formatter->getPattern())) {
-            return preg_replace(array('/y+/', '/M+/', '/d+/'), array('{{ year }}', '{{ month }}', '{{ day }}'), $this->formatter->getPattern());
-        }
-
-        // default fallback
-        return '{{ year }}-{{ month }}-{{ day }}';
-    }
-
     /**
      * Adds (or replaces if already added) the fields used when widget=CHOICE
      */
@@ -235,50 +280,5 @@ class DateField extends HybridField
         $this->add(new ChoiceField('day', array(
             'choices' => $this->generatePaddedChoices($this->getOption('days'), 2),
         )));
-    }
-
-    /**
-     * Returns whether the year of the field's data is valid
-     *
-     * The year is valid if it is contained in the list passed to the field's
-     * option "years".
-     *
-     * @return Boolean
-     */
-    public function isYearWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('Y'), $this->getOption('years'));
-    }
-
-    /**
-     * Returns whether the month of the field's data is valid
-     *
-     * The month is valid if it is contained in the list passed to the field's
-     * option "months".
-     *
-     * @return Boolean
-     */
-    public function isMonthWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('m'), $this->getOption('months'));
-    }
-
-    /**
-     * Returns whether the day of the field's data is valid
-     *
-     * The day is valid if it is contained in the list passed to the field's
-     * option "days".
-     *
-     * @return Boolean
-     */
-    public function isDayWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('d'), $this->getOption('days'));
     }
 }

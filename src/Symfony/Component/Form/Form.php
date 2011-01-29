@@ -193,17 +193,6 @@ class Form extends FieldGroup
     }
 
     /**
-     * Binds the form with the given data.
-     *
-     * @param  array $taintedData  The data to bind to the form
-     * @return Boolean             Whether the form is valid
-     */
-    protected function doBind(array $taintedData)
-    {
-        parent::bind($taintedData);
-    }
-
-    /**
      * @return true if this form is CSRF protected
      */
     public function isCsrfProtected()
@@ -252,6 +241,17 @@ class Form extends FieldGroup
         } else {
             return false;
         }
+    }
+
+    /**
+     * Binds the form with the given data.
+     *
+     * @param  array $taintedData  The data to bind to the form
+     * @return Boolean             Whether the form is valid
+     */
+    protected function doBind(array $taintedData)
+    {
+        parent::bind($taintedData);
     }
 
     /**

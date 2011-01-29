@@ -30,21 +30,6 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
     );
 
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('type', self::FRACTIONAL);
-        $this->addOption('precision', 0);
-
-        if (!in_array($this->getOption('type'), self::$types, true)) {
-            throw new \InvalidArgumentException(sprintf('The option "type" is expected to be one of "%s"', implode('", "', self::$types)));
-        }
-
-        parent::configure();
-    }
-
-    /**
      * Transforms between a normalized format (integer or float) into a percentage value.
      *
      * @param  number $value  Normalized value.
@@ -104,6 +89,21 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
         }
 
         return $value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('type', self::FRACTIONAL);
+        $this->addOption('precision', 0);
+
+        if (!in_array($this->getOption('type'), self::$types, true)) {
+            throw new \InvalidArgumentException(sprintf('The option "type" is expected to be one of "%s"', implode('", "', self::$types)));
+        }
+
+        parent::configure();
     }
 
     /**

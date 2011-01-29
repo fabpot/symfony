@@ -20,18 +20,6 @@ use Symfony\Component\Form\ValueTransformer\BooleanToStringTransformer;
  */
 abstract class ToggleField extends Field
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('value');
-
-        parent::configure();
-
-        $this->setValueTransformer(new BooleanToStringTransformer());
-    }
-
     public function isChecked()
     {
         return $this->getData();
@@ -45,5 +33,17 @@ abstract class ToggleField extends Field
     public function hasValue()
     {
         return $this->getValue() !== null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('value');
+
+        parent::configure();
+
+        $this->setValueTransformer(new BooleanToStringTransformer());
     }
 }

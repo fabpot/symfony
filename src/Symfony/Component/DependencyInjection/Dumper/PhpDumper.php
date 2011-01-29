@@ -785,7 +785,7 @@ EOF;
         }
     }
 
-    public function dumpParameter($name)
+    protected function dumpParameter($name)
     {
         if ($this->container->isFrozen() && $this->container->hasParameter($name)) {
             return $this->dumpValue($this->container->getParameter($name), false);

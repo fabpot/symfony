@@ -72,57 +72,6 @@ class Command
     }
 
     /**
-     * Configures the current command.
-     */
-    protected function configure()
-    {
-    }
-
-    /**
-     * Executes the current command.
-     *
-     * This method is not abstract because you can use this class
-     * as a concrete class. In this case, instead of defining the
-     * execute() method, you set the code to execute by passing
-     * a Closure to the setCode() method.
-     *
-     * @param InputInterface  $input  An InputInterface instance
-     * @param OutputInterface $output An OutputInterface instance
-     *
-     * @return integer 0 if everything went fine, or an error code
-     *
-     * @throws \LogicException When this abstract class is not implemented
-     * @see    setCode()
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        throw new \LogicException('You must override the execute() method in the concrete command class.');
-    }
-
-    /**
-     * Interacts with the user.
-     *
-     * @param InputInterface  $input  An InputInterface instance
-     * @param OutputInterface $output An OutputInterface instance
-     */
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-    }
-
-    /**
-     * Initializes the command just after the input has been validated.
-     *
-     * This is mainly useful when a lot of commands extends one main command
-     * where some things need to be initialized based on the input arguments and options.
-     *
-     * @param InputInterface  $input  An InputInterface instance
-     * @param OutputInterface $output An OutputInterface instance
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-    }
-
-    /**
      * Runs the command.
      *
      * The code to execute is either defined directly with the
@@ -181,25 +130,6 @@ class Command
         $this->code = $code;
 
         return $this;
-    }
-
-    /**
-     * Merges the application definition with the command definition.
-     */
-    protected function mergeApplicationDefinition()
-    {
-        if (null === $this->application || true === $this->applicationDefinitionMerged) {
-            return;
-        }
-
-        $this->definition->setArguments(array_merge(
-            $this->application->getDefinition()->getArguments(),
-            $this->definition->getArguments()
-        ));
-
-        $this->definition->addOptions($this->application->getDefinition()->getOptions());
-
-        $this->applicationDefinitionMerged = true;
     }
 
     /**
@@ -443,20 +373,6 @@ class Command
      *
      * @throws \InvalidArgumentException if the helper is not defined
      */
-    protected function getHelper($name)
-    {
-        return $this->application->getHelperSet()->get($name);
-    }
-
-    /**
-     * Gets a helper instance by name.
-     *
-     * @param string $name The helper name
-     *
-     * @return mixed The helper value
-     *
-     * @throws \InvalidArgumentException if the helper is not defined
-     */
     public function __get($name)
     {
         return $this->application->getHelperSet()->get($name);
@@ -526,5 +442,89 @@ class Command
         $commandXML->appendChild($dom->importNode($definition->getElementsByTagName('options')->item(0), true));
 
         return $asDom ? $dom : $dom->saveXml();
+    }
+
+    /**
+     * Configures the current command.
+     */
+    protected function configure()
+    {
+    }
+
+    /**
+     * Executes the current command.
+     *
+     * This method is not abstract because you can use this class
+     * as a concrete class. In this case, instead of defining the
+     * execute() method, you set the code to execute by passing
+     * a Closure to the setCode() method.
+     *
+     * @param InputInterface  $input  An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
+     *
+     * @return integer 0 if everything went fine, or an error code
+     *
+     * @throws \LogicException When this abstract class is not implemented
+     * @see    setCode()
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        throw new \LogicException('You must override the execute() method in the concrete command class.');
+    }
+
+    /**
+     * Interacts with the user.
+     *
+     * @param InputInterface  $input  An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
+     */
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+    }
+
+    /**
+     * Initializes the command just after the input has been validated.
+     *
+     * This is mainly useful when a lot of commands extends one main command
+     * where some things need to be initialized based on the input arguments and options.
+     *
+     * @param InputInterface  $input  An InputInterface instance
+     * @param OutputInterface $output An OutputInterface instance
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+    }
+
+    /**
+     * Merges the application definition with the command definition.
+     */
+    protected function mergeApplicationDefinition()
+    {
+        if (null === $this->application || true === $this->applicationDefinitionMerged) {
+            return;
+        }
+
+        $this->definition->setArguments(array_merge(
+            $this->application->getDefinition()->getArguments(),
+            $this->definition->getArguments()
+        ));
+
+        $this->definition->addOptions($this->application->getDefinition()->getOptions());
+
+        $this->applicationDefinitionMerged = true;
+    }
+
+    /**
+     * Gets a helper instance by name.
+     *
+     * @param string $name The helper name
+     *
+     * @return mixed The helper value
+     *
+     * @throws \InvalidArgumentException if the helper is not defined
+     */
+    protected function getHelper($name)
+    {
+        return $this->application->getHelperSet()->get($name);
     }
 }

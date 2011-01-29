@@ -59,11 +59,6 @@ abstract class Input implements InputInterface
     }
 
     /**
-     * Processes command line arguments.
-     */
-    abstract protected function parse();
-
-    /**
      * @throws \RuntimeException When not enough arguments are given
      */
     public function validate()
@@ -196,4 +191,9 @@ abstract class Input implements InputInterface
     {
         return $this->definition->hasOption($name);
     }
+
+    /**
+     * Processes command line arguments.
+     */
+    abstract protected function parse();
 }

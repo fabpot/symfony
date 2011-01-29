@@ -50,6 +50,73 @@ class ChoiceField extends HybridField
      */
     private $choices = array();
 
+    public function getName()
+    {
+        // TESTME
+        $name = parent::getName();
+
+        // Add "[]" to the name in case a select tag with multiple options is
+        // displayed. Otherwise only one of the selected options is sent in the
+        // POST request.
+        if ($this->isMultipleChoice() && !$this->isExpanded()) {
+            $name .= '[]';
+        }
+
+        return $name;
+    }
+
+    public function getPreferredChoices()
+    {
+        return array_intersect_key($this->getChoices(), $this->preferredChoices);
+    }
+
+    public function getOtherChoices()
+    {
+        return array_diff_key($this->getChoices(), $this->preferredChoices);
+    }
+
+    public function getLabel($choice)
+    {
+        $choices = $this->getChoices();
+
+        return isset($choices[$choice]) ? $choices[$choice] : null;
+    }
+
+    public function isChoiceGroup($choice)
+    {
+        return is_array($choice) || $choice instanceof \Traversable;
+    }
+
+    public function isChoiceSelected($choice)
+    {
+        return in_array($choice, (array) $this->getDisplayedData());
+    }
+
+    public function isMultipleChoice()
+    {
+        return $this->getOption('multiple');
+    }
+
+    public function isExpanded()
+    {
+        return $this->getOption('expanded');
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Takes care of converting the input from a single radio button
+     * to an array.
+     */
+    public function bind($value)
+    {
+        if (!$this->isMultipleChoice() && $this->isExpanded()) {
+            $value = null === $value ? array() : array($value => true);
+        }
+
+        parent::bind($value);
+    }
+
     protected function configure()
     {
         $this->addRequiredOption('choices');
@@ -91,21 +158,6 @@ class ChoiceField extends HybridField
         } else {
             $this->setFieldMode(self::FIELD);
         }
-    }
-
-    public function getName()
-    {
-        // TESTME
-        $name = parent::getName();
-
-        // Add "[]" to the name in case a select tag with multiple options is
-        // displayed. Otherwise only one of the selected options is sent in the
-        // POST request.
-        if ($this->isMultipleChoice() && !$this->isExpanded()) {
-            $name .= '[]';
-        }
-
-        return $name;
     }
 
     /**
@@ -157,43 +209,6 @@ class ChoiceField extends HybridField
         return $this->choices;
     }
 
-    public function getPreferredChoices()
-    {
-        return array_intersect_key($this->getChoices(), $this->preferredChoices);
-    }
-
-    public function getOtherChoices()
-    {
-        return array_diff_key($this->getChoices(), $this->preferredChoices);
-    }
-
-    public function getLabel($choice)
-    {
-        $choices = $this->getChoices();
-
-        return isset($choices[$choice]) ? $choices[$choice] : null;
-    }
-
-    public function isChoiceGroup($choice)
-    {
-        return is_array($choice) || $choice instanceof \Traversable;
-    }
-
-    public function isChoiceSelected($choice)
-    {
-        return in_array($choice, (array) $this->getDisplayedData());
-    }
-
-    public function isMultipleChoice()
-    {
-        return $this->getOption('multiple');
-    }
-
-    public function isExpanded()
-    {
-        return $this->getOption('expanded');
-    }
-
     /**
      * Returns a new field of type radio button or checkbox.
      *
@@ -211,21 +226,6 @@ class ChoiceField extends HybridField
                 'value' => $choice,
             ));
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Takes care of converting the input from a single radio button
-     * to an array.
-     */
-    public function bind($value)
-    {
-        if (!$this->isMultipleChoice() && $this->isExpanded()) {
-            $value = null === $value ? array() : array($value => true);
-        }
-
-        parent::bind($value);
     }
 
     /**

@@ -29,19 +29,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 class DateTimeToArrayTransformer extends BaseDateTimeTransformer
 {
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('input_timezone', 'UTC');
-        $this->addOption('output_timezone', 'UTC');
-        $this->addOption('pad', false);
-        $this->addOption('fields', array('year', 'month', 'day', 'hour', 'minute', 'second'));
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a normalized date into a localized date string/array.
      *
      * @param  DateTime $dateTime  Normalized date.
@@ -129,5 +116,18 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
         }
 
         return $dateTime;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('input_timezone', 'UTC');
+        $this->addOption('output_timezone', 'UTC');
+        $this->addOption('pad', false);
+        $this->addOption('fields', array('year', 'month', 'day', 'hour', 'minute', 'second'));
+
+        parent::configure();
     }
 }

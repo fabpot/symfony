@@ -22,18 +22,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 class DateTimeToStringTransformer extends BaseValueTransformer
 {
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('input_timezone', 'UTC');
-        $this->addOption('output_timezone', 'UTC');
-        $this->addOption('format', 'Y-m-d H:i:s');
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a DateTime object into a date string with the configured format
      * and timezone
      *
@@ -85,5 +73,17 @@ class DateTimeToStringTransformer extends BaseValueTransformer
         } catch (\Exception $e) {
             throw new \InvalidArgumentException('Expected a valid date string. ' . $e->getMessage(), 0, $e);
         }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('input_timezone', 'UTC');
+        $this->addOption('output_timezone', 'UTC');
+        $this->addOption('format', 'Y-m-d H:i:s');
+
+        parent::configure();
     }
 }

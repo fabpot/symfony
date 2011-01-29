@@ -699,6 +699,15 @@ abstract class Kernel implements KernelInterface
     {
         return $this->rootDir.'/logs';
     }
+    public function serialize()
+    {
+        return serialize(array($this->environment, $this->debug));
+    }
+    public function unserialize($data)
+    {
+        list($environment, $debug) = unserialize($data);
+        $this->__construct($environment, $debug);
+    }
     protected function initializeBundles()
     {
                 $this->bundles = array();
@@ -841,6 +850,15 @@ abstract class Kernel implements KernelInterface
         ));
         return new DelegatingLoader($resolver);
     }
+    protected function writeCacheFile($file, $content)
+    {
+        $tmpFile = tempnam(dirname($file), basename($file));
+        if (false !== @file_put_contents($tmpFile, $content) && @rename($tmpFile, $file)) {
+            chmod($file, 0644);
+            return;
+        }
+        throw new \RuntimeException(sprintf('Failed to write cache file "%s".', $file));
+    }
     static public function stripComments($source)
     {
         if (!function_exists('token_get_all')) {
@@ -856,24 +874,6 @@ abstract class Kernel implements KernelInterface
         }
                 $output = preg_replace(array('/\s+$/Sm', '/\n+/S'), "\n", $output);
         return $output;
-    }
-    protected function writeCacheFile($file, $content)
-    {
-        $tmpFile = tempnam(dirname($file), basename($file));
-        if (false !== @file_put_contents($tmpFile, $content) && @rename($tmpFile, $file)) {
-            chmod($file, 0644);
-            return;
-        }
-        throw new \RuntimeException(sprintf('Failed to write cache file "%s".', $file));
-    }
-    public function serialize()
-    {
-        return serialize(array($this->environment, $this->debug));
-    }
-    public function unserialize($data)
-    {
-        list($environment, $debug) = unserialize($data);
-        $this->__construct($environment, $debug);
     }
 }
 }

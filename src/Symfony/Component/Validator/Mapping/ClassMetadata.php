@@ -192,22 +192,6 @@ class ClassMetadata extends ElementMetadata
     }
 
     /**
-     * Adds a member metadata
-     *
-     * @param MemberMetadata $metadata
-     */
-    protected function addMemberMetadata(MemberMetadata $metadata)
-    {
-        $property = $metadata->getPropertyName();
-
-        if (!isset($this->members[$property])) {
-            $this->members[$property] = array();
-        }
-
-        $this->members[$property][] = $metadata;
-    }
-
-    /**
      * Returns all metadatas of members describing the given property
      *
      * @param string $property The name of the property
@@ -280,5 +264,21 @@ class ClassMetadata extends ElementMetadata
         }
 
         return $this->reflClass;
+    }
+
+    /**
+     * Adds a member metadata
+     *
+     * @param MemberMetadata $metadata
+     */
+    protected function addMemberMetadata(MemberMetadata $metadata)
+    {
+        $property = $metadata->getPropertyName();
+
+        if (!isset($this->members[$property])) {
+            $this->members[$property] = array();
+        }
+
+        $this->members[$property][] = $metadata;
     }
 }

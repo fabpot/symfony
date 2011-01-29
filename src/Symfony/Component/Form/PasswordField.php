@@ -26,20 +26,20 @@ class PasswordField extends TextField
     /**
      * {@inheritDoc}
      */
-    protected function configure()
-    {
-        $this->addOption('always_empty', true);
-
-        parent::configure();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getDisplayedData()
     {
         return $this->getOption('always_empty') || !$this->isBound()
                 ? ''
                 : parent::getDisplayedData();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('always_empty', true);
+
+        parent::configure();
     }
 }

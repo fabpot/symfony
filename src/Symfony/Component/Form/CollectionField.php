@@ -50,29 +50,6 @@ class CollectionField extends FieldGroup
         parent::__construct($innerField->getKey(), $options);
     }
 
-    /**
-     * Available options:
-     *
-     *  * modifiable:   If true, elements in the collection can be added
-     *                  and removed by the presence of absence of the
-     *                  corresponding field groups. Field groups could be
-     *                  added or removed via Javascript and reflected in
-     *                  the underlying collection. Default: false.
-     */
-    protected function configure()
-    {
-        $this->addOption('modifiable', false);
-
-        if ($this->getOption('modifiable')) {
-            $field = $this->newField('$$key$$', null);
-            // TESTME
-            $field->setRequired(false);
-            $this->add($field);
-        }
-
-        parent::configure();
-    }
-
     public function setData($collection)
     {
         if (!is_array($collection) && !$collection instanceof \Traversable) {
@@ -114,6 +91,29 @@ class CollectionField extends FieldGroup
         }
 
         parent::bind($taintedData);
+    }
+
+    /**
+     * Available options:
+     *
+     *  * modifiable:   If true, elements in the collection can be added
+     *                  and removed by the presence of absence of the
+     *                  corresponding field groups. Field groups could be
+     *                  added or removed via Javascript and reflected in
+     *                  the underlying collection. Default: false.
+     */
+    protected function configure()
+    {
+        $this->addOption('modifiable', false);
+
+        if ($this->getOption('modifiable')) {
+            $field = $this->newField('$$key$$', null);
+            // TESTME
+            $field->setRequired(false);
+            $this->add($field);
+        }
+
+        parent::configure();
     }
 
     protected function updateObject(&$objectOrArray)

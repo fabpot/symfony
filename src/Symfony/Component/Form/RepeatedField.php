@@ -42,27 +42,6 @@ class RepeatedField extends FieldGroup
     }
 
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('first_key', 'first');
-        $this->addOption('second_key', 'second');
-
-        parent::configure();
-
-        $field = clone $this->prototype;
-        $field->setKey($this->getOption('first_key'));
-        $field->setPropertyPath($this->getOption('first_key'));
-        $this->add($field);
-
-        $field = clone $this->prototype;
-        $field->setKey($this->getOption('second_key'));
-        $field->setPropertyPath($this->getOption('second_key'));
-        $this->add($field);
-    }
-
-    /**
      * Returns whether both entered values are equal
      *
      * @return Boolean
@@ -97,5 +76,26 @@ class RepeatedField extends FieldGroup
         }
 
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('first_key', 'first');
+        $this->addOption('second_key', 'second');
+
+        parent::configure();
+
+        $field = clone $this->prototype;
+        $field->setKey($this->getOption('first_key'));
+        $field->setPropertyPath($this->getOption('first_key'));
+        $this->add($field);
+
+        $field = clone $this->prototype;
+        $field->setKey($this->getOption('second_key'));
+        $field->setPropertyPath($this->getOption('second_key'));
+        $this->add($field);
     }
 }

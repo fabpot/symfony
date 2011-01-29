@@ -69,16 +69,6 @@ abstract class Configurable
     }
 
     /**
-     * Configures the valid options
-     *
-     * This method should call addOption() or addRequiredOption() for every
-     * accepted option.
-     */
-    protected function configure()
-    {
-    }
-
-    /**
      * Returns an option value.
      *
      * @param  string $name  The option name
@@ -88,6 +78,33 @@ abstract class Configurable
     public function getOption($name)
     {
         return isset($this->options[$name]) ? $this->options[$name] : null;
+    }
+
+    /**
+     * Returns true if the option exists.
+     *
+     * @param  string $name  The option name
+     *
+     * @return Boolean true if the option is set, false otherwise
+     */
+    public function hasOption($name)
+    {
+        return isset($this->options[$name]);
+    }
+
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Configures the valid options
+     *
+     * This method should call addOption() or addRequiredOption() for every
+     * accepted option.
+     */
+    protected function configure()
+    {
     }
 
     /**
@@ -124,22 +141,5 @@ abstract class Configurable
         if (isset($this->options[$name]) && count($allowedValues) > 0 && !in_array($this->options[$name], $allowedValues)) {
             throw new InvalidOptionsException(sprintf('The option "%s" is expected to be one of "%s", but is "%s"', $name, implode('", "', $allowedValues), $this->options[$name]), array($name));
         }
-    }
-
-    /**
-     * Returns true if the option exists.
-     *
-     * @param  string $name  The option name
-     *
-     * @return Boolean true if the option is set, false otherwise
-     */
-    public function hasOption($name)
-    {
-        return isset($this->options[$name]);
-    }
-
-    public function getOptions()
-    {
-        return $this->options;
     }
 }

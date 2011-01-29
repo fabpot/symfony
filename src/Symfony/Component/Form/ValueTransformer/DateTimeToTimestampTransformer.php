@@ -22,17 +22,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 class DateTimeToTimestampTransformer extends BaseValueTransformer
 {
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('input_timezone', 'UTC');
-        $this->addOption('output_timezone', 'UTC');
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a DateTime object into a timestamp in the configured timezone
      *
      * @param  DateTime $value  A DateTime object
@@ -83,5 +72,16 @@ class DateTimeToTimestampTransformer extends BaseValueTransformer
         } catch (\Exception $e) {
             throw new \InvalidArgumentException('Expected a valid timestamp. ' . $e->getMessage(), 0, $e);
         }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('input_timezone', 'UTC');
+        $this->addOption('output_timezone', 'UTC');
+
+        parent::configure();
     }
 }

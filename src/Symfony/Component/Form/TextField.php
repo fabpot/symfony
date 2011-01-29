@@ -22,6 +22,11 @@ namespace Symfony\Component\Form;
  */
 class TextField extends Field
 {
+    public function getMaxLength()
+    {
+        return $this->getOption('max_length');
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -30,10 +35,5 @@ class TextField extends Field
         $this->addOption('max_length');
 
         parent::configure();
-    }
-
-    public function getMaxLength()
-    {
-        return $this->getOption('max_length');
     }
 }

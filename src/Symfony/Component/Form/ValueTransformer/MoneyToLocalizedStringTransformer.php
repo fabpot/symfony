@@ -22,18 +22,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
 class MoneyToLocalizedStringTransformer extends NumberToLocalizedStringTransformer
 {
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('grouping', true);
-        $this->addOption('precision', 2);
-        $this->addOption('divisor', 1);
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a normalized format into a localized money string.
      *
      * @param  number $value  Normalized number
@@ -69,4 +57,15 @@ class MoneyToLocalizedStringTransformer extends NumberToLocalizedStringTransform
         return $value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('grouping', true);
+        $this->addOption('precision', 2);
+        $this->addOption('divisor', 1);
+
+        parent::configure();
+    }
 }

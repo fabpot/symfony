@@ -41,24 +41,6 @@ class MoneyField extends NumberField
     protected static $patterns = array();
 
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addRequiredOption('currency');
-        $this->addOption('precision', 2);
-        $this->addOption('divisor', 1);
-
-        parent::configure();
-
-        $this->setValueTransformer(new MoneyToLocalizedStringTransformer(array(
-            'precision' => $this->getOption('precision'),
-            'grouping' => $this->getOption('grouping'),
-            'divisor' => $this->getOption('divisor'),
-        )));
-    }
-
-    /**
      * Returns the pattern for this locale
      *
      * The pattern contains the placeholder "{{ widget }}" where the HTML tag should
@@ -96,5 +78,23 @@ class MoneyField extends NumberField
         }
 
         return self::$patterns[$this->locale];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addRequiredOption('currency');
+        $this->addOption('precision', 2);
+        $this->addOption('divisor', 1);
+
+        parent::configure();
+
+        $this->setValueTransformer(new MoneyToLocalizedStringTransformer(array(
+            'precision' => $this->getOption('precision'),
+            'grouping' => $this->getOption('grouping'),
+            'divisor' => $this->getOption('divisor'),
+        )));
     }
 }

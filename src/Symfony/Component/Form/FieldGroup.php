@@ -231,30 +231,6 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
     }
 
     /**
-     * Returns a filtered array of fields from the current schema.
-     *
-     * @param Boolean $hidden Whether to return hidden fields only or visible fields only
-     * @param Boolean $recursive Whether to recur through embedded schemas
-     *
-     * @return array
-     */
-    protected function getFieldsByVisibility($hidden, $recursive)
-    {
-        $fields = array();
-        $hidden = (Boolean)$hidden;
-
-        foreach ($this->fields as $field) {
-            if ($field instanceof FieldGroup && $recursive) {
-                $fields = array_merge($fields, $field->getFieldsByVisibility($hidden, $recursive));
-            } else if ($hidden === $field->isHidden()) {
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
      * Initializes the field group with an object to operate on
      *
      * @see FieldInterface
@@ -335,58 +311,6 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
                 $this->extraFields[] = $key;
             }
         }
-    }
-
-    /**
-     * Updates the child fields from the properties of the given data
-     *
-     * This method calls updateFromProperty() on all child fields that have a
-     * property path set. If a child field has no property path set but
-     * implements FieldGroupInterface, updateProperty() is called on its
-     * children instead.
-     *
-     * @param array|object $objectOrArray
-     */
-    protected function updateFromObject(&$objectOrArray)
-    {
-        $iterator = new RecursiveFieldIterator($this);
-        $iterator = new \RecursiveIteratorIterator($iterator);
-
-        foreach ($iterator as $field) {
-            $field->updateFromProperty($objectOrArray);
-        }
-    }
-
-    /**
-     * Updates all properties of the given data from the child fields
-     *
-     * This method calls updateProperty() on all child fields that have a property
-     * path set. If a child field has no property path set but implements
-     * FieldGroupInterface, updateProperty() is called on its children instead.
-     *
-     * @param array|object $objectOrArray
-     */
-    protected function updateObject(&$objectOrArray)
-    {
-        $iterator = new RecursiveFieldIterator($this);
-        $iterator = new \RecursiveIteratorIterator($iterator);
-
-        foreach ($iterator as $field) {
-            $field->updateProperty($objectOrArray);
-        }
-    }
-
-    /**
-     * Processes the bound data before it is passed to the individual fields
-     *
-     * The data is in the user format.
-     *
-     * @param  array $data
-     * @return array
-     */
-    protected function preprocessData(array $data)
-    {
-        return $data;
     }
 
     /**
@@ -552,5 +476,81 @@ class FieldGroup extends Field implements \IteratorAggregate, FieldGroupInterfac
     public function count()
     {
         return count($this->fields);
+    }
+
+    /**
+     * Returns a filtered array of fields from the current schema.
+     *
+     * @param Boolean $hidden Whether to return hidden fields only or visible fields only
+     * @param Boolean $recursive Whether to recur through embedded schemas
+     *
+     * @return array
+     */
+    protected function getFieldsByVisibility($hidden, $recursive)
+    {
+        $fields = array();
+        $hidden = (Boolean)$hidden;
+
+        foreach ($this->fields as $field) {
+            if ($field instanceof FieldGroup && $recursive) {
+                $fields = array_merge($fields, $field->getFieldsByVisibility($hidden, $recursive));
+            } else if ($hidden === $field->isHidden()) {
+                $fields[] = $field;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Updates the child fields from the properties of the given data
+     *
+     * This method calls updateFromProperty() on all child fields that have a
+     * property path set. If a child field has no property path set but
+     * implements FieldGroupInterface, updateProperty() is called on its
+     * children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function updateFromObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->updateFromProperty($objectOrArray);
+        }
+    }
+
+    /**
+     * Updates all properties of the given data from the child fields
+     *
+     * This method calls updateProperty() on all child fields that have a property
+     * path set. If a child field has no property path set but implements
+     * FieldGroupInterface, updateProperty() is called on its children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function updateObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->updateProperty($objectOrArray);
+        }
+    }
+
+    /**
+     * Processes the bound data before it is passed to the individual fields
+     *
+     * The data is in the user format.
+     *
+     * @param  array $data
+     * @return array
+     */
+    protected function preprocessData(array $data)
+    {
+        return $data;
     }
 }

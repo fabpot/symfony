@@ -76,6 +76,38 @@ class GraphWalker
         }
     }
 
+    public function walkProperty(ClassMetadata $metadata, $property, $object, $group, $propertyPath, $propagatedGroup = null)
+    {
+        foreach ($metadata->getMemberMetadatas($property) as $member) {
+            $this->walkMember($member, $member->getValue($object), $group, $propertyPath, $propagatedGroup);
+        }
+    }
+
+    public function walkPropertyValue(ClassMetadata $metadata, $property, $value, $group, $propertyPath)
+    {
+        foreach ($metadata->getMemberMetadatas($property) as $member) {
+            $this->walkMember($member, $value, $group, $propertyPath);
+        }
+    }
+
+    public function walkConstraint(Constraint $constraint, $value, $group, $propertyPath)
+    {
+        $validator = $this->validatorFactory->getInstance($constraint);
+
+        $this->context->setPropertyPath($propertyPath);
+        $this->context->setGroup($group);
+
+        $validator->initialize($this->context);
+
+        if (!$validator->isValid($value, $constraint)) {
+            $this->context->addViolation(
+                $validator->getMessageTemplate(),
+                $validator->getMessageParameters(),
+                $value
+            );
+        }
+    }
+
     protected function walkObjectForGroup(ClassMetadata $metadata, $object, $group, $propertyPath, $propagatedGroup = null)
     {
         $hash = spl_object_hash($object);
@@ -103,20 +135,6 @@ class GraphWalker
 
                 $this->walkProperty($metadata, $property, $object, $group, $localPropertyPath, $propagatedGroup);
             }
-        }
-    }
-
-    public function walkProperty(ClassMetadata $metadata, $property, $object, $group, $propertyPath, $propagatedGroup = null)
-    {
-        foreach ($metadata->getMemberMetadatas($property) as $member) {
-            $this->walkMember($member, $member->getValue($object), $group, $propertyPath, $propagatedGroup);
-        }
-    }
-
-    public function walkPropertyValue(ClassMetadata $metadata, $property, $value, $group, $propertyPath)
-    {
-        foreach ($metadata->getMemberMetadatas($property) as $member) {
-            $this->walkMember($member, $value, $group, $propertyPath);
         }
     }
 
@@ -150,24 +168,6 @@ class GraphWalker
                 $metadata = $this->metadataFactory->getClassMetadata(get_class($value));
                 $this->walkObject($metadata, $value, $group, $propertyPath);
             }
-        }
-    }
-
-    public function walkConstraint(Constraint $constraint, $value, $group, $propertyPath)
-    {
-        $validator = $this->validatorFactory->getInstance($constraint);
-
-        $this->context->setPropertyPath($propertyPath);
-        $this->context->setGroup($group);
-
-        $validator->initialize($this->context);
-
-        if (!$validator->isValid($value, $constraint)) {
-            $this->context->addViolation(
-                $validator->getMessageTemplate(),
-                $validator->getMessageParameters(),
-                $value
-            );
         }
     }
 }

@@ -677,6 +677,45 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
+     * Replaces service references by the real service instance.
+     *
+     * @param  mixed $value A value
+     *
+     * @return mixed The same value with all service references replaced by the real service instances
+     */
+    public function resolveServices($value)
+    {
+        if (is_array($value)) {
+            foreach ($value as &$v) {
+                $v = $this->resolveServices($v);
+            }
+        } else if (is_object($value) && $value instanceof Reference) {
+            $value = $this->get((string) $value, $value->getInvalidBehavior());
+        }
+
+        return $value;
+    }
+
+    /**
+     * Returns service ids for a given tag.
+     *
+     * @param string $name The tag name
+     *
+     * @return array An array of tags
+     */
+    public function findTaggedServiceIds($name)
+    {
+        $tags = array();
+        foreach ($this->getDefinitions() as $id => $definition) {
+            if ($definition->getTag($name)) {
+                $tags[$id] = $definition->getTag($name);
+            }
+        }
+
+        return $tags;
+    }
+
+    /**
      * Creates a service for a service definition.
      *
      * @param  Definition $definition A service definition instance
@@ -755,45 +794,6 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         }
 
         return $service;
-    }
-
-    /**
-     * Replaces service references by the real service instance.
-     *
-     * @param  mixed $value A value
-     *
-     * @return mixed The same value with all service references replaced by the real service instances
-     */
-    public function resolveServices($value)
-    {
-        if (is_array($value)) {
-            foreach ($value as &$v) {
-                $v = $this->resolveServices($v);
-            }
-        } else if (is_object($value) && $value instanceof Reference) {
-            $value = $this->get((string) $value, $value->getInvalidBehavior());
-        }
-
-        return $value;
-    }
-
-    /**
-     * Returns service ids for a given tag.
-     *
-     * @param string $name The tag name
-     *
-     * @return array An array of tags
-     */
-    public function findTaggedServiceIds($name)
-    {
-        $tags = array();
-        foreach ($this->getDefinitions() as $id => $definition) {
-            if ($definition->getTag($name)) {
-                $tags[$id] = $definition->getTag($name);
-            }
-        }
-
-        return $tags;
     }
 
     protected function initializeCompiler()

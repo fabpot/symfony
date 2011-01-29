@@ -59,6 +59,61 @@ class TimeField extends FieldGroup
         self::RAW,
     );
 
+    public function isField()
+    {
+        return self::INPUT === $this->getOption('widget');
+    }
+
+    public function isWithSeconds()
+    {
+        return $this->getOption('with_seconds');
+    }
+
+    /**
+     * Returns whether the hour of the field's data is valid
+     *
+     * The hour is valid if it is contained in the list passed to the field's
+     * option "hours".
+     *
+     * @return Boolean
+     */
+    public function isHourWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('H'), $this->getOption('hours'));
+    }
+
+    /**
+     * Returns whether the minute of the field's data is valid
+     *
+     * The minute is valid if it is contained in the list passed to the field's
+     * option "minutes".
+     *
+     * @return Boolean
+     */
+    public function isMinuteWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('i'), $this->getOption('minutes'));
+    }
+
+    /**
+     * Returns whether the second of the field's data is valid
+     *
+     * The second is valid if it is contained in the list passed to the field's
+     * option "seconds".
+     *
+     * @return Boolean
+     */
+    public function isSecondWithinRange()
+    {
+        $date = $this->getNormalizedData();
+
+        return null === $date || in_array($date->format('s'), $this->getOption('seconds'));
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -138,16 +193,6 @@ class TimeField extends FieldGroup
         )));
     }
 
-    public function isField()
-    {
-        return self::INPUT === $this->getOption('widget');
-    }
-
-    public function isWithSeconds()
-    {
-        return $this->getOption('with_seconds');
-    }
-
     /**
      * Generates an array of choices for the given values
      *
@@ -168,50 +213,5 @@ class TimeField extends FieldGroup
         }
 
         return $choices;
-    }
-
-    /**
-     * Returns whether the hour of the field's data is valid
-     *
-     * The hour is valid if it is contained in the list passed to the field's
-     * option "hours".
-     *
-     * @return Boolean
-     */
-    public function isHourWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('H'), $this->getOption('hours'));
-    }
-
-    /**
-     * Returns whether the minute of the field's data is valid
-     *
-     * The minute is valid if it is contained in the list passed to the field's
-     * option "minutes".
-     *
-     * @return Boolean
-     */
-    public function isMinuteWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('i'), $this->getOption('minutes'));
-    }
-
-    /**
-     * Returns whether the second of the field's data is valid
-     *
-     * The second is valid if it is contained in the list passed to the field's
-     * option "seconds".
-     *
-     * @return Boolean
-     */
-    public function isSecondWithinRange()
-    {
-        $date = $this->getNormalizedData();
-
-        return null === $date || in_array($date->format('s'), $this->getOption('seconds'));
     }
 }

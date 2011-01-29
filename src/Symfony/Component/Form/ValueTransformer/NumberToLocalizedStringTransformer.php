@@ -31,18 +31,6 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
     const ROUND_CEILING  = \NumberFormatter::ROUND_CEILING;
 
     /**
-     * {@inheritDoc}
-     */
-    protected function configure()
-    {
-        $this->addOption('precision', null);
-        $this->addOption('grouping', false);
-        $this->addOption('rounding-mode', self::ROUND_HALFUP);
-
-        parent::configure();
-    }
-
-    /**
      * Transforms a number type into localized number.
      *
      * @param  number $value  Number value.
@@ -91,6 +79,18 @@ class NumberToLocalizedStringTransformer extends BaseValueTransformer
         }
 
         return $value;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function configure()
+    {
+        $this->addOption('precision', null);
+        $this->addOption('grouping', false);
+        $this->addOption('rounding-mode', self::ROUND_HALFUP);
+
+        parent::configure();
     }
 
     /**

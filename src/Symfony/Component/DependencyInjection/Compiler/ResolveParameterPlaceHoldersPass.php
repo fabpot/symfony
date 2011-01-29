@@ -73,7 +73,7 @@ class ResolveParameterPlaceHoldersPass implements CompilerPassInterface
         }
     }
 
-    public function resolveString($value)
+    protected function resolveString($value)
     {
         if (preg_match('/^%[^%]+%$/', $value)) {
             return $this->resolveValue($this->parameterBag->resolveValue($value));
