@@ -329,11 +329,11 @@ abstract class Kernel implements KernelInterface
 
     /**
      * Initialize the data structures related to the bundle management:
-     *  - the bundle property maps a bundle name to a bundle instance,
+     *  - the bundle property maps a bundle name to the bundle instance,
      *  - the bundleMap property maps a bundle name to the bundle inheritance hierarchy (most derived bundle first).
      *
      * @throws \LogicException if two bundles share a common name
-     * @throws \LogicException if a bundle tries to extend a non-existing or not yet registered bundle
+     * @throws \LogicException if a bundle tries to extend a non-registered bundle
      * @throws \LogicException if two bundles extend the same ancestor
      *
      */
@@ -341,38 +341,49 @@ abstract class Kernel implements KernelInterface
     {
         // init bundles
         $this->bundles = array();
-        $this->bundleMap = array();
+        $topMostBundles = array();
+        $directChildren = array();
+        
         foreach ($this->registerBundles() as $bundle) {
             $name = $bundle->getName();
             if (isset($this->bundles[$name])) {
                 throw new \LogicException(sprintf('Trying to register two bundles with the same name "%s"', $name));
             }
-            $parentName = $bundle->getParent();
-            if (null !== $parentName && !isset($this->bundles[$parentName])) {
-                throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not (yet) registered.', $name, $parentName));
-            }
             $this->bundles[$name] = $bundle;
-            $this->bundleMap[$name] = array($bundle);
+
+            if ($parentName = $bundle->getParent()) {
+                if (isset($directChildren[$parentName])) {
+                    throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $directChildren[$parentName]));
+                }
+                $directChildren[$parentName] = $name;
+            } else {
+                $topMostBundles[$name] = $bundle;
+            }            
+        }
+
+        // look for orphans
+        if (count($diff = array_diff(array_keys($directChildren), array_keys($this->bundles)))) {
+            throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not registered.', $directChildren[$diff[0]], $diff[0]));
         }
 
         // inheritance
-        $directChildren = array();
-        foreach ($this->bundles as $name => $bundle) {
-            $parent = $bundle;
-            $directAncestor = true;
-            while ($parentName = $parent->getParent()) {
-                if ($directAncestor) {
-                    if (isset($directChildren[$parentName])) {
-                        throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $directChildren[$parentName]));
-                    }                    
-                    $directChildren[$parentName] = $name;
-                    $directAncestor = false;
-                }
-                
-                $parent = $this->bundles[$parentName];                
-                array_unshift($this->bundleMap[$parentName], $bundle);
+        $this->bundleMap = array();
+        foreach ($topMostBundles as $name => $bundle) {
+            $bundleMap = array($bundle);
+            $hierarchy = array($name);
+
+            while (isset($directChildren[$name])) {
+                $name = $directChildren[$name];
+                array_unshift($bundleMap, $this->bundles[$name]);
+                $hierarchy[] = $name;
+            }
+            
+            foreach ($hierarchy as $bundle) {
+                $this->bundleMap[$bundle] = $bundleMap;
+                array_pop($bundleMap);
             }
         }
+
     }
 
     protected function initializeContainer()

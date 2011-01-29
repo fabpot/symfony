@@ -195,21 +195,25 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel->initializeBundles();
     }
 
-    /**
-     * @expectedException \LogicException
-     */
-    public function testInitializeBundlesThrowsExceptionWhenAParentIsNotRegisteredYet()
+    public function testInitializeBundlesSupportsArbitaryBundleRegistrationOrder()
     {
-        $parent = $this->getBundle(null, null, 'ParentCCBundle');
-        $child = $this->getBundle(null, 'ParentCCBundle', 'ChildCCBundle');
+        $grandparent = $this->getBundle(null, null, 'GrandParentCCundle');
+        $parent = $this->getBundle(null, 'GrandParentCCundle', 'ParentCCundle');
+        $child = $this->getBundle(null, 'ParentCCundle', 'ChildCCundle');
 
         $kernel = $this->getKernel();
         $kernel
             ->expects($this->once())
             ->method('registerBundles')
-            ->will($this->returnValue(array($child, $parent)))
+            ->will($this->returnValue(array($parent, $grandparent, $child)))
         ;
+
         $kernel->initializeBundles();
+
+        $map = $kernel->getBundleMap();
+        $this->assertEquals(array($child, $parent, $grandparent), $map['GrandParentCCundle']);
+        $this->assertEquals(array($child, $parent), $map['ParentCCundle']);
+        $this->assertEquals(array($child), $map['ChildCCundle']);
     }
 
     /**
