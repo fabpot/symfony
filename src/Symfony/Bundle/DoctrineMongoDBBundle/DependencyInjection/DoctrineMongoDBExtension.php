@@ -65,7 +65,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $loader->load('mongodb.xml');
 
         // merge all the configs into one options array
-        $options = $this->mergeOptions($configs);
+        $options = $this->mergeConfigs($configs);
 
         // set some options as parameters and unset them
         $options = $this->overrideParameters($options, $container);
@@ -82,18 +82,13 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      * intelligently merges those configuration values and returns the final,
      * flattened product.
      *
-     * The top-level of the returned array is normalized to turn all dashes
-     * (-) into underscores (_). The input configuration keys can use either
-     * format.
-     *
-     * @param array $configs An array of option arrays that will be merged in
-     * @return The flattened, normalized options array
-     * @throws InvalidArgumentException When an unrecognized option is found
+     * @param array $configs An array of configuration arrays to merge
+     * @return array The merged configuration array
      */
-    public function mergeOptions(array $configs)
+    public function mergeConfigs(array $configs)
     {
         // The default and available options. These are very specific to this method.
-        $options = array(
+        $defaultOptions = array(
             'mappings'                          => array(),
             'default_document_manager'          => 'default',
             'default_connection'                => 'default',
@@ -109,45 +104,72 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             'auto_generate_hydrator_classes'    => null,
         );
 
+        $mergedConfig = $defaultOptions;
+
         foreach ($configs as $config) {
-
             $config = self::normalizeKeys($config);
-            // loop through each available option, look for it on the config array
-            foreach ($options as $key => $val) {
-                if (array_key_exists($key, $config)) {
-                    $options[$key] = $this->processOptionMerge($key, $val, $config[$key]);
-                    unset($config[$key]);
-                }
-            }
 
-            if (count($config) > 0) {
-                throw new \InvalidArgumentException('The following options are not supported: '.implode(', ', $config));
-            }
+            $mergedConfig = $this->mergeOptions($mergedConfig, $config, $defaultOptions);
         }
 
-        return $options;
+        return $mergedConfig;
     }
 
     /**
-     * Merges an existing and new option value together for a given option.
+     * Merges a single level of configuration options.
      *
-     * This method can be written to perform complex merging for specific
-     * options and simple merging for other options.
+     * This method is taken verbatim from FrameworkExtension.
      *
-     * @param  string $option   The name of the option that needs to be merged
-     * @param  mixed $current   The value of the option before the merge
-     * @param  mixed $new       The new value that needs to be merged in
-     * @return mixed The merged value
+     * @return array The merged options
      */
-    protected function processOptionMerge($option, $current, $new)
+    protected function mergeOptions(array $current, array $new, array $default, $basePath = null)
     {
-        // process the merge of the config value ($newVal)
-        switch ($option)
-        {
-            default:
-                // just override the previous value with the new one
-                return $new;
+        if ($unsupportedOptions = array_diff_key($new, $default)) {
+            throw new \InvalidArgumentException('The following options are not supported: '.implode(', ', array_keys($unsupportedOptions)));
         }
+
+        foreach ($default as $key => $defaultValue) {
+            if (array_key_exists($key, $new)) {
+                $optionPath = $basePath ? $basePath.'.'.$key : $key;
+                $current[$key] = $this->mergeOptionValue($current[$key], $new[$key], $defaultValue, $optionPath);
+            }
+        }
+
+        return $current;
+    }
+
+    /**
+     * Merges an option value.
+     *
+     * @param mixed  $current    The value of the option before merging
+     * @param mixed  $new        The new value to be merged
+     * @param mixed  $default    The corresponding default value for the option
+     * @param string $optionPath Property path for the option
+     * @return mixed The merged value
+     * @throws InvalidArgumentException When an invalid option is found
+     */
+    protected function mergeOptionValue($current, $new, $defaultValue, $optionPath)
+    {
+        // Ensure that the new value's type is an array if expected
+        if (is_array($defaultValue) && !is_array($new)) {
+            throw new \InvalidArgumentException(sprintf('Expected array type for option "%s", %s given', $optionPath, gettype($new)));
+        }
+
+        switch ($optionPath) {
+            // the single-connection options array always just overwrite
+            case 'options':
+                return $new;
+
+            // simple array_merge with no internal validation
+            case 'mappings':
+            case 'connections':
+            case 'document_managers':
+                return array_merge($current, $new);
+
+            // default logic here
+        }
+
+        return is_array($defaultValue) ? $this->mergeOptions($current, $new, $defaultValue, $optionPath) : $new;
     }
 
     /**

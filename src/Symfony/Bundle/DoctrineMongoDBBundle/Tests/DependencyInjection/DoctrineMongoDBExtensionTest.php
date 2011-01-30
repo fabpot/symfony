@@ -54,7 +54,7 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new DoctrineMongoDBExtensionStub();
 
-        $options = $loader->mergeOptions($configs);
+        $options = $loader->mergeConfigs($configs);
         foreach ($correctValues as $key => $correctVal)
         {
             $this->assertEquals($correctVal, $options[$key]);
@@ -88,6 +88,42 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
                 array('default_document_manager' => 'baz'),
             ),
             array('default_document_manager' => 'baz')
+        );
+
+        // the "options" array is totally replaced
+        $cases[] = array(
+            array(
+                array('options' => array('lorem' => 'ipsum')),
+                array('options' => array('foo' => 'bar')),
+            ),
+            array('options' => array('foo' => 'bar')),
+        );
+
+        // mappings are merged non-recursively. No item validation takes place.
+        $cases[] = array(
+            array(
+                array('mappings' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt2' => 'val2'))),
+                array('mappings' => array('bar' => array('opt3' => 'val3'))),
+            ),
+            array('mappings' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt3' => 'val3'))),
+        );
+
+        // connections are merged non-recursively. No item validation takes place.
+        $cases[] = array(
+            array(
+                array('connections' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt2' => 'val2'))),
+                array('connections' => array('bar' => array('opt3' => 'val3'))),
+            ),
+            array('connections' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt3' => 'val3'))),
+        );
+
+        // managers are merged non-recursively. No item validation takes place.
+        $cases[] = array(
+            array(
+                array('document_managers' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt2' => 'val2'))),
+                array('document_managers' => array('bar' => array('opt3' => 'val3'))),
+            ),
+            array('document_managers' => array('foo' => array('opt1' => 'val1'), 'bar' => array('opt3' => 'val3'))),
         );
 
         return $cases;
