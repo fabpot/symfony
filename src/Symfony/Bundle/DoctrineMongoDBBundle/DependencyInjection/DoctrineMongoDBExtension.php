@@ -109,6 +109,22 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         foreach ($configs as $config) {
             $config = self::normalizeKeys($config);
 
+            // XML normalization of connnections array
+            if (isset($config['connection']) && is_array($config['connection'])) {
+                // normalize connection vs connections
+                $config['connections'] = self::normalizeConfig($config, 'connection');
+                unset($config['connection']);
+
+                $config['connections'] = self::remapConfigArray($config['connections'], 'id');
+            }
+
+            if (isset($config['document_manager']) && is_array($config['document_manager'])) {
+                $config['document_managers'] = self::normalizeConfig($config, 'document_manager');
+                unset($config['document_manager']);
+
+                $config['document_managers'] = self::remapConfigArray($config['document_managers'], 'id');
+            }
+
             $mergedConfig = $this->mergeOptions($mergedConfig, $config, $defaultOptions);
         }
 
@@ -307,30 +323,11 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     {
         $defaultDocumentManager = $options['default_document_manager'];
 
-        $documentManagers = array();
-
-        if (isset($options['document-managers'])) {
-            $options['document_managers'] = $options['document-managers'];
-        }
-
-        if (isset($options['document_managers']) && $configDocumentManagers = $options['document_managers']) {
-
-            if (isset($options['document_managers']['document-manager'])) {
-                $options['document_managers']['document_manager'] = $options['document_managers']['document-manager'];
-            }
-
-            if (isset($options['document_managers']['document_manager']) && isset($options['document_managers']['document_manager'][0])) {
-                // Multiple document managers
-                $configDocumentManagers = $options['document_managers']['document_manager'];
-            }
-            foreach ($configDocumentManagers as $name => $documentManager) {
-                $documentManagers[isset($documentManager['id']) ? $documentManager['id'] : $name] = $documentManager;
-            }
+        if (isset($options['document_managers']) && count($options['document_managers'])) {
+            return $options['document_managers'];
         } else {
-            $documentManagers = array($defaultDocumentManager => $options);
+            return array($defaultDocumentManager => $options);
         }
-
-        return $documentManagers;
     }
 
     /**
@@ -391,19 +388,13 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     {
         $defaultConnection = $options['default_connection'];
 
-        $connections = array();
         if (isset($options['connections']) && $configConnections = $options['connections']) {
-            if (isset($options['connections']['connection']) && isset($options['connections']['connection'][0])) {
-                // Multiple connections
-                $configConnections = $options['connections']['connection'];
-            }
-            foreach ($configConnections as $name => $connection) {
-                $connections[isset($connection['id']) ? $connection['id'] : $name] = $connection;
-            }
+            // multiple connections
+            return $options['connections'];
         } else {
-            $connections = array($defaultConnection => $options);
+            // single connection - use the default connection name
+            return array($defaultConnection => $options);
         }
-        return $connections;
     }
 
     /**
@@ -477,6 +468,35 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     protected function getObjectManagerElementName($name)
     {
         return 'doctrine.odm.mongodb.' . $name;
+    }
+
+    /**
+     * Remaps an indexed array to a hashed array, using the value of the
+     * given field as the new array key.
+     *
+     *     $config = array(array('id' => 'foo', 'var' => 'val'));
+     *     self::remapConfigArray($config, 'id');
+     *
+     *     // returns array('id' => array('var' => 'val'));
+     *
+     * @param array $config The source array
+     * @param  string $field The field name to use as the key
+     * @return array
+     */
+    protected static function remapConfigArray(array $config, $field)
+    {
+        // map any id keys to be the name of the connection
+        foreach ($config as $name => $val) {
+            if (isset($val[$field])) {
+                $newKey = $val[$field];
+                unset($val[$field]);
+
+                $config[$newKey] = $val;
+                unset($config[$name]);
+            }
+        }
+
+        return $config;
     }
 
     /**
