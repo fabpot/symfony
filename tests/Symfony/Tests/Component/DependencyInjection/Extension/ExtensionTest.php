@@ -52,4 +52,39 @@ class ExtensionTest extends \PHPUnit_Framework_TestCase
             )
         );
     }
+
+    /**
+     * @dataProvider getNormalizationConfigTests
+     */
+    public function testNormalizeConfig($denormalized, $key, $normalized)
+    {
+        $this->assertSame($normalized, Extension::normalizeConfig($denormalized, $key));
+    }
+
+    public function getNormalizationConfigTests()
+    {
+        return array(
+            // already normalized
+            array(
+                array('extensions' => array('foo', 'bar')),
+                'extension',
+                array('foo', 'bar'),
+            ),
+            // config needs to be normalized
+            // <twig:extension id="foo" />
+            // <twig:extension id="bar" />
+            array(
+                array('extension' => array(array('id' => 'foo'), array('id' => 'bar'))),
+                'extension',
+                array(array('id' => 'foo'), array('id' => 'bar')),
+            ),
+            // config needs to be normalized, but there's only one entry
+            // <twig:extension id="foo" />
+            array(
+                array('extension' => array('id' => 'foo')),
+                'extension',
+                array(array('id' => 'foo')),
+            ),
+        );
+    }
 }
