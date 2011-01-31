@@ -127,7 +127,8 @@ abstract class AbstractDoctrineExtension extends Extension
     }
 
     /**
-     * Registter the mapping driver configuration for later use with the object managers metadata driver chain.
+     * Register the mapping driver configuration for later use with the object
+     * managers metadata driver chain.
      *
      * @param array $mappingConfig
      * @param string $mappingName
