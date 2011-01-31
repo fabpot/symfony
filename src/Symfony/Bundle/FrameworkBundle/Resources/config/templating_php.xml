@@ -17,6 +17,7 @@
         <parameter key="templating.helper.form.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\FormHelper</parameter>
         <parameter key="templating.helper.locale.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\LocaleHelper</parameter>
         <parameter key="templating.helper.number.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\NumberHelper</parameter>
+        <parameter key="templating.helper.datetime.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\DateTimeHelper</parameter>
     </parameters>
 
     <services>
@@ -81,6 +82,11 @@
 
         <service id="templating.helper.number" class="%templating.helper.number.class%">
             <tag name="templating.helper" alias="number" />
+            <argument type="service" id="session" />
+        </service>
+
+        <service id="templating.helper.datetime" class="%templating.helper.datetime.class%">
+            <tag name="templating.helper" alias="datetime" />
             <argument type="service" id="session" />
         </service>
 
