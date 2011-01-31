@@ -56,6 +56,11 @@
             <argument type="service" id="templating.helper.locale" />
         </service>
 
+        <service id="twig.extension.number" class="Symfony\Bundle\TwigBundle\Extension\NumberExtension" public="false">
+            <tag name="twig.extension" />
+            <argument type="service" id="templating.helper.number" />
+        </service>
+
         <service id="twig.extension.helpers" class="Symfony\Bundle\TwigBundle\Extension\TemplatingExtension" public="false">
             <tag name="twig.extension" />
             <argument type="service" id="service_container" />
