@@ -1,0 +1,23 @@
+doctrine_odm.mongodb:
+    # single document manager config
+    mappings:                 {}
+    default_document_manager: default
+    default_database:         default
+    metadata_cache_driver:    array
+
+    # multiple document manager configuration
+    document_managers:  {}
+
+    # single connection configuration
+    default_connection: default
+    server:             ~
+    options:            {}
+
+    # multiple connection configuration
+    connections:        {}
+
+    # proxy and hydrator class configuration
+    proxy_namespace:                ~
+    auto_generate_proxy_classes:    ~
+    hydrator_namespace:             ~
+    auto_generate_hydrator_classes: ~

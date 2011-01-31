@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineExtension;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Doctrine MongoDB ODM extension.
@@ -87,22 +88,8 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     public function mergeConfigs(array $configs)
     {
-        // The default and available options. These are very specific to this method.
-        $defaultOptions = array(
-            'mappings'                          => array(),
-            'default_document_manager'          => 'default',
-            'default_connection'                => 'default',
-            'metadata_cache_driver'             => 'array',
-            'server'                            => null,
-            'options'                           => array(),
-            'connections'                       => array(),
-            'document_managers'                 => array(),
-            'default_database'                  => null,
-            'proxy_namespace'                   => null,
-            'auto_generate_proxy_classes'       => null,
-            'hydrator_namespace'                => null,
-            'auto_generate_hydrator_classes'    => null,
-        );
+        $defaultConfig = Yaml::load( __DIR__.'/../Resources/config/mongodb_defaults.yml');
+        $defaultOptions = $defaultConfig['doctrine_odm.mongodb'];
 
         $mergedConfig = $defaultOptions;
 
