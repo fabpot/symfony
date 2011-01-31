@@ -70,8 +70,35 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 
         // set some options as parameters and unset them
         $options = $this->overrideParameters($options, $container);
-        $this->loadConnections($options, $container);
-        $this->loadDocumentManagers($options, $container);
+
+        // if no "connections" were given, setup the default connection
+        if (!isset($options['connections']) || !$options['connections']) {
+            $defaultName = $options['default_connection'];
+            $options['connections'] = array($defaultName => array(
+                'server'    => $options['server'],
+                'options'   => $options['options'],
+            ));
+        }
+        // load the connections
+        $this->loadConnections($options['connections'], $container);
+
+        // if no "document_managers" were given, setup the default manager
+        if (!isset($options['document_managers']) || !$options['document_managers']) {
+            $defaultName = $options['default_document_manager'];
+            $options['document_managers'] = array($defaultName => array(
+                'mappings'          => $options['mappings'],
+                'default_database'  => $options['default_database'],
+                'metadata_cache_driver' => $options['metadata_cache_driver'],
+            ));
+        }
+        // load the document managers
+        $this->loadDocumentManagers(
+            $options['document_managers'],
+            $options['default_document_manager'],
+            $options['metadata_cache_driver'],
+            $container
+        );
+
         $this->loadConstraints($options, $container);
     }
 
@@ -228,14 +255,13 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      * @param array $options An array of extension options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManagers(array $options, ContainerBuilder $container)
+    protected function loadDocumentManagers(array $documentManagers, $defaultManager, $defaultMetadataCacheDriver, ContainerBuilder $container)
     {
-        $documentManagers = $this->getDocumentManagers($options, $container);
         foreach ($documentManagers as $name => $documentManager) {
             $documentManager['name'] = $name;
             $this->loadDocumentManager(
-                $options['default_document_manager'],
-                $options['metadata_cache_driver'],
+                $defaultManager,
+                $defaultMetadataCacheDriver,
                 $documentManager,
                 $container
             );
@@ -320,23 +346,6 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     }
 
     /**
-     * Gets the configured document managers.
-     *
-     * @param array $options An array of configuration options
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function getDocumentManagers(array $options, ContainerBuilder $container)
-    {
-        $defaultDocumentManager = $options['default_document_manager'];
-
-        if (isset($options['document_managers']) && count($options['document_managers'])) {
-            return $options['document_managers'];
-        } else {
-            return array($defaultDocumentManager => $options);
-        }
-    }
-
-    /**
      * Loads the configured document manager metadata cache driver.
      *
      * @param string $defaultMetadataCacheDriver Driver name for the default metadata cache
@@ -370,9 +379,8 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      * @param array $options An array of configuration options
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadConnections(array $options, ContainerBuilder $container)
+    protected function loadConnections(array $connections, ContainerBuilder $container)
     {
-        $connections = $this->getConnections($options, $container);
         foreach ($connections as $name => $connection) {
             $odmConnArgs = array(
                 isset($connection['server']) ? $connection['server'] : null,
@@ -381,25 +389,6 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
             );
             $odmConnDef = new Definition('%doctrine.odm.mongodb.connection_class%', $odmConnArgs);
             $container->setDefinition(sprintf('doctrine.odm.mongodb.%s_connection', $name), $odmConnDef);
-        }
-    }
-
-    /**
-     * Gets the configured connections.
-     *
-     * @param array $options An array of configuration options
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function getConnections(array $options, ContainerBuilder $container)
-    {
-        $defaultConnection = $options['default_connection'];
-
-        if (isset($options['connections']) && $configConnections = $options['connections']) {
-            // multiple connections
-            return $options['connections'];
-        } else {
-            // single connection - use the default connection name
-            return array($defaultConnection => $options);
         }
     }
 
