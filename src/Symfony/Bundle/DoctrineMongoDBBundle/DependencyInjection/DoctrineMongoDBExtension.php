@@ -109,20 +109,40 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         foreach ($configs as $config) {
             $config = self::normalizeKeys($config);
 
-            // XML normalization of connnections array
+            // normalize connection versus connections
             if (isset($config['connection']) && is_array($config['connection'])) {
-                // normalize connection vs connections
                 $config['connections'] = self::normalizeConfig($config, 'connection');
                 unset($config['connection']);
 
                 $config['connections'] = self::remapConfigArray($config['connections'], 'id');
             }
 
+            // normalize document_manager versus document_managers
             if (isset($config['document_manager']) && is_array($config['document_manager'])) {
                 $config['document_managers'] = self::normalizeConfig($config, 'document_manager');
                 unset($config['document_manager']);
 
                 $config['document_managers'] = self::remapConfigArray($config['document_managers'], 'id');
+            }
+
+            // normalize document_manager versus document_managers
+            if (isset($config['mapping']) && is_array($config['mapping'])) {
+                $config['mappings'] = self::normalizeConfig($config, 'mapping');
+                unset($config['mapping']);
+
+                $config['mappings'] = self::remapConfigArray($config['mappings'], 'name');
+            }
+
+            // normalize the mapping versus mappings that can be beneath a document_manager
+            if (isset($config['document_managers']) && is_array($config['document_managers'])) {
+                foreach ($config['document_managers'] as $key => $dmConfig) {
+                    if (isset($dmConfig['mapping']) && is_array($dmConfig['mapping'])) {
+                        $config['document_managers'][$key]['mappings'] = self::normalizeConfig($config['document_managers'][$key], 'mapping');
+                        unset($config['document_managers'][$key]['mapping']);
+
+                        $config['document_managers'][$key]['mappings'] = self::remapConfigArray($config['document_managers'][$key]['mappings'], 'name');
+                    }
+                }
             }
 
             $mergedConfig = $this->mergeOptions($mergedConfig, $config, $defaultOptions);

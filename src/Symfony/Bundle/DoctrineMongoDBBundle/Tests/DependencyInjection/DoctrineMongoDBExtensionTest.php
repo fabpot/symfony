@@ -128,6 +128,73 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
 
         return $cases;
     }
+
+    /**
+     * @dataProvider getNormalizationTests
+     */
+    public function testNormalizeOptions(array $config, $targetKey, array $normalized)
+    {
+        $loader = new DoctrineMongoDBExtensionStub();
+
+        $options = $loader->mergeConfigs(array($config));
+        $this->assertSame($normalized, $options[$targetKey]);
+    }
+
+    public function getNormalizationTests()
+    {
+        return array(
+            // connection versus connections (id is the identifier)
+            array(
+                array('connection' => array(
+                    array('server' => 'mongodb://abc', 'id' => 'foo'),
+                    array('server' => 'mongodb://def', 'id' => 'bar'),
+                )),
+                'connections',
+                array(
+                    'foo' => array('server' => 'mongodb://abc'),
+                    'bar' => array('server' => 'mongodb://def'),
+                ),
+            ),
+            // document_manager versus document_managers (id is the identifier)
+            array(
+                array('document_manager' => array(
+                    array('connection' => 'conn1', 'id' => 'foo'),
+                    array('connection' => 'conn2', 'id' => 'bar'),
+                )),
+                'document_managers',
+                array(
+                    'foo' => array('connection' => 'conn1'),
+                    'bar' => array('connection' => 'conn2'),
+                ),
+            ),
+            // mapping versus mappings (name is the identifier)
+            array(
+                array('mapping' => array(
+                    array('type' => 'yml', 'name' => 'foo'),
+                    array('type' => 'xml', 'name' => 'bar'),
+                )),
+                'mappings',
+                array(
+                    'foo' => array('type' => 'yml'),
+                    'bar' => array('type' => 'xml'),
+                ),
+            ),
+            // mapping configuration that's beneath a specific document manager
+            array(
+                array('document_manager' => array(
+                    array('id' => 'foo', 'connection' => 'conn1', 'mapping' => array(
+                        'type' => 'xml', 'name' => 'foo-mapping'
+                    )),
+                )),
+                'document_managers',
+                array(
+                    'foo' => array('connection' => 'conn1', 'mappings' => array(
+                        'foo-mapping' => array('type' => 'xml'),
+                    )),
+                ),
+            ),
+        );
+    }
 }
 
 class DoctrineMongoDBExtensionStub extends DoctrineMongoDBExtension
