@@ -15,6 +15,7 @@ doctrine_odm.mongodb:
     #        connection:             default
     #        metadata_cache_driver:  xcache
     #        mappings:               {}
+    #        default_database:       dm1_database
 
     # single connection configuration
     default_connection: default
