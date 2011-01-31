@@ -204,7 +204,6 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     protected function overrideParameters($options, ContainerBuilder $container)
     {
         $overrides = array(
-            'default_database',
             'proxy_namespace',
             'auto_generate_proxy_classes',
             'hydrator_namespace',
@@ -254,7 +253,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      */
     protected function loadDocumentManager($defaultManagerName, $defaultMetadataCacheDriver, array $documentManager, ContainerBuilder $container)
     {
-        $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : '%doctrine.odm.mongodb.default_database%';
+        $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : $defaultManagerName;
         $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
 
         if ($container->hasDefinition($configServiceName)) {

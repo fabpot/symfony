@@ -40,8 +40,8 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
     public function parameterProvider()
     {
         return array(
-            array('default_database', 'default_database', 'foo'),
-            array('default-database', 'default_database', 'bar'),
+            array('proxy_namespace', 'proxy_namespace', 'foo'),
+            array('proxy-namespace', 'proxy_namespace', 'bar'),
         );
     }
 
