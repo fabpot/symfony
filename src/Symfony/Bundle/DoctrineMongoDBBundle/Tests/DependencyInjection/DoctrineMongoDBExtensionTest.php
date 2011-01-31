@@ -52,7 +52,7 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
      */
     public function testMergeOptions(array $configs, array $correctValues)
     {
-        $loader = new DoctrineMongoDBExtensionStub();
+        $loader = new DoctrineMongoDBExtension();
 
         $options = $loader->mergeConfigs($configs);
         foreach ($correctValues as $key => $correctVal)
@@ -134,7 +134,7 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
      */
     public function testNormalizeOptions(array $config, $targetKey, array $normalized)
     {
-        $loader = new DoctrineMongoDBExtensionStub();
+        $loader = new DoctrineMongoDBExtension();
 
         $options = $loader->mergeConfigs(array($config));
         $this->assertSame($normalized, $options[$targetKey]);
@@ -194,13 +194,5 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
                 ),
             ),
         );
-    }
-}
-
-class DoctrineMongoDBExtensionStub extends DoctrineMongoDBExtension
-{
-    public function getMongodbOptions()
-    {
-        return $this->mongodbOptions;
     }
 }
