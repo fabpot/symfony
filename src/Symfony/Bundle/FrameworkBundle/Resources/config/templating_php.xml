@@ -15,6 +15,7 @@
         <parameter key="templating.helper.code.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\CodeHelper</parameter>
         <parameter key="templating.helper.translator.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\TranslatorHelper</parameter>
         <parameter key="templating.helper.form.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\FormHelper</parameter>
+        <parameter key="templating.helper.locale.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\LocaleHelper</parameter>
     </parameters>
 
     <services>
@@ -70,6 +71,11 @@
         <service id="templating.helper.form" class="%templating.helper.form.class%">
             <tag name="templating.helper" alias="form" />
             <argument type="service" id="templating.engine.php" />
+        </service>
+
+        <service id="templating.helper.locale" class="%templating.helper.locale.class%">
+            <tag name="templating.helper" alias="locale" />
+            <argument type="service" id="session" />
         </service>
     </services>
 </container>

@@ -51,6 +51,11 @@
             <argument type="service" id="translator" />
         </service>
 
+        <service id="twig.extension.locale" class="Symfony\Bundle\TwigBundle\Extension\LocaleExtension" public="false">
+            <tag name="twig.extension" />
+            <argument type="service" id="templating.helper.locale" />
+        </service>
+
         <service id="twig.extension.helpers" class="Symfony\Bundle\TwigBundle\Extension\TemplatingExtension" public="false">
             <tag name="twig.extension" />
             <argument type="service" id="service_container" />
