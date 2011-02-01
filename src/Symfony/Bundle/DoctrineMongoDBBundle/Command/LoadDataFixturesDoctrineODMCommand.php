@@ -70,6 +70,7 @@ EOT
             foreach ($this->container->get('kernel')->getBundles() as $bundle) {
                 $paths[] = $bundle->getPath().'/DataFixtures/MongoDB';
             }
+            $paths = array_filter($paths, 'is_dir');
         }
 
         $loader = new \Doctrine\Common\DataFixtures\Loader();
