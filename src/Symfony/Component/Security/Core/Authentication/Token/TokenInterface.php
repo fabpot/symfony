@@ -99,4 +99,12 @@ interface TokenInterface extends \Serializable
      * Removes sensitive information from the token.
      */
     function eraseCredentials();
+
+    /**
+     * Returns the provider key.
+     *
+     * @return string
+     */
+    function getProviderKey();
+
 }
