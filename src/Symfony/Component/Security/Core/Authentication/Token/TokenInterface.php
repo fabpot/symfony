@@ -100,11 +100,4 @@ interface TokenInterface extends \Serializable
      */
     function eraseCredentials();
 
-    /**
-     * Returns the provider key.
-     *
-     * @return string
-     */
-    function getProviderKey();
-
 }
