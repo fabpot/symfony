@@ -664,7 +664,7 @@ class Form extends Field implements \IteratorAggregate, FormInterface
      */
     public function getValidator()
     {
-        return $this->validator;
+        return $this->getOption('validator');
     }
 
     /**
