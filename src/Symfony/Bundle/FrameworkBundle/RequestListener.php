@@ -14,7 +14,7 @@ namespace Symfony\Bundle\FrameworkBundle;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -38,7 +38,7 @@ class RequestListener
         $this->logger = $logger;
     }
 
-    public function handle(Event $event)
+    public function handle(EventInterface $event)
     {
         $request = $event->get('request');
         $master = HttpKernelInterface::MASTER_REQUEST === $event->get('request_type');
@@ -86,7 +86,7 @@ class RequestListener
         // add attributes based on the path info (routing)
         if (false !== $parameters = $this->router->match($request->getPathInfo())) {
             if (null !== $this->logger) {
-                $this->logger->info(sprintf('Matched route "%s" (parameters: %s)', $parameters['_route'], str_replace("\n", '', var_export($parameters, true))));
+                $this->logger->info(sprintf('Matched route "%s" (parameters: %s)', $parameters['_route'], json_encode($parameters)));
             }
 
             $request->attributes->add($parameters);

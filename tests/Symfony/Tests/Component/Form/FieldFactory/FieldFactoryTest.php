@@ -27,15 +27,12 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstanceCreatesClassWithHighestConfidence()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser1 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser1->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array('max_length' => 10),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
@@ -43,15 +40,15 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
         $guesser2 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser2->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\PasswordField',
+                    'Symfony\Component\Form\PasswordField',
                     array('max_length' => 7),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 )));
 
         $factory = new FieldFactory(array($guesser1, $guesser2));
-        $field = $factory->getInstance($object, 'firstName');
+        $field = $factory->getInstance('Application\Author', 'firstName');
 
         $this->assertEquals('Symfony\Component\Form\PasswordField', get_class($field));
         $this->assertEquals(7, $field->getMaxLength());
@@ -59,39 +56,33 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstanceThrowsExceptionIfNoClassIsFound()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(null));
 
         $factory = new FieldFactory(array($guesser));
 
         $this->setExpectedException('\RuntimeException');
 
-        $field = $factory->getInstance($object, 'firstName');
+        $field = $factory->getInstance('Application\Author', 'firstName');
     }
 
     public function testOptionsCanBeOverridden()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array('max_length' => 10),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
 
         $factory = new FieldFactory(array($guesser));
-        $field = $factory->getInstance($object, 'firstName', array('max_length' => 11));
+        $field = $factory->getInstance('Application\Author', 'firstName', array('max_length' => 11));
 
         $this->assertEquals('Symfony\Component\Form\TextField', get_class($field));
         $this->assertEquals(11, $field->getMaxLength());
@@ -99,37 +90,34 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstanceUsesMaxLengthIfFoundAndTextField()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser1 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser1->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array('max_length' => 10),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
         $guesser1->expects($this->once())
                 ->method('guessMaxLength')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryGuess(
-                	15,
+                    15,
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
 
         $guesser2 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser2->expects($this->once())
                 ->method('guessMaxLength')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryGuess(
-                	20,
+                    20,
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 )));
 
         $factory = new FieldFactory(array($guesser1, $guesser2));
-        $field = $factory->getInstance($object, 'firstName');
+        $field = $factory->getInstance('Application\Author', 'firstName');
 
         $this->assertEquals('Symfony\Component\Form\TextField', get_class($field));
         $this->assertEquals(20, $field->getMaxLength());
@@ -137,28 +125,25 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstanceUsesMaxLengthIfFoundAndSubclassOfTextField()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\PasswordField',
+                    'Symfony\Component\Form\PasswordField',
                     array('max_length' => 10),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
         $guesser->expects($this->once())
                 ->method('guessMaxLength')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryGuess(
-                	15,
+                    15,
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
 
         $factory = new FieldFactory(array($guesser));
-        $field = $factory->getInstance($object, 'firstName');
+        $field = $factory->getInstance('Application\Author', 'firstName');
 
         $this->assertEquals('Symfony\Component\Form\PasswordField', get_class($field));
         $this->assertEquals(15, $field->getMaxLength());
@@ -166,37 +151,34 @@ class FieldFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetInstanceUsesRequiredSettingWithHighestConfidence()
     {
-        $object = new \stdClass();
-        $object->firstName = 'Bernhard';
-
         $guesser1 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser1->expects($this->once())
                 ->method('guessClass')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
         $guesser1->expects($this->once())
                 ->method('guessRequired')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryGuess(
-                	true,
+                    true,
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 )));
 
         $guesser2 = $this->getMock('Symfony\Component\Form\FieldFactory\FieldFactoryGuesserInterface');
         $guesser2->expects($this->once())
                 ->method('guessRequired')
-                ->with($this->equalTo($object), $this->equalTo('firstName'))
+                ->with($this->equalTo('Application\Author'), $this->equalTo('firstName'))
                 ->will($this->returnValue(new FieldFactoryGuess(
-                	false,
+                    false,
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 )));
 
         $factory = new FieldFactory(array($guesser1, $guesser2));
-        $field = $factory->getInstance($object, 'firstName');
+        $field = $factory->getInstance('Application\Author', 'firstName');
 
         $this->assertFalse($field->isRequired());
     }

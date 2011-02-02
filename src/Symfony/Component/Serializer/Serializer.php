@@ -32,6 +32,11 @@ class Serializer implements SerializerInterface
     protected $encoders = array();
     protected $normalizerCache = array();
 
+    public function isStructuredType($val)
+    {
+        return null !== $val && !is_scalar($val);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -90,7 +95,7 @@ class Serializer implements SerializerInterface
     {
         if (is_array($data)) {
             foreach ($data as $key => $val) {
-                $data[$key] = is_scalar($val) ? $val : $this->normalize($val, $format);
+                $data[$key] = $this->isStructuredType($val) ? $this->normalize($val, $format) : $val;
             }
             return $data;
         }
@@ -105,7 +110,7 @@ class Serializer implements SerializerInterface
      */
     public function encode($data, $format)
     {
-        if (!isset($this->encoders[$format])) {
+        if (!$this->hasEncoder($format)) {
             throw new \UnexpectedValueException('No encoder registered for the '.$format.' format');
         }
         return $this->encoders[$format]->encode($data, $format);
@@ -116,7 +121,7 @@ class Serializer implements SerializerInterface
      */
     public function decode($data, $format)
     {
-        if (!isset($this->encoders[$format])) {
+        if (!$this->hasEncoder($format)) {
             throw new \UnexpectedValueException('No encoder registered to decode the '.$format.' format');
         }
         return $this->encoders[$format]->decode($data, $format);
@@ -138,17 +143,42 @@ class Serializer implements SerializerInterface
         unset($this->normalizers[array_search($normalizer, $this->normalizers, true)]);
     }
 
-    public function addEncoder($format, EncoderInterface $encoder)
+    /**
+     * {@inheritdoc}
+     */
+    public function setEncoder($format, EncoderInterface $encoder)
     {
         $this->encoders[$format] = $encoder;
         $encoder->setSerializer($this);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getEncoders()
     {
         return $this->encoders;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getEncoder($format)
+    {
+        return $this->encoders[$format];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasEncoder($format)
+    {
+        return isset($this->encoders[$format]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function removeEncoder($format)
     {
         unset($this->encoders[$format]);

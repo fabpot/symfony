@@ -14,7 +14,7 @@ namespace Symfony\Bundle\FrameworkBundle\Tests;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\DependencyInjection\Loader\LoaderInterface;
 use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
-use Symfony\Component\HttpFoundation\UniversalClassLoader;
+use Symfony\Component\ClassLoader\UniversalClassLoader;
 
 class Kernel extends BaseKernel
 {
@@ -66,25 +66,5 @@ class Kernel extends BaseKernel
         $loader->load(function ($container) {
             $container->setParameter('kernel.compiled_classes', array());
         });
-    }
-
-    public function boot()
-    {
-        if (true === $this->booted) {
-            throw new \LogicException('The kernel is already booted.');
-        }
-
-        // init bundles
-        $this->initializeBundles();
-
-        // init container
-        $this->initializeContainer();
-
-        foreach ($this->bundles as $bundle) {
-            $bundle->setContainer($this->container);
-            $bundle->boot();
-        }
-
-        $this->booted = true;
     }
 }

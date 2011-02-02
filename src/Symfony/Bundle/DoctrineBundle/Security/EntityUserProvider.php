@@ -11,10 +11,10 @@
 
 namespace Symfony\Bundle\DoctrineBundle\Security;
 
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\User\UserProviderInterface;
-use Symfony\Component\Security\Exception\UnsupportedAccountException;
-use Symfony\Component\Security\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\User\AccountInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Core\Exception\UnsupportedAccountException;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 
 class EntityUserProvider implements UserProviderInterface
 {
@@ -65,6 +65,14 @@ class EntityUserProvider implements UserProviderInterface
             throw new UnsupportedAccountException(sprintf('Instances of "%s" are not supported.', get_class($account)));
         }
 
-        return $this->loadUserByUsername((string) $account);
+        return $this->loadUserByUsername($account->getUsername());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supportsClass($class)
+    {
+        return $class === $this->class;
     }
 }

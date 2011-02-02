@@ -22,6 +22,7 @@ abstract class MemberMetadata extends ElementMetadata
     public $name;
     public $property;
     public $cascaded = false;
+    public $collectionCascaded = false;
     private $reflMember;
 
     /**
@@ -45,12 +46,14 @@ abstract class MemberMetadata extends ElementMetadata
     {
         if (!in_array(Constraint::PROPERTY_CONSTRAINT, (array)$constraint->targets())) {
             throw new ConstraintDefinitionException(sprintf(
-            		'The constraint %s cannot be put on properties or getters',
-                    get_class($constraint)));
+                'The constraint %s cannot be put on properties or getters',
+                get_class($constraint)
+            ));
         }
 
         if ($constraint instanceof Valid) {
             $this->cascaded = true;
+            $this->collectionCascaded = $constraint->traverse;
         } else {
             parent::addConstraint($constraint);
         }
@@ -141,6 +144,17 @@ abstract class MemberMetadata extends ElementMetadata
     public function isCascaded()
     {
         return $this->cascaded;
+    }
+
+    /**
+     * Returns whether arrays or traversable objects stored in this member
+     * should be traversed and validated in each entry
+     *
+     * @return Boolean
+     */
+    public function isCollectionCascaded()
+    {
+        return $this->collectionCascaded;
     }
 
     /**

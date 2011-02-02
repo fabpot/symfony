@@ -11,14 +11,12 @@
 
 namespace Symfony\Component\Form\ValueTransformer;
 
-use Symfony\Component\Form\Localizable;
-
 /**
  * Transforms a value between different representations.
  *
  * @author     Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-interface ValueTransformerInterface extends Localizable
+interface ValueTransformerInterface
 {
     /**
      * Transforms a value from the original representation to a transformed representation.
@@ -26,8 +24,8 @@ interface ValueTransformerInterface extends Localizable
      * This method is called on two occasions inside a form field:
      *
      * 1. When the form field is initialized with the data attached from the datasource (object or array).
-     * 2. When data from a request is bound using {@link Field::bind()} to transform the new input data
-     *    back into the renderable format. For example if you have a date field and bind '2009-10-10' onto
+     * 2. When data from a request is bound using {@link Field::submit()} to transform the new input data
+     *    back into the renderable format. For example if you have a date field and submit '2009-10-10' onto
      *    it you might accept this value because its easily parsed, but the transformer still writes back
      *    "2009/10/10" onto the form field (for further displaying or other purposes).
      *
@@ -52,7 +50,7 @@ interface ValueTransformerInterface extends Localizable
      * Transforms a value from the transformed representation to its original
      * representation.
      *
-     * This method is called when {@link Field::bind()} is called to transform the requests tainted data
+     * This method is called when {@link Field::submit()} is called to transform the requests tainted data
      * into an acceptable format for your data processing/model layer.
      *
      * This method must be able to deal with empty values. Usually this will

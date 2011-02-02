@@ -15,7 +15,6 @@
             <xsd:element name="session" type="session" minOccurs="0" maxOccurs="1" />
             <xsd:element name="templating" type="templating" minOccurs="0" maxOccurs="1" />
             <xsd:element name="translator" type="translator" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="param-converter" type="param-converter" minOccurs="0" maxOccurs="1" />
             <xsd:element name="csrf-protection" type="csrf_protection" minOccurs="0" maxOccurs="1" />
             <xsd:element name="esi" type="esi" minOccurs="0" maxOccurs="1" />
         </xsd:all>
@@ -23,7 +22,16 @@
         <xsd:attribute name="ide" type="xsd:string" />
         <xsd:attribute name="charset" type="xsd:string" />
         <xsd:attribute name="error-handler" type="xsd:string" />
+        <xsd:attribute name="cache-warmer" type="cache_warmer" />
     </xsd:complexType>
+
+    <xsd:simpleType name="cache_warmer">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="false" />
+            <xsd:enumeration value="true" />
+            <xsd:enumeration value="full" />
+        </xsd:restriction>
+    </xsd:simpleType>
 
     <xsd:complexType name="profiler">
         <xsd:all>
@@ -40,6 +48,7 @@
     <xsd:complexType name="router">
         <xsd:attribute name="resource" type="xsd:string" />
         <xsd:attribute name="type" type="xsd:string" />
+        <xsd:attribute name="cache-warmer" type="cache_warmer" />
     </xsd:complexType>
 
     <xsd:complexType name="validation">
@@ -71,13 +80,11 @@
         <xsd:attribute name="assets-version" type="xsd:string" />
         <xsd:attribute name="assets-base-urls" type="xsd:string" />
         <xsd:attribute name="cache" type="xsd:string" />
+        <xsd:attribute name="cache-warmer" type="cache_warmer" />
     </xsd:complexType>
 
     <xsd:complexType name="translator">
         <xsd:attribute name="fallback" type="xsd:string" />
-    </xsd:complexType>
-
-    <xsd:complexType name="param-converter">
     </xsd:complexType>
 
     <xsd:complexType name="csrf_protection">

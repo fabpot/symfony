@@ -22,16 +22,22 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 abstract class Extension extends BaseExtension
 {
     protected $classes = array();
+    protected $classMap = array();
 
+    /**
+     * Gets the classes to cache.
+     *
+     * @return array An array of classes
+     */
     public function getClassesToCompile()
     {
         return $this->classes;
     }
 
     /**
-     * Adds classes to be compiled when debug mode is not enabled.
+     * Adds classes to the class cache.
      *
-     * @param array $classes Classes to be compiled
+     * @param array $classes An array of classes
      */
     protected function addClassesToCompile(array $classes)
     {
@@ -39,39 +45,22 @@ abstract class Extension extends BaseExtension
     }
 
     /**
-     * Normalizes a configuration entry.
+     * Gets the autoload class map.
      *
-     * This method returns a normalize configuration array for a given key
-     * to remove the differences due to the original format (YAML and XML mainly).
-     *
-     * Here is an example.
-     *
-     * The configuration is XML:
-     *
-     * <twig:extension id="twig.extension.foo" />
-     * <twig:extension id="twig.extension.bar" />
-     *
-     * And the same configuration in YAML:
-     *
-     * twig.extensions: ['twig.extension.foo', 'twig.extension.bar']
-     *
-     * @param array A config array
-     * @param key   The key to normalize
+     * @return array An array of classes
      */
-    protected function normalizeConfig($config, $key)
+    public function getAutoloadClassMap()
     {
-        $values = array();
-        if (isset($config[$key.'s'])) {
-            $values = $config[$key.'s'];
-        } elseif (isset($config[$key])) {
-            if (is_string($config[$key]) || !is_int(key($config[$key]))) {
-                // only one
-                $values = array($config[$key]);
-            } else {
-                $values = $config[$key];
-            }
-        }
+        return $this->classMap;
+    }
 
-        return $values;
+    /**
+     * Adds classes to the autoload class map.
+     *
+     * @param array $classes An array of classes
+     */
+    public function addClassesToAutoloadMap(array $classes)
+    {
+        $this->classMap = array_merge($this->classMap, $classes);
     }
 }

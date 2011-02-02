@@ -14,18 +14,16 @@ namespace Symfony\Component\Form;
 use Symfony\Component\Locale\Locale;
 
 /**
- * A field for selecting from a list of countries
+ * A field for selecting from a list of countries.
  *
+ * @see Symfony\Component\Form\ChoiceField
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
 class CountryField extends ChoiceField
 {
-    /**
-     * @inheritDoc
-     */
     protected function configure()
     {
-        $this->addOption('choices', Locale::getDisplayCountries($this->locale));
+        $this->addOption('choices', Locale::getDisplayCountries(\Locale::getDefault()));
 
         parent::configure();
     }

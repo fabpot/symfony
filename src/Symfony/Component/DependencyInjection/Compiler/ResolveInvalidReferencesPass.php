@@ -40,6 +40,10 @@ class ResolveInvalidReferencesPass implements CompilerPassInterface
     {
         $this->container = $container;
         foreach ($container->getDefinitions() as $definition) {
+            if ($definition->isSynthetic() || $definition->isAbstract()) {
+                continue;
+            }
+
             $definition->setArguments(
                 $this->processArguments($definition->getArguments())
             );
@@ -71,6 +75,7 @@ class ResolveInvalidReferencesPass implements CompilerPassInterface
                 $invalidBehavior = $argument->getInvalidBehavior();
                 $exists = $this->container->has($id);
 
+                // resolve invalid behavior
                 if ($exists && ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE !== $invalidBehavior) {
                     $arguments[$k] = new Reference($id);
                 } else if (!$exists && ContainerInterface::NULL_ON_INVALID_REFERENCE === $invalidBehavior) {

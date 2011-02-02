@@ -26,6 +26,10 @@ class ResolveInterfaceInjectorsPass implements CompilerPassInterface
     public function process(ContainerBuilder $container)
     {
         foreach ($container->getDefinitions() as $definition) {
+            if (!$definition->getClass()) {
+                continue;
+            }
+
             $loaded = false;
             foreach ($container->getInterfaceInjectors() as $injector) {
                 if (null !== $definition->getFactoryService()) {

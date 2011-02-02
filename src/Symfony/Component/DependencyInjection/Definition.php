@@ -29,6 +29,7 @@ class Definition
     protected $tags;
     protected $public;
     protected $synthetic;
+    protected $abstract;
 
     /**
      * Constructor.
@@ -45,6 +46,7 @@ class Definition
         $this->tags = array();
         $this->public = true;
         $this->synthetic = false;
+        $this->abstract = false;
     }
 
     /**
@@ -256,6 +258,20 @@ class Definition
     }
 
     /**
+     * Sets tags for this definition
+     *
+     * @param array $tags
+     *
+     * @return Definition the current instance
+     */
+    public function setTags(array $tags)
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
      * Returns all tags.
      *
      * @return array An array of tags
@@ -294,6 +310,18 @@ class Definition
         $this->tags[$name][] = $attributes;
 
         return $this;
+    }
+
+    /**
+     * Whether this definition has a tag with the given name
+     *
+     * @param string $name
+     *
+     * @return Boolean
+     */
+    public function hasTag($name)
+    {
+        return isset($this->tags[$name]);
     }
 
     /**
@@ -403,6 +431,32 @@ class Definition
     public function isSynthetic()
     {
         return $this->synthetic;
+    }
+
+    /**
+     * Whether this definition is abstract, that means it merely serves as a
+     * template for other definitions.
+     *
+     * @param Boolean $boolean
+     *
+     * @return Definition the current instance
+     */
+    public function setAbstract($boolean)
+    {
+        $this->abstract = (Boolean) $boolean;
+
+        return $this;
+    }
+
+    /**
+     * Whether this definition is abstract, that means it merely serves as a
+     * template for other definitions.
+     *
+     * @return Boolean
+     */
+    public function isAbstract()
+    {
+        return $this->abstract;
     }
 
     /**

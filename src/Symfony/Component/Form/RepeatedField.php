@@ -12,11 +12,16 @@
 namespace Symfony\Component\Form;
 
 /**
- * A field for repeated input of values
+ * A field for repeated input of values.
+ *
+ * Available options:
+ *
+ *  * first_key:        The key to use for the first field.
+ *  * second_key:       The key to use for the second field.
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class RepeatedField extends FieldGroup
+class RepeatedField extends Form
 {
     /**
      * The prototype for the inner fields
@@ -25,7 +30,7 @@ class RepeatedField extends FieldGroup
     protected $prototype;
 
     /**
-     * Repeats the given field twice to verify the user's input
+     * Repeats the given field twice to verify the user's input.
      *
      * @param FieldInterface $innerField
      */
@@ -87,7 +92,7 @@ class RepeatedField extends FieldGroup
      */
     public function getData()
     {
-        if ($this->isBound() && $this->isFirstEqualToSecond()) {
+        if ($this->isSubmitted() && $this->isFirstEqualToSecond()) {
             return $this->get($this->getOption('first_key'))->getData();
         }
 

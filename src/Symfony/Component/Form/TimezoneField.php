@@ -11,6 +11,11 @@
 
 namespace Symfony\Component\Form;
 
+/**
+ * Represents a field where each timezone is broken down by continent.
+ *
+ * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
+ */
 class TimezoneField extends ChoiceField
 {
     /**

@@ -19,7 +19,7 @@ require_once __DIR__ . '/Fixtures/RequiredOptionsField.php';
 use Symfony\Component\Form\ValueTransformer\ValueTransformerInterface;
 use Symfony\Component\Form\PropertyPath;
 use Symfony\Component\Form\FieldError;
-use Symfony\Component\Form\FormContext;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\ValueTransformer\TransformationFailedException;
 use Symfony\Tests\Component\Form\Fixtures\Author;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
@@ -95,28 +95,28 @@ class FieldTest extends \PHPUnit_Framework_TestCase
 
     public function testFieldWithNoErrorsIsValid()
     {
-        $this->field->bind('data');
+        $this->field->submit('data');
 
         $this->assertTrue($this->field->isValid());
     }
 
     public function testFieldWithErrorsIsInvalid()
     {
-        $this->field->bind('data');
+        $this->field->submit('data');
         $this->field->addError(new FieldError('Some error'));
 
         $this->assertFalse($this->field->isValid());
     }
 
-    public function testBindResetsErrors()
+    public function testSubmitResetsErrors()
     {
         $this->field->addError(new FieldError('Some error'));
-        $this->field->bind('data');
+        $this->field->submit('data');
 
         $this->assertTrue($this->field->isValid());
     }
 
-    public function testUnboundFieldIsInvalid()
+    public function testUnsubmittedFieldIsInvalid()
     {
         $this->assertFalse($this->field->isValid());
     }
@@ -143,20 +143,6 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->field->setParent($this->createMockGroupWithId('news_article'));
 
         $this->assertEquals('news_article_title', $this->field->getId());
-    }
-
-    public function testLocaleIsPassedToValueTransformer()
-    {
-        FormContext::setLocale('de_DE');
-
-        $transformer = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-        $transformer->expects($this->exactly(1))
-                         ->method('setLocale')
-                         ->with($this->equalTo('de_DE'));
-
-        $field = new TestField('title', array(
-            'value_transformer' => $transformer,
-        ));
     }
 
     public function testIsRequiredReturnsOwnValueIfNoParent()
@@ -211,11 +197,11 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         new RequiredOptionsField('name');
     }
 
-    public function testIsBound()
+    public function testIsSubmitted()
     {
-        $this->assertFalse($this->field->isBound());
-        $this->field->bind('symfony');
-        $this->assertTrue($this->field->isBound());
+        $this->assertFalse($this->field->isSubmitted());
+        $this->field->submit('symfony');
+        $this->assertTrue($this->field->isSubmitted());
     }
 
     public function testDefaultValuesAreTransformedCorrectly()
@@ -234,7 +220,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('', $this->field->getDisplayedData());
     }
 
-    public function testBoundValuesAreTransformedCorrectly()
+    public function testSubmittedValuesAreTransformedCorrectly()
     {
         $valueTransformer = $this->createMockTransformer();
         $normTransformer = $this->createMockTransformer();
@@ -275,14 +261,14 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->with($this->equalTo('processed[reverse[0]]'))
                                 ->will($this->returnValue('transform[processed[reverse[0]]]'));
 
-        $field->bind(0);
+        $field->submit(0);
 
         $this->assertEquals('denorm[processed[reverse[0]]]', $field->getData());
         $this->assertEquals('processed[reverse[0]]', $field->getNormalizedData());
         $this->assertEquals('transform[processed[reverse[0]]]', $field->getDisplayedData());
     }
 
-    public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsValue()
+    public function testSubmittedValuesAreTransformedCorrectlyIfEmpty_processDataReturnsValue()
     {
         $transformer = $this->createMockTransformer();
 
@@ -312,13 +298,13 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->with($this->equalTo('processed'))
                                 ->will($this->returnValue('transform[processed]'));
 
-        $field->bind('');
+        $field->submit('');
 
         $this->assertSame('processed', $field->getData());
         $this->assertEquals('transform[processed]', $field->getDisplayedData());
     }
 
-    public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull()
+    public function testSubmittedValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull()
     {
         $transformer = $this->createMockTransformer();
 
@@ -339,15 +325,15 @@ class FieldTest extends \PHPUnit_Framework_TestCase
                                 ->with($this->identicalTo(null))
                                 ->will($this->returnValue(''));
 
-        $field->bind('');
+        $field->submit('');
 
         $this->assertSame(null, $field->getData());
         $this->assertEquals('', $field->getDisplayedData());
     }
 
-    public function testBoundValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull_noValueTransformer()
+    public function testSubmittedValuesAreTransformedCorrectlyIfEmpty_processDataReturnsNull_noValueTransformer()
     {
-        $this->field->bind('');
+        $this->field->submit('');
 
         $this->assertSame(null, $this->field->getData());
         $this->assertEquals('', $this->field->getDisplayedData());
@@ -383,7 +369,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('transform[norm[0]]', $field->getDisplayedData());
     }
 
-    public function testBoundValuesAreTrimmedBeforeTransforming()
+    public function testSubmittedValuesAreTrimmedBeforeTransforming()
     {
         // The value is passed to the value transformer
         $transformer = $this->createMockTransformer();
@@ -402,13 +388,13 @@ class FieldTest extends \PHPUnit_Framework_TestCase
             'value_transformer' => $transformer,
         ));
 
-        $field->bind(' a ');
+        $field->submit(' a ');
 
         $this->assertEquals('a', $field->getDisplayedData());
         $this->assertEquals('reverse[a]', $field->getData());
     }
 
-    public function testBoundValuesAreNotTrimmedBeforeTransformingIfDisabled()
+    public function testSubmittedValuesAreNotTrimmedBeforeTransformingIfDisabled()
     {
         // The value is passed to the value transformer
         $transformer = $this->createMockTransformer();
@@ -428,34 +414,34 @@ class FieldTest extends \PHPUnit_Framework_TestCase
             'value_transformer' => $transformer,
         ));
 
-        $field->bind(' a ');
+        $field->submit(' a ');
 
         $this->assertEquals(' a ', $field->getDisplayedData());
         $this->assertEquals('reverse[ a ]', $field->getData());
     }
 
     /*
-     * This is important so that bind() can work even if setData() was not called
+     * This is important so that submit() can work even if setData() was not called
      * before
      */
-    public function testUpdatePropertyTreatsEmptyValuesAsArrays()
+    public function testWritePropertyTreatsEmptyValuesAsArrays()
     {
         $array = null;
 
         $field = new TestField('firstName');
-        $field->bind('Bernhard');
-        $field->updateProperty($array);
+        $field->submit('Bernhard');
+        $field->writeProperty($array);
 
         $this->assertEquals(array('firstName' => 'Bernhard'), $array);
     }
 
-    public function testUpdatePropertyDoesNotUpdatePropertyIfPropertyPathIsEmpty()
+    public function testWritePropertyDoesNotWritePropertyIfPropertyPathIsEmpty()
     {
         $object = new Author();
 
         $field = new TestField('firstName', array('property_path' => null));
-        $field->bind('Bernhard');
-        $field->updateProperty($object);
+        $field->submit('Bernhard');
+        $field->writeProperty($object);
 
         $this->assertEquals(null, $object->firstName);
     }
@@ -466,7 +452,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
             'trim' => false,
         ));
 
-        $field->bind('a');
+        $field->submit('a');
 
         $this->assertEquals('a', $field->getDisplayedData());
         $this->assertTrue($field->isTransformationSuccessful());
@@ -485,7 +471,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
             'value_transformer' => $transformer,
         ));
 
-        $field->bind('a');
+        $field->submit('a');
 
         $this->assertEquals('a', $field->getDisplayedData());
         $this->assertFalse($field->isTransformationSuccessful());
@@ -501,6 +487,23 @@ class FieldTest extends \PHPUnit_Framework_TestCase
         $this->field->setParent($parent);
 
         $this->assertEquals('ROOT', $this->field->getRoot());
+    }
+
+    public function testFieldsInitializedWithDataAreNotUpdatedWhenAddedToForms()
+    {
+        $author = new Author();
+        $author->firstName = 'Bernhard';
+
+        $field = new TestField('firstName', array(
+            'data' => 'foobar',
+        ));
+
+        $form = new Form('author', array(
+            'data' => $author,
+        ));
+        $form->add($field);
+
+        $this->assertEquals('foobar', $field->getData());
     }
 
     public function testGetRootReturnsFieldIfNoParent()
@@ -526,7 +529,7 @@ class FieldTest extends \PHPUnit_Framework_TestCase
     protected function createMockGroup()
     {
         return $this->getMock(
-            'Symfony\Component\Form\FieldGroup',
+            'Symfony\Component\Form\Form',
             array(),
             array(),
             '',

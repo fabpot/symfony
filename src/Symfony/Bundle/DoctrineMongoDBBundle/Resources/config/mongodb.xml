@@ -52,7 +52,7 @@
     <parameter key="security.user.provider.document.class">Symfony\Bundle\DoctrineMongoDBBundle\Security\DocumentUserProvider</parameter>
     
     <!-- validator -->
-    <parameter key="doctrine_odm.mongodb.validator.unique.class">Symfony\Bundle\DoctrineMongoDBBundle\Validator\Constraints\DoctrineMongoDBUniqueValidator</parameter>
+    <parameter key="doctrine_odm.mongodb.validator.unique.class">Symfony\Bundle\DoctrineMongoDBBundle\Validator\Constraints\UniqueValidator</parameter>
   </parameters>
 
   <services>
@@ -91,7 +91,8 @@
     
     <!--  validator -->
     <service id="doctrine_odm.mongodb.validator.unique" class="%doctrine_odm.mongodb.validator.unique.class%">
-        <argument type="service" id="doctrine.odm.mongodb.document_manager" />
+        <tag name="validator.constraint_validator" alias="doctrine_odm.mongodb.unique" />
+        <argument type="service" id="service_container" />
     </service>
 
   </services>

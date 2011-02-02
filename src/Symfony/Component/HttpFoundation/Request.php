@@ -80,7 +80,7 @@ class Request
      * @param array $files      The FILES parameters
      * @param array $server     The SERVER parameters
      */
-    public function __construct(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function __construct(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array())
     {
         $this->initialize($query, $request, $attributes, $cookies, $files, $server);
     }
@@ -97,14 +97,14 @@ class Request
      * @param array $files      The FILES parameters
      * @param array $server     The SERVER parameters
      */
-    public function initialize(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function initialize(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array())
     {
-        $this->request = new ParameterBag(null !== $request ? $request : $_POST);
-        $this->query = new ParameterBag(null !== $query ? $query : $_GET);
-        $this->attributes = new ParameterBag(null !== $attributes ? $attributes : array());
-        $this->cookies = new ParameterBag(null !== $cookies ? $cookies : $_COOKIE);
-        $this->files = new FileBag(null !== $files ? $files : $_FILES);
-        $this->server = new ServerBag(null !== $server ? $server : $_SERVER);
+        $this->request = new ParameterBag($request);
+        $this->query = new ParameterBag($query);
+        $this->attributes = new ParameterBag($attributes);
+        $this->cookies = new ParameterBag($cookies);
+        $this->files = new FileBag($files);
+        $this->server = new ServerBag($server);
         $this->headers = new HeaderBag($this->server->getHeaders());
 
         $this->content = null;
@@ -117,6 +117,16 @@ class Request
         $this->basePath = null;
         $this->method = null;
         $this->format = null;
+    }
+
+    /**
+     * Creates a new request with values from PHP's super globals.
+     *
+     * @return Request A new request
+     */
+    static public function createfromGlobals()
+    {
+        return new static($_GET, $_POST, array(), $_COOKIE, $_FILES, $_SERVER);
     }
 
     /**
@@ -194,7 +204,7 @@ class Request
             'QUERY_STRING'         => $queryString,
         ));
 
-        return new self($query, $request, array(), $cookies, $files, $server);
+        return new static($query, $request, array(), $cookies, $files, $server);
     }
 
     /**
@@ -501,7 +511,11 @@ class Request
 
             $host = trim($elements[count($elements) - 1]);
         } else {
-            $host = $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            if (!$host = $this->headers->get('HOST')) {
+                if (!$host = $this->server->get('SERVER_NAME')) {
+                    $host = $this->server->get('SERVER_ADDR', '');
+                }
+            }
         }
 
         // Remove port number from host
@@ -933,13 +947,13 @@ class Request
     static protected function initializeFormats()
     {
         static::$formats = array(
-            'txt'  => 'text/plain',
+            'txt'  => array('text/plain'),
             'js'   => array('application/javascript', 'application/x-javascript', 'text/javascript'),
-            'css'  => 'text/css',
+            'css'  => array('text/css'),
             'json' => array('application/json', 'application/x-json'),
             'xml'  => array('text/xml', 'application/xml', 'application/x-xml'),
-            'rdf'  => 'application/rdf+xml',
-            'atom' => 'application/atom+xml',
+            'rdf'  => array('application/rdf+xml'),
+            'atom' => array('application/atom+xml'),
         );
     }
 }

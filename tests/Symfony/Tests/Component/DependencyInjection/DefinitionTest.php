@@ -138,6 +138,18 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers Symfony\Component\DependencyInjection\Definition::setAbstract
+     * @covers Symfony\Component\DependencyInjection\Definition::isAbstract
+     */
+    public function testSetIsAbstract()
+    {
+        $def = new Definition('stdClass');
+        $this->assertFalse($def->isAbstract(), '->isAbstract() returns false by default');
+        $this->assertSame($def, $def->setAbstract(true), '->setAbstract() implements a fluent interface');
+        $this->assertTrue($def->isAbstract(), '->isAbstract() returns true if the instance must not be public.');
+    }
+
+    /**
      * @covers Symfony\Component\DependencyInjection\Definition::setConfigurator
      * @covers Symfony\Component\DependencyInjection\Definition::getConfigurator
      */
@@ -164,12 +176,15 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
      * @covers Symfony\Component\DependencyInjection\Definition::addTag
      * @covers Symfony\Component\DependencyInjection\Definition::getTag
      * @covers Symfony\Component\DependencyInjection\Definition::getTags
+     * @covers Symfony\Component\DependencyInjection\Definition::hasTag
      */
     public function testTags()
     {
         $def = new Definition('stdClass');
         $this->assertEquals(array(), $def->getTag('foo'), '->getTag() returns an empty array if the tag is not defined');
+        $this->assertFalse($def->hasTag('foo'));
         $this->assertSame($def, $def->addTag('foo'), '->addTag() implements a fluent interface');
+        $this->assertTrue($def->hasTag('foo'));
         $this->assertEquals(array(array()), $def->getTag('foo'), '->getTag() returns attributes for a tag name');
         $def->addTag('foo', array('foo' => 'bar'));
         $this->assertEquals(array(array(), array('foo' => 'bar')), $def->getTag('foo'), '->addTag() can adds the same tag several times');

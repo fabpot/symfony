@@ -5,14 +5,7 @@
     targetNamespace="http://www.symfony-project.org/schema/dic/doctrine"
     elementFormDefault="qualified">
 
-    <xsd:element name="dbal" type="dbal" />
-
-    <xsd:complexType name="dbal">
-        <xsd:all>
-            <xsd:element name="connections" type="connections" minOccurs="0" maxOccurs="1" />
-        </xsd:all>
-
-        <xsd:attribute name="default-connection" type="xsd:string" />
+    <xsd:attributeGroup name="connection-config">
         <xsd:attribute name="dbname" type="xsd:string" />
         <xsd:attribute name="host" type="xsd:string" />
         <xsd:attribute name="port" type="xsd:integer" />
@@ -27,7 +20,19 @@
         <xsd:attribute name="charset" type="xsd:string" />
         <xsd:attribute name="wrapper-class" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
-        <xsd:attribute name="logging" type="xsd:boolean" default="false" />
+        <xsd:attribute name="logging" type="xsd:string" default="false" />
+    </xsd:attributeGroup>
+
+    <xsd:element name="dbal" type="dbal" />
+
+    <xsd:complexType name="dbal">
+        <xsd:all>
+            <xsd:element name="connections" type="connections" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="types" type="types" minOccurs="0" maxOccurs="1" />
+        </xsd:all>
+
+        <xsd:attribute name="default-connection" type="xsd:string" />
+        <xsd:attributeGroup ref="connection-config" />
     </xsd:complexType>
 
     <xsd:complexType name="connections">
@@ -36,23 +41,20 @@
         </xsd:choice>
     </xsd:complexType>
 
+    <xsd:complexType name="types">
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="type" type="type" />
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="type">
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="class" type="xsd:string" use="required" />
+    </xsd:complexType>
+
     <xsd:complexType name="connection">
         <xsd:attribute name="name" type="xsd:string" use="required" />
-        <xsd:attribute name="dbname" type="xsd:string" use="required" />
-        <xsd:attribute name="host" type="xsd:string" />
-        <xsd:attribute name="port" type="xsd:integer" />
-        <xsd:attribute name="user" type="xsd:string" />
-        <xsd:attribute name="password" type="xsd:string" />
-        <xsd:attribute name="driver" type="xsd:string" />
-        <xsd:attribute name="driver-class" type="xsd:string" />
-        <xsd:attribute name="options" type="xsd:string" />
-        <xsd:attribute name="path" type="xsd:string" />
-        <xsd:attribute name="unix-socket" type="xsd:string" />
-        <xsd:attribute name="memory" type="xsd:boolean" />
-        <xsd:attribute name="charset" type="xsd:string" />
-        <xsd:attribute name="wrapper-class" type="xsd:string" />
-        <xsd:attribute name="platform-service" type="xsd:string" />
-        <xsd:attribute name="logging" type="xsd:boolean" default="false" />
+        <xsd:attributeGroup ref="connection-config" />
     </xsd:complexType>
 
     <xsd:element name="orm" type="orm" />
@@ -81,7 +83,7 @@
         <xsd:attribute name="default-entity-manager" type="xsd:string" />
         <xsd:attribute name="default-connection" type="xsd:string" />
 
-        <xsd:attribute name="auto-generate-proxy-classes" type="xsd:boolean" default="false" />
+        <xsd:attribute name="auto-generate-proxy-classes" type="xsd:string" default="false" />
         <xsd:attribute name="result-cache-driver" type="xsd:string" />
         <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
         <xsd:attribute name="query-cache-driver" type="xsd:string" />

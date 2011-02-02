@@ -12,17 +12,11 @@
 namespace Symfony\Tests\Component\HttpKernel;
 
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\DependencyInjection\Loader\LoaderInterface;
 
 class KernelTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetSafeName()
-    {
-        $kernel = new KernelForTest('dev', true, '-foo-');
-
-        $this->assertEquals('foo', $kernel->getSafeName());
-    }
-
     /**
      * @expectedException \InvalidArgumentException
      */
@@ -61,7 +55,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
 
     public function testLocateResourceReturnsTheFirstThatMatchesWithParent()
     {
-        $parent = $this->getBundle(__DIR__.'/Fixtures/Bundle1', '', 'ParentAABundle');
+        $parent = $this->getBundle(__DIR__.'/Fixtures/Bundle1', null, 'ParentAABundle');
         $child = $this->getBundle(__DIR__.'/Fixtures/Bundle2', 'ParentAABundle', 'ChildAABundle');
 
         $kernel = $this->getKernel();
@@ -149,7 +143,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
 
     public function testInitializeBundles()
     {
-        $parent = $this->getBundle(null, '', 'ParentABundle');
+        $parent = $this->getBundle(null, null, 'ParentABundle');
         $child = $this->getBundle(null, 'ParentABundle', 'ChildABundle');
 
         $kernel = $this->getKernel();
@@ -166,7 +160,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
 
     public function testInitializeBundlesSupportInheritanceCascade()
     {
-        $grandparent = $this->getBundle(null, '', 'GrandParentBBundle');
+        $grandparent = $this->getBundle(null, null, 'GrandParentBBundle');
         $parent = $this->getBundle(null, 'GrandParentBBundle', 'ParentBBundle');
         $child = $this->getBundle(null, 'ParentBBundle', 'ChildBBundle');
 
@@ -174,7 +168,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel
             ->expects($this->once())
             ->method('registerBundles')
-            ->will($this->returnValue(array($parent, $grandparent, $child)))
+            ->will($this->returnValue(array($grandparent, $parent, $child)))
         ;
 
         $kernel->initializeBundles();
@@ -201,12 +195,33 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel->initializeBundles();
     }
 
+    public function testInitializeBundlesSupportsArbitaryBundleRegistrationOrder()
+    {
+        $grandparent = $this->getBundle(null, null, 'GrandParentCCundle');
+        $parent = $this->getBundle(null, 'GrandParentCCundle', 'ParentCCundle');
+        $child = $this->getBundle(null, 'ParentCCundle', 'ChildCCundle');
+
+        $kernel = $this->getKernel();
+        $kernel
+            ->expects($this->once())
+            ->method('registerBundles')
+            ->will($this->returnValue(array($parent, $grandparent, $child)))
+        ;
+
+        $kernel->initializeBundles();
+
+        $map = $kernel->getBundleMap();
+        $this->assertEquals(array($child, $parent, $grandparent), $map['GrandParentCCundle']);
+        $this->assertEquals(array($child, $parent), $map['ParentCCundle']);
+        $this->assertEquals(array($child), $map['ChildCCundle']);
+    }
+
     /**
      * @expectedException \LogicException
      */
     public function testInitializeBundlesThrowsExceptionWhenABundleIsDirectlyExtendedByTwoBundles()
     {
-        $parent = $this->getBundle(null, '', 'ParentCBundle');
+        $parent = $this->getBundle(null, null, 'ParentCBundle');
         $child1 = $this->getBundle(null, 'ParentCBundle', 'ChildC1Bundle');
         $child2 = $this->getBundle(null, 'ParentCBundle', 'ChildC2Bundle');
 
@@ -219,10 +234,27 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $kernel->initializeBundles();
     }
 
-    protected function getBundle($dir = null, $parent = null, $className = null)
+    /**
+     * @expectedException \LogicException
+     */
+    public function testInitializeBundleThrowsExceptionWhenRegisteringTwoBundlesWithTheSameName()
+    {
+        $fooBundle = $this->getBundle(null, null, 'FooBundle', 'DuplicateName');
+        $barBundle = $this->getBundle(null, null, 'BarBundle', 'DuplicateName');
+       
+        $kernel = $this->getKernel();
+        $kernel
+            ->expects($this->once())
+            ->method('registerBundles')
+            ->will($this->returnValue(array($fooBundle, $barBundle)))
+        ;
+        $kernel->initializeBundles();      
+    }
+
+    protected function getBundle($dir = null, $parent = null, $className = null, $bundleName = null)
     {
         $bundle = $this
-            ->getMockBuilder('Symfony\Tests\Component\HttpKernel\KernelForTest')
+            ->getMockBuilder('Symfony\Tests\Component\HttpKernel\BundleForTest')
             ->setMethods(array('getPath', 'getParent', 'getName'))
             ->disableOriginalConstructor()
         ;
@@ -231,30 +263,26 @@ class KernelTest extends \PHPUnit_Framework_TestCase
             $bundle->setMockClassName($className);
         }
 
-        $bundle = $bundle->getMock();
+        $bundle = $bundle->getMockForAbstractClass();
 
         $bundle
             ->expects($this->any())
             ->method('getName')
-            ->will($this->returnValue(get_class($bundle)))
+            ->will($this->returnValue(is_null($bundleName) ? get_class($bundle) : $bundleName))
         ;
 
-        if (null !== $dir) {
-            $bundle
-                ->expects($this->any())
-                ->method('getPath')
-                ->will($this->returnValue($dir))
-            ;
-        }
-
-        if (null !== $parent) {
-            $bundle
-                ->expects($this->any())
-                ->method('getParent')
-                ->will($this->returnValue($parent))
-            ;
-        }
-
+        $bundle
+            ->expects($this->any())
+            ->method('getPath')
+            ->will($this->returnValue($dir))
+        ;
+        
+        $bundle
+            ->expects($this->any())
+            ->method('getParent')
+            ->will($this->returnValue($parent))
+        ;
+        
         return $bundle;
     }
 
@@ -280,13 +308,6 @@ class KernelTest extends \PHPUnit_Framework_TestCase
 
 class KernelForTest extends Kernel
 {
-    public function __construct($environment, $debug, $name)
-    {
-        parent::__construct($environment, $debug);
-
-        $this->name = $name;
-    }
-
     public function getBundleMap()
     {
         return $this->bundleMap;
@@ -312,4 +333,9 @@ class KernelForTest extends Kernel
     {
         parent::initializeBundles();
     }
+}
+
+abstract class BundleForTest implements BundleInterface
+{
+    // We can not extend Symfony\Component\HttpKernel\Bundle\Bundle as we want to mock getName() which is final
 }

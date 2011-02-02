@@ -11,11 +11,14 @@ namespace Symfony\Component\Form;
  * file that was distributed with this source code.
  */
 
-use Symfony\Component\Form\FieldFactory\FieldFactoryInterface;
+use Symfony\Component\Form\CsrfProvider\DefaultCsrfProvider;
+use Symfony\Component\Form\Exception\FormException;
 use Symfony\Component\Validator\ValidatorInterface;
 
 /**
  * Default implementaton of FormContextInterface
+ *
+ * This class is immutable by design.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
@@ -23,213 +26,78 @@ use Symfony\Component\Validator\ValidatorInterface;
 class FormContext implements FormContextInterface
 {
     /**
-     * The locale used by new forms
-     * @var string
-     */
-    protected static $locale = 'en';
-
-    /**
-     * The validator used in the new form
-     * @var ValidatorInterface
-     */
-    protected $validator = null;
-
-    /**
-     * The validation group(s) validated in the new form
-     * @var string|array
-     */
-    protected $validationGroups = null;
-
-    /**
-     * The field factory used for automatically creating fields in the form
-     * @var FieldFactoryInterface
-     */
-    protected $fieldFactory = null;
-
-    /**
-     * The secret strings used for CSRF protection
+     * The options used in new forms
      * @var array
      */
-    protected $csrfSecrets = null;
+    protected $options = null;
 
     /**
-     * Whether the new form should be CSRF protected
-     * @var Boolean
-     */
-    protected $csrfProtection = false;
-
-    /**
-     * The field name used for the CSRF protection
-     * @var string
-     */
-    protected $csrfFieldName = '_token';
-
-    /**
-     * Globally sets the locale for new forms and fields
+     * Builds a context with default values
      *
-     * @param string $locale  A valid locale, such as "en", "de_DE" etc.
-     */
-    public static function setLocale($locale)
-    {
-        self::$locale = $locale;
-    }
-
-    /**
-     * Returns the locale used for new forms and fields
+     * By default, CSRF protection is enabled. In this case you have to provide
+     * a CSRF secret in the second parameter of this method. A recommended
+     * value is a generated value with at least 32 characters and mixed
+     * letters, digits and special characters.
      *
-     * @return string  A valid locale, such as "en", "de_DE" etc.
+     * If you don't want to use CSRF protection, you can leave the CSRF secret
+     * empty and set the third parameter to false.
+     *
+     * @param ValidatorInterface $validator  The validator for validating
+     *                                       forms
+     * @param string $csrfSecret             The secret to be used for
+     *                                       generating CSRF tokens
+     * @param boolean $csrfProtection        Whether forms should be CSRF
+     *                                       protected
+     * @throws FormException                 When CSRF protection is enabled,
+     *                                       but no CSRF secret is passed
      */
-    public static function getLocale()
+    public static function buildDefault(ValidatorInterface $validator, $csrfSecret = null, $csrfProtection = true)
     {
-        return self::$locale;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validator(ValidatorInterface $validator)
-    {
-        $this->validator = $validator;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function validationGroups($validationGroups)
-    {
-        $this->validationGroups = null === $validationGroups ? $validationGroups : (array) $validationGroups;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function fieldFactory(FieldFactoryInterface $fieldFactory)
-    {
-        $this->fieldFactory = $fieldFactory;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function csrfProtection($enabled)
-    {
-        $this->csrfProtection = $enabled;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function csrfFieldName($name)
-    {
-        $this->csrfFieldName = $name;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function csrfSecrets(array $secrets)
-    {
-        $this->csrfSecrets = $secrets;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getForm($name, $data = null)
-    {
-        return new Form(
-            $name,
-            $data,
-            $this->validator,
-            array(
-                'csrf_protection' => $this->csrfProtection,
-                'csrf_field_name' => $this->csrfFieldName,
-                'csrf_secrets' => $this->csrfSecrets,
-                'validation_groups' => $this->validationGroups,
-                'field_factory' => $this->fieldFactory,
-            )
+        $options = array(
+            'csrf_protection' => $csrfProtection,
+            'validator' => $validator,
         );
+
+        if ($csrfProtection) {
+            if (empty($csrfSecret)) {
+                throw new FormException('Please provide a CSRF secret when CSRF protection is enabled');
+            }
+
+            $options['csrf_provider'] = new DefaultCsrfProvider($csrfSecret);
+        }
+
+        return new static($options);
     }
 
     /**
-     * @inheritDoc
-     */
-    public function addCsrfSecret($secret)
-    {
-        $this->csrfSecrets[] = $secret;
-
-        return $this;
-    }
-
-    /**
-     * Returns the validator used in the new form
+     * Constructor
      *
-     * @return ValidatorInterface  The validator instance
+     * Initializes the context with the settings stored in the given
+     * options.
+     *
+     * @param array $options
      */
-    public function getValidator()
+    public function __construct(array $options = array())
     {
-        return $this->validator;
+        if (isset($options['csrf_protection'])) {
+            if (!$options['csrf_protection']) {
+                // don't include a CSRF provider if CSRF protection is disabled
+                unset($options['csrf_provider']);
+            }
+
+            unset($options['csrf_protection']);
+        }
+
+        $options['context'] = $this;
+
+        $this->options = $options;
     }
 
     /**
-     * Returns the validation groups validated by the new form
-     *
-     * @return string|array  One or more validation groups
+     * {@inheritDoc}
      */
-    public function getValidationGroups()
+    public function getOptions()
     {
-        return $this->validationGroups;
-    }
-
-    /**
-     * Returns the field factory used by the new form
-     *
-     * @return FieldFactoryInterface  The field factory instance
-     */
-    public function getFieldFactory()
-    {
-        return $this->fieldFactory;
-    }
-
-    /**
-     * Returns whether the new form will be CSRF protected
-     *
-     * @return Boolean  Whether the form will be CSRF protected
-     */
-    public function isCsrfProtectionEnabled()
-    {
-        return $this->csrfProtection;
-    }
-
-    /**
-     * Returns the field name used for CSRF protection in the new form
-     *
-     * @return string  The CSRF field name
-     */
-    public function getCsrfFieldName()
-    {
-        return $this->csrfFieldName;
-    }
-
-    /**
-     * Returns the secret values used for CSRF protection in the new form
-     *
-     * @return array  A list of secret string values
-     */
-    public function getCsrfSecrets()
-    {
-        return $this->csrfSecrets;
+        return $this->options;
     }
 }

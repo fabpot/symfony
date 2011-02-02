@@ -18,14 +18,14 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class JsonEncoder extends AbstractEncoder implements EncoderInterface
+class JsonEncoder extends AbstractEncoder
 {
     /**
      * {@inheritdoc}
      */
     public function encode($data, $format)
     {
-        if (!is_scalar($data)) {
+        if ($this->serializer->isStructuredType($data)) {
             $data = $this->serializer->normalize($data, $format);
         }
         return json_encode($data);
@@ -36,6 +36,6 @@ class JsonEncoder extends AbstractEncoder implements EncoderInterface
      */
     public function decode($data, $format)
     {
-        return json_decode($data);
+        return json_decode($data, true);
     }
 }

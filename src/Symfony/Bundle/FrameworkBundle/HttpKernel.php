@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\HttpKernel as BaseHttpKernel;
-use Symfony\Component\EventDispatcher\EventDispatcher as BaseEventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * This HttpKernel is used to manage scope changes of the DI container.
@@ -25,7 +25,7 @@ class HttpKernel extends BaseHttpKernel
         $this->resolver = $controllerResolver;
     }
 
-    public function setEventDispatcher(BaseEventDispatcher $dispatcher)
+    public function setEventDispatcher(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
     }
@@ -69,7 +69,7 @@ class HttpKernel extends BaseHttpKernel
      * Renders a Controller and returns the Response content.
      *
      * Note that this method generates an esi:include tag only when both the standalone
-     * option is set to true and the request has ESI capability (@see Symfony\Component\HttpKernel\Cache\ESI).
+     * option is set to true and the request has ESI capability (@see Symfony\Component\HttpKernel\HttpCache\ESI).
      *
      * Available options:
      *

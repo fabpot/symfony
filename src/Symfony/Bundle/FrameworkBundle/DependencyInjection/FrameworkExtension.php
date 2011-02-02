@@ -67,10 +67,6 @@ class FrameworkExtension extends Extension
             }
         }
 
-        if (isset($config['i18n']) && $config['i18n']) {
-            FormContext::setLocale(\Locale::get());
-        }
-
         if (isset($config['ide'])) {
             switch ($config['ide']) {
                 case 'textmate':
@@ -141,10 +137,6 @@ class FrameworkExtension extends Extension
             $this->registerTestConfiguration($config, $container);
         }
 
-        if (array_key_exists('param_converter', $config) || array_key_exists('param-converter', $config)) {
-            $this->registerParamConverterConfiguration($config, $container);
-        }
-
         if (array_key_exists('session', $config)) {
             $this->registerSessionConfiguration($config, $container);
         }
@@ -156,6 +148,13 @@ class FrameworkExtension extends Extension
         if (array_key_exists('esi', $config)) {
             $this->registerEsiConfiguration($config, $container);
         }
+
+        if (isset($config['cache-warmer'])) {
+            $config['cache_warmer'] = $config['cache-warmer'];
+        }
+
+        $warmer = isset($config['cache_warmer']) ? $config['cache_warmer'] : !$container->getParameter('kernel.debug');
+        $container->setParameter('kernel.cache_warmup', $warmer);
 
         $this->addClassesToCompile(array(
             'Symfony\\Component\\HttpFoundation\\ParameterBag',
@@ -174,25 +173,15 @@ class FrameworkExtension extends Extension
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerResolver',
             'Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller',
 
+            'Symfony\\Component\\EventDispatcher\\EventInterface',
             'Symfony\\Component\\EventDispatcher\\Event',
+            'Symfony\\Component\\EventDispatcher\\EventDispatcherInterface',
             'Symfony\\Component\\EventDispatcher\\EventDispatcher',
             'Symfony\\Bundle\\FrameworkBundle\\EventDispatcher',
 
             'Symfony\\Component\\Form\\FormContext',
             'Symfony\\Component\\Form\\FormContextInterface',
         ));
-    }
-
-    /**
-     * Loads the parameter converter configuration.
-     *
-     * @param array            $config    An array of configuration settings
-     * @param ContainerBuilder $container A ContainerBuilder instance
-     */
-    protected function registerParamConverterConfiguration(array $config, ContainerBuilder $container)
-    {
-        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
-        $loader->load('param_converter.xml');
     }
 
     /**
@@ -256,13 +245,44 @@ class FrameworkExtension extends Extension
             $container->setParameter('templating.loader.cache.path', $config['cache']);
         }
 
+        if (isset($config['cache-warmer'])) {
+            $config['cache_warmer'] = $config['cache-warmer'];
+        }
+
+        if (isset($config['cache_warmer']) && $config['cache_warmer']) {
+            $container->getDefinition('templating.cache_warmer.template_paths')->addTag('kernel.cache_warmer');
+            $container->setAlias('templating.locator', 'templating.locator.cached');
+        }
+
         // engines
         if (!$engines = $this->normalizeConfig($config, 'engine')) {
             throw new \LogicException('You must register at least one templating engine.');
         }
 
+        $this->addClassesToCompile(array(
+            'Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface',
+            'Symfony\\Component\\Templating\\EngineInterface',
+            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Loader\\TemplateLocatorInterface',
+            $container->findDefinition('templating.locator')->getClass(),
+        ));
+
         foreach ($engines as $i => $engine) {
-            $engines[$i] = new Reference('templating.engine.'.(is_array($engine) ? $engine['id'] : $engine));
+            $id = is_array($engine) ? $engine['id'] : $engine;
+            $engines[$i] = new Reference('templating.engine.'.$id);
+
+            if ('php' === $id) {
+                $this->addClassesToCompile(array(
+                    'Symfony\\Component\\Templating\\PhpEngine',
+                    'Symfony\\Component\\Templating\\TemplateNameParserInterface',
+                    'Symfony\\Component\\Templating\\TemplateNameParser',
+                    'Symfony\\Component\\Templating\\Loader\\LoaderInterface',
+                    'Symfony\\Component\\Templating\\Storage\\Storage',
+                    'Symfony\\Component\\Templating\\Storage\\FileStorage',
+                    'Symfony\\Bundle\\FrameworkBundle\\Templating\\PhpEngine',
+                    'Symfony\\Bundle\\FrameworkBundle\\Templating\\TemplateNameParser',
+                    'Symfony\\Bundle\\FrameworkBundle\\Templating\\Loader\\FilesystemLoader',
+                ));
+            }
         }
 
         if (1 === count($engines)) {
@@ -273,13 +293,6 @@ class FrameworkExtension extends Extension
 
             $container->setAlias('templating', 'templating.engine.delegating');
         }
-
-        // compilation
-        $this->addClassesToCompile(array(
-            'Symfony\\Component\\Templating\\DelegatingEngine',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface',
-            'Symfony\\Component\\Templating\\EngineInterface',
-        ));
     }
 
     /**
@@ -449,15 +462,22 @@ class FrameworkExtension extends Extension
 
         $container->setParameter('routing.resource', $config['router']['resource']);
 
+        if (isset($config['router']['cache-warmer'])) {
+            $config['router']['cache_warmer'] = $config['router']['cache-warmer'];
+        }
+
+        if (isset($config['router']['cache_warmer']) && $config['router']['cache_warmer']) {
+            $container->getDefinition('router.cache_warmer')->addTag('kernel.cache_warmer');
+            $container->setAlias('router', 'router.cached');
+        }
+
         $this->addClassesToCompile(array(
             'Symfony\\Component\\Routing\\RouterInterface',
-            'Symfony\\Component\\Routing\\Router',
             'Symfony\\Component\\Routing\\Matcher\\UrlMatcherInterface',
             'Symfony\\Component\\Routing\\Matcher\\UrlMatcher',
             'Symfony\\Component\\Routing\\Generator\\UrlGeneratorInterface',
             'Symfony\\Component\\Routing\\Generator\\UrlGenerator',
-            'Symfony\\Component\\Routing\\Loader\\LoaderInterface',
-            'Symfony\\Bundle\\FrameworkBundle\\Routing\\LazyLoader',
+            $container->findDefinition('router')->getClass()
         ));
     }
 

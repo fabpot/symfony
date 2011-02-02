@@ -14,8 +14,9 @@ namespace Symfony\Component\Form;
 use Symfony\Component\Locale\Locale;
 
 /**
- * A field for selecting from a list of locales
+ * A field for selecting from a list of locales.
  *
+ * @see Symfony\Component\Form\ChoiceField
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
 class LocaleField extends ChoiceField
@@ -25,7 +26,7 @@ class LocaleField extends ChoiceField
      */
     protected function configure()
     {
-        $this->addOption('choices', Locale::getDisplayLocales($this->locale));
+        $this->addOption('choices', Locale::getDisplayLocales(\Locale::getDefault()));
 
         parent::configure();
     }

@@ -67,43 +67,122 @@ class ChoiceFieldTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
-    public function testBindSingleNonExpanded()
+    public function getChoicesVariants()
+    {
+        $choices = $this->choices;
+
+        return array(
+            array($choices),
+            array(function () use ($choices) { return $choices; }),
+        );
+    }
+
+    public function getNumericChoicesVariants()
+    {
+        $choices = $this->numericChoices;
+
+        return array(
+            array($choices),
+            array(function () use ($choices) { return $choices; }),
+        );
+    }
+
+    /**
+     * @expectedException Symfony\Component\Form\Exception\InvalidOptionsException
+     */
+    public function testClosureShouldReturnArray()
+    {
+        $field = new ChoiceField('name', array(
+            'choices' => function () { return 'foobar'; },
+        ));
+
+        // trigger closure
+        $field->getOtherChoices();
+    }
+
+    public function testNonRequiredContainsEmptyField()
     {
         $field = new ChoiceField('name', array(
             'multiple' => false,
             'expanded' => false,
             'choices' => $this->choices,
+            'required' => false,
         ));
 
-        $field->bind('b');
+        $this->assertEquals(array('' => '') + $this->choices, $field->getOtherChoices());
+    }
+
+    public function testRequiredContainsNoEmptyField()
+    {
+        $field = new ChoiceField('name', array(
+            'multiple' => false,
+            'expanded' => false,
+            'choices' => $this->choices,
+            'required' => true,
+        ));
+
+        $this->assertEquals($this->choices, $field->getOtherChoices());
+    }
+
+    public function testEmptyValueConfiguresLabelOfEmptyField()
+    {
+        $field = new ChoiceField('name', array(
+            'multiple' => false,
+            'expanded' => false,
+            'choices' => $this->choices,
+            'required' => false,
+            'empty_value' => 'Foobar',
+        ));
+
+        $this->assertEquals(array('' => 'Foobar') + $this->choices, $field->getOtherChoices());
+    }
+
+    /**
+     * @dataProvider getChoicesVariants
+     */
+    public function testSubmitSingleNonExpanded($choices)
+    {
+        $field = new ChoiceField('name', array(
+            'multiple' => false,
+            'expanded' => false,
+            'choices' => $choices,
+        ));
+
+        $field->submit('b');
 
         $this->assertEquals('b', $field->getData());
         $this->assertEquals('b', $field->getDisplayedData());
     }
 
-    public function testBindMultipleNonExpanded()
+    /**
+     * @dataProvider getChoicesVariants
+     */
+    public function testSubmitMultipleNonExpanded($choices)
     {
         $field = new ChoiceField('name', array(
             'multiple' => true,
             'expanded' => false,
-            'choices' => $this->choices,
+            'choices' => $choices,
         ));
 
-        $field->bind(array('a', 'b'));
+        $field->submit(array('a', 'b'));
 
         $this->assertEquals(array('a', 'b'), $field->getData());
         $this->assertEquals(array('a', 'b'), $field->getDisplayedData());
     }
 
-    public function testBindSingleExpanded()
+    /**
+     * @dataProvider getChoicesVariants
+     */
+    public function testSubmitSingleExpanded($choices)
     {
         $field = new ChoiceField('name', array(
             'multiple' => false,
             'expanded' => true,
-            'choices' => $this->choices,
+            'choices' => $choices,
         ));
 
-        $field->bind('b');
+        $field->submit('b');
 
         $this->assertSame('b', $field->getData());
         $this->assertSame(false, $field['a']->getData());
@@ -119,15 +198,18 @@ class ChoiceFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array('a' => '', 'b' => '1', 'c' => '', 'd' => '', 'e' => ''), $field->getDisplayedData());
     }
 
-    public function testBindSingleExpandedNumericChoices()
+    /**
+     * @dataProvider getNumericChoicesVariants
+     */
+    public function testSubmitSingleExpandedNumericChoices($choices)
     {
         $field = new ChoiceField('name', array(
             'multiple' => false,
             'expanded' => true,
-            'choices' => $this->numericChoices,
+            'choices' => $choices,
         ));
 
-        $field->bind('1');
+        $field->submit('1');
 
         $this->assertSame(1, $field->getData());
         $this->assertSame(false, $field[0]->getData());
@@ -143,15 +225,18 @@ class ChoiceFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array(0 => '', 1 => '1', 2 => '', 3 => '', 4 => ''), $field->getDisplayedData());
     }
 
-    public function testBindMultipleExpanded()
+    /**
+     * @dataProvider getChoicesVariants
+     */
+    public function testSubmitMultipleExpanded($choices)
     {
         $field = new ChoiceField('name', array(
             'multiple' => true,
             'expanded' => true,
-            'choices' => $this->choices,
+            'choices' => $choices,
         ));
 
-        $field->bind(array('a' => 'a', 'b' => 'b'));
+        $field->submit(array('a' => 'a', 'b' => 'b'));
 
         $this->assertSame(array('a', 'b'), $field->getData());
         $this->assertSame(true, $field['a']->getData());
@@ -167,15 +252,18 @@ class ChoiceFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array('a' => '1', 'b' => '1', 'c' => '', 'd' => '', 'e' => ''), $field->getDisplayedData());
     }
 
-    public function testBindMultipleExpandedNumericChoices()
+    /**
+     * @dataProvider getNumericChoicesVariants
+     */
+    public function testSubmitMultipleExpandedNumericChoices($choices)
     {
         $field = new ChoiceField('name', array(
             'multiple' => true,
             'expanded' => true,
-            'choices' => $this->numericChoices,
+            'choices' => $choices,
         ));
 
-        $field->bind(array(1 => 1, 2 => 2));
+        $field->submit(array(1 => 1, 2 => 2));
 
         $this->assertSame(array(1, 2), $field->getData());
         $this->assertSame(false, $field[0]->getData());

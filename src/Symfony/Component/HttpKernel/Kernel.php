@@ -25,7 +25,6 @@ use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\ClosureLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\ClassCollectionLoader;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
@@ -35,7 +34,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.org>
  */
-abstract class Kernel implements HttpKernelInterface, \Serializable
+abstract class Kernel implements KernelInterface
 {
     protected $bundles;
     protected $bundleMap;
@@ -61,7 +60,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         $this->debug = (Boolean) $debug;
         $this->booted = false;
         $this->rootDir = realpath($this->registerRootDir());
-        $this->name = basename($this->rootDir);
+        $this->name = preg_replace('/[^a-zA-Z0-9_]+/', '', basename($this->rootDir));
 
         if ($this->debug) {
             ini_set('display_errors', 1);
@@ -84,35 +83,7 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
     }
 
     /**
-     * Returns the root directory of this application.
-     *
-     * Most of the time, this is just __DIR__.
-     *
-     * @return string A directory path
-     */
-    abstract public function registerRootDir();
-
-    /**
-     * Returns an array of bundles to registers.
-     *
-     * @return array An array of bundle instances.
-     */
-    abstract public function registerBundles();
-
-    /**
-     * Loads the container configuration
-     *
-     * @param LoaderInterface $loader A LoaderInterface instance
-     */
-    abstract public function registerContainerConfiguration(LoaderInterface $loader);
-
-    /**
      * Boots the current kernel.
-     *
-     * This method boots the bundles, which MUST set
-     * the DI container.
-     *
-     * @throws \LogicException When the Kernel is already booted
      */
     public function boot()
     {
@@ -120,22 +91,11 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
             return;
         }
 
-        require_once __DIR__.'/bootstrap.php';
-
         // init bundles
         $this->initializeBundles();
 
         // init container
         $this->initializeContainer();
-
-        // load core classes
-        ClassCollectionLoader::load(
-            $this->container->getParameter('kernel.compiled_classes'),
-            $this->container->getParameter('kernel.cache_dir'),
-            'classes',
-            $this->container->getParameter('kernel.debug'),
-            true
-        );
 
         foreach ($this->bundles as $bundle) {
             $bundle->setContainer($this->container);
@@ -160,19 +120,6 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         }
 
         $this->container = null;
-    }
-
-    /**
-     * Reboots the kernel.
-     *
-     * This method is mainly useful when doing functional testing.
-     *
-     * It is a shortcut for the call to shutdown() and boot().
-     */
-    public function reboot()
-    {
-        $this->shutdown();
-        $this->boot();
     }
 
     /**
@@ -217,12 +164,12 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
     }
 
     /**
-     * Returns a bundle by its name.
+     * Returns a bundle and optionally its descendants by its name.
      *
      * @param string  $name  Bundle name
-     * @param Boolean $first Whether to return the first bundle or all bundles matching this name
+     * @param Boolean $first Whether to return the first bundle only or together with its descendants
      *
-     * @return BundleInterface A BundleInterface instance
+     * @return BundleInterface|Array A BundleInterface instance or an array of BundleInterface instances if $first is false
      *
      * @throws \InvalidArgumentException when the bundle is not enabled
      */
@@ -310,11 +257,6 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         return $this->name;
     }
 
-    public function getSafeName()
-    {
-        return preg_replace('/[^a-zA-Z0-9_]+/', '', $this->name);
-    }
-
     /**
      * Gets the environment.
      *
@@ -385,60 +327,90 @@ abstract class Kernel implements HttpKernelInterface, \Serializable
         return $this->rootDir.'/logs';
     }
 
+    /**
+     * Initialize the data structures related to the bundle management:
+     *  - the bundle property maps a bundle name to the bundle instance,
+     *  - the bundleMap property maps a bundle name to the bundle inheritance hierarchy (most derived bundle first).
+     *
+     * @throws \LogicException if two bundles share a common name
+     * @throws \LogicException if a bundle tries to extend a non-registered bundle
+     * @throws \LogicException if two bundles extend the same ancestor
+     *
+     */
     protected function initializeBundles()
     {
         // init bundles
         $this->bundles = array();
-        $this->bundleMap = array();
+        $topMostBundles = array();
+        $directChildren = array();
+        
         foreach ($this->registerBundles() as $bundle) {
             $name = $bundle->getName();
-            $this->bundles[$name] = $bundle;
-            if (!isset($this->bundleMap[$name])) {
-                $this->bundleMap[$name] = array();
+            if (isset($this->bundles[$name])) {
+                throw new \LogicException(sprintf('Trying to register two bundles with the same name "%s"', $name));
             }
-            $this->bundleMap[$name][] = $bundle;
+            $this->bundles[$name] = $bundle;
+
+            if ($parentName = $bundle->getParent()) {
+                if (isset($directChildren[$parentName])) {
+                    throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $directChildren[$parentName]));
+                }
+                $directChildren[$parentName] = $name;
+            } else {
+                $topMostBundles[$name] = $bundle;
+            }            
+        }
+
+        // look for orphans
+        if (count($diff = array_diff(array_keys($directChildren), array_keys($this->bundles)))) {
+            throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not registered.', $directChildren[$diff[0]], $diff[0]));
         }
 
         // inheritance
-        $extended = array();
-        foreach ($this->bundles as $name => $bundle) {
-            $parent = $bundle;
-            $first = true;
-            while ($parentName = $parent->getParent()) {
-                if (!isset($this->bundles[$parentName])) {
-                    throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not registered.', $name, $parentName));
-                }
+        $this->bundleMap = array();
+        foreach ($topMostBundles as $name => $bundle) {
+            $bundleMap = array($bundle);
+            $hierarchy = array($name);
 
-                if ($first && isset($extended[$parentName])) {
-                    throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $extended[$parentName]));
-                }
-
-                $first = false;
-                $parent = $this->bundles[$parentName];
-                $extended[$parentName] = $name;
-                array_unshift($this->bundleMap[$parentName], $bundle);
+            while (isset($directChildren[$name])) {
+                $name = $directChildren[$name];
+                array_unshift($bundleMap, $this->bundles[$name]);
+                $hierarchy[] = $name;
+            }
+            
+            foreach ($hierarchy as $bundle) {
+                $this->bundleMap[$bundle] = $bundleMap;
+                array_pop($bundleMap);
             }
         }
+
     }
 
     protected function initializeContainer()
     {
-        $class = $this->getSafeName().ucfirst($this->environment).($this->debug ? 'Debug' : '').'ProjectContainer';
+        $class = $this->name.ucfirst($this->environment).($this->debug ? 'Debug' : '').'ProjectContainer';
         $location = $this->getCacheDir().'/'.$class;
         $reload = $this->debug ? $this->needsReload($class, $location) : false;
 
+        $fresh = false;
         if ($reload || !file_exists($location.'.php')) {
             $container = $this->buildContainer();
             $this->dumpContainer($container, $class, $location.'.php');
+
+            $fresh = true;
         }
 
         require_once $location.'.php';
 
         $this->container = new $class();
         $this->container->set('kernel', $this);
+
+        if ($fresh && 'cli' !== php_sapi_name()) {
+            $this->container->get('cache_warmer')->warmUp($this->container->getParameter('kernel.cache_dir'));
+        }
     }
 
-    public function getKernelParameters()
+    protected function getKernelParameters()
     {
         $bundles = array();
         foreach ($this->bundles as $name => $bundle) {

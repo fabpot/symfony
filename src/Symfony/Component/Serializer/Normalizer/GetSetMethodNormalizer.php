@@ -33,7 +33,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class GetSetMethodNormalizer extends AbstractNormalizer implements NormalizerInterface
+class GetSetMethodNormalizer extends AbstractNormalizer
 {
     /**
      * {@inheritdoc}
@@ -52,7 +52,7 @@ class GetSetMethodNormalizer extends AbstractNormalizer implements NormalizerInt
 
                 if (null === $propertyMap || isset($propertyMap[$attributeName])) {
                     $attributeValue = $method->invoke($object);
-                    if (!is_scalar($attributeValue)) {
+                    if ($this->serializer->isStructuredType($attributeValue)) {
                         $attributeValue = $this->serializer->normalize($attributeValue, $format);
                     }
 

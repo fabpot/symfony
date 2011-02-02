@@ -78,7 +78,7 @@ class TwigExtension extends Extension
             }
         } else {
             foreach ($globals as $key => $value) {
-                if ('@' === substr($value, 0, 1)) {
+                if (is_string($value) && '@' === substr($value, 0, 1)) {
                     $def->addMethodCall('addGlobal', array($key, new Reference(substr($value, 1))));
                 } else {
                     $def->addMethodCall('addGlobal', array($key, $value));
@@ -106,6 +106,14 @@ class TwigExtension extends Extension
                 unset($config[$key]);
                 $config[str_replace('-', '_', $key)] = $value;
             }
+        }
+
+        if (isset($config['cache-warmer'])) {
+            $config['cache_warmer'] = $config['cache-warmer'];
+        }
+
+        if (isset($config['cache_warmer']) && $config['cache_warmer']) {
+            $container->getDefinition('templating.cache_warmer.templates_cache')->addTag('kernel.cache_warmer');
         }
 
         $container->setParameter('twig.options', array_replace($container->getParameter('twig.options'), $config));

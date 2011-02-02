@@ -48,6 +48,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
 
         $container->setAlias('database_connection', sprintf('doctrine.dbal.%s_connection', $config['default_connection']));
         $container->setParameter('doctrine.dbal.default_connection', $config['default_connection']);
+        $container->setParameter('doctrine.dbal.types', $config['types']);
 
         foreach ($config['connections'] as $name => $connection) {
             $this->loadDbalConnection($connection, $container);
@@ -91,6 +92,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
         );
         $mergedConfig = array(
             'default_connection'  => 'default',
+            'types' => array(),
         );
         $connectionDefaults = array(
             'driver' => array(
@@ -111,6 +113,20 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $mergedConfig['default_connection'] = $config['default-connection'];
             } else if (isset($config['default_connection'])) {
                 $mergedConfig['default_connection'] = $config['default_connection'];
+            }
+
+            // Handle DBAL Types
+            if (isset($config['types'])) {
+                if (isset($config['types']['type'][0])) {
+                    $config['types'] = $config['types']['type'];
+                }
+                foreach ($config['types'] AS $name => $type) {
+                    if (is_array($type) && isset($type['name']) && isset($type['class'])) { // xml case
+                        $mergedConfig['types'][$type['name']] = $type['class'];
+                    } else { // yml case
+                        $mergedConfig['types'][$name] = $type;
+                    }
+                }
             }
         }
 
@@ -154,15 +170,16 @@ class DoctrineExtension extends AbstractDoctrineExtension
     {
         $containerDef = new Definition($container->getParameter('doctrine.dbal.configuration_class'));
         $containerDef->setPublic(false);
-        if (isset($connection['logging']) && $connection['logging']) {
+        if (isset($connection['container']['logging']) && $connection['container']['logging']) {
             $containerDef->addMethodCall('setSQLLogger', array(new Reference('doctrine.dbal.logger')));
         }
         $container->setDefinition(sprintf('doctrine.dbal.%s_connection.configuration', $connection['name']), $containerDef);
 
         $driverOptions = $connection['driver'];
 
-        $driverDef = new Definition('Doctrine\DBAL\DriverManager');
-        $driverDef->setFactoryMethod('getConnection');
+        $driverDef = new Definition('Doctrine\DBAL\Connection');
+        $driverDef->setFactoryService('doctrine.dbal.connection_factory');
+        $driverDef->setFactoryMethod('createConnection');
         $container->setDefinition(sprintf('doctrine.dbal.%s_connection', $connection['name']), $driverDef);
 
         // event manager
@@ -234,6 +251,8 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 );
             }
         }
+
+        $container->setParameter('doctrine.orm.entity_managers', array_keys($config['entity_managers']));
     }
 
     protected function mergeOrmConfig(array $configs, $container)
@@ -281,10 +300,10 @@ class DoctrineExtension extends AbstractDoctrineExtension
                 $mergedConfig['default_connection'] = $config['default_connection'];
             }
             if (isset($config['auto_generate_proxy_classes'])) {
-                $mergedConfig['auto_generate_proxy_classes'] = $config['auto_generate_proxy_classes'];
+                $defaultManagerOptions['auto_generate_proxy_classes'] = $config['auto_generate_proxy_classes'];
             }
             if (isset($config['auto-generate-proxy-classes'])) {
-                $mergedConfig['auto_generate_proxy_classes'] = $config['auto-generate-proxy-classes'];
+                $defaultManagerOptions['auto_generate_proxy_classes'] = $config['auto-generate-proxy-classes'];
             }
         }
         $defaultManagerOptions['connection'] = $mergedConfig['default_connection'];

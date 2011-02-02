@@ -18,17 +18,20 @@ use Symfony\Component\Form\Exception\InvalidOptionsException;
  *
  * Available options:
  *
- *  * choices:              An array of key-value pairs that will represent the choices.
+ *  * choices:              An array of key-value pairs that will represent the choices
  *  * preferred_choices:    An array of choices (by key) that should be displayed
- *                          above all other options in the field.
+ *                          above all other options in the field
+ *  * empty_value:          If set to a non-false value, an "empty" option will
+ *                          be added to the top of the countries choices. A
+ *                          common value might be "Choose a country". Default: false.
  *
  * The multiple and expanded options control exactly which HTML element
  * that should be used to render this field:
  *
- *  * expanded = false, multiple = false    a drop-down select element;
- *  * expanded = false, multiple = true     a multiple select element;
- *  * expanded = true, multiple = false     a series of input radio elements;
- *  * expanded = true, multiple = true      a series of input checkboxes.
+ *  * expanded = false, multiple = false    A drop-down select element
+ *  * expanded = false, multiple = true     A multiple select element
+ *  * expanded = true, multiple = false     A series of input radio elements
+ *  * expanded = true, multiple = true      A series of input checkboxes
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
@@ -40,15 +43,27 @@ class ChoiceField extends HybridField
      */
     protected $preferredChoices = array();
 
+    /**
+     * Stores the choices
+     * You should only access this property through getChoices()
+     * @var array
+     */
+    private $choices = array();
+
     protected function configure()
     {
         $this->addRequiredOption('choices');
         $this->addOption('preferred_choices', array());
         $this->addOption('multiple', false);
         $this->addOption('expanded', false);
+        $this->addOption('empty_value', '');
 
-        if (!is_array($this->getOption('choices'))) {
-            throw new InvalidOptionsException('The choices option must be an array', array('choices'));
+        parent::configure();
+
+        $choices = $this->getOption('choices');
+
+        if (!is_array($choices) && !$choices instanceof \Closure) {
+            throw new InvalidOptionsException('The choices option must be an array or a closure', array('choices'));
         }
 
         if (!is_array($this->getOption('preferred_choices'))) {
@@ -60,9 +75,9 @@ class ChoiceField extends HybridField
         }
 
         if ($this->isExpanded()) {
-            $this->setFieldMode(self::GROUP);
+            $this->setFieldMode(self::FORM);
 
-            $choices = $this->getOption('choices');
+            $choices = $this->getChoices();
 
             foreach ($this->preferredChoices as $choice => $_) {
                 $this->add($this->newChoiceField($choice, $choices[$choice]));
@@ -76,8 +91,6 @@ class ChoiceField extends HybridField
         } else {
             $this->setFieldMode(self::FIELD);
         }
-
-        parent::configure();
     }
 
     public function getName()
@@ -95,19 +108,67 @@ class ChoiceField extends HybridField
         return $name;
     }
 
+    /**
+     * Initializes the choices
+     *
+     * If the choices were given as a closure, the closure is executed now.
+     *
+     * @return array
+     */
+    protected function initializeChoices()
+    {
+        if (!$this->choices) {
+            $this->choices = $this->getInitializedChoices();
+
+            if (!$this->isRequired()) {
+                $this->choices = array('' => $this->getOption('empty_value')) + $this->choices;
+            }
+        }
+    }
+
+    protected function getInitializedChoices()
+    {
+        $choices = $this->getOption('choices');
+
+        if ($choices instanceof \Closure) {
+            $choices = $choices->__invoke();
+        }
+
+        if (!is_array($choices)) {
+            throw new InvalidOptionsException('The "choices" option must be an array or a closure returning an array', array('choices'));
+        }
+
+        return $choices;
+    }
+
+    /**
+     * Returns the choices
+     *
+     * If the choices were given as a closure, the closure is executed on
+     * the first call of this method.
+     *
+     * @return array
+     */
+    protected function getChoices()
+    {
+        $this->initializeChoices();
+
+        return $this->choices;
+    }
+
     public function getPreferredChoices()
     {
-        return array_intersect_key($this->getOption('choices'), $this->preferredChoices);
+        return array_intersect_key($this->getChoices(), $this->preferredChoices);
     }
 
     public function getOtherChoices()
     {
-        return array_diff_key($this->getOption('choices'), $this->preferredChoices);
+        return array_diff_key($this->getChoices(), $this->preferredChoices);
     }
 
     public function getLabel($choice)
     {
-        $choices = $this->getOption('choices');
+        $choices = $this->getChoices();
 
         return isset($choices[$choice]) ? $choices[$choice] : null;
     }
@@ -135,7 +196,7 @@ class ChoiceField extends HybridField
     /**
      * Returns a new field of type radio button or checkbox.
      *
-     * @param string $key      The key for the option
+     * @param string $choice   The key for the option
      * @param string $label    The label for the option
      */
     protected function newChoiceField($choice, $label)
@@ -157,13 +218,13 @@ class ChoiceField extends HybridField
      * Takes care of converting the input from a single radio button
      * to an array.
      */
-    public function bind($value)
+    public function submit($value)
     {
         if (!$this->isMultipleChoice() && $this->isExpanded()) {
             $value = null === $value ? array() : array($value => true);
         }
 
-        parent::bind($value);
+        parent::submit($value);
     }
 
     /**
@@ -183,7 +244,7 @@ class ChoiceField extends HybridField
     {
         if ($this->isExpanded()) {
             $value = parent::transform($value);
-            $choices = $this->getOption('choices');
+            $choices = $this->getChoices();
 
             foreach ($choices as $choice => $_) {
                 $choices[$choice] = $this->isMultipleChoice()
@@ -193,6 +254,7 @@ class ChoiceField extends HybridField
 
             return $choices;
         }
+
         return parent::transform($value);
     }
 
@@ -223,9 +285,10 @@ class ChoiceField extends HybridField
             if ($this->isMultipleChoice()) {
                 $value = $choices;
             } else {
-                $value =  count($choices) > 0 ? current($choices) : null;
+                $value = count($choices) > 0 ? current($choices) : null;
             }
         }
+
         return parent::reverseTransform($value);
     }
 }

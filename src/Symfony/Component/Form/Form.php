@@ -11,27 +11,75 @@
 
 namespace Symfony\Component\Form;
 
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\Validator\ValidatorInterface;
 use Symfony\Component\Form\Exception\FormException;
+use Symfony\Component\Form\Exception\AlreadyBoundException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
+use Symfony\Component\Form\Exception\DanglingFieldException;
+use Symfony\Component\Form\Exception\FieldDefinitionException;
+use Symfony\Component\Form\CsrfProvider\CsrfProviderInterface;
 
 /**
  * Form represents a form.
  *
  * A form is composed of a validator schema and a widget form schema.
  *
- * Form also takes care of Csrf protection by default.
+ * Form also takes care of CSRF protection by default.
  *
- * A Csrf secret can be any random string. If set to false, it disables the
- * Csrf protection, and if set to null, it forces the form to use the global
- * Csrf secret. If the global Csrf secret is also null, then a random one
+ * A CSRF secret can be any random string. If set to false, it disables the
+ * CSRF protection, and if set to null, it forces the form to use the global
+ * CSRF secret. If the global CSRF secret is also null, then a random one
  * is generated on the fly.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class Form extends FieldGroup
+class Form extends Field implements \IteratorAggregate, FormInterface
 {
-    protected $validator = null;
+    /**
+     * Contains all the fields of this group
+     * @var array
+     */
+    protected $fields = array();
+
+    /**
+     * Contains the names of submitted values who don't belong to any fields
+     * @var array
+     */
+    protected $extraFields = array();
+
+    /**
+     * Whether a request was bound to the form
+     * @var Boolean
+     */
+    protected $bound = false;
+
+    /**
+     * Stores the class that the data of this form must be instances of
+     * @var string
+     */
+    protected $dataClass;
+
+    /**
+     * The context used when creating the form
+     * @var FormContext
+     */
+    protected $context = null;
+
+    /**
+     * Creates a new form with the options stored in the given context
+     *
+     * @param  FormContextInterface $context
+     * @param  string $name
+     * @param  array $options
+     * @return Form
+     */
+    public static function create(FormContextInterface $context, $name = null, array $options = array())
+    {
+        return new static($name, array_merge($context->getOptions(), $options));
+    }
 
     /**
      * Constructor.
@@ -41,42 +89,561 @@ class Form extends FieldGroup
      * @param ValidatorInterface $validator
      * @param array $options
      */
-    public function __construct($name, $data = null, ValidatorInterface $validator = null, array $options = array())
+    public function __construct($name = null, array $options = array())
     {
-        $this->validator = $validator;
-
-        // Prefill the form with the given data
-        if (null !== $data) {
-            $this->setData($data);
-        }
-
-        $this->addOption('csrf_protection');
+        $this->addOption('data_class');
         $this->addOption('csrf_field_name', '_token');
-        $this->addOption('csrf_secrets', array(__FILE__.php_uname()));
+        $this->addOption('csrf_provider');
         $this->addOption('field_factory');
         $this->addOption('validation_groups');
+        $this->addOption('virtual', false);
+        $this->addOption('validator');
+        $this->addOption('context');
 
         if (isset($options['validation_groups'])) {
             $options['validation_groups'] = (array)$options['validation_groups'];
         }
 
+        if (isset($options['data_class'])) {
+            $this->dataClass = $options['data_class'];
+        }
+
         parent::__construct($name, $options);
 
-        // If data is passed to this constructor, objects from parent forms
-        // should be ignored
-        if (null !== $data) {
-            $this->setPropertyPath(null);
+        // Enable CSRF protection
+        if ($this->getOption('csrf_provider')) {
+            if (!$this->getOption('csrf_provider') instanceof CsrfProviderInterface) {
+                throw new FormException('The object passed to the "csrf_provider" option must implement CsrfProviderInterface');
+            }
+
+            $fieldName = $this->getOption('csrf_field_name');
+            $token = $this->getOption('csrf_provider')->generateCsrfToken(get_class($this));
+
+            $this->add(new HiddenField($fieldName, array('data' => $token)));
+        }
+    }
+
+    /**
+     * Clones this group
+     */
+    public function __clone()
+    {
+        foreach ($this->fields as $name => $field) {
+            $field = clone $field;
+            // this condition is only to "bypass" a PHPUnit bug with mocks
+            if (null !== $field->getParent()) {
+                $field->setParent($this);
+            }
+            $this->fields[$name] = $field;
+        }
+    }
+
+    /**
+     * Adds a new field to this group. A field must have a unique name within
+     * the group. Otherwise the existing field is overwritten.
+     *
+     * If you add a nested group, this group should also be represented in the
+     * object hierarchy. If you want to add a group that operates on the same
+     * hierarchy level, use merge().
+     *
+     * <code>
+     * class Entity
+     * {
+     *   public $location;
+     * }
+     *
+     * class Location
+     * {
+     *   public $longitude;
+     *   public $latitude;
+     * }
+     *
+     * $entity = new Entity();
+     * $entity->location = new Location();
+     *
+     * $form = new Form('entity', $entity, $validator);
+     *
+     * $locationGroup = new Form('location');
+     * $locationGroup->add(new TextField('longitude'));
+     * $locationGroup->add(new TextField('latitude'));
+     *
+     * $form->add($locationGroup);
+     * </code>
+     *
+     * @param FieldInterface|string $field
+     * @return FieldInterface
+     */
+    public function add($field)
+    {
+        if ($this->isBound()) {
+            throw new AlreadyBoundException('You cannot add fields after binding a form');
         }
 
-        // Enable CSRF protection, if necessary
-        if ($this->getOption('csrf_protection')) {
-            $field = new HiddenField($this->getOption('csrf_field_name'), array(
-                'property_path' => null,
-            ));
-            $field->setData($this->generateCsrfToken($this->getOption('csrf_secrets')));
+        // if the field is given as string, ask the field factory of the form
+        // to create a field
+        if (!$field instanceof FieldInterface) {
+            if (!is_string($field)) {
+                throw new UnexpectedTypeException($field, 'FieldInterface or string');
+            }
 
-            $this->add($field);
+            $factory = $this->getFieldFactory();
+
+            if (!$factory) {
+                throw new FormException('A field factory must be set to automatically create fields');
+            }
+
+            $class = $this->getDataClass();
+
+            if (!$class) {
+                throw new FormException('The data class must be set to automatically create fields');
+            }
+
+            $options = func_num_args() > 1 ? func_get_arg(1) : array();
+            $field = $factory->getInstance($class, $field, $options);
         }
+
+        if ('' === $field->getKey() || null === $field->getKey()) {
+            throw new FieldDefinitionException('You cannot add anonymous fields');
+        }
+
+        $this->fields[$field->getKey()] = $field;
+
+        $field->setParent($this);
+
+        $data = $this->getTransformedData();
+
+        // if the property "data" is NULL, getTransformedData() returns an empty
+        // string
+        if (!empty($data)) {
+            $field->readProperty($data);
+        }
+
+        return $field;
+    }
+
+    /**
+     * Removes the field with the given key.
+     *
+     * @param string $key
+     */
+    public function remove($key)
+    {
+        $this->fields[$key]->setParent(null);
+
+        unset($this->fields[$key]);
+    }
+
+    /**
+     * Returns whether a field with the given key exists.
+     *
+     * @param  string $key
+     * @return Boolean
+     */
+    public function has($key)
+    {
+        return isset($this->fields[$key]);
+    }
+
+    /**
+     * Returns the field with the given key.
+     *
+     * @param  string $key
+     * @return FieldInterface
+     */
+    public function get($key)
+    {
+        if (isset($this->fields[$key])) {
+            return $this->fields[$key];
+        }
+
+        throw new \InvalidArgumentException(sprintf('Field "%s" does not exist.', $key));
+    }
+
+    /**
+     * Returns all fields in this group
+     *
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    /**
+     * Returns an array of visible fields from the current schema.
+     *
+     * @return array
+     */
+    public function getVisibleFields()
+    {
+        return $this->getFieldsByVisibility(false, false);
+    }
+
+    /**
+     * Returns an array of visible fields from the current schema.
+     *
+     * This variant of the method will recursively get all the
+     * fields from the nested forms or field groups
+     *
+     * @return array
+     */
+    public function getAllVisibleFields()
+    {
+        return $this->getFieldsByVisibility(false, true);
+    }
+
+    /**
+     * Returns an array of hidden fields from the current schema.
+     *
+     * @return array
+     */
+    public function getHiddenFields()
+    {
+        return $this->getFieldsByVisibility(true, false);
+    }
+
+    /**
+     * Returns an array of hidden fields from the current schema.
+     *
+     * This variant of the method will recursively get all the
+     * fields from the nested forms or field groups
+     *
+     * @return array
+     */
+    public function getAllHiddenFields()
+    {
+        return $this->getFieldsByVisibility(true, true);
+    }
+
+    /**
+     * Returns a filtered array of fields from the current schema.
+     *
+     * @param Boolean $hidden Whether to return hidden fields only or visible fields only
+     * @param Boolean $recursive Whether to recur through embedded schemas
+     *
+     * @return array
+     */
+    protected function getFieldsByVisibility($hidden, $recursive)
+    {
+        $fields = array();
+        $hidden = (Boolean)$hidden;
+
+        foreach ($this->fields as $field) {
+            if ($field instanceof Form && $recursive) {
+                $fields = array_merge($fields, $field->getFieldsByVisibility($hidden, $recursive));
+            } else if ($hidden === $field->isHidden()) {
+                $fields[] = $field;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Initializes the field group with an object to operate on
+     *
+     * @see FieldInterface
+     */
+    public function setData($data)
+    {
+        parent::setData($data);
+
+        // get transformed data and pass its values to child fields
+        $data = $this->getTransformedData();
+
+        if (!empty($data) && !is_array($data) && !is_object($data)) {
+            throw new \InvalidArgumentException(sprintf('Expected argument of type object or array, %s given', gettype($data)));
+        }
+
+        if (!empty($data)) {
+            if ($this->dataClass && !$data instanceof $this->dataClass) {
+                throw new FormException(sprintf('Form data should be instance of %s', $this->dataClass));
+            }
+
+            $this->readObject($data);
+        }
+    }
+
+    /**
+     * Returns the data of the field as it is displayed to the user.
+     *
+     * @see FieldInterface
+     * @return array of field name => value
+     */
+    public function getDisplayedData()
+    {
+        $values = array();
+
+        foreach ($this->fields as $key => $field) {
+            $values[$key] = $field->getDisplayedData();
+        }
+
+        return $values;
+    }
+
+    /**
+     * Binds POST data to the field, transforms and validates it.
+     *
+     * @param  string|array $data  The POST data
+     */
+    public function submit($data)
+    {
+        if (null === $data) {
+            $data = array();
+        }
+
+        if (!is_array($data)) {
+            throw new UnexpectedTypeException($data, 'array');
+        }
+
+        // remember for later
+        $submittedData = $data;
+
+        foreach ($this->fields as $key => $field) {
+            if (!isset($data[$key])) {
+                $data[$key] = null;
+            }
+        }
+
+        $data = $this->preprocessData($data);
+
+        foreach ($data as $key => $value) {
+            if ($this->has($key)) {
+                $this->fields[$key]->submit($value);
+            }
+        }
+
+        $data = $this->getTransformedData();
+
+        $this->writeObject($data);
+
+        // set and reverse transform the data
+        parent::submit($data);
+
+        $this->extraFields = array();
+
+        foreach ($submittedData as $key => $value) {
+            if (!$this->has($key)) {
+                $this->extraFields[] = $key;
+            }
+        }
+    }
+
+    /**
+     * Updates the child fields from the properties of the given data
+     *
+     * This method calls readProperty() on all child fields that have a
+     * property path set. If a child field has no property path set but
+     * implements FormInterface, writeProperty() is called on its
+     * children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function readObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->readProperty($objectOrArray);
+        }
+    }
+
+    /**
+     * Updates all properties of the given data from the child fields
+     *
+     * This method calls writeProperty() on all child fields that have a property
+     * path set. If a child field has no property path set but implements
+     * FormInterface, writeProperty() is called on its children instead.
+     *
+     * @param array|object $objectOrArray
+     */
+    protected function writeObject(&$objectOrArray)
+    {
+        $iterator = new RecursiveFieldIterator($this);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+
+        foreach ($iterator as $field) {
+            $field->writeProperty($objectOrArray);
+        }
+    }
+
+    /**
+     * Processes the submitted data before it is passed to the individual fields
+     *
+     * The data is in the user format.
+     *
+     * @param  array $data
+     * @return array
+     */
+    protected function preprocessData(array $data)
+    {
+        return $data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isVirtual()
+    {
+        return $this->getOption('virtual');
+    }
+
+    /**
+     * Returns whether this form was submitted with extra fields
+     *
+     * @return Boolean
+     */
+    public function isSubmittedWithExtraFields()
+    {
+        // TODO: integrate the field names in the error message
+        return count($this->extraFields) > 0;
+    }
+
+    /**
+     * Returns whether the field is valid.
+     *
+     * @return Boolean
+     */
+    public function isValid()
+    {
+        if (!parent::isValid()) {
+            return false;
+        }
+
+        foreach ($this->fields as $field) {
+            if (!$field->isValid()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addError(FieldError $error, PropertyPathIterator $pathIterator = null, $type = null)
+    {
+        if (null !== $pathIterator) {
+            if ($type === self::FIELD_ERROR && $pathIterator->hasNext()) {
+                $pathIterator->next();
+
+                if ($pathIterator->isProperty() && $pathIterator->current() === 'fields') {
+                    $pathIterator->next();
+                }
+
+                if ($this->has($pathIterator->current()) && !$this->get($pathIterator->current())->isHidden()) {
+                    $this->get($pathIterator->current())->addError($error, $pathIterator, $type);
+
+                    return;
+                }
+            } else if ($type === self::DATA_ERROR) {
+                $iterator = new RecursiveFieldIterator($this);
+                $iterator = new \RecursiveIteratorIterator($iterator);
+
+                foreach ($iterator as $field) {
+                    if (null !== ($fieldPath = $field->getPropertyPath())) {
+                        if ($fieldPath->getElement(0) === $pathIterator->current() && !$field->isHidden()) {
+                            if ($pathIterator->hasNext()) {
+                                $pathIterator->next();
+                            }
+
+                            $field->addError($error, $pathIterator, $type);
+
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        parent::addError($error);
+    }
+
+    /**
+     * Returns whether the field requires a multipart form.
+     *
+     * @return Boolean
+     */
+    public function isMultipart()
+    {
+        foreach ($this->fields as $field) {
+            if ($field->isMultipart()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the field exists (implements the \ArrayAccess interface).
+     *
+     * @param string $key The key of the field
+     *
+     * @return Boolean true if the widget exists, false otherwise
+     */
+    public function offsetExists($key)
+    {
+        return $this->has($key);
+    }
+
+    /**
+     * Returns the form field associated with the name (implements the \ArrayAccess interface).
+     *
+     * @param string $key The offset of the value to get
+     *
+     * @return Field A form field instance
+     */
+    public function offsetGet($key)
+    {
+        return $this->get($key);
+    }
+
+    /**
+     * Throws an exception saying that values cannot be set (implements the \ArrayAccess interface).
+     *
+     * @param string $offset (ignored)
+     * @param string $value (ignored)
+     *
+     * @throws \LogicException
+     */
+    public function offsetSet($key, $field)
+    {
+        throw new \LogicException('Use the method add() to add fields');
+    }
+
+    /**
+     * Throws an exception saying that values cannot be unset (implements the \ArrayAccess interface).
+     *
+     * @param string $key
+     *
+     * @throws \LogicException
+     */
+    public function offsetUnset($key)
+    {
+        return $this->remove($key);
+    }
+
+    /**
+     * Returns the iterator for this group.
+     *
+     * @return \ArrayIterator
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->fields);
+    }
+
+    /**
+     * Returns the number of form fields (implements the \Countable interface).
+     *
+     * @return integer The number of embedded form fields
+     */
+    public function count()
+    {
+        return count($this->fields);
     }
 
     /**
@@ -121,49 +688,51 @@ class Form extends FieldGroup
     }
 
     /**
-     * Returns the secret values used for the CSRF protection
+     * Returns the provider used for generating and validating CSRF tokens
      *
-     * @return array  A list of string valuesf
+     * @return CsrfProviderInterface  The provider instance
      */
-    public function getCsrfSecrets()
+    public function getCsrfProvider()
     {
-        return $this->getOption('csrf_secrets');
+        return $this->getOption('csrf_provider');
     }
 
     /**
-     * Binds the form with values and files.
+     * Binds a request to the form
      *
-     * This method is final because it is very easy to break a form when
-     * overriding this method and adding logic that depends on $taintedFiles.
-     * You should override doBind() instead where the uploaded files are
-     * already merged into the data array.
+     * If the request was a POST request, the data is submitted to the form,
+     * transformed and written into the form data (an object or an array).
+     * You can set the form data by passing it in the second parameter
+     * of this method or by passing it in the "data" option of the form's
+     * constructor.
      *
-     * @param  array $taintedValues  The form data of the $_POST array
-     * @param  array $taintedFiles   An array of uploaded files
-     * @return Boolean               Whether the form is valid
+     * @param Request $request    The request to bind to the form
+     * @param array|object $data  The data from which to read default values
+     *                            and where to write submitted values
      */
-    final public function bind($taintedValues, array $taintedFiles = null)
+    public function bind(Request $request, $data = null)
     {
-        if (null === $taintedFiles) {
-            if ($this->isMultipart() && $this->getParent() === null) {
-                throw new \InvalidArgumentException('You must provide a files array for multipart forms');
-            }
+        $this->bound = true;
 
-            $taintedFiles = array();
+        // Store object from which to read the default values and where to
+        // write the submitted values
+        if (null !== $data) {
+            $this->setData($data);
         }
 
-        if (null === $taintedValues) {
-            $taintedValues = array();
-        }
+        // Store the submitted data in case of a post request
+        if ('POST' == $request->getMethod()) {
+            $values = $request->request->get($this->getName(), array());
+            $files = $request->files->get($this->getName(), array());
 
-        $this->doBind(self::deepArrayUnion($taintedValues, $taintedFiles));
+            $this->submit(self::deepArrayUnion($values, $files));
 
-        if ($this->getParent() === null) {
-            if ($this->validator === null) {
+            if (null === $this->getOption('validator')) {
                 throw new FormException('A validator is required for binding. Forgot to pass it to the constructor of the form?');
             }
 
-            if ($violations = $this->validator->validate($this, $this->getOption('validation_groups'))) {
+            // Validate the submitted data
+            if ($violations = $this->getOption('validator')->validate($this, $this->getOption('validation_groups'))) {
                 // TODO: test me
                 foreach ($violations as $violation) {
                     $propertyPath = new PropertyPath($violation->getPropertyPath());
@@ -183,39 +752,22 @@ class Form extends FieldGroup
     }
 
     /**
-     * Binds the form with the given data.
+     * Binds the form with submitted data from the PHP globals $_POST and
+     * $_FILES
      *
-     * @param  array $taintedData  The data to bind to the form
-     * @return Boolean             Whether the form is valid
+     * @see bind()
      */
-    protected function doBind(array $taintedData)
+    public function bindGlobals($data = null)
     {
-        parent::bind($taintedData);
+        $this->bind(Request::createFromGlobals(), $data);
     }
 
     /**
-     * Returns a CSRF token for the given CSRF secret
-     *
-     * If you want to change the algorithm used to compute the token, you
-     * can override this method.
-     *
-     * @param  string $secret The secret string to use
-     *
-     * @return string A token string
+     * @var Boolean  whether a request and an object were bound to the form
      */
-    protected function generateCsrfToken(array $secrets)
+    public function isBound()
     {
-        $implodedSecrets = get_class($this);
-
-        foreach ($secrets as $secret) {
-            if ($secret instanceof \Closure) {
-                $secret = $secret();
-            }
-
-            $implodedSecrets .= $secret;
-        }
-
-        return md5($implodedSecrets);
+        return $this->bound;
     }
 
     /**
@@ -236,10 +788,9 @@ class Form extends FieldGroup
         if (!$this->isCsrfProtected()) {
             return true;
         } else {
-            $actual = $this->get($this->getOption('csrf_field_name'))->getDisplayedData();
-            $expected = $this->generateCsrfToken($this->getOption('csrf_secrets'));
+            $token = $this->get($this->getOption('csrf_field_name'))->getDisplayedData();
 
-            return $actual === $expected;
+            return $this->getOption('csrf_provider')->isCsrfTokenValid(get_class($this), $token);
         }
     }
 
@@ -250,7 +801,7 @@ class Form extends FieldGroup
      */
     public function isPostMaxSizeReached()
     {
-        if (isset($_SERVER['CONTENT_LENGTH'])) {
+        if ($this->isRoot() && isset($_SERVER['CONTENT_LENGTH'])) {
             $length = (int) $_SERVER['CONTENT_LENGTH'];
             $max = trim(ini_get('post_max_size'));
 
@@ -268,6 +819,36 @@ class Form extends FieldGroup
         } else {
             return false;
         }
+    }
+
+    /**
+     * Sets the class that object bound to this form must be instances of
+     *
+     * @param string  A fully qualified class name
+     */
+    protected function setDataClass($class)
+    {
+        $this->dataClass = $class;
+    }
+
+    /**
+     * Returns the class that object must have that are bound to this form
+     *
+     * @return string  A fully qualified class name
+     */
+    public function getDataClass()
+    {
+        return $this->dataClass;
+    }
+
+    /**
+     * Returns the context used when creating this form
+     *
+     * @return FormContext  The context instance
+     */
+    public function getContext()
+    {
+        return $this->getOption('context');
     }
 
     /**

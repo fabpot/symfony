@@ -30,20 +30,23 @@ use Doctrine\ORM\Tools\EntityGenerator;
 /**
  * Base class for Doctrine console commands to extend from.
  *
+ * Provides some helper and convenience methods to configure doctrine commands in the context of bundles
+ * and multiple connections/entity managers.
+ *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 abstract class DoctrineCommand extends Command
 {
+    /**
+     * Convenience method to push the helper sets of a given entity manager into the application.
+     * 
+     * @param Application $application
+     * @param string $emName
+     */
     public static function setApplicationEntityManager(Application $application, $emName)
     {
         $container = $application->getKernel()->getContainer();
-        $emName = $emName ? $emName : 'default';
-        $emServiceName = sprintf('doctrine.orm.%s_entity_manager', $emName);
-        if (!$container->has($emServiceName)) {
-            throw new \InvalidArgumentException(sprintf('Could not find Doctrine EntityManager named "%s"', $emName));
-        }
-
-        $em = $container->get($emServiceName);
+        $em = self::getEntityManager($container, $emName);
         $helperSet = $application->getHelperSet();
         $helperSet->set(new ConnectionHelper($em->getConnection()), 'db');
         $helperSet->set(new EntityManagerHelper($em), 'em');
@@ -52,7 +55,7 @@ abstract class DoctrineCommand extends Command
     public static function setApplicationConnection(Application $application, $connName)
     {
         $container = $application->getKernel()->getContainer();
-        $connName = $connName ? $connName : 'default';
+        $connName = $connName ? $connName : $container->getParameter('doctrine.dbal.default_connection');
         $connServiceName = sprintf('doctrine.dbal.%s_connection', $connName);
         if (!$container->has($connServiceName)) {
             throw new \InvalidArgumentException(sprintf('Could not find Doctrine Connection named "%s"', $connName));
@@ -75,68 +78,47 @@ abstract class DoctrineCommand extends Command
         return $entityGenerator;
     }
 
-    protected function getEntityManager($name = null)
+    protected static function getEntityManager($container, $name = null)
     {
-        $name = $name ? $name : 'default';
+        $name = $name ? $name : $container->getParameter('doctrine.orm.default_entity_manager');
         $serviceName = sprintf('doctrine.orm.%s_entity_manager', $name);
-        if (!$this->container->has($serviceName)) {
+        if (!$container->has($serviceName)) {
             throw new \InvalidArgumentException(sprintf('Could not find Doctrine EntityManager named "%s"', $name));
         }
 
-        return $this->container->get($serviceName);
-    }
-
-    protected function runCommand($name, array $input = array())
-    {
-        $application = new Application($this->container->get('kernel'));
-        $arguments = array();
-        $arguments = array_merge(array($name), $input);
-        $input = new ArrayInput($arguments);
-        $application->setAutoExit(false);
-        $application->run($input);
+        return $container->get($serviceName);
     }
 
     /**
-     * TODO: Better way to do these functions?
+     * Get a doctrine dbal connection by symfony name.
      *
-     * @return Connection[] An array of Connections
+     * @param string $name
+     * @return Doctrine\DBAL\Connection
      */
-    protected function getDoctrineConnections()
+    protected function getDoctrineConnection($name)
     {
-        $connections = array();
-        $ids = $this->container->getServiceIds();
-        foreach ($ids as $id) {
-            preg_match('/^doctrine\.dbal\.(.*)_connection$/', $id, $matches);
-            if ($matches) {
-                $name = $matches[1];
-                $connections[$name] = $this->container->get($id);
-            }
+        $connectionName = $name ?: $this->container->getParameter('doctrine.dbal.default_connection');
+        $connectionName = sprintf('doctrine.dbal.%s_connection', $connectionName);
+        if (!$this->container->has($connectionName)) {
+            throw new \InvalidArgumentException(sprintf('<error>Could not find a connection named <comment>%s</comment></error>', $name));
         }
-
-        return $connections;
+        return $this->container->get($connectionName);
     }
 
     protected function getDoctrineEntityManagers()
     {
+        $entityManagerNames = $this->container->getParameter('doctrine.orm.entity_managers');
         $entityManagers = array();
-        $ids = $this->container->getServiceIds();
-        foreach ($ids as $id) {
-            preg_match('/^doctrine\.orm\.(.*)_entity_manager$/', $id, $matches);
-            if ($matches) {
-                $name = $matches[1];
-                $entityManagers[$name] = $this->container->get($id);
-            }
+        foreach ($entityManagerNames AS $entityManagerName) {
+            $em = $this->container->get(sprintf('doctrine.orm.%s_entity_manager', $entityManagerName));
+            $entityManagers[] = $em;
         }
-
         return $entityManagers;
     }
 
     protected function getBundleMetadatas(Bundle $bundle)
     {
-        $tmp = dirname(str_replace('\\', '/', get_class($bundle)));
         $namespace = $bundle->getNamespace();
-        $class = basename($tmp);
-
         $bundleMetadatas = array();
         $entityManagers = $this->getDoctrineEntityManagers();
         foreach ($entityManagers as $key => $em) {
@@ -144,7 +126,6 @@ abstract class DoctrineCommand extends Command
             $cmf->setEntityManager($em);
             $metadatas = $cmf->getAllMetadata();
             foreach ($metadatas as $metadata) {
-
                 if (strpos($metadata->name, $namespace) === 0) {
                     $bundleMetadatas[$metadata->name] = $metadata;
                 }
@@ -152,5 +133,41 @@ abstract class DoctrineCommand extends Command
         }
 
         return $bundleMetadatas;
+    }
+
+    protected function findBundle($bundleName)
+    {
+        $foundBundle = false;
+        foreach ($this->application->getKernel()->getBundles() as $bundle) {
+            /* @var $bundle Bundle */
+            if (strtolower($bundleName) == strtolower($bundle->getName())) {
+                $foundBundle = $bundle;
+                break;
+            }
+        }
+
+        if (!$foundBundle) {
+            throw new \InvalidArgumentException("No bundle " . $bundleName . " was found.");
+        }
+
+        return $foundBundle;
+    }
+
+    /**
+     * Transform classname to a path $foundBundle substract it to get the destination
+     *
+     * @param Bundle $bundle
+     * @return string
+     */
+    protected function findBasePathForBundle($bundle)
+    {
+        $path = str_replace('\\', '/', $bundle->getNamespace());
+        $destination = str_replace('/'.$path, "", $bundle->getPath(), $c);
+
+        if ($c != 1) {
+            throw new \RuntimeException("Something went terribly wrong.");
+        }
+
+        return $destination;
     }
 }
