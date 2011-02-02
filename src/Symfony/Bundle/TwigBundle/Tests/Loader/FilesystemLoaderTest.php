@@ -38,12 +38,12 @@ class FilesystemLoaderTest extends TestCase
     public function testTwigErrorIfLocatorThrowsInvalid()
     {
         $this->setExpectedException('Twig_Error_Loader');
-        $invalidException = new InvalidArgumentException('Unable to find template "NonExistant".');
+        $invalidException = new InvalidArgumentException('Unable to find template "NonExistent".');
         $this->locator->expects($this->once())
                       ->method('locate')
                       ->will($this->throwException($invalidException));
     
-        $this->loader->getCacheKey('NonExistant');        
+        $this->loader->getCacheKey('NonExistent');        
     }
     
     public function testTwigErrorIfLocatorReturnsFalse()
@@ -53,6 +53,6 @@ class FilesystemLoaderTest extends TestCase
                       ->method('locate')
                       ->will($this->returnValue(false));
     
-        $this->loader->getCacheKey('NonExistant');        
+        $this->loader->getCacheKey('NonExistent');        
     }
 }
