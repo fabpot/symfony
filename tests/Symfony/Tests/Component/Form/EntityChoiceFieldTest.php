@@ -149,17 +149,21 @@ class EntityChoiceFieldTest extends DoctrineOrmTestCase
         ));
     }
 
-    public function testSetDataSingle_null()
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testEntityWithNoToStringMethod()
     {
+        $entity1 = new SingleIdentEntity(1, 'Foo');
+        $entity2 = new SingleIdentEntity(2, 'Bar');
+        
         $field = new EntityChoiceField('name', array(
             'multiple' => false,
             'em' => $this->em,
             'class' => self::SINGLE_IDENT_CLASS,
+            'choices' => array($entity1, $entity2),
         ));
         $field->setData(null);
-
-        $this->assertEquals(null, $field->getData());
-        $this->assertEquals('', $field->getDisplayedData());
     }
 
     public function testSetDataMultiple_null()

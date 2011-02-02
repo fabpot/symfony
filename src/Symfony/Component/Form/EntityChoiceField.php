@@ -240,7 +240,12 @@ class EntityChoiceField extends ChoiceField
                 $value = $propertyPath->getValue($entity);
             } else {
                 // Otherwise expect a __toString() method in the entity
-                $value = (string)$entity;
+                if(method_exists($entity, '__toString')) {
+                    $value = (string)$entity;
+                } else {
+                    throw new \RuntimeException(sprintf('please define a __toString method for class %s', get_class($entity)));
+                }
+
             }
 
             if (count($this->getIdentifierFields()) > 1) {
