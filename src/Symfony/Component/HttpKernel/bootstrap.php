@@ -30,6 +30,10 @@ class Container implements ContainerInterface
 {
     protected $parameterBag;
     protected $services;
+    protected $scopes;
+    protected $scopeChildren;
+    protected $scopedServices;
+    protected $scopeStacks;
     protected $loading = array();
     public function __construct(ParameterBagInterface $parameterBag = null)
     {
@@ -174,13 +178,9 @@ class Container implements ContainerInterface
         }
         $this->scopes[$name] = $parentScope;
         $this->scopeChildren[$name] = array();
-                if ($parentScope !== self::SCOPE_CONTAINER) {
+                while ($parentScope !== self::SCOPE_CONTAINER) {
             $this->scopeChildren[$parentScope][] = $name;
-            foreach ($this->scopeChildren as $pName => $childScopes) {
-                if (in_array($parentScope, $childScopes, true)) {
-                    $this->scopeChildren[$pName][] = $name;
-                }
-            }
+            $parentScope = $this->scopes[$parentScope];
         }
     }
     public function hasScope($name)
@@ -967,6 +967,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class FileBag extends ParameterBag
 {
     private $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
+    public function __construct(array $parameters = array())
+    {
+                        parent::__construct();
+        $this->replace($parameters);
+    }
     public function replace(array $files = array())
     {
         $this->parameters = array();
