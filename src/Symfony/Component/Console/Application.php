@@ -618,7 +618,7 @@ class Application
         if ($namespace) {
             $commandsXML->setAttribute('namespace', $namespace);
         } else {
-            $namespacesXML = $dom->createElement('namespaces')
+            $namespacesXML = $dom->createElement('namespaces');
             $xml->appendChild($namespacesXML);
         }
 
