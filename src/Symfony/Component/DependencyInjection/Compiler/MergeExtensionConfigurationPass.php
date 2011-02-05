@@ -32,7 +32,7 @@ class MergeExtensionConfigurationPass implements CompilerPassInterface
         foreach ($container->getExtensions() as $alias => $extension) {
 
             $configs = $container->getExtensionConfig($alias);
-            if ($configs !== false) {
+            if ($configs !== false && method_exists($extension, 'load')) {
                 $tmpContainer = new ContainerBuilder($container->getParameterBag());
                 $tmpContainer->addObjectResource($extension);
 
