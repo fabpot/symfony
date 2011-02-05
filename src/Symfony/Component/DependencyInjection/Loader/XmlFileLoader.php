@@ -377,7 +377,7 @@ EOF
                 $values = array();
             }
 
-            $this->container->loadFromExtension($node->namespaceURI, $node->localName, $values);
+            $this->container->loadFromExtension($node->namespaceURI, $values);
         }
     }
 
