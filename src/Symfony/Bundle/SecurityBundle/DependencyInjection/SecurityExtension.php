@@ -35,17 +35,15 @@ class SecurityExtension extends Extension
     protected $contextListeners = array();
     protected $listenerPositions = array('pre_auth', 'form', 'http', 'remember_me');
 
-    public function configLoad(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container)
     {
         foreach ($configs as $config) {
-            $this->doConfigLoad($this->normalizeKeys($config), $container);
-        }
-    }
+            if (isset($config['acl'])) {
+                $this->doAclLoad($this->normalizeKeys($config['acl']), $container);
+                unset($config['acl']);
+            }
 
-    public function aclLoad(array $configs, ContainerBuilder $container)
-    {
-        foreach ($configs as $config) {
-            $this->doAclLoad($this->normalizeKeys($config), $container);
+            $this->doConfigLoad($this->normalizeKeys($config), $container);
         }
     }
 

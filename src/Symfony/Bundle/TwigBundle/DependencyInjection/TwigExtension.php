@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\Reference;
  */
 class TwigExtension extends Extension
 {
-    public function configLoad(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container)
     {
         $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
         $loader->load('twig.xml');

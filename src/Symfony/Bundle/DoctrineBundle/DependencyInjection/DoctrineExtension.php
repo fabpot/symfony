@@ -29,6 +29,28 @@ use Symfony\Bundle\DoctrineAbstractBundle\DependencyInjection\AbstractDoctrineEx
  */
 class DoctrineExtension extends AbstractDoctrineExtension
 {
+    public function load(array $configs, ContainerBuilder $container)
+    {
+        $dbal = $orm = array();
+        foreach ($configs as $config) {
+            if (isset($config['dbal'])) {
+                $dbal[] = $config['dbal'];
+            }
+
+            if (isset($config['orm'])) {
+                $orm[] = $config['orm'];
+            }
+        }
+
+        if (!empty($dbal)) {
+            $this->dbalLoad($dbal, $container);
+        }
+
+        if (!empty($orm)) {
+            $this->ormLoad($orm, $container);
+        }
+    }
+
     /**
      * Loads the DBAL configuration.
      *
@@ -39,7 +61,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param array $config An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function dbalLoad(array $configs, ContainerBuilder $container)
+    protected function dbalLoad(array $configs, ContainerBuilder $container)
     {
         $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
         $loader->load('dbal.xml');
@@ -229,7 +251,7 @@ class DoctrineExtension extends AbstractDoctrineExtension
      * @param array $config An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    public function ormLoad(array $configs, ContainerBuilder $container)
+    protected function ormLoad(array $configs, ContainerBuilder $container)
     {
         $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
         $loader->load('orm.xml');
