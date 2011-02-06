@@ -71,7 +71,7 @@ EOT
 
         // user specified bundle name?
         $bundle = $input->getArgument('bundleName');
-        if ('' === $bundle) {
+        if (null === $bundle) {
             $bundle = strtr($namespace, array('\\' => ''));
         } elseif (!preg_match('/Bundle$/', $bundle)) {
             throw new \InvalidArgumentException('The bundle name must end with Bundle.');
