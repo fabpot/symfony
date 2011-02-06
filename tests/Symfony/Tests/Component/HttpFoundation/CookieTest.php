@@ -14,7 +14,7 @@ namespace Symfony\Tests\Component\HttpFoundation;
 use Symfony\Component\HttpFoundation\Cookie;
 
 /**
- * CookieTest 
+ * CookieTest
  *
  * @author John Kary <john@johnkary.net>
  */
@@ -48,7 +48,7 @@ class CookieTest extends \PHPUnit_Framework_TestCase
             array("\014MyValue"),
         );
     }
-    
+
     /**
      * @dataProvider invalidNames
      * @expectedException InvalidArgumentException
@@ -58,7 +58,7 @@ class CookieTest extends \PHPUnit_Framework_TestCase
     {
         new Cookie($name);
     }
-    
+
     /**
      * @dataProvider invalidValues
      * @expectedException InvalidArgumentException
@@ -68,7 +68,7 @@ class CookieTest extends \PHPUnit_Framework_TestCase
     {
         new Cookie('MyCookie', $value);
     }
-    
+
     /**
      * @covers Symfony\Component\HttpFoundation\Cookie::getValue
      */
@@ -76,7 +76,7 @@ class CookieTest extends \PHPUnit_Framework_TestCase
     {
         $value = 'MyValue';
         $cookie = new Cookie('MyCookie', $value);
-        
+
         $this->assertSame($value, $cookie->getValue(), '->getValue() returns the proper value');
     }
 }
