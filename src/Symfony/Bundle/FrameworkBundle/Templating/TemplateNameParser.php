@@ -43,6 +43,9 @@ class TemplateNameParser extends BaseTemplateNameParser
         if (is_array($name)) {
             return $name;
         }
+        if (@json_decode($name)) {
+            return (array) json_decode($name);
+        }
 
         // normalize name
         $name = str_replace(':/' , ':', preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')));
