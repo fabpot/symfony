@@ -415,7 +415,7 @@ abstract class Kernel implements KernelInterface
         $this->container = new $class();
         $this->container->set('kernel', $this);
 
-        if ($fresh && 'cli' !== php_sapi_name()) {
+        if ($fresh && ('cli' !== php_sapi_name() || $container->getParameter('kernel.cache_warmup') === 'force')) {
             $this->container->get('cache_warmer')->warmUp($this->container->getParameter('kernel.cache_dir'));
         }
     }
