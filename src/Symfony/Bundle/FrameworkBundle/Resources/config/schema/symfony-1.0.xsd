@@ -30,6 +30,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="false" />
             <xsd:enumeration value="full" />
+            <xsd:enumeration value="force" />
             <xsd:enumeration value="true" />
         </xsd:restriction>
     </xsd:simpleType>
