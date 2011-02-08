@@ -192,6 +192,7 @@ class FormExtension extends \Twig_Extension
 
     protected function render(FieldInterface $field, $name, array $arguments, $resources = null)
     {
+        $resources = (array) $resources;
         if ('field' === $name) {
             list($name, $template) = $this->getWidget($field, $resources);
         } else {
