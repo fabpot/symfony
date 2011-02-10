@@ -56,6 +56,8 @@ abstract class FrameworkExtensionTest extends TestCase
     }
 
     /**
+     * TODO: Change this to InvalidConfigurationException after Configuration nodes properly handle isRequired()
+     *
      * @expectedException InvalidArgumentException
      */
     public function testRouterRequiresResourceOption()
@@ -129,6 +131,8 @@ abstract class FrameworkExtensionTest extends TestCase
     }
 
     /**
+     * TODO: Change this to InvalidConfigurationException after Configuration nodes properly handle isRequired()
+     *
      * @expectedException LogicException
      */
     public function testTemplatingRequiresAtLeastOneEngine()
