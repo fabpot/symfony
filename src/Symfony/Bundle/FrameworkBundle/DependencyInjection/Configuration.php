@@ -206,7 +206,7 @@ class Configuration
                     ->treatTrueLike(array())
                     ->fixXmlConfig('namespace')
                     ->arrayNode('namespaces')
-                        ->containsNameValuePairsWithKeyAttribute('prefix')
+                        ->useAttributeAsKey('prefix')
                         ->prototype('scalar')
                             ->beforeNormalization()
                                 ->ifTrue(function($v) { return is_array($v) && isset($v['namespace']); })
