@@ -13,6 +13,7 @@ namespace Symfony\Component\Templating\Loader;
 
 use Symfony\Component\Templating\Storage\Storage;
 use Symfony\Component\Templating\Storage\FileStorage;
+use Symfony\Component\Templating\TemplateInterface;
 
 /**
  * FilesystemLoader is a loader that read templates from the filesystem.
@@ -44,14 +45,16 @@ class FilesystemLoader extends Loader
      *
      * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
      */
-    public function load($template)
+    public function load(TemplateInterface $template)
     {
-        if (self::isAbsolutePath($template['name']) && file_exists($template['name'])) {
-            return new FileStorage($template['name']);
+        $file = $template->get('name');
+
+        if (self::isAbsolutePath($file) && file_exists($file)) {
+            return new FileStorage($file);
         }
 
         $replacements = array();
-        foreach ($template as $key => $value) {
+        foreach ($template->all() as $key => $value) {
             $replacements['%'.$key.'%'] = $value;
         }
 
@@ -85,14 +88,14 @@ class FilesystemLoader extends Loader
      * @param array     $template The template name as an array
      * @param timestamp $time     The last modification time of the cached template
      */
-    public function isFresh($template, $time)
+    public function isFresh(TemplateInterface $template, $time)
     {
-        if (false === $template = $this->load($template))
+        if (false === $storage = $this->load($template))
         {
             return false;
         }
 
-        return filemtime((string) $template) < $time;
+        return filemtime((string) $storage) < $time;
     }
 
     /**

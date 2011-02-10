@@ -73,19 +73,16 @@ class PhpEngine implements EngineInterface, \ArrayAccess
      */
     public function render($name, array $parameters = array())
     {
-        $template = $this->load($name);
-
-        $key = md5(serialize($template));
-
+        $storage = $this->load($name);
+        $key = md5(serialize($storage));
         $this->current = $key;
         $this->parents[$key] = null;
 
         // attach the global variables
         $parameters = array_replace($this->getGlobals(), $parameters);
-
         // render
-        if (false === $content = $this->evaluate($template, $parameters)) {
-            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', json_encode($template)));
+        if (false === $content = $this->evaluate($storage, $parameters)) {
+            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', json_encode($name)));
         }
 
         // decorator
@@ -131,7 +128,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     {
         $template = $this->parser->parse($name);
 
-        return 'php' === $template['engine'];
+        return 'php' === $template->get('engine');
     }
 
     /**
@@ -491,18 +488,18 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     {
         $template = $this->parser->parse($name);
 
-        $key = md5(serialize($template));
+        $key = $template->getSignature();
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }
 
         // load
-        $template = $this->loader->load($template);
+        $storage = $this->loader->load($template);
 
-        if (false === $template) {
+        if (false === $storage) {
             throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', $name));
         }
 
-        return $this->cache[$key] = $template;
+        return $this->cache[$key] = $storage;
     }
 }
