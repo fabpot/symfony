@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\FrameworkBundle\Templating\Loader;
 
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Templating\TemplateInterface;
 
 /**
  * TemplateLocator locates templates in bundles.
@@ -44,23 +45,23 @@ class TemplateLocator implements TemplateLocatorInterface
      *
      * @return string An absolute file name
      */
-    public function locate($template)
+    public function locate(TemplateInterface $template)
     {
-        $key = md5(serialize($template));
+        $key = $template->getSignature();
 
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }
 
-        if (!$template['bundle']) {
-            if (is_file($file = $this->path.'/views/'.$template['controller'].'/'.$template['name'].'.'.$template['format'].'.'.$template['engine'])) {
+        if (!$template->get('bundle')) {
+            if (is_file($file = $this->path.'/views/'.$template->get('controller').'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine'))) {
                 return $this->cache[$key] = $file;
             }
 
             throw new \InvalidArgumentException(sprintf('Unable to find template "%s" in "%s".', json_encode($template), $this->path));
         }
 
-        $resource = $template['bundle'].'/Resources/views/'.$template['controller'].'/'.$template['name'].'.'.$template['format'].'.'.$template['engine'];
+        $resource = $template->get('bundle').'/Resources/views/'.$template->get('controller').'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine');
 
         try {
             return $this->kernel->locateResource('@'.$resource, $this->path);

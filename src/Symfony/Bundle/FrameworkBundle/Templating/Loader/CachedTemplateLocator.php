@@ -11,6 +11,8 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Templating\Loader;
 
+use Symfony\Component\Templating\TemplateInterface;
+
 /**
  * CachedTemplateLocator locates templates in the cache.
  *
@@ -39,9 +41,9 @@ class CachedTemplateLocator implements TemplateLocatorInterface
      *
      * @return string An absolute file name
      */
-    public function locate($template)
+    public function locate(TemplateInterface $template)
     {
-        $key = md5(serialize($template));
+        $key = $template->getSignature();
 
         if (!isset($this->templates[$key])) {
             throw new \InvalidArgumentException(sprintf('Unable to find template "%s".', json_encode($template)));

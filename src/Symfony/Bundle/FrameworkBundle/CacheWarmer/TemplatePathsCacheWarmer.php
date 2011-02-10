@@ -14,6 +14,8 @@ namespace Symfony\Bundle\FrameworkBundle\CacheWarmer;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Finder\Finder;
+use Symfony\Bundle\FrameworkBundle\Templating\Template;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser;
 
 /**
  * Computes the association between template names and their paths on the disk.
@@ -71,10 +73,11 @@ class TemplatePathsCacheWarmer extends CacheWarmer
             $finder = new Finder();
             foreach ($finder->files()->followLinks()->in($dir) as $file) {
                 if (false !== $template = $this->parseTemplateName($file, $prefix.'/', $bundle->getName())) {
-                    $controllerSegment = empty($template['controller']) ? '' :  $template['controller'].'/';
-                    $resource = '@'.$template['bundle'].'/Resources/views/'.$controllerSegment.$template['name'].'.'.$template['format'].'.'.$template['engine'];
+                    $controllerSegment = $template->get('controller');
+                    $controllerSegment = empty($controllerSegment) ? '' :  $controllerSegment.'/';
+                    $resource = '@'.$template->get('bundle').'/Resources/views/'.$controllerSegment.'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine');
 
-                    $templates[md5(serialize($template))] = $this->kernel->locateResource($resource, $this->rootDir);
+                    $templates[$template->getSignature()] = $this->kernel->locateResource($resource, $this->rootDir);
                 }
             }
         }
@@ -83,7 +86,7 @@ class TemplatePathsCacheWarmer extends CacheWarmer
             $finder = new Finder();
             foreach ($finder->files()->followLinks()->in($this->rootDir) as $file) {
                 if (false !== $template = $this->parseTemplateName($file, strtr($this->rootDir, '\\', '/').'/')) {
-                    $templates[md5(serialize($template))] = (string) $file;
+                    $templates[$template->getSignature()] = (string) $file;
                 }
             }
         }
@@ -96,20 +99,13 @@ class TemplatePathsCacheWarmer extends CacheWarmer
         $prefix = strtr($prefix, '\\', '/');
         $path = strtr($file->getPathname(), '\\', '/');
 
-        list(, $tmp) = explode($prefix, $path, 2);
-        $parts = explode('/', $tmp);
+        list(, $file) = explode($prefix, $path, 2);
 
-        $elements = explode('.', array_pop($parts));
-        if (3 !== count($elements)) {
-            return false;
+        $template = TemplateNameParser::parseFromFilename($file);
+        if (false !== $template) {
+            $template->set('bundle', $bundle);
         }
 
-        return array(
-            'bundle'     => $bundle,
-            'controller' => implode('/', $parts),
-            'name'       => $elements[0],
-            'format'     => $elements[1],
-            'engine'     => $elements[2],
-        );
+        return $template;
     }
 }
