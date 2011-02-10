@@ -13,6 +13,7 @@ namespace Symfony\Bundle\TwigBundle\Loader;
 
 use Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateLocatorInterface;
 use Symfony\Component\Templating\TemplateNameParserInterface;
+use Symfony\Component\Templating\TemplateInterface;
 
 /**
  * FilesystemLoader extends the default Twig filesystem loader
@@ -75,9 +76,9 @@ class FilesystemLoader implements \Twig_LoaderInterface
 
     protected function findTemplate($name)
     {
-        $tpl = is_array($name) ? $name : $this->parser->parse($name);
+        $tpl = ($name instanceof TemplateInterface) ? $name : $this->parser->parse($name);
 
-        $key = md5(serialize($tpl));
+        $key = $tpl->getSignature();
         if (isset($this->cache[$key])) {
             return $this->cache[$key];
         }

@@ -93,7 +93,7 @@ class TwigEngine implements EngineInterface
 
         $template = $this->parser->parse($name);
 
-        return 'twig' === $template['engine'];
+        return 'twig' === $template->get('engine');
     }
 
     /**
