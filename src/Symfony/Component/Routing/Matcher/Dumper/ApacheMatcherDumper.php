@@ -67,11 +67,11 @@ class ApacheMatcherDumper extends MatcherDumper
 
             $conditions = count($conditions) ? implode(" [OR]\n", $conditions)."\n" : '';
 
-            $regexes[] = sprintf("%sRewriteCond %%{PATH_INFO} %s\nRewriteRule .* %s [QSA,L,%s]", $conditions, $regex, $options['script_name'], $variables);
+            $regexes[] = sprintf("%sRewriteCond %%{REQUEST_URI} %s\nRewriteRule .* %s [QSA,L,%s]", $conditions, $regex, $options['script_name'], $variables);
 
             // add redirect for missing trailing slash
             if ('/$' === substr($regex, -2) && '^/$' !== $regex) {
-                $regexes[count($regexes)-1] .= sprintf("\nRewriteCond %%{PATH_INFO} %s\nRewriteRule .* /$0/ [QSA,L,R=301]", substr($regex, 0, -2).'$');
+                $regexes[count($regexes)-1] .= sprintf("\nRewriteCond %%{REQUEST_URI} %s\nRewriteRule .* /$0/ [QSA,L,R=301]", substr($regex, 0, -2).'$');
             }
         }
 
