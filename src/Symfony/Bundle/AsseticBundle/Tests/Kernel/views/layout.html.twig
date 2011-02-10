@@ -1,0 +1,12 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+    <head>
+        <title></title>
+        {% assetic 'stylesheet1.css', 'stylesheet2.css' %}
+            <!-- foo -->
+            <link href="{{ asset_url }}" type="text/stylesheet" rel="stylesheet" />
+        {% endassetic %}
+    </head>
+    <body>
+    </body>
+</html>
