@@ -23,7 +23,7 @@ interface TemplateLocatorInterface
     /**
      * Locates a template on the filesystem.
      *
-     * @param array $template The template name as an array
+     * @param TemplateInterface $template A template
      *
      * @return string An absolute file name
      */

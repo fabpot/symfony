@@ -26,6 +26,7 @@ class TemplatePathsCacheWarmer extends CacheWarmer
 {
     protected $kernel;
     protected $rootDir;
+    protected $parser;
 
     /**
      * Constructor.
@@ -73,11 +74,7 @@ class TemplatePathsCacheWarmer extends CacheWarmer
             $finder = new Finder();
             foreach ($finder->files()->followLinks()->in($dir) as $file) {
                 if (false !== $template = $this->parseTemplateName($file, $prefix.'/', $bundle->getName())) {
-                    $controllerSegment = $template->get('controller');
-                    $controllerSegment = empty($controllerSegment) ? '' :  $controllerSegment.'/';
-                    $resource = '@'.$template->get('bundle').'/Resources/views/'.$controllerSegment.'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine');
-
-                    $templates[$template->getSignature()] = $this->kernel->locateResource($resource, $this->rootDir);
+                    $templates[$template->getSignature()] = $this->kernel->locateResource($template->getPath(), $this->rootDir);
                 }
             }
         }
@@ -86,7 +83,7 @@ class TemplatePathsCacheWarmer extends CacheWarmer
             $finder = new Finder();
             foreach ($finder->files()->followLinks()->in($this->rootDir) as $file) {
                 if (false !== $template = $this->parseTemplateName($file, strtr($this->rootDir, '\\', '/').'/')) {
-                    $templates[$template->getSignature()] = (string) $file;
+                    $templates[$template->getSignature()] = $file->getRealPath();
                 }
             }
         }
@@ -96,12 +93,16 @@ class TemplatePathsCacheWarmer extends CacheWarmer
 
     protected function parseTemplateName($file, $prefix, $bundle = '')
     {
+        if (null === $this->parser) {
+            $this->parser = $this->kernel->getContainer()->get('templating.name_parser');
+        }
+        
         $prefix = strtr($prefix, '\\', '/');
         $path = strtr($file->getPathname(), '\\', '/');
 
         list(, $file) = explode($prefix, $path, 2);
 
-        $template = TemplateNameParser::parseFromFilename($file);
+        $template = $this->parser->parseFromFilename($file);
         if (false !== $template) {
             $template->set('bundle', $bundle);
         }

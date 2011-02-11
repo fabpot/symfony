@@ -16,15 +16,15 @@ use Symfony\Component\Templating\TemplateInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
- * TemplateNameParser parsers template name from the short notation
- * "bundle:section:template.format.engine" to an array of
- * template parameters.
+ * TemplateNameParser converts template names from the short notation
+ * "bundle:section:template.format.engine" to a TemplateInterface instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class TemplateNameParser extends BaseTemplateNameParser
 {
     protected $kernel;
+    protected $templateClass;
 
     /**
      * Constructor.
@@ -62,7 +62,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.format.engine").', $name));
         }
 
-        $template = new Template($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
+        $template = $this->createTemplate($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
 
         if ($template->get('bundle')) {
             try {
@@ -75,7 +75,13 @@ class TemplateNameParser extends BaseTemplateNameParser
         return $template;
     }
 
-    public static function parseFromFilename($file)
+    /**
+     * Convert a filename to a template.
+     *
+     * @param string $file The filename
+     * @return TemplateInterface A template
+     */
+    public function parseFromFilename($file)
     {
         $parts = explode('/', strtr($file, '\\', '/'));
 
@@ -84,6 +90,18 @@ class TemplateNameParser extends BaseTemplateNameParser
             return false;
         }
 
-        return new Template(null, implode('/', $parts), $elements[0], $elements[1], $elements[2]);
+        return $this->createTemplate('', implode('/', $parts), $elements[0], $elements[1], $elements[2]);
+    }
+
+    protected function createTemplate($bundle, $controller, $name, $format, $engine)
+    {
+        $template = $this->kernel->getContainer()->get('templating.template');
+        $template->set('bundle', $bundle);
+        $template->set('controller', $controller);
+        $template->set('name', $name);
+        $template->set('format', $format);
+        $template->set('engine', $engine);
+
+        return $template;
     }
 }

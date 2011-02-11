@@ -41,7 +41,7 @@ class TemplateLocator implements TemplateLocatorInterface
     /**
      * Locates a template on the filesystem.
      *
-     * @param array $template The template name as an array
+     * @param TemplateInterface $template A template
      *
      * @return string An absolute file name
      */
@@ -54,17 +54,15 @@ class TemplateLocator implements TemplateLocatorInterface
         }
 
         if (!$template->get('bundle')) {
-            if (is_file($file = $this->path.'/views/'.$template->get('controller').'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine'))) {
+            if (is_file($file = $template->getPath($this->dir))) {
                 return $this->cache[$key] = $file;
             }
 
             throw new \InvalidArgumentException(sprintf('Unable to find template "%s" in "%s".', json_encode($template), $this->path));
         }
 
-        $resource = $template->get('bundle').'/Resources/views/'.$template->get('controller').'/'.$template->get('name').'.'.$template->get('format').'.'.$template->get('engine');
-
         try {
-            return $this->kernel->locateResource('@'.$resource, $this->path);
+            return $this->kernel->locateResource($template->getPath(), $this->path);
         } catch (\Exception $e) {
             throw new \InvalidArgumentException(sprintf('Unable to find template "%s".', json_encode($template), $this->path), 0, $e);
         }
