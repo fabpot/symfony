@@ -77,24 +77,15 @@ class ContextListener implements ListenerInterface
     public function read(EventInterface $event)
     {
         $request = $event->get('request');
+        $session = $request->getSession();
 
-        $session = $request->hasSession() ? $request->getSession() : null;
+        $token = $this->getToken($session);
 
-        if (null === $session || null === $token = $session->get('_security_'.$this->contextKey)) {
-            $this->context->setToken(null);
-        } else {
-            if (null !== $this->logger) {
-                $this->logger->debug('Read SecurityContext from the session');
-            }
-
-            $token = unserialize($token);
-
-            if (null !== $token && false === $token->isImmutable()) {
-                $token = $this->refreshUser($token);
-            }
-
-            $this->context->setToken($token);
+        if (null !== $token && false === $token->isImmutable()) {
+            $token = $this->refreshUser($token);
         }
+
+        $this->context->setToken($token);
     }
 
     /**
@@ -171,5 +162,24 @@ class ContextListener implements ListenerInterface
         }
 
         throw new \RuntimeException(sprintf('There is no user provider for user "%s".', get_class($user)));
+    }
+
+    /**
+     * Reads the Token from the session
+     *
+     * @param TokenInterface $token
+     *
+     * @return TokenInterface|null
+     */
+    protected function getToken($session)
+    {
+        if (null === $session || null === $tokenString = $session->get('_security_'.$this->contextKey)) {
+            return null;
+        }
+        if (null !== $this->logger) {
+            $this->logger->debug('Read SecurityContext from the session');
+        }
+
+        return unserialize($tokenString);
     }
 }
