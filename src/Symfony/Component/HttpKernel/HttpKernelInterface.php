@@ -12,6 +12,7 @@
 namespace Symfony\Component\HttpKernel;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * HttpKernelInterface handles a Request to convert it to a Response.
@@ -24,19 +25,21 @@ interface HttpKernelInterface
     const SUB_REQUEST = 2;
 
     /**
-     * Handles a Request to convert it to a Response.
+     * Handles a Request to use it to populate a Response.
      *
      * When $catch is true, the implementation must catch all exceptions
-     * and do its best to convert them to a Response instance.
+     * and do its best to populate the Response instance.
      *
-     * @param  Request $request A Request instance
-     * @param  integer $type    The type of the request
-     *                          (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
-     * @param  Boolean $catch   Whether to catch exceptions or not
+     * @param  Request  $request  A Request instance
+     * @param  Response $response A Response instance
+     * @param  integer  $type     The type of the request
+     *                            (one of HttpKernelInterface::MASTER_REQUEST or HttpKernelInterface::SUB_REQUEST)
+     * @param  Boolean  $catch    Whether to catch exceptions or not
      *
-     * @return Response A Response instance
+     * @return Response The response instance; if an instance was passed via the $response parameter
+     *                  this method must return the same instance.
      *
      * @throws \Exception When an Exception occurs during processing
      */
-    function handle(Request $request, $type = self::MASTER_REQUEST, $catch = true);
+    function handle(Request $request, Response $response = null, $type = self::MASTER_REQUEST, $catch = true);
 }

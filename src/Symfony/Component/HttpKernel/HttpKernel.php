@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * HttpKernel notifies events to convert a Request object to a Response one.
+ * HttpKernel notifies events to populate a Response using a Request.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -43,23 +43,27 @@ class HttpKernel implements HttpKernelInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
+        if (null === $response) {
+            throw new \InvalidArgumentException('This implementation requires a non-null Response object.');
+        }
+
         try {
-            $response = $this->handleRaw($request, $type);
+            $this->handleRaw($request, $response, $type);
         } catch (\Exception $e) {
             if (false === $catch) {
                 throw $e;
             }
 
             // exception
-            $event = new Event($this, 'core.exception', array('request_type' => $type, 'request' => $request, 'exception' => $e));
-            $response = $this->dispatcher->notifyUntil($event);
+            $event = new Event($this, 'core.exception', array('request_type' => $type, 'request' => $request, 'response' => $response, 'exception' => $e));
+            $this->dispatcher->notifyUntil($event);
             if (!$event->isProcessed()) {
                 throw $e;
             }
 
-            $response = $this->filterResponse($response, $request, 'A "core.exception" listener returned a non response object.', $type);
+            $this->notifyResponse($response, $request, $type);
         }
 
         return $response;
@@ -78,13 +82,15 @@ class HttpKernel implements HttpKernelInterface
      * @throws \LogicException If one of the listener does not behave as expected
      * @throws NotFoundHttpException When controller cannot be found
      */
-    protected function handleRaw(Request $request, $type = self::MASTER_REQUEST)
+    protected function handleRaw(Request $request, Response $response, $type = self::MASTER_REQUEST)
     {
         // request
-        $event = new Event($this, 'core.request', array('request_type' => $type, 'request' => $request));
-        $response = $this->dispatcher->notifyUntil($event);
+        $event = new Event($this, 'core.request', array('request_type' => $type, 'request' => $request, 'response' => $response));
+        $this->dispatcher->notifyUntil($event);
         if ($event->isProcessed()) {
-            return $this->filterResponse($response, $request, 'A "core.request" listener returned a non response object.', $type);
+            $this->notifyResponse($response, $request, $type);
+
+            return;
         }
 
         // load controller
@@ -104,18 +110,15 @@ class HttpKernel implements HttpKernelInterface
         $arguments = $this->resolver->getArguments($request, $controller);
 
         // call controller
-        $response = call_user_func_array($controller, $arguments);
+        $actionResult = call_user_func_array($controller, $arguments);
 
         // view
-        if (!$response instanceof Response) {
-            $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'controller_value' => $response));
-            $retval = $this->dispatcher->notifyUntil($event);
-            if ($event->isProcessed()) {
-                $response = $retval;
-            }
+        if (null !== $actionResult) {
+            $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'response' => $response));
+            $this->dispatcher->notify($event, $actionResult);
         }
 
-        return $this->filterResponse($response, $request, sprintf('The controller must return a response (%s given).', $this->varToString($response)), $type);
+        $this->notifyResponse($response, $request, $type);
     }
 
     /**
@@ -129,19 +132,9 @@ class HttpKernel implements HttpKernelInterface
      *
      * @throws \RuntimeException if the passed object is not a Response instance
      */
-    protected function filterResponse($response, $request, $message, $type)
+    protected function notifyResponse($response, $request, $type)
     {
-        if (!$response instanceof Response) {
-            throw new \RuntimeException($message);
-        }
-
-        $response = $this->dispatcher->filter(new Event($this, 'core.response', array('request_type' => $type, 'request' => $request)), $response);
-
-        if (!$response instanceof Response) {
-            throw new \RuntimeException('A "core.response" listener returned a non response object.');
-        }
-
-        return $response;
+        $this->dispatcher->notify(new Event($this, 'core.response', array('request_type' => $type, 'request' => $request, 'response' => $response)));
     }
 
     protected function varToString($var)

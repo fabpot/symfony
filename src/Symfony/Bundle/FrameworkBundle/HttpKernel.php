@@ -30,13 +30,19 @@ class HttpKernel extends BaseHttpKernel
         $this->dispatcher = $dispatcher;
     }
 
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
         $this->container->enterScope('request');
         $this->container->set('request', $request, 'request');
 
+        if (null !== $response) {
+            $this->container->set('response', $response, 'request');
+        } else {
+            $response = $this->container->get('response');
+        }
+
         try {
-            $response = parent::handle($request, $type, $catch);
+            parent::handle($request, $response, $type, $catch);
         } catch (\Exception $e) {
             $this->container->leaveScope('request');
 
