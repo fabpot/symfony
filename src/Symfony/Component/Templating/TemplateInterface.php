@@ -12,17 +12,45 @@
 namespace Symfony\Component\Templating;
 
 /**
- * TODO
+ * Interface to be implemented by all templates.
  *
  * @author Victor Berchet <victor@suumit.com>
  */
 interface TemplateInterface
 {
-
+    /**
+     * Gets the template parameters.
+     *
+     * @return array An array of parameters
+     */
     function all();
+
+    /**
+     * Sets a template parameter.
+     *
+     * @param string $name   The parameter name
+     * @param string $value  The parameter value
+     *
+     * @throws  \InvalidArgumentException if the parameter is not defined
+     */
     function set($name, $value);
+
+    /**
+     * Gets a template parameter.
+     *
+     * @param string $name The parameter name
+     *
+     * @return string The parameter value
+     *
+     * @throws  \InvalidArgumentException if the parameter is not defined
+     */
     function get($name);
 
+    /**
+     * Returns the template signature
+     *
+     * @return string A UID for the template
+     */
     function getSignature();
 
 }

@@ -63,7 +63,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Renders a template.
      *
-     * @param mixed $name       A template name
+     * @param mixed $name       A template name or a TemplateInterface instance
      * @param array $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
@@ -102,7 +102,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Returns true if the template exists.
      *
-     * @param mixed $name A template name
+     * @param mixed $name A template name or a TemplateInterface instance
      *
      * @return Boolean true if the template exists, false otherwise
      */
@@ -120,7 +120,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Returns true if this class is able to render the given template.
      *
-     * @param mixed $name A template name
+     * @param mixed $name A template name or a TemplateInterface instance
      *
      * @return Boolean True if this class supports the given resource, false otherwise
      */
@@ -478,7 +478,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Loads the given template.
      *
-     * @param mixed $name A template name
+     * @param mixed $name A template name or a TemplateInterface instance
      *
      * @return Storage A Storage instance
      *
@@ -493,11 +493,10 @@ class PhpEngine implements EngineInterface, \ArrayAccess
             return $this->cache[$key];
         }
 
-        // load
         $storage = $this->loader->load($template);
 
         if (false === $storage) {
-            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', $name));
+            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', is_string($name) ? $name : json_encode($name)));
         }
 
         return $this->cache[$key] = $storage;

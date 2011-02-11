@@ -12,7 +12,7 @@
 namespace Symfony\Component\Templating;
 
 /**
- * TODO
+ * Internal representation of a template.
  *
  * @author Victor Berchet <victor@suumit.com>
  */
@@ -33,29 +33,41 @@ class Template implements TemplateInterface
         return json_encode($this->parameters);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getSignature()
     {
         return md5(serialize($this->parameters));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function set($name, $value)
     {
         if (array_key_exists($name, $this->parameters)) {
             $this->parameters[$name] = $value;
         } else {
-            throw new \RuntimeException(sprintf('The template does not support the "%s" parameter.', $name));
+            throw new \InvalidArgumentException(sprintf('The template does not support the "%s" parameter.', $name));
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function get($name)
     {
         if (array_key_exists($name, $this->parameters)) {
             return $this->parameters[$name];
         } else {
-            throw new \RuntimeException(sprintf('The template does not support the "%s" parameter.', $name));
+            throw new \InvalidArgumentException(sprintf('The template does not support the "%s" parameter.', $name));
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function all()
     {
         return $this->parameters;

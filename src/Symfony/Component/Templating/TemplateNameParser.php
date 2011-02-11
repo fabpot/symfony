@@ -29,7 +29,7 @@ class TemplateNameParser implements TemplateNameParserInterface
      *
      * @param string $name A template name
      *
-     * @return TemplateInterface A template;
+     * @return TemplateInterface A template
      */
     public function parse($name)
     {
