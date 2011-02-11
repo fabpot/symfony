@@ -24,7 +24,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class TemplateNameParser extends BaseTemplateNameParser
 {
     protected $kernel;
-    protected $templateClass;
+    protected $cache;
 
     /**
      * Constructor.
@@ -34,6 +34,7 @@ class TemplateNameParser extends BaseTemplateNameParser
     public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
+        $this->cache = array();
     }
 
     /**
@@ -43,6 +44,8 @@ class TemplateNameParser extends BaseTemplateNameParser
     {
         if ($name instanceof TemplateInterface) {
             return $name;
+        } else if (isset($this->cache[$name])) {
+            return $this->cache[$name];
         }
 
         // normalize name
@@ -72,7 +75,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             }
         }
 
-        return $template;
+        return $this->cache[$name] = $template;
     }
 
     /**

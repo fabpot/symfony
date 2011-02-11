@@ -68,6 +68,8 @@ class FilesystemLoader implements \Twig_LoaderInterface
      *
      * @param string    $name The template name
      * @param timestamp $time The last modification time of the cached template
+     *
+     * @throws \Twig_Error_Loader if the template does not exist
      */
     public function isFresh($name, $time)
     {
