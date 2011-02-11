@@ -10,8 +10,6 @@
 
         <parameter key="security.account_checker.class">Symfony\Component\Security\Core\User\AccountChecker</parameter>
 
-        <parameter key="security.access_denied.url">null</parameter>
-
         <parameter key="security.encoder_factory.generic.class">Symfony\Component\Security\Core\Encoder\EncoderFactory</parameter>
         <parameter key="security.encoder.digest.class">Symfony\Component\Security\Core\Encoder\MessageDigestPasswordEncoder</parameter>
         <parameter key="security.encoder.plain.class">Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder</parameter>
@@ -32,7 +30,7 @@
         <parameter key="security.access.decision_manager.allow_if_all_abstain">false</parameter>
         <parameter key="security.access.decision_manager.allow_if_equal_granted_denied">true</parameter>
         
-        <parameter key="security.access.denied_url">/access_denied</parameter>
+        <parameter key="security.access.denied_url">null</parameter>
         
         <parameter key="security.access.simple_role_voter.class">Symfony\Component\Security\Core\Authorization\Voter\RoleVoter</parameter>
         <parameter key="security.access.authenticated_voter.class">Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter</parameter>
