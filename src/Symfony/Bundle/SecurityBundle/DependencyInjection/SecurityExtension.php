@@ -486,7 +486,7 @@ class SecurityExtension extends Extension
 
     protected function getUserProviderId($name)
     {
-        return 'security.authentication.provider.'.$name;
+        return 'security.user.provider.'.$name;
     }
 
     protected function createExceptionListener($container, $config, $id, $defaultEntryPoint)
