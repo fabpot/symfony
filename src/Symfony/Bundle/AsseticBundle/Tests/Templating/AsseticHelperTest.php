@@ -55,7 +55,7 @@ class AsseticHelperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($nb, count($urls));
     }
 
-    public function getDebugModes()
+    public function getDebugModesAndCounts()
     {
         return array(
             array(true, 2),
