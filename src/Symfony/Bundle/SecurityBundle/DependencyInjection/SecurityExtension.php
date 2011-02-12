@@ -66,9 +66,7 @@ class SecurityExtension extends Extension
         $loader->load('collectors.xml');
 
         // set some global scalars
-        if (isset($config['access_denied_url'])) {
-            $container->setParameter('security.access.denied_url', $config['access_denied_url']);
-        }
+        $container->setParameter('security.access.denied_url', $config['access_denied_url']);
         if (isset($config['session_fixation_protection'])) {
             $container->setParameter('security.authentication.session_strategy.strategy', $config['session_fixation_protection']);
         }
