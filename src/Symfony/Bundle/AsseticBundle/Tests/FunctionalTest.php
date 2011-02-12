@@ -18,6 +18,10 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
+        if (!class_exists('Assetic\\AssetManager')) {
+            $this->markTestSkipped('Assetic is not available.');
+        }
+
         $cache = __DIR__.'/Kernel/cache';
         if (!is_dir($cache)) {
             mkdir($cache);

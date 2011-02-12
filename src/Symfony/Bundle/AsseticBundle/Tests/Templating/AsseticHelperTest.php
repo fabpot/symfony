@@ -15,6 +15,13 @@ use Symfony\Bundle\AsseticBundle\Templating\AsseticHelper;
 
 class AsseticHelperTest extends \PHPUnit_Framework_TestCase
 {
+    protected function setUp()
+    {
+        if (!class_exists('Assetic\\AssetManager')) {
+            $this->markTestSkipped('Assetic is not available.');
+        }
+    }
+
     public function testInterface()
     {
         $factory = $this->getMockBuilder('Assetic\\Factory\\AssetFactory')

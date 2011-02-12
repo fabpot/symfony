@@ -23,6 +23,10 @@ class AsseticExtensionTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
+        if (!class_exists('Assetic\\AssetManager')) {
+            $this->markTestSkipped('Assetic is not available.');
+        }
+
         $this->kernel = $this->getMockBuilder('Symfony\\Component\\HttpKernel\\Kernel')
             ->disableOriginalConstructor()
             ->getMock();

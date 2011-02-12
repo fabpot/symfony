@@ -15,6 +15,13 @@ use Symfony\Bundle\AsseticBundle\Factory\CachedAssetManager;
 
 class CachedAssetManagerTest extends \PHPUnit_Framework_TestCase
 {
+    protected function setUp()
+    {
+        if (!class_exists('Assetic\\AssetManager')) {
+            $this->markTestSkipped('Assetic is not available.');
+        }
+    }
+
     public function testLoadFormulae()
     {
         $file = tempnam(sys_get_temp_dir(), 'assetic');
