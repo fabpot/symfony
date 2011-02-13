@@ -14,6 +14,7 @@ namespace Symfony\Bundle\AsseticBundle\Tests\DependencyInjection;
 use Symfony\Bundle\AsseticBundle\DependencyInjection\AsseticExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
+use Symfony\Component\DependencyInjection\Scope;
 use Symfony\Component\HttpFoundation\Request;
 
 class AsseticExtensionTest extends \PHPUnit_Framework_TestCase
@@ -32,7 +33,7 @@ class AsseticExtensionTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->container = new ContainerBuilder();
-        $this->container->addScope('request');
+        $this->container->addScope(new Scope('request'));
         $this->container->register('request', 'Symfony\\Component\\HttpFoundation\\Request')->setScope('request');
         $this->container->register('response', 'Symfony\\Component\\HttpFoundation\\Response')->setScope('prototype');
         $this->container->register('twig', 'Twig_Environment');
