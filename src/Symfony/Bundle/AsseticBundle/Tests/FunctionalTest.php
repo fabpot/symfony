@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\AsseticBundle\Tests;
 
 use Symfony\Bundle\AsseticBundle\Tests\Kernel\TestKernel;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 
 class FunctionalTest extends \PHPUnit_Framework_TestCase
@@ -82,15 +83,17 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
         $container->get('cache_warmer')->warmUp($container->getParameter('kernel.cache_dir'));
 
         $content = $container->get('templating')->render('::layout.html.twig');
+        $crawler = new Crawler($content);
 
-        $this->assertEquals(2, substr_count($content, '<!-- foo -->'));
+        $this->assertEquals(2, count($crawler->filter('link[href$=".css"]')));
+        $this->assertEquals(2, count($crawler->filter('script[src$=".js"]')));
     }
 
     public function provideDebugAndAssetCount()
     {
         return array(
-            array(true, 2),
-            array(false, 1),
+            array(true, 4),
+            array(false, 2),
         );
     }
 }

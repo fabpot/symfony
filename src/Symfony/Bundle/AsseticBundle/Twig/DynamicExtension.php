@@ -21,8 +21,12 @@ use Assetic\Factory\AssetFactory;
  */
 class DynamicExtension extends AsseticExtension
 {
-    static protected function createTokenParser(AssetFactory $factory, $debug = false)
+    public function getTokenParsers()
     {
-        return new DynamicTokenParser($factory, $debug);
+        return array(
+            new DynamicTokenParser($this->factory, $this->debug),
+            new DynamicTokenParser($this->factory, $this->debug, 'js/*.js', 'javascripts'),
+            new DynamicTokenParser($this->factory, $this->debug, 'css/*.css', 'stylesheets'),
+        );
     }
 }

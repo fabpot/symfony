@@ -21,8 +21,12 @@ use Assetic\Factory\AssetFactory;
  */
 class StaticExtension extends AsseticExtension
 {
-    static protected function createTokenParser(AssetFactory $factory, $debug = false)
+    public function getTokenParsers()
     {
-        return new StaticTokenParser($factory, $debug);
+        return array(
+            new StaticTokenParser($this->factory, $this->debug),
+            new StaticTokenParser($this->factory, $this->debug, 'js/*.js', 'javascripts'),
+            new StaticTokenParser($this->factory, $this->debug, 'css/*.css', 'stylesheets'),
+        );
     }
 }
