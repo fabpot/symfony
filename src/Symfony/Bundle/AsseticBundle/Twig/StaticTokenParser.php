@@ -14,7 +14,7 @@ namespace Symfony\Bundle\AsseticBundle\Twig;
 use Assetic\Extension\Twig\TokenParser;
 
 /**
- * Parses the {% assetic %} tag.
+ * Parses the {% assets %} tag.
  *
  * @author Kris Wallsmith <kris.wallsmith@symfony-project.com>
  */
