@@ -27,7 +27,7 @@ git clone git://github.com/doctrine/migrations.git doctrine-migrations
 # Doctrine MongoDB
 git clone git://github.com/doctrine/mongodb.git doctrine-mongodb
 
-# Doctrine MongoDB
+# Doctrine MongoDB ODM
 git clone git://github.com/doctrine/mongodb-odm.git doctrine-mongodb-odm
 
 # Swiftmailer
