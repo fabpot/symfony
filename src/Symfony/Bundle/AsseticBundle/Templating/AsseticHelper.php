@@ -35,34 +35,41 @@ class AsseticHelper extends Helper
      *
      * Usage looks something like this:
      *
-     *     <?php foreach ($view['assetic']->urls(array('@jquery', 'js/src/core/*'), array('?yui_js'), 'js/core.js') as $url): ?>
+     *     <?php foreach ($view['assetic']->urls('@jquery, js/src/core/*', '?yui_js') as $url): ?>
      *         <script src="<?php echo $url ?>" type="text/javascript"></script>
      *     <?php endforeach; ?>
      *
      * When in debug mode, the helper returns an array of one or more URLs.
      * When not in debug mode it returns an array of one URL.
      *
-     * @param array   $sourceUrls  An array of source URLs
-     * @param array   $filterNames An array of filter names
-     * @param string  $targetUrl   The target URL, pattern or extension
-     * @param string  $assetName   The name to use for the asset in the asset manager
-     * @param Boolean $debug       Force a debug mode
+     * @param array|string $inputs  An array or comma-separated list of input strings
+     * @param array|string $filters An array or comma-separated list of filter names
+     * @param array        $options An array of options
      *
      * @return array An array of URLs for the asset
      */
-    public function urls(array $sourceUrls = array(), array $filterNames = array(), $targetUrl = null, $assetName = null, $debug = null)
+    public function urls($inputs = array(), $filters = array(), array $options = array())
     {
-        if (null === $assetName) {
-            $assetName = $this->factory->generateAssetName($sourceUrls, $filterNames);
+        $explode = function($value)
+        {
+            return array_map('trim', explode(',', $value));
+        };
+
+        if (!is_array($inputs)) {
+            $inputs = $explode($inputs);
         }
 
-        if (null === $debug) {
-            $debug = $this->debug;
+        if (!is_array($filters)) {
+            $filters = $explode($filters);
         }
 
-        $coll = $this->factory->createAsset($sourceUrls, $filterNames, $targetUrl, $assetName, $debug);
+        if (!isset($options['debug'])) {
+            $options['debug'] = $this->debug;
+        }
 
-        if (!$debug) {
+        $coll = $this->factory->createAsset($inputs, $filters, $options);
+
+        if (!$options['debug']) {
             return array($coll->getTargetUrl());
         }
 
@@ -76,7 +83,11 @@ class AsseticHelper extends Helper
 
         $urls = array();
         foreach ($coll as $leaf) {
-            $asset = $this->factory->createAsset(array($leaf->getSourceUrl()), $filterNames, $pattern, 'part'.(count($nodes) + 1), $debug);
+            $asset = $this->factory->createAsset($leaf->getSourceUrl(), $filters, array(
+                'output' => $pattern,
+                'name'   => 'part'.(count($urls) + 1),
+                'debug'  => $options['debug'],
+            ));
             $urls[] = $asset->getTargetUrl();
         }
 

@@ -11,6 +11,9 @@
 
 namespace Symfony\Bundle\AsseticBundle\Tests\Templating;
 
+use Assetic\Asset\AssetCollection;
+use Assetic\Asset\StringAsset;
+use Assetic\Factory\AssetFactory;
 use Symfony\Bundle\AsseticBundle\Templating\AsseticHelper;
 
 class AsseticHelperTest extends \PHPUnit_Framework_TestCase
@@ -22,44 +25,23 @@ class AsseticHelperTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testInterface()
-    {
-        $factory = $this->getMockBuilder('Assetic\\Factory\\AssetFactory')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $helper = new AsseticHelper($factory);
-
-        $this->assertInstanceOf('Symfony\\Component\\Templating\\Helper\\HelperInterface', $helper);
-    }
-
     /**
-     * @dataProvider getDebugModesAndCounts
+     * @dataProvider getDebugAndCount
      */
-    public function testUrlsReturnType($debug, $nb)
+    public function testUrls($debug, $count, $message)
     {
-        $factory = $this->getMockBuilder('Assetic\\Factory\\AssetFactory')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $asset = $this->getMock('Assetic\\Asset\\AssetInterface');
-
-        $factory->expects($this->once())
-            ->method('createAsset')
-            ->with(array('js/jquery.js', 'js/jquery.plugin.js'), array(), null)
-            ->will($this->returnValue($asset));
-
-        $helper = new AsseticHelper($factory, $debug);
+        $helper = new AsseticHelper(new AssetFactory('/foo', $debug), $debug);
         $urls = $helper->urls(array('js/jquery.js', 'js/jquery.plugin.js'));
 
         $this->assertInternalType('array', $urls, '->urls() returns an array');
-        $this->assertEquals($nb, count($urls));
+        $this->assertEquals($count, count($urls), $message);
     }
 
-    public function getDebugModesAndCounts()
+    public function getDebugAndCount()
     {
         return array(
-            array(true, 2),
-            array(false, 1),
+            array(false, 1, '->urls() returns one url when not in debug mode'),
+            array(true, 2, '->urls() returns many urls when in debug mode'),
         );
     }
 }
