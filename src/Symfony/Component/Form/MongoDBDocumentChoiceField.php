@@ -19,7 +19,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ODM\MongoDB\Query\Builder;
 
 /**
- * A field for selecting one or more from a list of Doctrine 2 MongoDB ODM documents
+ * A field for selecting one or more from a list of Doctrine MongoDB ODM documents
  *
  * You at least have to pass the document manager and the document class in the
  * options "dm" and "class".
@@ -64,8 +64,7 @@ class MongoDBDocumentChoiceField extends ChoiceField
     /**
      * The documents from which the user can choose
      *
-     * This array is either indexed by ID or by key in the choices array
-     * (if the ID consists of multiple fields)
+     * This array is indexed by ID
      *
      * This property is initialized by initializeChoices(). It should only
      * be accessed through getDocument() and getDocuments().
@@ -300,12 +299,12 @@ class MongoDBDocumentChoiceField extends ChoiceField
      * Returns the values of the identifier fields of an document
      *
      * Doctrine must know about this document, that is, the document must already
-     * be persisted or added to the iddocument map before. Otherwise an
+     * be persisted or added to the identity map before. Otherwise an
      * exception is thrown.
      *
      * @param  object $document  The document for which to get the identifier
      * @throws FormException   If the document does not exist in Doctrine's
-     *                         iddocument map
+     *                         identity map
      */
     protected function getIdentifierValue($document)
     {
