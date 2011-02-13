@@ -16,6 +16,8 @@
             <tag name="assetic.templating.php" />
             <argument type="service" id="assetic.asset_factory" />
             <argument>%assetic.debug%</argument>
+            <argument>%assetic.default_javascripts_output%</argument>
+            <argument>%assetic.default_stylesheets_output%</argument>
         </service>
         <service id="assetic.cache_warmer.php" class="%assetic.cache_warmer.php.class%" public="false">
             <tag name="kernel.cache_warmer" priority="10" />

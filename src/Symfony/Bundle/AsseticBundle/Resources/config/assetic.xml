@@ -21,6 +21,9 @@
         <parameter key="assetic.debug">%kernel.debug%</parameter>
         <parameter key="assetic.use_controller">%kernel.debug%</parameter>
         <parameter key="assetic.document_root">%kernel.root_dir%/../web</parameter>
+        <parameter key="assetic.default_javascripts_output">js/*.js</parameter>
+        <parameter key="assetic.default_stylesheets_output">css/*.css</parameter>
+
         <parameter key="assetic.java_bin">/usr/bin/java</parameter>
         <parameter key="assetic.sass_bin">/usr/bin/sass</parameter>
         <parameter key="assetic.lessc_bin">/usr/bin/lessc</parameter>

@@ -37,16 +37,20 @@ class AsseticExtension extends Extension
      *         document-root="/path/to/document/root"
      *         closure="/path/to/google_closure/compiler.jar"
      *         yui="/path/to/yuicompressor.jar"
+     *         default-javascripts-output="js/build/*.js"
+     *         default-stylesheets-output="css/build/*.css"
      *     />
      *
      * In YAML:
      *
      *     assetic:
-     *         debug:          true
+     *         debug: true
      *         use_controller: true
-     *         document_root:  /path/to/document/root
-     *         closure:        /path/to/google_closure/compiler.jar
-     *         yui:            /path/to/yuicompressor.jar
+     *         document_root: /path/to/document/root
+     *         closure: /path/to/google_closure/compiler.jar
+     *         yui: /path/to/yuicompressor.jar
+     *         default_javascripts_output: js/build/*.js
+     *         default_stylesheets_output: css/build/*.css
      *
      * @param array            $configs   An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
@@ -77,6 +81,14 @@ class AsseticExtension extends Extension
 
             if (isset($config['yui'])) {
                 $container->setParameter('assetic.yui_jar', $config['yui']);
+            }
+
+            if (isset($config['default_javascripts_output'])) {
+                $container->setParameter('assetic.default_javascripts_output', $config['default_javascripts_output']);
+            }
+
+            if (isset($config['default_stylesheets_output'])) {
+                $container->setParameter('assetic.default_stylesheets_output', $config['default_stylesheets_output']);
             }
         }
 

@@ -23,11 +23,23 @@ class AsseticHelper extends Helper
 {
     protected $factory;
     protected $debug;
+    protected $defaultJavascriptsOutput;
+    protected $defaultStylesheetsOutput;
 
-    public function __construct(AssetFactory $factory, $debug = false)
+    /**
+     * Constructor.
+     *
+     * @param AssetFactory $factory                  The asset factory
+     * @param Boolean      $debug                    The debug mode
+     * @param string       $defaultJavascriptsOutput The default {@link javascripts()} output string
+     * @param string       $defaultStylesheetsOutput The default {@link stylesheets()} output string
+     */
+    public function __construct(AssetFactory $factory, $debug = false, $defaultJavascriptsOutput = 'js/*.js', $defaultStylesheetsOutput = 'css/*.css')
     {
         $this->factory = $factory;
         $this->debug = $debug;
+        $this->defaultJavascriptsOutput = $defaultJavascriptsOutput;
+        $this->defaultStylesheetsOutput = $defaultStylesheetsOutput;
     }
 
     /**
@@ -92,6 +104,36 @@ class AsseticHelper extends Helper
         }
 
         return $urls;
+    }
+
+    /**
+     * Returns an array of javascript urls.
+     *
+     * This convenience method wraps {@link urls()} and provides a default
+     * output string.
+     */
+    public function javascripts($inputs = array(), $filters = array(), array $options = array())
+    {
+        if (!isset($options['output'])) {
+            $options['output'] = $this->defaultJavascriptsOutput;
+        }
+
+        return $this->urls($inputs, $filters, $options);
+    }
+
+    /**
+     * Returns an array of stylesheet urls.
+     *
+     * This convenience method wraps {@link urls()} and provides a default
+     * output string.
+     */
+    public function stylesheets($inputs = array(), $filters = array(), array $options = array())
+    {
+        if (!isset($options['output'])) {
+            $options['output'] = $this->defaultStylesheetsOutput;
+        }
+
+        return $this->urls($inputs, $filters, $options);
     }
 
     public function getName()

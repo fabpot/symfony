@@ -38,7 +38,19 @@ class FormulaLoader
 
         $tokens = token_get_all($template->getContent());
 
-        // todo: find extract formulae from calls to $view['assetic']->urls()
+        /**
+         * @todo Find and extract asset formulae from calls to the following:
+         *
+         *  * $view['assetic']->urls(...)
+         *  * $view['assetic']->javascripts(...)
+         *  * $view['assetic']->stylesheets(...)
+         *  * $view->get('assetic')->urls(...)
+         *  * $view->get('assetic')->javascripts(...)
+         *  * $view->get('assetic')->stylesheets(...)
+         *
+         * The loader will also need to be aware of debug mode and the default
+         * output strings associated with each method.
+         */
 
         return array();
     }
