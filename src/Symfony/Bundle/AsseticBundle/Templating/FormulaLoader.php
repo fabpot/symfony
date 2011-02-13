@@ -41,10 +41,10 @@ class FormulaLoader
         /**
          * @todo Find and extract asset formulae from calls to the following:
          *
-         *  * $view['assetic']->urls(...)
+         *  * $view['assetic']->assets(...)
          *  * $view['assetic']->javascripts(...)
          *  * $view['assetic']->stylesheets(...)
-         *  * $view->get('assetic')->urls(...)
+         *  * $view->get('assetic')->assets(...)
          *  * $view->get('assetic')->javascripts(...)
          *  * $view->get('assetic')->stylesheets(...)
          *

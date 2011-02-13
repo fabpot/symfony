@@ -47,7 +47,7 @@ class AsseticHelper extends Helper
      *
      * Usage looks something like this:
      *
-     *     <?php foreach ($view['assetic']->urls('@jquery, js/src/core/*', '?yui_js') as $url): ?>
+     *     <?php foreach ($view['assetic']->assets('@jquery, js/src/core/*', '?yui_js') as $url): ?>
      *         <script src="<?php echo $url ?>" type="text/javascript"></script>
      *     <?php endforeach; ?>
      *
@@ -60,7 +60,7 @@ class AsseticHelper extends Helper
      *
      * @return array An array of URLs for the asset
      */
-    public function urls($inputs = array(), $filters = array(), array $options = array())
+    public function assets($inputs = array(), $filters = array(), array $options = array())
     {
         $explode = function($value)
         {
@@ -109,7 +109,7 @@ class AsseticHelper extends Helper
     /**
      * Returns an array of javascript urls.
      *
-     * This convenience method wraps {@link urls()} and provides a default
+     * This convenience method wraps {@link assets()} and provides a default
      * output string.
      */
     public function javascripts($inputs = array(), $filters = array(), array $options = array())
@@ -118,13 +118,13 @@ class AsseticHelper extends Helper
             $options['output'] = $this->defaultJavascriptsOutput;
         }
 
-        return $this->urls($inputs, $filters, $options);
+        return $this->assets($inputs, $filters, $options);
     }
 
     /**
      * Returns an array of stylesheet urls.
      *
-     * This convenience method wraps {@link urls()} and provides a default
+     * This convenience method wraps {@link assets()} and provides a default
      * output string.
      */
     public function stylesheets($inputs = array(), $filters = array(), array $options = array())
@@ -133,7 +133,7 @@ class AsseticHelper extends Helper
             $options['output'] = $this->defaultStylesheetsOutput;
         }
 
-        return $this->urls($inputs, $filters, $options);
+        return $this->assets($inputs, $filters, $options);
     }
 
     public function getName()
