@@ -73,7 +73,7 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($count, $matches);
     }
 
-    public function testRenderDebug()
+    public function testTwigRenderDebug()
     {
         $kernel = new TestKernel('test', true);
         $kernel->boot();
@@ -83,6 +83,24 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
         $container->get('cache_warmer')->warmUp($container->getParameter('kernel.cache_dir'));
 
         $content = $container->get('templating')->render('::layout.html.twig');
+        $crawler = new Crawler($content);
+
+        $this->assertEquals(2, count($crawler->filter('link[href$=".css"]')));
+        $this->assertEquals(2, count($crawler->filter('script[src$=".js"]')));
+    }
+
+    public function testPhpRenderDebug()
+    {
+        $this->markTestIncomplete('PHP templating is not ready yet.');
+
+        $kernel = new TestKernel('test', true);
+        $kernel->boot();
+        $container = $kernel->getContainer();
+        $container->enterScope('request');
+        $container->set('request', new Request());
+        $container->get('cache_warmer')->warmUp($container->getParameter('kernel.cache_dir'));
+
+        $content = $container->get('templating')->render('::layout.html.php');
         $crawler = new Crawler($content);
 
         $this->assertEquals(2, count($crawler->filter('link[href$=".css"]')));

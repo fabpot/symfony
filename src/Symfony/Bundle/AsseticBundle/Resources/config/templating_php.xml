@@ -11,7 +11,7 @@
     </parameters>
 
     <services>
-        <service id="assetic.helper" class="%assetic.helper.class%" public="false">
+        <service id="assetic.helper" class="%assetic.helper.class%">
             <tag name="templating.helper" alias="assetic" />
             <tag name="assetic.templating.php" />
             <argument type="service" id="assetic.asset_factory" />
