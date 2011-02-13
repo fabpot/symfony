@@ -30,7 +30,7 @@ install_git()
 install_git doctrine git://github.com/doctrine/doctrine2.git
 
 # Doctrine Data Fixtures Extension
-install_git doctrine-data-fixtures git://github.com/doctrine/data-fixtures
+install_git doctrine-data-fixtures git://github.com/doctrine/data-fixtures.git
 
 # Doctrine DBAL
 install_git doctrine-dbal git://github.com/doctrine/dbal.git
