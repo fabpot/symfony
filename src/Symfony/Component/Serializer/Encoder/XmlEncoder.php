@@ -122,7 +122,10 @@ class XmlEncoder extends AbstractEncoder
 
         if (is_array($data) || $data instanceof \Traversable) {
             foreach ($data as $key => $data) {
-                if (is_array($data) && false === is_numeric($key)) {
+				//Ah this is the magic @ attribute types.
+				if (strpos($key,"@")===0 && is_scalar($data) && $this->isElementNameValid($attributeName = substr($key,1))) {
+					$parentNode->setAttribute($attributeName, $data);
+				} elseif (is_array($data) && false === is_numeric($key)) {
                     $append = $this->appendNode($parentNode, $data, $key);
                 } elseif (is_numeric($key) || !$this->isElementNameValid($key)) {
                     $append = $this->appendNode($parentNode, $data, "item", $key);
