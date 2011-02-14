@@ -1,17 +1,21 @@
 <?php
 
-namespace Symfony\Bundle\DoctrineBundle;
-
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\DoctrineBundle;
+
+use Symfony\Bundle\DoctrineBundle\DependencyInjection\Compiler\CreateProxyDirectoryPass;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Bundle\DoctrineBundle\DependencyInjection\Compiler\RegisterEventListenersAndSubscribersPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
  * Bundle.
@@ -21,4 +25,10 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class DoctrineBundle extends Bundle
 {
+    public function registerExtensions(ContainerBuilder $container)
+    {
+        parent::registerExtensions($container);
+
+        $container->addCompilerPass(new RegisterEventListenersAndSubscribersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION);
+    }
 }

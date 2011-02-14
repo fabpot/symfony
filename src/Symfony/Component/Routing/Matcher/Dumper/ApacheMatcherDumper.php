@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\Routing\Matcher\Dumper;
-
-use Symfony\Component\Routing\Route;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Routing\Matcher\Dumper;
+
+use Symfony\Component\Routing\Route;
 
 /**
  * ApacheMatcherDumper dumps a matcher in the Apache .htaccess format.
@@ -68,6 +68,11 @@ class ApacheMatcherDumper extends MatcherDumper
             $conditions = count($conditions) ? implode(" [OR]\n", $conditions)."\n" : '';
 
             $regexes[] = sprintf("%sRewriteCond %%{PATH_INFO} %s\nRewriteRule .* %s [QSA,L,%s]", $conditions, $regex, $options['script_name'], $variables);
+
+            // add redirect for missing trailing slash
+            if ('/$' === substr($regex, -2) && '^/$' !== $regex) {
+                $regexes[count($regexes)-1] .= sprintf("\nRewriteCond %%{PATH_INFO} %s\nRewriteRule .* /$0/ [QSA,L,R=301]", substr($regex, 0, -2).'$');
+            }
         }
 
         return implode("\n\n", $regexes);

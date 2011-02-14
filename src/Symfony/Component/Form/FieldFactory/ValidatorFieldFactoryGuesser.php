@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form\FieldFactory;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form\FieldFactory;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Mapping\ClassMetadataFactoryInterface;
@@ -34,11 +34,11 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
     /**
      * @inheritDoc
      */
-    public function guessClass($object, $property)
+    public function guessClass($class, $property)
     {
         $guesser = $this;
 
-        return $this->guess($object, $property, function (Constraint $constraint) use ($guesser) {
+        return $this->guess($class, $property, function (Constraint $constraint) use ($guesser) {
             return $guesser->guessClassForConstraint($constraint);
         });
     }
@@ -46,11 +46,11 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
     /**
      * @inheritDoc
      */
-    public function guessRequired($object, $property)
+    public function guessRequired($class, $property)
     {
         $guesser = $this;
 
-        return $this->guess($object, $property, function (Constraint $constraint) use ($guesser) {
+        return $this->guess($class, $property, function (Constraint $constraint) use ($guesser) {
             return $guesser->guessRequiredForConstraint($constraint);
         });
     }
@@ -58,11 +58,11 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
     /**
      * @inheritDoc
      */
-    public function guessMaxLength($object, $property)
+    public function guessMaxLength($class, $property)
     {
         $guesser = $this;
 
-        return $this->guess($object, $property, function (Constraint $constraint) use ($guesser) {
+        return $this->guess($class, $property, function (Constraint $constraint) use ($guesser) {
             return $guesser->guessMaxLengthForConstraint($constraint);
         });
     }
@@ -71,24 +71,27 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
      * Iterates over the constraints of a property, executes a constraints on
      * them and returns the best guess
      *
-     * @param object $object      The object to read the constraints from
+     * @param string $class       The class to read the constraints from
      * @param string $property    The property for which to find constraints
      * @param \Closure $guessForConstraint   The closure that returns a guess
      *                            for a given constraint
      * @return FieldFactoryGuess  The guessed value with the highest confidence
      */
-    protected function guess($object, $property, \Closure $guessForConstraint)
+    protected function guess($class, $property, \Closure $guessForConstraint)
     {
         $guesses = array();
-        $classMetadata = $this->metadataFactory->getClassMetadata(get_class($object));
-        $memberMetadatas = $classMetadata->getMemberMetadatas($property);
+        $classMetadata = $this->metadataFactory->getClassMetadata($class);
 
-        foreach ($memberMetadatas as $memberMetadata) {
-            $constraints = $memberMetadata->getConstraints();
+        if ($classMetadata->hasMemberMetadatas($property)) {
+            $memberMetadatas = $classMetadata->getMemberMetadatas($property);
 
-            foreach ($constraints as $constraint) {
-                if ($guess = $guessForConstraint($constraint)) {
-                    $guesses[] = $guess;
+            foreach ($memberMetadatas as $memberMetadata) {
+                $constraints = $memberMetadata->getConstraints();
+
+                foreach ($constraints as $constraint) {
+                    if ($guess = $guessForConstraint($constraint)) {
+                        $guesses[] = $guess;
+                    }
                 }
             }
         }
@@ -110,7 +113,7 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
                     case 'boolean':
                     case 'bool':
                         return new FieldFactoryClassGuess(
-                        	'Symfony\Component\Form\CheckboxField',
+                            'Symfony\Component\Form\CheckboxField',
                             array(),
                             FieldFactoryGuess::MEDIUM_CONFIDENCE
                         );
@@ -119,7 +122,7 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
                     case 'numeric':
                     case 'real':
                         return new FieldFactoryClassGuess(
-                        	'Symfony\Component\Form\NumberField',
+                            'Symfony\Component\Form\NumberField',
                             array(),
                             FieldFactoryGuess::MEDIUM_CONFIDENCE
                         );
@@ -127,123 +130,129 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
                     case 'int':
                     case 'long':
                         return new FieldFactoryClassGuess(
-                        	'Symfony\Component\Form\IntegerField',
+                            'Symfony\Component\Form\IntegerField',
                             array(),
                             FieldFactoryGuess::MEDIUM_CONFIDENCE
                         );
                     case 'string':
                         return new FieldFactoryClassGuess(
-                        	'Symfony\Component\Form\TextField',
+                            'Symfony\Component\Form\TextField',
                             array(),
                             FieldFactoryGuess::LOW_CONFIDENCE
+                        );
+                    case '\DateTime':
+                        return new FieldFactoryClassGuess(
+                        	'Symfony\Component\Form\DateField',
+                            array(),
+                            FieldFactoryGuess::MEDIUM_CONFIDENCE
                         );
                 }
                 break;
             case 'Symfony\Component\Validator\Constraints\Choice':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\ChoiceField',
+                    'Symfony\Component\Form\ChoiceField',
                     array('choices' => $constraint->choices),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Country':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\CountryField',
+                    'Symfony\Component\Form\CountryField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Date':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\DateField',
+                    'Symfony\Component\Form\DateField',
                     array('type' => 'string'),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\DateTime':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\DateTimeField',
+                    'Symfony\Component\Form\DateTimeField',
                     array('type' => 'string'),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Email':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\File':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\FileField',
+                    'Symfony\Component\Form\FileField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Image':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\FileField',
+                    'Symfony\Component\Form\FileField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Ip':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::MEDIUM_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Language':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\LanguageField',
+                    'Symfony\Component\Form\LanguageField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Locale':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\LocaleField',
+                    'Symfony\Component\Form\LocaleField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Max':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\NumberField',
+                    'Symfony\Component\Form\NumberField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\MaxLength':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Min':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\NumberField',
+                    'Symfony\Component\Form\NumberField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\MinLength':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Regex':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Time':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TimeField',
+                    'Symfony\Component\Form\TimeField',
                     array('type' => 'string'),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Url':
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\UrlField',
+                    'Symfony\Component\Form\UrlField',
                     array(),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             default:
                 return new FieldFactoryClassGuess(
-                	'Symfony\Component\Form\TextField',
+                    'Symfony\Component\Form\TextField',
                     array(),
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
@@ -261,17 +270,17 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
         switch (get_class($constraint)) {
             case 'Symfony\Component\Validator\Constraints\NotNull':
                 return new FieldFactoryGuess(
-                	true,
+                    true,
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\NotBlank':
                 return new FieldFactoryGuess(
-                	true,
+                    true,
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             default:
                 return new FieldFactoryGuess(
-                	false,
+                    false,
                     FieldFactoryGuess::LOW_CONFIDENCE
                 );
         }
@@ -288,12 +297,12 @@ class ValidatorFieldFactoryGuesser implements FieldFactoryGuesserInterface
         switch (get_class($constraint)) {
             case 'Symfony\Component\Validator\Constraints\MaxLength':
                 return new FieldFactoryGuess(
-                	$constraint->limit,
+                    $constraint->limit,
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
             case 'Symfony\Component\Validator\Constraints\Max':
                 return new FieldFactoryGuess(
-                	strlen((string)$constraint->limit),
+                    strlen((string)$constraint->limit),
                     FieldFactoryGuess::HIGH_CONFIDENCE
                 );
         }

@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpFoundation;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\HttpFoundation;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\HttpFoundation;
 
 /**
  * ParameterBag is a container for key/value pairs.
@@ -27,7 +27,7 @@ class ParameterBag
      */
     public function __construct(array $parameters = array())
     {
-        $this->replace($parameters);
+        $this->parameters = $parameters;
     }
 
     /**

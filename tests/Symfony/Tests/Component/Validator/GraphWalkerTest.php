@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Validator;
 
 require_once __DIR__.'/Fixtures/Entity.php';
@@ -37,34 +46,69 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         $this->metadata = new ClassMetadata(self::CLASSNAME);
     }
 
-    public function testWalkClassValidatesConstraints()
+    public function testWalkObjectValidatesConstraints()
     {
         $this->metadata->addConstraint(new ConstraintA());
 
-        $this->walker->walkClass($this->metadata, new Entity(), 'Default', '');
+        $this->walker->walkObject($this->metadata, new Entity(), 'Default', '');
 
         $this->assertEquals(1, count($this->walker->getViolations()));
     }
 
-    public function testWalkClassValidatesPropertyConstraints()
+    public function testWalkObjectTwiceValidatesConstraintsOnce()
+    {
+        $this->metadata->addConstraint(new ConstraintA());
+
+        $entity = new Entity();
+
+        $this->walker->walkObject($this->metadata, $entity, 'Default', '');
+        $this->walker->walkObject($this->metadata, $entity, 'Default', '');
+
+        $this->assertEquals(1, count($this->walker->getViolations()));
+    }
+
+    public function testWalkDifferentObjectsValidatesTwice()
+    {
+        $this->metadata->addConstraint(new ConstraintA());
+
+        $this->walker->walkObject($this->metadata, new Entity(), 'Default', '');
+        $this->walker->walkObject($this->metadata, new Entity(), 'Default', '');
+
+        $this->assertEquals(2, count($this->walker->getViolations()));
+    }
+
+    public function testWalkObjectTwiceInDifferentGroupsValidatesTwice()
+    {
+        $this->metadata->addConstraint(new ConstraintA());
+        $this->metadata->addConstraint(new ConstraintA(array('groups' => 'Custom')));
+
+        $entity = new Entity();
+
+        $this->walker->walkObject($this->metadata, $entity, 'Default', '');
+        $this->walker->walkObject($this->metadata, $entity, 'Custom', '');
+
+        $this->assertEquals(2, count($this->walker->getViolations()));
+    }
+
+    public function testWalkObjectValidatesPropertyConstraints()
     {
         $this->metadata->addPropertyConstraint('firstName', new ConstraintA());
 
-        $this->walker->walkClass($this->metadata, new Entity(), 'Default', '');
+        $this->walker->walkObject($this->metadata, new Entity(), 'Default', '');
 
         $this->assertEquals(1, count($this->walker->getViolations()));
     }
 
-    public function testWalkClassValidatesGetterConstraints()
+    public function testWalkObjectValidatesGetterConstraints()
     {
         $this->metadata->addGetterConstraint('lastName', new ConstraintA());
 
-        $this->walker->walkClass($this->metadata, new Entity(), 'Default', '');
+        $this->walker->walkObject($this->metadata, new Entity(), 'Default', '');
 
         $this->assertEquals(1, count($this->walker->getViolations()));
     }
 
-    public function testWalkClassInDefaultGroupTraversesGroupSequence()
+    public function testWalkObjectInDefaultGroupTraversesGroupSequence()
     {
         $entity = new Entity();
 
@@ -76,7 +120,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         )));
         $this->metadata->setGroupSequence(array('First', $this->metadata->getDefaultGroup()));
 
-        $this->walker->walkClass($this->metadata, $entity, 'Default', '');
+        $this->walker->walkObject($this->metadata, $entity, 'Default', '');
 
         // After validation of group "First" failed, no more group was
         // validated
@@ -92,7 +136,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($violations, $this->walker->getViolations());
     }
 
-    public function testWalkClassInGroupSequencePropagatesDefaultGroup()
+    public function testWalkObjectInGroupSequencePropagatesDefaultGroup()
     {
         $entity = new Entity();
         $entity->reference = new Reference();
@@ -108,7 +152,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         )));
         $this->factory->addClassMetadata($referenceMetadata);
 
-        $this->walker->walkClass($this->metadata, $entity, 'Default', '');
+        $this->walker->walkObject($this->metadata, $entity, 'Default', '');
 
         // The validation of the reference's FailingConstraint in group
         // "Default" was launched
@@ -124,7 +168,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($violations, $this->walker->getViolations());
     }
 
-    public function testWalkClassInOtherGroupTraversesNoGroupSequence()
+    public function testWalkObjectInOtherGroupTraversesNoGroupSequence()
     {
         $entity = new Entity();
 
@@ -136,7 +180,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         )));
         $this->metadata->setGroupSequence(array('First', $this->metadata->getDefaultGroup()));
 
-        $this->walker->walkClass($this->metadata, $entity, $this->metadata->getDefaultGroup(), '');
+        $this->walker->walkObject($this->metadata, $entity, $this->metadata->getDefaultGroup(), '');
 
         // Only group "Second" was validated
         $violations = new ConstraintViolationList();
@@ -193,7 +237,7 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($violations, $this->walker->getViolations());
     }
 
-    public function testWalkCascadedPropertyValidatesArrays()
+    public function testWalkCascadedPropertyValidatesArraysByDefault()
     {
         $entity = new Entity();
         $entityMetadata = new ClassMetadata(get_class($entity));
@@ -221,6 +265,85 @@ class GraphWalkerTest extends \PHPUnit_Framework_TestCase
             'path[key]',
             $entity
         ));
+
+        $this->assertEquals($violations, $this->walker->getViolations());
+    }
+
+    public function testWalkCascadedPropertyValidatesTraversableByDefault()
+    {
+        $entity = new Entity();
+        $entityMetadata = new ClassMetadata(get_class($entity));
+        $this->factory->addClassMetadata($entityMetadata);
+        $this->factory->addClassMetadata(new ClassMetadata('ArrayIterator'));
+
+        // add a constraint for the entity that always fails
+        $entityMetadata->addConstraint(new FailingConstraint());
+
+        // validate array when validating the property "reference"
+        $this->metadata->addPropertyConstraint('reference', new Valid());
+
+        $this->walker->walkPropertyValue(
+            $this->metadata,
+            'reference',
+            new \ArrayIterator(array('key' => $entity)),
+            'Default',
+            'path'
+        );
+
+        $violations = new ConstraintViolationList();
+        $violations->add(new ConstraintViolation(
+            '',
+            array(),
+            'Root',
+            'path[key]',
+            $entity
+        ));
+
+        $this->assertEquals($violations, $this->walker->getViolations());
+    }
+
+    public function testWalkCascadedPropertyDoesNotValidateTraversableIfDisabled()
+    {
+        $entity = new Entity();
+        $entityMetadata = new ClassMetadata(get_class($entity));
+        $this->factory->addClassMetadata($entityMetadata);
+        $this->factory->addClassMetadata(new ClassMetadata('ArrayIterator'));
+
+        // add a constraint for the entity that always fails
+        $entityMetadata->addConstraint(new FailingConstraint());
+
+        // validate array when validating the property "reference"
+        $this->metadata->addPropertyConstraint('reference', new Valid(array(
+            'traverse' => false,
+        )));
+
+        $this->walker->walkPropertyValue(
+            $this->metadata,
+            'reference',
+            new \ArrayIterator(array('key' => $entity)),
+            'Default',
+            'path'
+        );
+
+        $violations = new ConstraintViolationList();
+
+        $this->assertEquals($violations, $this->walker->getViolations());
+    }
+
+    public function testWalkCascadedPropertyDoesNotValidateNestedScalarValues()
+    {
+        // validate array when validating the property "reference"
+        $this->metadata->addPropertyConstraint('reference', new Valid());
+
+        $this->walker->walkPropertyValue(
+            $this->metadata,
+            'reference',
+            array('scalar', 'values'),
+            'Default',
+            'path'
+        );
+
+        $violations = new ConstraintViolationList();
 
         $this->assertEquals($violations, $this->walker->getViolations());
     }

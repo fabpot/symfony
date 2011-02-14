@@ -1,25 +1,27 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle;
 
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
-
 /**
  * RequestListener.
+ *
+ * The handle method must be connected to the core.request event.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -36,18 +38,7 @@ class RequestListener
         $this->logger = $logger;
     }
 
-    /**
-     * Registers a core.request listener.
-     *
-     * @param EventDispatcher $dispatcher An EventDispatcher instance
-     * @param integer         $priority   The priority
-     */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
-    {
-        $dispatcher->connect('core.request', array($this, 'handle'), $priority);
-    }
-
-    public function handle(Event $event)
+    public function handle(EventInterface $event)
     {
         $request = $event->get('request');
         $master = HttpKernelInterface::MASTER_REQUEST === $event->get('request_type');
@@ -64,7 +55,7 @@ class RequestListener
         }
 
         // inject the session object if none is present
-        if (null === $request->getSession()) {
+        if (null === $request->getSession() && $this->container->has('session')) {
             $request->setSession($this->container->get('session'));
         }
 
@@ -83,6 +74,7 @@ class RequestListener
                 'base_url'  => $request->getBaseUrl(),
                 'method'    => $request->getMethod(),
                 'host'      => $request->getHost(),
+                'port'      => $request->getPort(),
                 'is_secure' => $request->isSecure(),
             ));
         }
@@ -95,7 +87,7 @@ class RequestListener
         // add attributes based on the path info (routing)
         if (false !== $parameters = $this->router->match($request->getPathInfo())) {
             if (null !== $this->logger) {
-                $this->logger->info(sprintf('Matched route "%s" (parameters: %s)', $parameters['_route'], str_replace("\n", '', var_export($parameters, true))));
+                $this->logger->info(sprintf('Matched route "%s" (parameters: %s)', $parameters['_route'], json_encode($parameters)));
             }
 
             $request->attributes->add($parameters);

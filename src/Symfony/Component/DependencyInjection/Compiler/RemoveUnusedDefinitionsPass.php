@@ -1,20 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Removes unused service definitions from the container.
@@ -24,7 +24,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 class RemoveUnusedDefinitionsPass implements RepeatablePassInterface
 {
     protected $repeatedPass;
-    protected $graph;
 
     public function setRepeatedPass(RepeatedPass $repeatedPass)
     {
@@ -33,7 +32,7 @@ class RemoveUnusedDefinitionsPass implements RepeatablePassInterface
 
     public function process(ContainerBuilder $container)
     {
-        $this->graph = $this->repeatedPass->getCompiler()->getServiceReferenceGraph();
+        $graph = $container->getCompiler()->getServiceReferenceGraph();
 
         $hasChanged = false;
         foreach ($container->getDefinitions() as $id => $definition) {
@@ -41,8 +40,8 @@ class RemoveUnusedDefinitionsPass implements RepeatablePassInterface
                 continue;
             }
 
-            if ($this->graph->hasNode($id)) {
-                $edges = $this->graph->getNode($id)->getInEdges();
+            if ($graph->hasNode($id)) {
+                $edges = $graph->getNode($id)->getInEdges();
                 $referencingAliases = array();
                 $sourceIds = array();
                 foreach ($edges as $edge) {

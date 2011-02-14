@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\ParameterBag;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection\ParameterBag;
 
 /**
  * 
@@ -20,24 +20,28 @@ class FrozenParameterBag extends ParameterBag
     /**
      * Constructor.
      *
+     * For performance reasons, the constructor assumes that
+     * all keys are already lowercased.
+     *
+     * This is always the case when used internally.
+     *
      * @param array $parameters An array of parameters
      */
     public function __construct(array $parameters = array())
     {
-        foreach ($parameters as $key => $value) {
-            $this->parameters[strtolower($key)] = $value;
-        }
+        $this->parameters = $parameters;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function clear()
     {
         throw new \LogicException('Impossible to call clear() on a frozen ParameterBag.');
     }
 
     /**
-     * Adds parameters to the service container parameters.
-     *
-     * @param array $parameters An array of parameters
+     * {@inheritdoc}
      */
     public function add(array $parameters)
     {
@@ -45,10 +49,7 @@ class FrozenParameterBag extends ParameterBag
     }
 
     /**
-     * Sets a service container parameter.
-     *
-     * @param string $name       The parameter name
-     * @param mixed  $parameters The parameter value
+     * {@inheritdoc}
      */
     public function set($name, $value)
     {

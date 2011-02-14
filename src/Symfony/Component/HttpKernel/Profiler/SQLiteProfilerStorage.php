@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\HttpKernel\Profiler;
-
-use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\HttpKernel\Profiler;
+
+use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 
 /**
  * SQLiteProfilerStorage stores profiling information in a SQLite database.
@@ -50,7 +50,7 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
 
         if ($url) {
             $criteria[] = 'url LIKE :url ESCAPE "\"';
-            $args[':url'] = '%'.addcslashes($url, '%_').'%';
+            $args[':url'] = '%'.addcslashes($url, '%_\\').'%';
         }
 
         $criteria = $criteria ? 'WHERE '.implode(' AND ', $criteria) : '';
@@ -92,9 +92,16 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
             ':time'         => $time,
             ':created_at'   => time(),
         );
-        $this->exec($db, 'INSERT INTO data (token, data, ip, url, time, created_at) VALUES (:token, :data, :ip, :url, :time, :created_at)', $args);
-        $this->cleanup();
+        try {
+            $this->exec($db, 'INSERT INTO data (token, data, ip, url, time, created_at) VALUES (:token, :data, :ip, :url, :time, :created_at)', $args);
+            $this->cleanup();
+            $status = true;
+        } catch (\Exception $e) {
+            $status = false;
+        }
         $this->close($db);
+
+        return $status;
     }
 
     /**
@@ -139,6 +146,11 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
     protected function exec($db, $query, array $args = array())
     {
         $stmt = $db->prepare($query);
+
+        if (false === $stmt) {
+            throw new \RuntimeException('The database cannot successfully prepare the statement');
+        }
+
         if ($db instanceof \SQLite3) {
             foreach ($args as $arg => $val) {
                 $stmt->bindValue($arg, $val, is_int($val) ? \SQLITE3_INTEGER : \SQLITE3_TEXT);
@@ -150,7 +162,10 @@ class SQLiteProfilerStorage implements ProfilerStorageInterface
             foreach ($args as $arg => $val) {
                 $stmt->bindValue($arg, $val, is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
             }
-            $stmt->execute();
+            $success = $stmt->execute();
+            if (!$success) {
+                throw new \RuntimeException(sprintf('Error executing SQLite query "%s"', $query));
+            }
         }
     }
 

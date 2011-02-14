@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -10,7 +11,7 @@
 
 namespace Symfony\Tests\Component\Routing\Loader;
 
-use Symfony\Component\Routing\Loader\LoaderResolver;
+use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Loader\ClosureLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;

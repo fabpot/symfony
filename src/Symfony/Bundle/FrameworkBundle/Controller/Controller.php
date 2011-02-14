@@ -1,24 +1,23 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerAware;
 
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
-
 /**
  * Controller is a simple implementation of a Controller.
  *
- * It provides methods to common features needed in controllers
- * and an array access to the container services.
+ * It provides methods to common features needed in controllers.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -70,7 +69,7 @@ class Controller extends ContainerAware
      */
     public function forward($controller, array $path = array(), array $query = array())
     {
-        return $this->container->get('controller_resolver')->forward($controller, $path, $query);
+        return $this->container->get('http_kernel')->forward($controller, $path, $query);
     }
 
     /**

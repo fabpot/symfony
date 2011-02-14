@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\CssSelector\Node;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\CssSelector\Node;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\CssSelector\Node;
 
 /**
  * ClassNode represents a "selector.className" node.
@@ -21,7 +21,17 @@ namespace Symfony\Component\CssSelector\Node;
  */
 interface NodeInterface
 {
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return string The string representation
+     */
     function __toString();
 
+    /**
+     * @return XPathExpr The XPath expression
+     *
+     * @throws SyntaxError When unknown operator is found
+     */
     function toXpath();
 }

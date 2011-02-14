@@ -1,12 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Templating;
-
-use Symfony\Component\Templating\PhpEngine as BasePhpEngine;
-use Symfony\Component\Templating\Loader\LoaderInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -15,6 +8,14 @@ use Symfony\Component\HttpFoundation\Response;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Templating;
+
+use Symfony\Component\Templating\PhpEngine as BasePhpEngine;
+use Symfony\Component\Templating\Loader\LoaderInterface;
+use Symfony\Component\Templating\TemplateNameParserInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * This engine knows how to render Symfony templates.
@@ -28,14 +29,15 @@ class PhpEngine extends BasePhpEngine implements EngineInterface
     /**
      * Constructor.
      *
-     * @param ContainerInterface $container The DI container
-     * @param LoaderInterface    $loader    A loader instance
+     * @param TemplateNameParserInterface $parser    A TemplateNameParserInterface instance
+     * @param ContainerInterface          $container The DI container
+     * @param LoaderInterface             $loader    A loader instance
      */
-    public function __construct(ContainerInterface $container, LoaderInterface $loader)
+    public function __construct(TemplateNameParserInterface $parser, ContainerInterface $container, LoaderInterface $loader)
     {
         $this->container = $container;
 
-        parent::__construct($loader);
+        parent::__construct($parser, $loader);
     }
 
     /**

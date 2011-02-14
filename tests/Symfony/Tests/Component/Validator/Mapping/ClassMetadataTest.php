@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Validator\Mapping;
 
 use Symfony\Component\Validator\Constraint;
@@ -9,10 +18,12 @@ use Symfony\Component\Validator\Mapping\PropertyMetadata;
 use Symfony\Tests\Component\Validator\Fixtures\Entity;
 use Symfony\Tests\Component\Validator\Fixtures\ConstraintA;
 use Symfony\Tests\Component\Validator\Fixtures\ConstraintB;
+use Symfony\Tests\Component\Validator\Fixtures\PropertyConstraint;
 
 require_once __DIR__.'/../Fixtures/Entity.php';
 require_once __DIR__.'/../Fixtures/ConstraintA.php';
 require_once __DIR__.'/../Fixtures/ConstraintB.php';
+require_once __DIR__.'/../Fixtures/PropertyConstraint.php';
 
 class ClassMetadataTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,6 +42,13 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException('Symfony\Component\Validator\Exception\ConstraintDefinitionException');
 
         $this->metadata->addConstraint(new Valid());
+    }
+
+    public function testAddConstraintRequiresClassConstraints()
+    {
+        $this->setExpectedException('Symfony\Component\Validator\Exception\ConstraintDefinitionException');
+
+        $this->metadata->addConstraint(new PropertyConstraint());
     }
 
     public function testAddPropertyConstraints()
@@ -89,6 +107,14 @@ class ClassMetadataTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($members));
         $this->assertEquals(self::PARENTCLASS, $members[0]->getClassName());
         $this->assertEquals($constraints, $members[0]->getConstraints());
+    }
+
+    public function testMemberMetadatas()
+    {
+        $this->metadata->addPropertyConstraint('firstName', new ConstraintA());
+
+        $this->assertTrue($this->metadata->hasMemberMetadatas('firstName'));
+        $this->assertFalse($this->metadata->hasMemberMetadatas('non_existant_field'));
     }
 
     public function testMergeConstraintsKeepsPrivateMembersSeperate()

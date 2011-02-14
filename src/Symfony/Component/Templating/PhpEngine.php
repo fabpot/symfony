@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating;
-
-use Symfony\Component\Templating\Storage\Storage;
-use Symfony\Component\Templating\Storage\FileStorage;
-use Symfony\Component\Templating\Storage\StringStorage;
-use Symfony\Component\Templating\Helper\HelperInterface;
-use Symfony\Component\Templating\Loader\LoaderInterface;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\Templating\Loader\LoaderInterface;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Templating;
+
+use Symfony\Component\Templating\Storage\Storage;
+use Symfony\Component\Templating\Storage\FileStorage;
+use Symfony\Component\Templating\Storage\StringStorage;
+use Symfony\Component\Templating\Helper\HelperInterface;
+use Symfony\Component\Templating\Loader\LoaderInterface;
 
 /**
  * PhpEngine is an engine able to render PHP templates.
@@ -33,15 +33,18 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     protected $cache;
     protected $escapers;
     protected $globals;
+    protected $parser;
 
     /**
      * Constructor.
      *
-     * @param LoaderInterface $loader  A loader instance
-     * @param array           $helpers An array of helper instances
+     * @param TemplateNameParserInterface $parser  A TemplateNameParserInterface instance
+     * @param LoaderInterface             $loader  A loader instance
+     * @param array                       $helpers An array of helper instances
      */
-    public function __construct(LoaderInterface $loader, array $helpers = array())
+    public function __construct(TemplateNameParserInterface $parser, LoaderInterface $loader, array $helpers = array())
     {
+        $this->parser  = $parser;
         $this->loader  = $loader;
         $this->parents = array();
         $this->stack   = array();
@@ -60,8 +63,8 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Renders a template.
      *
-     * @param string $name       A template name
-     * @param array  $parameters An array of parameters to pass to the template
+     * @param mixed $name       A template name
+     * @param array $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
      *
@@ -72,24 +75,26 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     {
         $template = $this->load($name);
 
-        $this->current = $name;
-        $this->parents[$name] = null;
+        $key = md5(serialize($template));
+
+        $this->current = $key;
+        $this->parents[$key] = null;
 
         // attach the global variables
         $parameters = array_replace($this->getGlobals(), $parameters);
 
         // render
         if (false === $content = $this->evaluate($template, $parameters)) {
-            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', $name));
+            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', json_encode($template)));
         }
 
         // decorator
-        if ($this->parents[$name]) {
+        if ($this->parents[$key]) {
             $slots = $this->get('slots');
             $this->stack[] = $slots->get('_content');
             $slots->set('_content', $content);
 
-            $content = $this->render($this->parents[$name], $parameters);
+            $content = $this->render($this->parents[$key], $parameters);
 
             $slots->set('_content', array_pop($this->stack));
         }
@@ -100,7 +105,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Returns true if the template exists.
      *
-     * @param string $name A template name
+     * @param mixed $name A template name
      *
      * @return Boolean true if the template exists, false otherwise
      */
@@ -116,42 +121,17 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     }
 
     /**
-     * Loads the given template.
-     *
-     * @param string $name A template name
-     *
-     * @return Storage A Storage instance
-     *
-     * @throws \InvalidArgumentException if the template cannot be found
-     */
-    public function load($name)
-    {
-        if (isset($this->cache[$name])) {
-            return $this->cache[$name];
-        }
-
-        // load
-        $template = $this->loader->load($name);
-
-        if (false === $template) {
-            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', $name));
-        }
-
-        $this->cache[$name] = $template;
-
-        return $template;
-    }
-
-    /**
      * Returns true if this class is able to render the given template.
      *
-     * @param string $name A template name
+     * @param mixed $name A template name
      *
-     * @return boolean True if this class supports the given resource, false otherwise
+     * @return Boolean True if this class supports the given resource, false otherwise
      */
     public function supports($name)
     {
-        return false !== strpos($name, '.php');
+        $template = $this->parser->parse($name);
+
+        return 'php' === $template['engine'];
     }
 
     /**
@@ -241,6 +221,11 @@ class PhpEngine implements EngineInterface, \ArrayAccess
         }
     }
 
+    /**
+     * Sets the helpers.
+     *
+     * @params Helper[] $helpers An array of helper
+     */
     public function setHelpers(array $helpers)
     {
         $this->helpers = array();
@@ -306,7 +291,8 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Escapes a string by using the current charset.
      *
-     * @param mixed $value A variable to escape
+     * @param mixed  $value   A variable to escape
+     * @param string $context The context name
      *
      * @return string The escaped value
      */
@@ -413,7 +399,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
                  */
                 function ($value) use ($that)
                 {
-                    // Numbers and boolean values get turned into strings which can cause problems
+                    // Numbers and Boolean values get turned into strings which can cause problems
                     // with type comparisons (e.g. === or is_int() etc).
                     return is_string($value) ? htmlspecialchars($value, ENT_QUOTES, $that->getCharset(), false) : $value;
                 },
@@ -429,7 +415,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
                 function ($value) use ($that)
                 {
                     if ('UTF-8' != $that->getCharset()) {
-                        $string = $that->convertEncoding($string, 'UTF-8', $that->getCharset());
+                        $string = $that->convertEncoding($value, 'UTF-8', $that->getCharset());
                     }
 
                     $callback = function ($matches) use ($that)
@@ -460,6 +446,17 @@ class PhpEngine implements EngineInterface, \ArrayAccess
         );
     }
 
+    /**
+     * Convert a string from one encoding to another.
+     *
+     * @param string $string The string to convert
+     * @param string $to     The input encoding
+     * @param string $from   The output encoding
+     *
+     * @return string The string with the new encoding
+     *
+     * @throws \RuntimeException if no suitable encoding function is found (iconv or mbstring)
+     */
     public function convertEncoding($string, $to, $from)
     {
         if (function_exists('iconv')) {
@@ -479,5 +476,33 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     public function getLoader()
     {
         return $this->loader;
+    }
+
+    /**
+     * Loads the given template.
+     *
+     * @param mixed $name A template name
+     *
+     * @return Storage A Storage instance
+     *
+     * @throws \InvalidArgumentException if the template cannot be found
+     */
+    protected function load($name)
+    {
+        $template = $this->parser->parse($name);
+
+        $key = md5(serialize($template));
+        if (isset($this->cache[$key])) {
+            return $this->cache[$key];
+        }
+
+        // load
+        $template = $this->loader->load($template);
+
+        if (false === $template) {
+            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', $name));
+        }
+
+        return $this->cache[$key] = $template;
     }
 }

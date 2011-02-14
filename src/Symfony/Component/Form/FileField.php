@@ -1,41 +1,41 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\Form;
 
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Form\Exception\FormException;
 
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
-
 /**
  * A file field to upload files.
  */
-class FileField extends FieldGroup
+class FileField extends Form
 {
     /**
      * Whether the size of the uploaded file exceeds the upload_max_filesize
      * directive in php.ini
-     * @var boolean
+     * @var Boolean
      */
     protected $iniSizeExceeded = false;
 
     /**
      * Whether the size of the uploaded file exceeds the MAX_FILE_SIZE
      * directive specified in the HTML form
-     * @var boolean
+     * @var Boolean
      */
     protected $formSizeExceeded = false;
 
     /**
      * Whether the file was completely uploaded
-     * @var boolean
+     * @var Boolean
      */
     protected $uploadComplete = true;
 
@@ -61,7 +61,7 @@ class FileField extends FieldGroup
      * This way the file can survive if the form does not validate and is
      * resubmitted.
      *
-     * @see Symfony\Component\Form\FieldGroup::preprocessData()
+     * @see Symfony\Component\Form\Form::preprocessData()
      */
     protected function preprocessData(array $data)
     {
@@ -102,8 +102,6 @@ class FileField extends FieldGroup
      */
     protected function normalize($path)
     {
-        srand(microtime(true));
-
         return array(
             'file' => '',
             'token' => rand(100000, 999999),
@@ -177,7 +175,7 @@ class FileField extends FieldGroup
      * Returns true if the size of the uploaded file exceeds the
      * upload_max_filesize directive in php.ini
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isIniSizeExceeded()
     {
@@ -188,7 +186,7 @@ class FileField extends FieldGroup
      * Returns true if the size of the uploaded file exceeds the
      * MAX_FILE_SIZE directive specified in the HTML form
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isFormSizeExceeded()
     {
@@ -198,7 +196,7 @@ class FileField extends FieldGroup
     /**
      * Returns true if the file was completely uploaded
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isUploadComplete()
     {

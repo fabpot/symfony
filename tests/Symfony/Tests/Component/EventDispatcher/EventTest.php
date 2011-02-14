@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -49,20 +50,12 @@ class EventTest extends \PHPUnit_Framework_TestCase
         $event = new Event($this->subject, 'name', $this->parameters);
     }
 
-    public function testSetGetReturnValue()
-    {
-        $event = $this->createEvent();
-        $event->setReturnValue('foo');
-        $this->assertEquals('foo', $event->getReturnValue(), '->getReturnValue() returns the return value of the event');
-    }
-
     public function testSetIsProcessed()
     {
         $event = $this->createEvent();
-        $event->setProcessed(true);
+        $this->assertFalse($event->isProcessed(), '->isProcessed() returns false by default');
+        $event->setProcessed();
         $this->assertTrue($event->isProcessed(), '->isProcessed() returns true if the event has been processed');
-        $event->setProcessed(false);
-        $this->assertFalse($event->isProcessed(), '->setProcessed() changes the processed status');
     }
 
     protected function createEvent()

@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Test;
-
-use Symfony\Bundle\FrameworkBundle\Client;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\Test\WebTestCase as BaseWebTestCase;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\HttpKernel\Test\WebTestCase as BaseWebTestCase;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Test;
+
+use Symfony\Bundle\FrameworkBundle\Client;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\Test\WebTestCase as BaseWebTestCase;
 
 /**
  * WebTestCase is the base class for functional tests.
@@ -63,9 +63,9 @@ abstract class WebTestCase extends BaseWebTestCase
         // find the --configuration flag from PHPUnit
         $cli = implode(' ', $_SERVER['argv']);
         if (preg_match('/\-\-configuration[= ]+([^ ]+)/', $cli, $matches)) {
-            $dir = $dir.'/'.$matches[1];
+            $dir = realpath($matches[1]);
         } elseif (preg_match('/\-c +([^ ]+)/', $cli, $matches)) {
-            $dir = $dir.'/'.$matches[1];
+            $dir = realpath($matches[1]);
         } elseif (file_exists(getcwd().'/phpunit.xml') || file_exists(getcwd().'/phpunit.xml.dist')) {
             $dir = getcwd();
         } else {

@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -26,13 +27,18 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo'), $def->getArguments(), '__construct() takes an optional array of arguments as its second argument');
     }
 
-    /**
-     * @covers Symfony\Component\DependencyInjection\Definition::setFactoryMethod
-     * @covers Symfony\Component\DependencyInjection\Definition::getFactoryMethod
-     */
-    public function testSetGetConstructor()
+    public function testSetGetFactoryClass()
     {
         $def = new Definition('stdClass');
+        $this->assertNull($def->getFactoryClass());
+        $this->assertSame($def, $def->setFactoryClass('stdClass2'), "->setFactoryClass() implements a fluent interface.");
+        $this->assertEquals('stdClass2', $def->getFactoryClass(), "->getFactoryClass() returns current class to construct this service.");
+    }
+
+    public function testSetGetFactoryMethod()
+    {
+        $def = new Definition('stdClass');
+        $this->assertNull($def->getFactoryMethod());
         $this->assertSame($def, $def->setFactoryMethod('foo'), '->setFactoryMethod() implements a fluent interface');
         $this->assertEquals('foo', $def->getFactoryMethod(), '->getFactoryMethod() returns the factory method name');
     }
@@ -41,8 +47,8 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     {
         $def = new Definition('stdClass');
         $this->assertNull($def->getFactoryService());
-        $this->assertSame($def, $def->setFactoryService('stdClass2'), "->setFactoryService() implements a fluent interface.");
-        $this->assertEquals('stdClass2', $def->getFactoryService(), "->getFactoryService() returns current service to construct this service.");
+        $this->assertSame($def, $def->setFactoryService('foo.bar'), "->setFactoryService() implements a fluent interface.");
+        $this->assertEquals('foo.bar', $def->getFactoryService(), "->getFactoryService() returns current service to construct this service.");
     }
 
     /**
@@ -101,15 +107,15 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Symfony\Component\DependencyInjection\Definition::setShared
-     * @covers Symfony\Component\DependencyInjection\Definition::isShared
+     * @covers Symfony\Component\DependencyInjection\Definition::setScope
+     * @covers Symfony\Component\DependencyInjection\Definition::getScope
      */
-    public function testSetIsShared()
+    public function testSetGetScope()
     {
         $def = new Definition('stdClass');
-        $this->assertTrue($def->isShared(), '->isShared() returns true by default');
-        $this->assertSame($def, $def->setShared(false), '->setShared() implements a fluent interface');
-        $this->assertFalse($def->isShared(), '->isShared() returns false if the instance must not be shared');
+        $this->assertEquals('container', $def->getScope());
+        $this->assertSame($def, $def->setScope('foo'));
+        $this->assertEquals('foo', $def->getScope());
     }
 
     /**
@@ -122,6 +128,30 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($def->isPublic(), '->isPublic() returns true by default');
         $this->assertSame($def, $def->setPublic(false), '->setPublic() implements a fluent interface');
         $this->assertFalse($def->isPublic(), '->isPublic() returns false if the instance must not be public.');
+    }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\Definition::setSynthetic
+     * @covers Symfony\Component\DependencyInjection\Definition::isSynthetic
+     */
+    public function testSetIsSynthetic()
+    {
+        $def = new Definition('stdClass');
+        $this->assertFalse($def->isSynthetic(), '->isSynthetic() returns false by default');
+        $this->assertSame($def, $def->setSynthetic(true), '->setSynthetic() implements a fluent interface');
+        $this->assertTrue($def->isSynthetic(), '->isSynthetic() returns true if the instance must not be public.');
+    }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\Definition::setAbstract
+     * @covers Symfony\Component\DependencyInjection\Definition::isAbstract
+     */
+    public function testSetIsAbstract()
+    {
+        $def = new Definition('stdClass');
+        $this->assertFalse($def->isAbstract(), '->isAbstract() returns false by default');
+        $this->assertSame($def, $def->setAbstract(true), '->setAbstract() implements a fluent interface');
+        $this->assertTrue($def->isAbstract(), '->isAbstract() returns true if the instance must not be public.');
     }
 
     /**
@@ -151,12 +181,15 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
      * @covers Symfony\Component\DependencyInjection\Definition::addTag
      * @covers Symfony\Component\DependencyInjection\Definition::getTag
      * @covers Symfony\Component\DependencyInjection\Definition::getTags
+     * @covers Symfony\Component\DependencyInjection\Definition::hasTag
      */
     public function testTags()
     {
         $def = new Definition('stdClass');
         $this->assertEquals(array(), $def->getTag('foo'), '->getTag() returns an empty array if the tag is not defined');
+        $this->assertFalse($def->hasTag('foo'));
         $this->assertSame($def, $def->addTag('foo'), '->addTag() implements a fluent interface');
+        $this->assertTrue($def->hasTag('foo'));
         $this->assertEquals(array(array()), $def->getTag('foo'), '->getTag() returns attributes for a tag name');
         $def->addTag('foo', array('foo' => 'bar'));
         $this->assertEquals(array(array(), array('foo' => 'bar')), $def->getTag('foo'), '->addTag() can adds the same tag several times');
@@ -165,5 +198,26 @@ class DefinitionTest extends \PHPUnit_Framework_TestCase
             'foo' => array(array(), array('foo' => 'bar')),
             'bar' => array(array('bar' => 'bar')),
         ), '->getTags() returns all tags');
+    }
+
+    /**
+     * @covers Symfony\Component\DependencyInjection\Definition::setArgument
+     */
+    public function testSetArgument()
+    {
+        $def = new Definition('stdClass');
+
+        $def->addArgument('foo');
+        $this->assertSame(array('foo'), $def->getArguments());
+
+        $this->assertSame($def, $def->setArgument(0, 'moo'));
+        $this->assertSame(array('moo'), $def->getArguments());
+
+        $def->addArgument('moo');
+        $def
+            ->setArgument(0, 'foo')
+            ->setArgument(1, 'bar')
+        ;
+        $this->assertSame(array('foo', 'bar'), $def->getArguments());
     }
 }

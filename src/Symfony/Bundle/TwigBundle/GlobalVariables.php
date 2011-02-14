@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\TwigBundle;
-
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\TwigBundle;
+
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * AppVariables is the entry point for Symfony global variables in Twig templates.
@@ -36,10 +36,20 @@ class GlobalVariables
 
     public function getUser()
     {
-        $security = $this->getSecurity();
-        if ($security && $user = $security->getUser()) {
-            return $user;
+        if (!$security = $this->getSecurity()) {
+            return;
         }
+
+        if (!$token = $security->getToken()) {
+            return;
+        }
+
+        $user = $token->getUser();
+        if (!is_object($user)) {
+            return;
+        }
+
+        return $user;
     }
 
     public function getRequest()

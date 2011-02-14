@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -155,6 +156,25 @@ class ArgvInputTest extends \PHPUnit_Framework_TestCase
 
         $input = new TestInput(array('cli.php', 'foo'));
         $this->assertFalse($input->hasParameterOption('--foo'), '->hasParameterOption() returns false if the given short option is not in the raw input');
+    }
+
+    /**
+     * @dataProvider provideGetParameterOptionValues
+     */
+    public function testGetParameterOptionEqualSign($argv, $key, $expected)
+    {
+        $input = new ArgvInput($argv);
+        $this->assertEquals($expected, $input->getParameterOption($key), '->getParameterOption() returns the expected value');
+    }
+
+    public function provideGetParameterOptionValues()
+    {
+        return array(
+            array(array('app/console', 'foo:bar', '-e', 'dev'), '-e', 'dev'),
+            array(array('app/console', 'foo:bar', '--env=dev'), '--env', 'dev'),
+            array(array('app/console', 'foo:bar', '-e', 'dev'), array('-e', '--env'), 'dev'),
+            array(array('app/console', 'foo:bar', '--env=dev'), array('-e', '--env'), 'dev'),
+        );
     }
 }
 

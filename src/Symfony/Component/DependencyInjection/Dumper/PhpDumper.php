@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Dumper;
 
 use Symfony\Component\DependencyInjection\Variable;
@@ -9,15 +18,6 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * PhpDumper dumps a service container as a PHP class.
@@ -43,7 +43,7 @@ class PhpDumper extends Dumper
     protected $definitionVariables;
     protected $referenceVariables;
     protected $variableCount;
-    protected $reservedVariables = array('instance');
+    protected $reservedVariables = array('instance', 'class');
 
     public function __construct(ContainerBuilder $container)
     {
@@ -71,15 +71,22 @@ class PhpDumper extends Dumper
             'base_class' => 'Container',
         ), $options);
 
-        return
-            $this->startClass($options['class'], $options['base_class']).
-            $this->addConstructor().
+        $code = $this->startClass($options['class'], $options['base_class']);
+
+        if ($this->container->isFrozen()) {
+            $code .= $this->addFrozenConstructor();
+        } else {
+            $code .= $this->addConstructor();
+        }
+
+        $code .=
             $this->addServices().
-            $this->addTags().
             $this->addDefaultParametersMethod().
             $this->addInterfaceInjectors().
             $this->endClass()
         ;
+
+        return $code;
     }
 
     protected function addInterfaceInjectors()
@@ -223,10 +230,12 @@ EOF;
                 }
 
                 if (null !== $sDefinition->getFactoryMethod()) {
-                    if (null !== $sDefinition->getFactoryService()) {
+                    if (null !== $sDefinition->getFactoryClass()) {
+                        $code .= sprintf("        \$%s = call_user_func(array(%s, '%s')%s);\n", $name, $this->dumpValue($sDefinition->getFactoryClass()), $sDefinition->getFactoryMethod(), count($arguments) > 0 ? ', '.implode(', ', $arguments) : '');
+                    } elseif (null !== $sDefinition->getFactoryService()) {
                         $code .= sprintf("        \$%s = %s->%s(%s);\n", $name, $this->getServiceCall($sDefinition->getFactoryService()), $sDefinition->getFactoryMethod(), implode(', ', $arguments));
                     } else {
-                        $code .= sprintf("        \$%s = call_user_func(array(%s, '%s')%s);\n", $name, $class, $sDefinition->getFactoryMethod(), count($arguments) > 0 ? ', '.implode(', ', $arguments) : '');
+                        throw new \RuntimeException('Factory service or factory class must be defined in service definition for '.$id);
                     }
                 } elseif (false !== strpos($class, '$')) {
                     $code .= sprintf("        \$class = %s;\n        \$%s = new \$class(%s);\n", $class, $name, implode(', ', $arguments));
@@ -271,8 +280,10 @@ EOF;
         $simple = $this->isSimpleInstance($id, $definition);
 
         $instantiation = '';
-        if ($definition->isShared()) {
+        if (ContainerInterface::SCOPE_CONTAINER === $definition->getScope()) {
             $instantiation = "\$this->services['$id'] = ".($simple ? '' : '$instance');
+        } else if (ContainerInterface::SCOPE_PROTOTYPE !== $scope = $definition->getScope()) {
+            $instantiation = "\$this->services['$id'] = \$this->scopedServices['$scope']['$id'] = ".($simple ? '' : '$instance');
         } elseif (!$simple) {
             $instantiation = '$instance';
         }
@@ -285,10 +296,12 @@ EOF;
         }
 
         if (null !== $definition->getFactoryMethod()) {
-            if (null !== $definition->getFactoryService()) {
+            if (null !== $definition->getFactoryClass()) {
+                $code = sprintf("        $return{$instantiation}call_user_func(array(%s, '%s')%s);\n", $this->dumpValue($definition->getFactoryClass()), $definition->getFactoryMethod(), $arguments ? ', '.implode(', ', $arguments) : '');
+            } elseif (null !== $definition->getFactoryService()) {
                 $code = sprintf("        $return{$instantiation}%s->%s(%s);\n", $this->getServiceCall($definition->getFactoryService()), $definition->getFactoryMethod(), implode(', ', $arguments));
             } else {
-                $code = sprintf("        $return{$instantiation}call_user_func(array(%s, '%s')%s);\n", $class, $definition->getFactoryMethod(), $arguments ? ', '.implode(', ', $arguments) : '');
+                throw new \RuntimeException('Factory method requires a factory service or factory class in service definition for '.$id);
             }
         } elseif (false !== strpos($class, '$')) {
             $code = sprintf("        \$class = %s;\n        $return{$instantiation}new \$class(%s);\n", $class, implode(', ', $arguments));
@@ -393,14 +406,18 @@ EOF;
         $this->variableCount = 0;
 
         $return = '';
-        if ($class = $definition->getClass()) {
+        if ($definition->isSynthetic()) {
+            $return = sprintf('@throws \RuntimeException always since this service is expected to be injected dynamically');
+        } elseif ($class = $definition->getClass()) {
             $return = sprintf("@return %s A %s instance.", 0 === strpos($class, '%') ? 'Object' : $class, $class);
+        } elseif ($definition->getFactoryClass()) {
+            $return = sprintf('@return Object An instance returned by %s::%s().', $definition->getFactoryClass(), $definition->getFactoryMethod());
         } elseif ($definition->getFactoryService()) {
             $return = sprintf('@return Object An instance returned by %s::%s().', $definition->getFactoryService(), $definition->getFactoryMethod());
         }
 
         $doc = '';
-        if ($definition->isShared()) {
+        if (ContainerInterface::SCOPE_PROTOTYPE !== $definition->getScope()) {
             $doc .= <<<EOF
 
      *
@@ -431,16 +448,31 @@ EOF;
 
 EOF;
 
-        $code .=
-            $this->addServiceInclude($id, $definition).
-            $this->addServiceLocalTempVariables($id, $definition).
-            $this->addServiceInlinedDefinitions($id, $definition).
-            $this->addServiceInstance($id, $definition).
-            $this->addServiceInlinedDefinitionsSetup($id, $definition).
-            $this->addServiceMethodCalls($id, $definition).
-            $this->addServiceConfigurator($id, $definition).
-            $this->addServiceReturn($id, $definition)
-        ;
+        $scope = $definition->getScope();
+        if (ContainerInterface::SCOPE_CONTAINER !== $scope && ContainerInterface::SCOPE_PROTOTYPE !== $scope) {
+            $code .= <<<EOF
+        if (!isset(\$this->scopedServices['$scope'])) {
+            throw new \RuntimeException('You cannot create a service ("$id") of an inactive scope ("$scope").');
+        }
+
+
+EOF;
+        }
+
+        if ($definition->isSynthetic()) {
+            $code .= sprintf("        throw new \RuntimeException('You have requested a synthetic service (\"%s\"). The DIC does not know how to construct this service.');\n    }\n", $id);
+        } else {
+            $code .=
+                $this->addServiceInclude($id, $definition).
+                $this->addServiceLocalTempVariables($id, $definition).
+                $this->addServiceInlinedDefinitions($id, $definition).
+                $this->addServiceInstance($id, $definition).
+                $this->addServiceInlinedDefinitionsSetup($id, $definition).
+                $this->addServiceMethodCalls($id, $definition).
+                $this->addServiceConfigurator($id, $definition).
+                $this->addServiceReturn($id, $definition)
+            ;
+        }
 
         $this->definitionVariables = null;
         $this->referenceVariables = null;
@@ -476,7 +508,9 @@ EOF;
     protected function addServices()
     {
         $publicServices = $privateServices = $aliasServices = '';
-        foreach ($this->container->getDefinitions() as $id => $definition) {
+        $definitions = $this->container->getDefinitions();
+        ksort($definitions);
+        foreach ($definitions as $id => $definition) {
             if ($definition->isPublic()) {
                 $publicServices .= $this->addService($id, $definition);
             } else {
@@ -484,59 +518,27 @@ EOF;
             }
         }
 
-        foreach ($this->container->getAliases() as $alias => $id) {
+        $aliases = $this->container->getAliases();
+        ksort($aliases);
+        foreach ($aliases as $alias => $id) {
             $aliasServices .= $this->addServiceAlias($alias, $id);
         }
 
         return $publicServices.$aliasServices.$privateServices;
     }
 
-    protected function addTags()
-    {
-        $tags = array();
-        foreach ($this->container->getDefinitions() as $id => $definition) {
-            foreach ($definition->getTags() as $name => $ann) {
-                if (!isset($tags[$name])) {
-                    $tags[$name] = array();
-                }
-
-                $tags[$name][$id] = $ann;
-            }
-        }
-        $tags = $this->exportParameters($tags);
-
-        return <<<EOF
-
-    /**
-     * Returns service ids for a given tag.
-     *
-     * @param string \$name The tag name
-     *
-     * @return array An array of tags
-     */
-    public function findTaggedServiceIds(\$name)
-    {
-        static \$tags = $tags;
-
-        return isset(\$tags[\$name]) ? \$tags[\$name] : array();
-    }
-
-EOF;
-    }
-
     protected function startClass($class, $baseClass)
     {
-        $bagClass = $this->container->isFrozen() ? 'FrozenParameterBag' : 'ParameterBag';
+        $bagClass = $this->container->isFrozen() ? '' : 'use Symfony\Component\DependencyInjection\ParameterBag\\ParameterBag;';
 
         return <<<EOF
 <?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
-use Symfony\Component\DependencyInjection\ParameterBag\\$bagClass;
+$bagClass
 
 /**
  * $class
@@ -544,26 +546,72 @@ use Symfony\Component\DependencyInjection\ParameterBag\\$bagClass;
  * This class has been auto-generated
  * by the Symfony Dependency Injection Component.
  */
-class $class extends $baseClass implements TaggedContainerInterface
+class $class extends $baseClass
 {
 EOF;
     }
 
     protected function addConstructor()
     {
-        $bagClass = $this->container->isFrozen() ? 'FrozenParameterBag' : 'ParameterBag';
-
-        return <<<EOF
+        $code = <<<EOF
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        parent::__construct(new $bagClass(\$this->getDefaultParameters()));
+        parent::__construct(new ParameterBag(\$this->getDefaultParameters()));
+
+EOF;
+
+        if (count($scopes = $this->container->getScopes()) > 0) {
+            $code .= "\n";
+            $code .= "        \$this->scopes = ".$this->dumpValue($scopes).";\n";
+            $code .= "        \$this->scopeChildren = ".$this->dumpValue($this->container->getScopeChildren()).";\n";
+        }
+
+        $code .= <<<EOF
     }
 
 EOF;
+
+        return $code;
+    }
+
+    protected function addFrozenConstructor()
+    {
+        $code = <<<EOF
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        \$this->parameters = \$this->getDefaultParameters();
+
+        \$this->services =
+        \$this->scopedServices =
+        \$this->scopeStacks = array();
+
+        \$this->set('service_container', \$this);
+
+EOF;
+
+        $code .= "\n";
+        if (count($scopes = $this->container->getScopes()) > 0) {
+            $code .= "        \$this->scopes = ".$this->dumpValue($scopes).";\n";
+            $code .= "        \$this->scopeChildren = ".$this->dumpValue($this->container->getScopeChildren()).";\n";
+        } else {
+            $code .= "        \$this->scopes = array();\n";
+            $code .= "        \$this->scopeChildren = array();\n";
+        }
+
+        $code .= <<<EOF
+    }
+
+EOF;
+
+        return $code;
     }
 
     protected function addDefaultParametersMethod()
@@ -574,7 +622,43 @@ EOF;
 
         $parameters = $this->exportParameters($this->container->getParameterBag()->all());
 
-        return <<<EOF
+        $code = '';
+        if ($this->container->isFrozen()) {
+            $code .= <<<EOF
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getParameter(\$name)
+    {
+        \$name = strtolower(\$name);
+
+        if (!array_key_exists(\$name, \$this->parameters)) {
+            throw new \InvalidArgumentException(sprintf('The parameter "%s" must be defined.', \$name));
+        }
+
+        return \$this->parameters[\$name];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasParameter(\$name)
+    {
+        return array_key_exists(strtolower(\$name), \$this->parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setParameter(\$name, \$value)
+    {
+        throw new \LogicException('Impossible to call set() on a frozen ParameterBag.');
+    }
+EOF;
+        }
+
+        $code .= <<<EOF
 
     /**
      * Gets the default parameters.
@@ -587,6 +671,8 @@ EOF;
     }
 
 EOF;
+
+        return $code;
     }
 
     protected function exportParameters($parameters, $indent = 12)
@@ -596,7 +682,7 @@ EOF;
             if (is_array($value)) {
                 $value = $this->exportParameters($value, $indent + 4);
             } elseif ($value instanceof Variable) {
-                throw new \InvalidArgumentException(sprintf('you cannot dump a container with parameters that contain variable references. Variable "%s" found.', $variable));
+                throw new \InvalidArgumentException(sprintf('you cannot dump a container with parameters that contain variable references. Variable "%s" found.', $value));
             } elseif ($value instanceof Definition) {
                 throw new \InvalidArgumentException(sprintf('You cannot dump a container with parameters that contain service definitions. Definition for "%s" found.', $value->getClass()));
             } elseif ($value instanceof Reference) {
@@ -741,10 +827,12 @@ EOF;
             }
 
             if (null !== $value->getFactoryMethod()) {
-                if (null !== $value->getFactoryService()) {
+                if (null !== $value->getFactoryClass()) {
+                    return sprintf("call_user_func(array(%s, '%s')%s)", $this->dumpValue($value->getFactoryClass()), $value->getFactoryMethod(), count($arguments) > 0 ? ', '.implode(', ', $arguments) : '');
+                } elseif (null !== $value->getFactoryService()) {
                     return sprintf("%s->%s(%s)", $this->getServiceCall($value->getFactoryService()), $value->getFactoryMethod(), implode(', ', $arguments));
                 } else {
-                    return sprintf("call_user_func(array(%s, '%s')%s)", $class, $value->getFactoryMethod(), count($arguments) > 0 ? ', '.implode(', ', $arguments) : '');
+                    throw new \RuntimeException('Cannot dump definitions which have factory method without factory service or factory class.');
                 }
             }
 
@@ -761,7 +849,7 @@ EOF;
             return $this->dumpParameter($value);
         } elseif (true === $interpolate && is_string($value)) {
             if (preg_match('/^%([^%]+)%$/', $value, $match)) {
-                // we do this to deal with non string values (boolean, integer, ...)
+                // we do this to deal with non string values (Boolean, integer, ...)
                 // the preg_replace_callback converts them to strings
                 return $this->dumpParameter(strtolower($match[1]));
             } else {

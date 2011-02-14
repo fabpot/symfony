@@ -1,18 +1,18 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\HttpKernel\Controller;
 
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * ControllerResolver.
@@ -41,7 +41,7 @@ class ControllerResolver implements ControllerResolverInterface
      * Returns the Controller instance associated with a Request.
      *
      * This method looks for a '_controller' request attribute that represents
-     * the controller name (a string like ClassName:::MethodName).
+     * the controller name (a string like ClassName::MethodName).
      *
      * @param Request $request A Request instance
      *
@@ -90,18 +90,15 @@ class ControllerResolver implements ControllerResolverInterface
         $attributes = $request->attributes->all();
 
         if (is_array($controller)) {
-            list($controller, $method) = $controller;
-            $m = new \ReflectionMethod($controller, $method);
-            $parameters = $m->getParameters();
-            $repr = sprintf('%s::%s()', get_class($controller), $method);
+            $r = new \ReflectionMethod($controller[0], $controller[1]);
+            $repr = sprintf('%s::%s()', get_class($controller[0]), $controller[1]);
         } else {
-            $f = new \ReflectionFunction($controller);
-            $parameters = $f->getParameters();
+            $r = new \ReflectionFunction($controller);
             $repr = 'Closure';
         }
 
         $arguments = array();
-        foreach ($parameters as $param) {
+        foreach ($r->getParameters() as $param) {
             if (array_key_exists($param->getName(), $attributes)) {
                 $arguments[] = $attributes[$param->getName()];
             } elseif ($param->isDefaultValueAvailable()) {

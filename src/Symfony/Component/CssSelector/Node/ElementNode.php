@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\CssSelector\Node;
-
-use Symfony\Component\CssSelector\XPathExpr;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\CssSelector\XPathExpr;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\CssSelector\Node;
+
+use Symfony\Component\CssSelector\XPathExpr;
 
 /**
  * ElementNode represents a "namespace|element" node.
@@ -26,17 +26,31 @@ class ElementNode implements NodeInterface
     protected $namespace;
     protected $element;
 
+    /**
+     * Constructor.
+     *
+     * @param string $namespace Namespace
+     * @param string $element Element
+     */ 
     public function __construct($namespace, $element)
     {
         $this->namespace = $namespace;
         $this->element = $element;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __toString()
     {
         return sprintf('%s[%s]', __CLASS__, $this->formatElement());
     }
 
+    /**
+     * Formats the element into a string.
+     *
+     * @return string Element as an XPath string
+     */
     public function formatElement()
     {
         if ($this->namespace == '*') {
@@ -46,6 +60,9 @@ class ElementNode implements NodeInterface
         return sprintf('%s|%s', $this->namespace, $this->element);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function toXpath()
     {
         if ($this->namespace == '*') {

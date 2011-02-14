@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
 
 use Symfony\Component\Form\ValueTransformer\ReversedTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
@@ -17,7 +17,27 @@ use Symfony\Component\Form\ValueTransformer\DateTimeToStringTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToTimestampTransformer;
 use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
 
-class TimeField extends FieldGroup
+/**
+ * Represents a time field.
+ *
+ * Available options:
+ *
+ *  * widget:         How to render the time field ("input" or "choice"). Default: "choice".
+ *  * type:           The type of the date stored on the object. Default: "datetime":
+ *                    * datetime:   A DateTime object;
+ *                    * string:     A raw string (e.g. 2011-05-01 12:30:00, Y-m-d H:i:s);
+ *                    * timestamp:  A unix timestamp (e.g. 1304208000).
+ *                    * raw:        An hour, minute, second array
+ *  * with_seconds    Whether or not to create a field for seconds. Default: false.
+ *
+ *  * hours:          An array of hours for the hour select tag.
+ *  * minutes:        An array of minutes for the minute select tag.
+ *  * seconds:        An array of seconds for the second select tag.
+ *
+ *  * data_timezone:  The timezone of the data. Default: UTC.
+ *  * user_timezone:  The timezone of the user entering a new value. Default: UTC.
+ */
+class TimeField extends Form
 {
     const INPUT = 'input';
     const CHOICE = 'choice';
@@ -42,16 +62,31 @@ class TimeField extends FieldGroup
     /**
      * {@inheritDoc}
      */
+    public function __construct($key, array $options = array())
+    {
+        // Override parent option
+        // \DateTime objects are never edited by reference, because
+        // we treat them like value objects
+        $this->addOption('by_reference', false);
+
+        parent::__construct($key, $options);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function configure()
     {
+        $this->addOption('widget', self::CHOICE, self::$widgets);
+        $this->addOption('type', self::DATETIME, self::$types);
+        $this->addOption('with_seconds', false);
+
         $this->addOption('hours', range(0, 23));
         $this->addOption('minutes', range(0, 59));
         $this->addOption('seconds', range(0, 59));
-        $this->addOption('widget', self::CHOICE, self::$widgets);
-        $this->addOption('type', self::DATETIME, self::$types);
+
         $this->addOption('data_timezone', 'UTC');
         $this->addOption('user_timezone', 'UTC');
-        $this->addOption('with_seconds', false);
 
         if ($this->getOption('widget') == self::INPUT) {
             $this->add(new TextField('hour', array('max_length' => 2)));
@@ -154,7 +189,7 @@ class TimeField extends FieldGroup
      * The hour is valid if it is contained in the list passed to the field's
      * option "hours".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isHourWithinRange()
     {
@@ -169,7 +204,7 @@ class TimeField extends FieldGroup
      * The minute is valid if it is contained in the list passed to the field's
      * option "minutes".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isMinuteWithinRange()
     {
@@ -184,7 +219,7 @@ class TimeField extends FieldGroup
      * The second is valid if it is contained in the list passed to the field's
      * option "seconds".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isSecondWithinRange()
     {

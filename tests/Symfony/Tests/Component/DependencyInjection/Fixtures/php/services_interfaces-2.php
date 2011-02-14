@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
@@ -13,7 +12,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
  * This class has been auto-generated
  * by the Symfony Dependency Injection Component.
  */
-class ProjectServiceContainer extends Container implements TaggedContainerInterface
+class ProjectServiceContainer extends Container
 {
     /**
      * Constructor.
@@ -21,21 +20,6 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
     public function __construct()
     {
         parent::__construct(new ParameterBag($this->getDefaultParameters()));
-    }
-
-    /**
-     * Gets the 'barfactory' service.
-     *
-     * This service is shared.
-     * This method always returns the same instance of the service.
-     *
-     * @return BarClassFactory A BarClassFactory instance.
-     */
-    protected function getBarfactoryService()
-    {
-        return $this->services['barfactory'] = new \BarClassFactory();
-
-        $this->applyInterfaceInjectors($instance);
     }
 
     /**
@@ -54,19 +38,18 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
     }
 
     /**
-     * Returns service ids for a given tag.
+     * Gets the 'barfactory' service.
      *
-     * @param string $name The tag name
+     * This service is shared.
+     * This method always returns the same instance of the service.
      *
-     * @return array An array of tags
+     * @return BarClassFactory A BarClassFactory instance.
      */
-    public function findTaggedServiceIds($name)
+    protected function getBarfactoryService()
     {
-        static $tags = array(
+        return $this->services['barfactory'] = new \BarClassFactory();
 
-        );
-
-        return isset($tags[$name]) ? $tags[$name] : array();
+        $this->applyInterfaceInjectors($instance);
     }
 
     /**

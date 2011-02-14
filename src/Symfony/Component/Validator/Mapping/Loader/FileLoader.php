@@ -1,23 +1,28 @@
 <?php
 
-namespace Symfony\Component\Validator\Mapping\Loader;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator\Mapping\Loader;
 
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
-use Symfony\Component\Validator\Mapping\GroupMetadata;
 
 abstract class FileLoader implements LoaderInterface
 {
     protected $file;
+
+    /**
+     * Contains all known namespaces indexed by their prefix
+     * @var array
+     */
+    protected $namespaces;
 
     public function __construct($file)
     {
@@ -46,6 +51,14 @@ abstract class FileLoader implements LoaderInterface
     {
         if (strpos($name, '\\') !== false && class_exists($name)) {
             $className = (string)$name;
+        } else if (strpos($name, ':') !== false) {
+            list($prefix, $className) = explode(':', $name);
+
+            if (!isset($this->namespaces[$prefix])) {
+                throw new MappingException(sprintf('Undefined namespace prefix "%s"', $prefix));
+            }
+
+            $className = $this->namespaces[$prefix].$className;
         } else {
             $className = 'Symfony\\Component\\Validator\\Constraints\\'.$name;
         }

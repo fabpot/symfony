@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -10,15 +19,6 @@ use Symfony\Component\BrowserKit\CookieJar;
 use Symfony\Component\HttpKernel\Profiler\Profiler as HttpProfiler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 /**
  * Client simulates a browser and makes requests to a Kernel object.
@@ -32,7 +32,7 @@ class Client extends BaseClient
     /**
      * Constructor.
      *
-     * @param HttpKernelInterface $kernel    A Kernel instance
+     * @param HttpKernelInterface $kernel    An HttpKernelInterface instance
      * @param array               $server    The server parameters (equivalent of $_SERVER)
      * @param History             $history   A History instance to store the browser history
      * @param CookieJar           $cookieJar A CookieJar instance to store the cookies
@@ -57,7 +57,7 @@ class Client extends BaseClient
     /**
      * Returns the kernel.
      *
-     * @return Kernel
+     * @return HttpKernelInterface
      */
     public function getKernel()
     {
@@ -88,7 +88,7 @@ class Client extends BaseClient
     protected function doRequest($request)
     {
         $returnValue = $this->kernel->handle($request);
-        $this->kernel->reboot();
+        $this->kernel->shutdown();
 
         return $returnValue;
     }

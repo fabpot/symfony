@@ -1,16 +1,17 @@
 <?php
 
-namespace Symfony\Component\Form\ValueTransformer;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Form\ValueTransformer;
+
+use Symfony\Component\Form\Configurable;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
@@ -19,12 +20,12 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  * @author Florian Eckerstorfer <florian@eckerstorfer.org>
  */
-class BooleanToStringTransformer extends BaseValueTransformer
+class BooleanToStringTransformer extends Configurable implements ValueTransformerInterface
 {
     /**
-     * Transforms a boolean into a string.
+     * Transforms a Boolean into a string.
      *
-     * @param  boolean $value   Boolean value.
+     * @param  Boolean $value   Boolean value.
      * @return string           String value.
      */
     public function transform($value)
@@ -34,19 +35,19 @@ class BooleanToStringTransformer extends BaseValueTransformer
         }
 
         if (!is_bool($value)) {
-            throw new UnexpectedTypeException($value, 'boolean');
+            throw new UnexpectedTypeException($value, 'Boolean');
         }
 
         return true === $value ? '1' : '';
     }
 
     /**
-     * Transforms a string into a boolean.
+     * Transforms a string into a Boolean.
      *
      * @param  string $value  String value.
-     * @return boolean        Boolean value.
+     * @return Boolean        Boolean value.
      */
-    public function reverseTransform($value, $originalValue)
+    public function reverseTransform($value)
     {
         if (!is_string($value)) {
             throw new UnexpectedTypeException($value, 'string');

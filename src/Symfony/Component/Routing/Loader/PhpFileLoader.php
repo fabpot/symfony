@@ -1,17 +1,18 @@
 <?php
 
-namespace Symfony\Component\Routing\Loader;
-
-use Symfony\Component\Routing\Resource\FileResource;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Routing\Loader;
+
+use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Loader\FileLoader;
 
 /**
  * PhpFileLoader loads routes from a PHP file.
@@ -30,9 +31,10 @@ class PhpFileLoader extends FileLoader
      */
     public function load($file, $type = null)
     {
+        // the loader variable is exposed to the included file below
         $loader = $this;
 
-        $path = $this->findFile($file);
+        $path = $this->locator->locate($file);
 
         $collection = include $path;
         $this->currentDir = dirname($path);
@@ -47,7 +49,7 @@ class PhpFileLoader extends FileLoader
      * @param mixed  $resource A resource
      * @param string $type     The resource type
      *
-     * @return boolean True if this class supports the given resource, false otherwise
+     * @return Boolean True if this class supports the given resource, false otherwise
      */
     public function supports($resource, $type = null)
     {

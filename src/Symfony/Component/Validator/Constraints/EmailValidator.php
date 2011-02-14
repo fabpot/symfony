@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Validator\Constraints;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -55,7 +55,7 @@ class EmailValidator extends ConstraintValidator
      *
      * @param string $host Host name
      *
-     * @return boolean
+     * @return Boolean
      */
     private function checkMX($host)
     {
@@ -63,6 +63,6 @@ class EmailValidator extends ConstraintValidator
             return checkdnsrr($host, 'MX');
         }
 
-        throw new ValidatorError('Could not retrieve DNS record information. Remove check_mx = true to prevent this warning');
+        throw new \LogicException('Could not retrieve DNS record information. Remove check_mx = true to prevent this warning');
     }
 }

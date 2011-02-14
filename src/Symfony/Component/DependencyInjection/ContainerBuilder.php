@@ -1,23 +1,24 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Compiler\Compiler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
-use Symfony\Component\DependencyInjection\Resource\ResourceInterface;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
+use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Resource\ResourceInterface;
 
 /**
  * ContainerBuilder is a DI container that provides an API to easily describe services.
@@ -43,8 +44,6 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     public function __construct(ParameterBagInterface $parameterBag = null)
     {
         parent::__construct($parameterBag);
-
-        $this->compiler = new Compiler();
     }
 
     /**
@@ -145,11 +144,17 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      * Adds a compiler pass at the end of the current passes
      *
      * @param CompilerPassInterface $pass
-     * @return void
+     * @param string                $type
      */
-    public function addCompilerPass(CompilerPassInterface $pass)
+    public function addCompilerPass(CompilerPassInterface $pass, $type = PassConfig::TYPE_BEFORE_OPTIMIZATION)
     {
-        $this->compiler->addPass($pass);
+        if (null === $this->compiler) {
+            $this->initializeCompiler();
+        }
+
+        $this->compiler->addPass($pass, $type);
+
+        $this->addObjectResource($pass);
     }
 
     /**
@@ -159,6 +164,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function getCompilerPassConfig()
     {
+        if (null === $this->compiler) {
+            $this->initializeCompiler();
+        }
+
         return $this->compiler->getPassConfig();
     }
 
@@ -169,7 +178,21 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      */
     public function getCompiler()
     {
+        if (null === $this->compiler) {
+            $this->initializeCompiler();
+        }
+
         return $this->compiler;
+    }
+
+    public function getScopes()
+    {
+        return $this->scopes;
+    }
+
+    public function getScopeChildren()
+    {
+        return $this->scopeChildren;
     }
 
     /**
@@ -180,7 +203,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @throws BadMethodCallException
      */
-    public function set($id, $service)
+    public function set($id, $service, $scope = self::SCOPE_CONTAINER)
     {
         if ($this->isFrozen()) {
             throw new \BadMethodCallException('Setting service on a frozen container is not allowed');
@@ -190,7 +213,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
 
         unset($this->definitions[$id], $this->aliases[$id]);
 
-        parent::set($id, $service);
+        parent::set($id, $service, $scope);
     }
 
     /**
@@ -329,20 +352,30 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
     }
 
     /**
-     * Freezes the container.
+     * Compiles the container.
      *
-     * This method does four things:
+     * This method passes the container to compiler
+     * passes whose job is to manipulate and optimize
+     * the container.
+     *
+     * The main compiler passes roughly do four things:
      *
      *  * The extension configurations are merged;
      *  * Parameter values are resolved;
-     *  * The parameter bag is freezed;
+     *  * The parameter bag is frozen;
      *  * Extension loading is disabled.
      */
-    public function freeze()
+    public function compile()
     {
+        if (null === $this->compiler) {
+            $this->initializeCompiler();
+        }
+
         $this->compiler->compile($this);
 
-        parent::freeze();
+        $this->setExtensionConfigs(array());
+
+        parent::compile();
     }
 
     /**
@@ -392,6 +425,10 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $id = new Alias($id);
         } else if (!$id instanceof Alias) {
             throw new \InvalidArgumentException('$id must be a string, or an Alias object.');
+        }
+
+        if ($alias === strtolower($id)) {
+            throw new \InvalidArgumentException('An alias can not reference itself, got a circular reference on "'.$alias.'".');
         }
 
         unset($this->definitions[$alias]);
@@ -502,7 +539,7 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
      *
      * @param string $class The class
      *
-     * @return boolean true if at least one InterfaceInjector is defined, false otherwise
+     * @return Boolean true if at least one InterfaceInjector is defined, false otherwise
      */
     public function hasInterfaceInjectorForClass($class)
     {
@@ -662,10 +699,12 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         $arguments = $this->resolveServices($this->getParameterBag()->resolveValue($definition->getArguments()));
 
         if (null !== $definition->getFactoryMethod()) {
-            if (null !== $definition->getFactoryService()) {
+            if (null !== $definition->getFactoryClass()) {
+                $factory = $this->getParameterBag()->resolveValue($definition->getFactoryClass());
+            } elseif (null !== $definition->getFactoryService()) {
                 $factory = $this->get($this->getParameterBag()->resolveValue($definition->getFactoryService()));
             } else {
-                $factory = $this->getParameterBag()->resolveValue($definition->getClass());
+                throw new \RuntimeException('Cannot create service from factory method without a factory service or factory class.');
             }
 
             $service = call_user_func_array(array($factory, $definition->getFactoryMethod()), $arguments);
@@ -679,8 +718,16 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
             $injector->processDefinition($definition, $service);
         }
 
-        if ($definition->isShared()) {
-            $this->services[strtolower($id)] = $service;
+        if (self::SCOPE_PROTOTYPE !== $scope = $definition->getScope()) {
+            if (self::SCOPE_CONTAINER !== $scope && !isset($this->scopedServices[$scope])) {
+                throw new \RuntimeException('You tried to create a service of an inactive scope.');
+            }
+
+            $this->services[$lowerId = strtolower($id)] = $service;
+
+            if (self::SCOPE_CONTAINER !== $scope) {
+                $this->scopedServices[$scope][$lowerId] = $service;
+            }
         }
 
         foreach ($definition->getMethodCalls() as $call) {
@@ -753,6 +800,14 @@ class ContainerBuilder extends Container implements TaggedContainerInterface
         }
 
         return $tags;
+    }
+
+    protected function initializeCompiler()
+    {
+        $this->compiler = new Compiler();
+        foreach ($this->compiler->getPassConfig()->getPasses() as $pass) {
+            $this->addObjectResource($pass);
+        }
     }
 
     static public function getServiceConditionals($value)

@@ -1,21 +1,27 @@
 <?php
 
-namespace Symfony\Component\Validator\Mapping;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator\Mapping;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Valid;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use Symfony\Component\Validator\Exception\GroupDefinitionException;
 
+/**
+ * Represents all the configured constraints on a given class.
+ *
+ * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ */
 class ClassMetadata extends ElementMetadata
 {
     public $name;
@@ -70,12 +76,12 @@ class ClassMetadata extends ElementMetadata
      *
      * For each class, the group "Default" is an alias for the group
      * "<ClassName>", where <ClassName> is the non-namespaced name of the
-     * class. All constraints implicitely or explicitely assigned to group
+     * class. All constraints implicitly or explicitly assigned to group
      * "Default" belong to both of these groups, unless the class defines
      * a group sequence.
      *
      * If a class defines a group sequence, validating the class in "Default"
-     * will validate the group sequence. The constraints assinged to "Default"
+     * will validate the group sequence. The constraints assigned to "Default"
      * can still be validated by validating the class in "<ClassName>".
      *
      * @return string  The name of the default group
@@ -90,8 +96,11 @@ class ClassMetadata extends ElementMetadata
      */
     public function addConstraint(Constraint $constraint)
     {
-        if ($constraint instanceof Valid) {
-            throw new ConstraintDefinitionException('The constraint Valid can only be put on properties or getters');
+        if (!in_array(Constraint::CLASS_CONSTRAINT, (array)$constraint->targets())) {
+            throw new ConstraintDefinitionException(sprintf(
+                'The constraint %s cannot be put on classes',
+                get_class($constraint)
+            ));
         }
 
         $constraint->addImplicitGroupName($this->getDefaultGroup());
@@ -199,9 +208,22 @@ class ClassMetadata extends ElementMetadata
     }
 
     /**
+     * Returns true if metadatas of members is present for the given property.
+     *
+     * @param string $property The name of the property
+     *
+     * @return Boolean
+     */
+    public function hasMemberMetadatas($property)
+    {
+        return array_key_exists($property, $this->members);
+    }
+
+    /**
      * Returns all metadatas of members describing the given property
      *
      * @param string $property The name of the property
+     * @array of MemberMetadata
      */
     public function getMemberMetadatas($property)
     {
@@ -241,7 +263,7 @@ class ClassMetadata extends ElementMetadata
     /**
      * Returns whether this class has an overridden default group sequence.
      *
-     * @return boolean
+     * @return Boolean
      */
     public function hasGroupSequence()
     {

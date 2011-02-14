@@ -1,11 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineMongoDBBundle\Security;
 
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\User\UserProviderInterface;
-use Symfony\Component\Security\Exception\UnsupportedAccountException;
-use Symfony\Component\Security\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\User\AccountInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Core\Exception\UnsupportedAccountException;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 
 class DocumentUserProvider implements UserProviderInterface
 {
@@ -56,6 +65,14 @@ class DocumentUserProvider implements UserProviderInterface
             throw new UnsupportedAccountException(sprintf('Instances of "%s" are not supported.', get_class($account)));
         }
 
-        return $this->loadUserByUsername((string) $account);
+        return $this->loadUserByUsername($account->getUsername());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supportsClass($class)
+    {
+        return $class === $this->class;
     }
 }

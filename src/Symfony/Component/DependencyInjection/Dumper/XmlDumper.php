@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Dumper;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -7,15 +16,6 @@ use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * XmlDumper dumps a service container as an XML string.
@@ -121,8 +121,8 @@ class XmlDumper extends Dumper
         if ($definition->getFactoryService()) {
             $service->setAttribute ('factory-service', $definition->getFactoryService());
         }
-        if (!$definition->isShared()) {
-            $service->setAttribute ('shared', 'false');
+        if (ContainerInterface::SCOPE_CONTAINER !== $scope = $definition->getScope()) {
+            $service->setAttribute ('scope', $scope);
         }
 
         foreach ($definition->getTags() as $name => $tags) {
@@ -206,10 +206,11 @@ class XmlDumper extends Dumper
                 $element->setAttribute('type', 'service');
                 $element->setAttribute('id', (string) $value);
                 $behaviour = $value->getInvalidBehavior();
-                if ($behaviour == ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                if ($behaviour == ContainerInterface::NULL_ON_INVALID_REFERENCE) {
                     $element->setAttribute('on-invalid', 'null');
-                else if ($behaviour == ContainerInterface::IGNORE_ON_INVALID_REFERENCE)
+                } else if ($behaviour == ContainerInterface::IGNORE_ON_INVALID_REFERENCE) {
                     $element->setAttribute('on-invalid', 'ignore');
+                }
             } else if (is_object($value) && $value instanceof Definition) {
                 $element->setAttribute('type', 'service');
                 $this->addService($value, null, $element);

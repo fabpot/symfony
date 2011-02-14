@@ -1,9 +1,0 @@
-<?php echo $view['form']->errors($field) ?>
-
-<div>
-    <?php foreach ($field->getVisibleFields() as $child): ?>
-        <?php echo $view['form']->render($child, array(), array(), 'FrameworkBundle:Form:field_row.php') ?>
-    <?php endforeach; ?>
-</div>
-
-<?php echo $view['form']->hidden($field) ?>

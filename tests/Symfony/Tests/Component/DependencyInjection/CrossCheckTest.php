@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -11,6 +12,7 @@
 namespace Symfony\Tests\Component\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Config\FileLocator;
 
 class CrossCheckTest extends \PHPUnit_Framework_TestCase
 {
@@ -37,14 +39,14 @@ class CrossCheckTest extends \PHPUnit_Framework_TestCase
         file_put_contents($tmp, file_get_contents(self::$fixturesPath.'/'.$type.'/'.$fixture));
 
         $container1 = new ContainerBuilder();
-        $loader1 = new $loaderClass($container1);
+        $loader1 = new $loaderClass($container1, new FileLocator());
         $loader1->load($tmp);
 
         $dumper = new $dumperClass($container1);
         file_put_contents($tmp, $dumper->dump());
 
         $container2 = new ContainerBuilder();
-        $loader2 = new $loaderClass($container2);
+        $loader2 = new $loaderClass($container2, new FileLocator());
         $loader2->load($tmp);
 
         unlink($tmp);

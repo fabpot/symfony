@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\BrowserKit;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\BrowserKit;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\BrowserKit;
 
 /**
  * Request object.
@@ -24,6 +24,7 @@ class Request
     protected $files;
     protected $cookies;
     protected $server;
+    protected $content;
 
     /**
      * Constructor.
@@ -34,8 +35,9 @@ class Request
      * @param array  $files      An array of uploaded files
      * @param array  $cookies    An array of cookies
      * @param array  $server     An array of server parameters
+     * @param string $content    The raw body data
      */
-    public function __construct($uri, $method, array $parameters = array(), array $files = array(), array $cookies = array(), array $server = array())
+    public function __construct($uri, $method, array $parameters = array(), array $files = array(), array $cookies = array(), array $server = array(), $content = null)
     {
         $this->uri = $uri;
         $this->method = $method;
@@ -43,6 +45,7 @@ class Request
         $this->files = $files;
         $this->cookies = $cookies;
         $this->server = $server;
+        $this->content = $content;
     }
 
     /**
@@ -103,5 +106,15 @@ class Request
     public function getServer()
     {
         return $this->server;
+    }
+
+    /**
+     * Gets the request raw body data.
+     *
+     * @return string The request raw body data.
+     */
+    public function getContent()
+    {
+        return $this->content;
     }
 }

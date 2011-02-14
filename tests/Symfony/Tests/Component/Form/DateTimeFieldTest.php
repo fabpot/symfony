@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Form;
 
 require_once __DIR__ . '/DateTimeTestCase.php';
@@ -10,7 +19,7 @@ use Symfony\Component\Form\TimeField;
 
 class DateTimeFieldTest extends DateTimeTestCase
 {
-    public function testBind_dateTime()
+    public function testSubmit_dateTime()
     {
         $field = new DateTimeField('name', array(
             'data_timezone' => 'UTC',
@@ -20,7 +29,7 @@ class DateTimeFieldTest extends DateTimeTestCase
             'type' => DateTimeField::DATETIME,
         ));
 
-        $field->bind(array(
+        $field->submit(array(
             'date' => array(
                 'day' => '2',
                 'month' => '6',
@@ -37,7 +46,7 @@ class DateTimeFieldTest extends DateTimeTestCase
         $this->assertDateTimeEquals($dateTime, $field->getData());
     }
 
-    public function testBind_string()
+    public function testSubmit_string()
     {
         $field = new DateTimeField('name', array(
             'data_timezone' => 'UTC',
@@ -47,7 +56,7 @@ class DateTimeFieldTest extends DateTimeTestCase
             'time_widget' => TimeField::CHOICE,
         ));
 
-        $field->bind(array(
+        $field->submit(array(
             'date' => array(
                 'day' => '2',
                 'month' => '6',
@@ -62,7 +71,7 @@ class DateTimeFieldTest extends DateTimeTestCase
         $this->assertEquals('2010-06-02 03:04:00', $field->getData());
     }
 
-    public function testBind_timestamp()
+    public function testSubmit_timestamp()
     {
         $field = new DateTimeField('name', array(
             'data_timezone' => 'UTC',
@@ -72,7 +81,7 @@ class DateTimeFieldTest extends DateTimeTestCase
             'time_widget' => TimeField::CHOICE,
         ));
 
-        $field->bind(array(
+        $field->submit(array(
             'date' => array(
                 'day' => '2',
                 'month' => '6',
@@ -89,7 +98,7 @@ class DateTimeFieldTest extends DateTimeTestCase
         $this->assertEquals($dateTime->format('U'), $field->getData());
     }
 
-    public function testBind_withSeconds()
+    public function testSubmit_withSeconds()
     {
         $field = new DateTimeField('name', array(
             'data_timezone' => 'UTC',
@@ -115,12 +124,12 @@ class DateTimeFieldTest extends DateTimeTestCase
             ),
         );
 
-        $field->bind($input);
+        $field->submit($input);
 
         $this->assertDateTimeEquals(new \DateTime('2010-06-02 03:04:05 UTC'), $field->getData());
     }
 
-    public function testBind_differentTimezones()
+    public function testSubmit_differentTimezones()
     {
         $field = new DateTimeField('name', array(
             'data_timezone' => 'America/New_York',
@@ -134,7 +143,7 @@ class DateTimeFieldTest extends DateTimeTestCase
 
         $dateTime = new \DateTime('2010-06-02 03:04:05 Pacific/Tahiti');
 
-        $field->bind(array(
+        $field->submit(array(
             'date' => array(
                 'day' => (int)$dateTime->format('d'),
                 'month' => (int)$dateTime->format('m'),

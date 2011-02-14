@@ -1,26 +1,33 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle;
-
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddConstraintValidatorsPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\TemplatingPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RegisterKernelListenersPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddSecurityVotersPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ConverterManagerPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RoutingResolverPass;
-use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ProfilerPass;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\Form\FormConfiguration;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle;
+
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddConstraintValidatorsPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddFieldFactoryGuessersPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\TemplatingPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RegisterKernelListenersPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\RoutingResolverPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\ProfilerPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddClassesToCachePass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddClassesToAutoloadMapPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\TranslatorPass;
+use Symfony\Bundle\FrameworkBundle\DependencyInjection\Compiler\AddCacheWarmerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
+use Symfony\Component\DependencyInjection\Scope;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\ClassLoader\ClassCollectionLoader;
+use Symfony\Component\ClassLoader\MapFileClassLoader;
 
 /**
  * Bundle.
@@ -34,40 +41,44 @@ class FrameworkBundle extends Bundle
      */
     public function boot()
     {
+        // load core classes
+        ClassCollectionLoader::load(
+            $this->container->getParameter('kernel.compiled_classes'),
+            $this->container->getParameter('kernel.cache_dir'),
+            'classes',
+            $this->container->getParameter('kernel.debug'),
+            true
+        );
+
         if ($this->container->has('error_handler')) {
             $this->container->get('error_handler');
         }
 
-        FormConfiguration::clearDefaultCsrfSecrets();
-
-        if ($this->container->hasParameter('csrf_secret')) {
-            FormConfiguration::addDefaultCsrfSecret($this->container->getParameter('csrf_secret'));
-            FormConfiguration::enableDefaultCsrfProtection();
+        if ($this->container->hasParameter('document_root')) {
+            File::setDocumentRoot($this->container->getParameter('document_root'));
         }
 
-        $container = $this->container;
-
-        // the session ID should always be included in the CSRF token, even
-        // if default CSRF protection is not enabled
-        FormConfiguration::addDefaultCsrfSecret(function () use ($container) {
-            // automatically starts the session when the CSRF token is
-            // generated
-            $container->get('session')->start();
-
-            return $container->get('session')->getId();
-        });
+        if (file_exists($this->container->getParameter('kernel.cache_dir').'/autoload.php')) {
+            $classloader = new MapFileClassLoader($this->container->getParameter('kernel.cache_dir').'/autoload.php');
+            $classloader->register(true);
+        }
     }
 
     public function registerExtensions(ContainerBuilder $container)
     {
         parent::registerExtensions($container);
 
-        $container->addCompilerPass(new AddSecurityVotersPass());
-        $container->addCompilerPass(new ConverterManagerPass());
+        $container->addScope(new Scope('request'));
+
         $container->addCompilerPass(new RoutingResolverPass());
         $container->addCompilerPass(new ProfilerPass());
         $container->addCompilerPass(new RegisterKernelListenersPass());
         $container->addCompilerPass(new TemplatingPass());
         $container->addCompilerPass(new AddConstraintValidatorsPass());
+        $container->addCompilerPass(new AddFieldFactoryGuessersPass());
+        $container->addCompilerPass(new AddClassesToCachePass());
+        $container->addCompilerPass(new AddClassesToAutoloadMapPass());
+        $container->addCompilerPass(new TranslatorPass());
+        $container->addCompilerPass(new AddCacheWarmerPass());
     }
 }

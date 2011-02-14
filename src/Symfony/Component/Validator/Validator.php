@@ -1,20 +1,29 @@
 <?php
 
-namespace Symfony\Component\Validator;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator;
 
 use Symfony\Component\Validator\Mapping\ElementMetadata;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\Mapping\ClassMetadataFactoryInterface;
 
+/**
+ * The default implementation of the ValidatorInterface.
+ *
+ * This service can be used to validate objects, properties and raw values
+ * against constraints.
+ *
+ * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
+ */
 class Validator implements ValidatorInterface
 {
     protected $metadataFactory;
@@ -29,17 +38,23 @@ class Validator implements ValidatorInterface
         $this->validatorFactory = $validatorFactory;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function validate($object, $groups = null)
     {
         $metadata = $this->metadataFactory->getClassMetadata(get_class($object));
 
         $walk = function(GraphWalker $walker, $group) use ($metadata, $object) {
-            return $walker->walkClass($metadata, $object, $group, '');
+            return $walker->walkObject($metadata, $object, $group, '');
         };
 
         return $this->validateGraph($object, $walk, $groups);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function validateProperty($object, $property, $groups = null)
     {
         $metadata = $this->metadataFactory->getClassMetadata(get_class($object));
@@ -51,6 +66,9 @@ class Validator implements ValidatorInterface
         return $this->validateGraph($object, $walk, $groups);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function validatePropertyValue($class, $property, $value, $groups = null)
     {
         $metadata = $this->metadataFactory->getClassMetadata($class);
@@ -62,6 +80,9 @@ class Validator implements ValidatorInterface
         return $this->validateGraph($class, $walk, $groups);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function validateValue($value, Constraint $constraint, $groups = null)
     {
         $walk = function(GraphWalker $walker, $group) use ($constraint, $value) {

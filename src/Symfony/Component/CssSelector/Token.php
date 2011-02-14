@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\CssSelector;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\CssSelector;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\CssSelector;
 
 /**
  * Token represents a CSS Selector token.
@@ -25,6 +25,13 @@ class Token
     protected $value;
     protected $position;
 
+    /**
+     * Constructor.
+     *
+     * @param string $type     The type of this token.
+     * @param mixed  $value    The value of this token.
+     * @param int    $position The order of this token.
+     */
     public function __construct($type, $value, $position)
     {
         $this->type = $type;
@@ -32,16 +39,33 @@ class Token
         $this->position = $position;
     }
 
+    /**
+     * Get a string representation of this token.
+     *
+     * @return string
+     */
     public function __toString()
     {
         return (string) $this->value;
     }
 
+    /**
+     * Answers whether this token's type equals to $type.
+     *
+     * @param  string $type The type to test against this token's one.
+     *
+     * @return bool
+     */
     public function isType($type)
     {
         return $this->type == $type;
     }
 
+    /**
+     * Get the position of this token.
+     *
+     * @return int
+     */
     public function getPosition()
     {
         return $this->position;

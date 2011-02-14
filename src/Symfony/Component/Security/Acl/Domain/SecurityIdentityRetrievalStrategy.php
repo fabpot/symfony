@@ -1,22 +1,24 @@
 <?php
 
-namespace Symfony\Component\Security\Acl\Domain;
-
-use Symfony\Component\Security\User\AccountInterface;
-use Symfony\Component\Security\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
-use Symfony\Component\Security\Authentication\AuthenticationTrustResolver;
-use Symfony\Component\Security\Role\RoleHierarchyInterface;
-use Symfony\Component\Security\Authorization\Voter\AuthenticatedVoter;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Security\Acl\Domain;
+
+use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
+
+use Symfony\Component\Security\Core\User\AccountInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Acl\Model\SecurityIdentityRetrievalStrategyInterface;
+use Symfony\Component\Security\Core\Authentication\AuthenticationTrustResolver;
+use Symfony\Component\Security\Core\Role\RoleHierarchyInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
 
 /**
  * Strategy for retrieving security identities
@@ -49,9 +51,12 @@ class SecurityIdentityRetrievalStrategy implements SecurityIdentityRetrievalStra
         $sids = array();
 
         // add user security identity
-        $user = $token->getUser();
-        if ($user instanceof AccountInterface) {
-            $sids[] = UserSecurityIdentity::fromAccount($user);
+        if (!$token instanceof AnonymousToken) {
+            try {
+                $sids[] = UserSecurityIdentity::fromToken($token);
+            } catch (\InvalidArgumentException $invalid) {
+                // ignore, user has no user security identity
+            }
         }
 
         // add all reachable roles

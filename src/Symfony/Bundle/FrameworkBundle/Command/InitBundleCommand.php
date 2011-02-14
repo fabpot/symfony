@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -8,15 +17,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Bundle\FrameworkBundle\Util\Mustache;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Initializes a new bundle.
@@ -33,7 +33,21 @@ class InitBundleCommand extends Command
         $this
             ->setDefinition(array(
                 new InputArgument('namespace', InputArgument::REQUIRED, 'The namespace of the bundle to create'),
+                new InputArgument('dir', InputArgument::REQUIRED, 'The directory where to create the bundle'),
+                new InputArgument('bundleName', InputArgument::OPTIONAL, 'The optional bundle name'),
             ))
+            ->setHelp(<<<EOT
+The <info>init:bundle</info> command generates a new bundle with a basic skeleton.
+
+<info>./app/console init:bundle "Vendor\HelloBundle" src [bundleName]</info>
+
+The bundle namespace must end with "Bundle" (e.g. <comment>Vendor\HelloBundle</comment>)
+and can be placed in any directory (e.g. <comment>src</comment>).
+
+If you don't specify a bundle name (e.g. <comment>HelloBundle</comment>), the bundle name will
+be the concatenation of the namespace segments (e.g. <comment>VendorHelloBundle</comment>).
+EOT
+            )
             ->setName('init:bundle')
         ;
     }
@@ -50,23 +64,31 @@ class InitBundleCommand extends Command
             throw new \InvalidArgumentException('The namespace must end with Bundle.');
         }
 
-        $dirs = $this->container->get('kernel')->getBundleDirs();
-
-        $tmp = str_replace('\\', '/', $namespace);
-        $namespace = str_replace('/', '\\', dirname($tmp));
-        $bundle = basename($tmp);
-
-        if (!isset($dirs[$namespace])) {
-            throw new \InvalidArgumentException(sprintf(
-                "Unable to initialize the bundle (%s is not a defined namespace).\n" .
-                "Defined namespaces are: %s",
-                $namespace, implode(', ', array_keys($dirs))));
+        // validate namespace
+        if (preg_match('/[^A-Za-z0-9_\\\-]/', $namespace)) {
+            throw new \InvalidArgumentException('The namespace contains invalid characters.');
         }
 
-        $dir = $dirs[$namespace];
-        $output->writeln(sprintf('Initializing bundle "<info>%s</info>" in "<info>%s</info>"', $bundle, realpath($dir)));
+        // user specified bundle name?
+        $bundle = $input->getArgument('bundleName');
+        if (!$bundle) {
+            $bundle = strtr($namespace, array('\\' => ''));
+        }
 
-        if (file_exists($targetDir = $dir.'/'.$bundle)) {
+        if (!preg_match('/Bundle$/', $bundle)) {
+            throw new \InvalidArgumentException('The bundle name must end with Bundle.');
+        }
+
+        $dir = $input->getArgument('dir');
+
+        // add trailing / if necessary
+        $dir = '/' === substr($dir, -1, 1) ? $dir : $dir.'/';
+
+        $targetDir = $dir.strtr($namespace, '\\', '/');
+
+        $output->writeln(sprintf('Initializing bundle "<info>%s</info>" in "<info>%s</info>"', $bundle, $dir));
+
+        if (file_exists($targetDir)) {
             throw new \RuntimeException(sprintf('Bundle "%s" already exists.', $bundle));
         }
 

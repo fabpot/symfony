@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Templating;
-
-use Symfony\Component\Templating\TemplateNameParser as BaseTemplateNameParser;
-use Symfony\Component\HttpKernel\Kernel;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -14,10 +9,15 @@ use Symfony\Component\HttpKernel\Kernel;
  * file that was distributed with this source code.
  */
 
+namespace Symfony\Bundle\FrameworkBundle\Templating;
+
+use Symfony\Component\Templating\TemplateNameParser as BaseTemplateNameParser;
+use Symfony\Component\HttpKernel\KernelInterface;
+
 /**
  * TemplateNameParser parsers template name from the short notation
- * "bundle:section:template.renderer.format" to a template name
- * and an array of options.
+ * "bundle:section:template.engine.format" to an array of
+ * template parameters.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -28,69 +28,55 @@ class TemplateNameParser extends BaseTemplateNameParser
     /**
      * Constructor.
      *
-     * @param Kernel $kernel A Kernel instance
+     * @param KernelInterface $kernel A KernelInterface instance
      */
-    public function __construct(Kernel $kernel)
+    public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
     }
 
     /**
-     * Parses a template to a template name and an array of options.
-     *
-     * @param string $name     A template name
-     * @param array  $defaults An array of default options
-     *
-     * @return array An array composed of the template name and an array of options
+     * {@inheritdoc}
      */
-    public function parse($name, array $defaults = array())
+    public function parse($name)
     {
+        if (is_array($name)) {
+            return $name;
+        }
+
+        // normalize name
+        $name = str_replace(':/' , ':', preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')));
+
+        if (false !== strpos($name, '..')) {
+            throw new \RuntimeException(sprintf('Template name "%s" contains invalid characters.', $name));
+        }
+
         $parts = explode(':', $name);
         if (3 !== count($parts)) {
-            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.renderer.format").', $name));
+            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.format.engine").', $name));
         }
-
-        $bundle = null;
-        if ($parts[0]) {
-            foreach ($this->kernel->getBundles() as $b) {
-                if ($parts[0] !== $b->getName()) {
-                    continue;
-                }
-
-                foreach (array_keys($this->kernel->getBundleDirs()) as $prefix) {
-                    if (0 === $pos = strpos($b->getNamespace(), $prefix)) {
-                        $bundle = str_replace($prefix.'\\', '', $b->getNamespace());
-
-                        break 2;
-                    }
-                }
-            }
-
-            if (null === $bundle) {
-                throw new \InvalidArgumentException(sprintf('Unable to find a valid bundle name for template "%s".', $name));
-            }
-        }
-
-        $options = array_replace(
-            array(
-                'format' => '',
-            ),
-            $defaults,
-            array(
-                'bundle'     => $bundle,
-                'controller' => $parts[1],
-            )
-        );
 
         $elements = explode('.', $parts[2]);
         if (3 !== count($elements)) {
-            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.renderer.format").', $name));
+            throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.format.engine").', $name));
         }
 
-        $parts[2] = $elements[0];
-        $options['renderer'] = $elements[1];
-        $options['format'] = $elements[2];
+        $parameters = array(
+            'bundle'     => $parts[0],
+            'controller' => $parts[1],
+            'name'       => $elements[0],
+            'format'     => $elements[1],
+            'engine'     => $elements[2],
+        );
 
-        return array($parts[2], $options);
+        if ($parameters['bundle']) {
+            try {
+                $this->kernel->getBundle($parameters['bundle']);
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid.', $name), 0, $e);
+            }
+        }
+
+        return $parameters;
     }
 }

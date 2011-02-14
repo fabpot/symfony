@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\TwigBundle\Tests;
 
 use Symfony\Bundle\TwigBundle\TwigEngine;
@@ -7,6 +16,7 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session;
 use Symfony\Component\HttpFoundation\SessionStorage\ArraySessionStorage;
+use Symfony\Component\Templating\TemplateNameParser;
 use Symfony\Bundle\TwigBundle\GlobalVariables;
 
 class TwigEngineTest extends TestCase
@@ -15,7 +25,7 @@ class TwigEngineTest extends TestCase
     {
         $environment = $this->getTwigEnvironment();
         $container = $this->getContainer();
-        $engine = new TwigEngine($container, $environment, $app = new GlobalVariables($container));
+        $engine = new TwigEngine($environment, $container, new TemplateNameParser(), $app = new GlobalVariables($container));
 
         $template = $this->getMock('\Twig_TemplateInterface');
 
@@ -34,7 +44,7 @@ class TwigEngineTest extends TestCase
     {
         $environment = $this->getTwigEnvironment();
         $container = new Container();
-        $engine = new TwigEngine($container, $environment, new GlobalVariables($container));
+        $engine = new TwigEngine($environment, $container, new TemplateNameParser(), new GlobalVariables($container));
 
         $template = $this->getMock('\Twig_TemplateInterface');
 

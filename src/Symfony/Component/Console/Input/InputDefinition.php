@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Console\Input;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Console\Input;
 
 /**
  * A InputDefinition represents a set of valid command line arguments and options.
@@ -42,6 +42,11 @@ class InputDefinition
         $this->setDefinition($definition);
     }
 
+    /**
+     * Sets the definition of the input.
+     *
+     * @param array $definition The definition array
+     */
     public function setDefinition(array $definition)
     {
         $arguments = array();
@@ -296,6 +301,8 @@ class InputDefinition
 
     /**
      * Gets an InputOption by shortcut.
+     *
+     * @param string $shortcut the Shortcut name
      *
      * @return InputOption An InputOption object
      */

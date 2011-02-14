@@ -1,11 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating\Loader;
-
-use Symfony\Component\Templating\Storage\Storage;
-use Symfony\Component\Templating\Storage\FileStorage;
-use Symfony\Component\Templating\TemplateNameParserInterface;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -14,6 +8,11 @@ use Symfony\Component\Templating\TemplateNameParserInterface;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Templating\Loader;
+
+use Symfony\Component\Templating\Storage\Storage;
+use Symfony\Component\Templating\Storage\FileStorage;
 
 /**
  * FilesystemLoader is a loader that read templates from the filesystem.
@@ -27,13 +26,10 @@ class FilesystemLoader extends Loader
     /**
      * Constructor.
      *
-     * @param TemplateNameParserInterface $nameParser           A TemplateNameParserInterface instance
-     * @param array                       $templatePathPatterns An array of path patterns to look for templates
+     * @param array $templatePathPatterns An array of path patterns to look for templates
      */
-    public function __construct(TemplateNameParserInterface $nameParser, $templatePathPatterns)
+    public function __construct($templatePathPatterns)
     {
-        parent::__construct($nameParser);
-
         if (!is_array($templatePathPatterns)) {
             $templatePathPatterns = array($templatePathPatterns);
         }
@@ -44,22 +40,18 @@ class FilesystemLoader extends Loader
     /**
      * Loads a template.
      *
-     * @param string $template The logical template name
+     * @param array $template The template name as an array
      *
      * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
      */
     public function load($template)
     {
-        list($template, $options) = $this->nameParser->parse($template);
-
-        if (self::isAbsolutePath($template) && file_exists($template)) {
-            return new FileStorage($template);
+        if (self::isAbsolutePath($template['name']) && file_exists($template['name'])) {
+            return new FileStorage($template['name']);
         }
 
-        $options['name'] = $template;
-
         $replacements = array();
-        foreach ($options as $key => $value) {
+        foreach ($template as $key => $value) {
             $replacements['%'.$key.'%'] = $value;
         }
 
@@ -90,8 +82,7 @@ class FilesystemLoader extends Loader
     /**
      * Returns true if the template is still fresh.
      *
-     * @param string    $template The template name
-     * @param array     $options  An array of options
+     * @param array     $template The template name as an array
      * @param timestamp $time     The last modification time of the cached template
      */
     public function isFresh($template, $time)

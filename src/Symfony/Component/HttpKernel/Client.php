@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\HttpKernel;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -9,15 +18,6 @@ use Symfony\Component\BrowserKit\Request as DomRequest;
 use Symfony\Component\BrowserKit\Response as DomResponse;
 use Symfony\Component\BrowserKit\History;
 use Symfony\Component\BrowserKit\CookieJar;
-
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 /**
  * Client simulates a browser and makes requests to a Kernel object.
@@ -67,7 +67,7 @@ class Client extends BaseClient
         $kernel = serialize($this->kernel);
         $request = serialize($request);
 
-        $r = new \ReflectionClass('\\Symfony\\Component\\HttpFoundation\\UniversalClassLoader');
+        $r = new \ReflectionClass('\\Symfony\\Component\\ClassLoader\\UniversalClassLoader');
         $requirePath = $r->getFileName();
 
         $symfonyPath = realpath(__DIR__.'/../../..');
@@ -77,7 +77,7 @@ class Client extends BaseClient
 
 require_once '$requirePath';
 
-\$loader = new Symfony\Component\HttpFoundation\UniversalClassLoader();
+\$loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
 \$loader->registerNamespaces(array('Symfony' => '$symfonyPath'));
 \$loader->register();
 
@@ -100,7 +100,7 @@ EOF;
             $uri = '/'.$matches[2];
         }
 
-        return Request::create($uri, $request->getMethod(), $request->getParameters(), $request->getCookies(), $request->getFiles(), $request->getServer());
+        return Request::create($uri, $request->getMethod(), $request->getParameters(), $request->getCookies(), $request->getFiles(), $request->getServer(), $request->getContent());
     }
 
     /**

@@ -1,24 +1,26 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Loader;
 
-use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\DefinitionDecorator;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\SimpleXMLElement;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
+use Symfony\Component\Config\Resource\FileResource;
 
 /**
  * XmlFileLoader loads XML files service definitions.
@@ -30,11 +32,12 @@ class XmlFileLoader extends FileLoader
     /**
      * Loads an XML file.
      *
-     * @param mixed $resource The resource
+     * @param mixed  $resource The resource
+     * @param string $type The resource type
      */
-    public function load($file)
+    public function load($file, $type = null)
     {
-        $path = $this->findFile($file);
+        $path = $this->locator->locate($file);
 
         $xml = $this->parseFile($path);
 
@@ -62,11 +65,12 @@ class XmlFileLoader extends FileLoader
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
         return is_string($resource) && 'xml' === pathinfo($resource, PATHINFO_EXTENSION);
     }
@@ -135,9 +139,13 @@ class XmlFileLoader extends FileLoader
             return;
         }
 
-        $definition = new Definition();
+        if (isset($service['parent'])) {
+            $definition = new DefinitionDecorator($service['parent']);
+        } else {
+            $definition = new Definition();
+        }
 
-        foreach (array('class', 'shared', 'public', 'factory-method', 'factory-service') as $key) {
+        foreach (array('class', 'scope', 'public', 'factory-class', 'factory-method', 'factory-service', 'synthetic', 'abstract') as $key) {
             if (isset($service[$key])) {
                 $method = 'set'.str_replace('-', '', $key);
                 $definition->$method((string) $service->getAttributeAsPhp($key));
@@ -155,7 +163,7 @@ class XmlFileLoader extends FileLoader
                 $definition->setConfigurator((string) $service->configurator['function']);
             } else {
                 if (isset($service->configurator['service'])) {
-                    $class = new Reference((string) $service->configurator['service']);
+                    $class = new Reference((string) $service->configurator['service'], ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE, false);
                 } else {
                     $class = (string) $service->configurator['class'];
                 }

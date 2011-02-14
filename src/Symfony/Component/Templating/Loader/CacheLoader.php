@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating\Loader;
-
-use Symfony\Component\Templating\Storage\Storage;
-use Symfony\Component\Templating\Storage\FileStorage;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\Templating\Storage\FileStorage;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Templating\Loader;
+
+use Symfony\Component\Templating\Storage\Storage;
+use Symfony\Component\Templating\Storage\FileStorage;
 
 /**
  * CacheLoader is a loader that caches other loaders responses
@@ -36,8 +36,6 @@ class CacheLoader extends Loader
      */
     public function __construct(Loader $loader, $dir)
     {
-        parent::__construct($loader->getTemplateNameParser());
-
         $this->loader = $loader;
         $this->dir = $dir;
     }
@@ -45,28 +43,26 @@ class CacheLoader extends Loader
     /**
      * Loads a template.
      *
-     * @param string $template The logical template name
+     * @param array $template The template name as an array
      *
      * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
      */
     public function load($template)
     {
-        list($template, $options) = $this->nameParser->parse($template);
-
-        $tmp = md5($template.serialize($options)).'.tpl';
+        $tmp = md5(serialize($template)).'.tpl';
         $dir = $this->dir.DIRECTORY_SEPARATOR.substr($tmp, 0, 2);
         $file = substr($tmp, 2);
         $path = $dir.DIRECTORY_SEPARATOR.$file;
 
         if (file_exists($path)) {
             if (null !== $this->debugger) {
-                $this->debugger->log(sprintf('Fetching template "%s" from cache', $template));
+                $this->debugger->log(sprintf('Fetching template "%s" from cache', $template['name']));
             }
 
             return new FileStorage($path);
         }
 
-        if (false === $storage = $this->loader->load($template, $options)) {
+        if (false === $storage = $this->loader->load($template)) {
             return false;
         }
 
@@ -79,7 +75,7 @@ class CacheLoader extends Loader
         file_put_contents($path, $content);
 
         if (null !== $this->debugger) {
-            $this->debugger->log(sprintf('Storing template "%s" in cache', $template));
+            $this->debugger->log(sprintf('Storing template "%s" in cache', $template['name']));
         }
 
         return new FileStorage($path);
@@ -88,7 +84,7 @@ class CacheLoader extends Loader
     /**
      * Returns true if the template is still fresh.
      *
-     * @param string    $template The template name
+     * @param array     $template The template name as an array
      * @param timestamp $time     The last modification time of the cached template
      */
     public function isFresh($template, $time)

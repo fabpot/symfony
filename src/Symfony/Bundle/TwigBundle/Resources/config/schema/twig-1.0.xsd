@@ -21,12 +21,13 @@
         <xsd:attribute name="auto-reload" type="xsd:string" />
         <xsd:attribute name="base-template-class" type="xsd:string" />
         <xsd:attribute name="autoescape" type="xsd:string" />
+        <xsd:attribute name="cache-warmer" type="cache_warmer" />
     </xsd:complexType>
 
     <xsd:complexType name="form">
-        <xsd:sequence>
-            <xsd:element name="resource" type="xsd:string" minOccurs="1" maxOccurs="unbounded" />
-        </xsd:sequence>
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="resource" type="xsd:string" />
+        </xsd:choice>
     </xsd:complexType>
 
     <xsd:complexType name="global" mixed="true">
@@ -38,4 +39,12 @@
     <xsd:complexType name="extension">
         <xsd:attribute name="id" type="xsd:string" />
     </xsd:complexType>
+
+    <xsd:simpleType name="cache_warmer">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="false" />
+            <xsd:enumeration value="true" />
+            <xsd:enumeration value="full" />
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>

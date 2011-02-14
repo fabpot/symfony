@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Validator\Mapping\Loader;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator\Mapping\Loader;
 
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -30,16 +30,24 @@ class YamlFileLoader extends FileLoader
     {
         if (null === $this->classes) {
             $this->classes = Yaml::load($this->file);
-        }
 
-        // empty file
-        if (null === $this->classes) {
-            return false;
-        }
+            // empty file
+            if (null === $this->classes) {
+                return false;
+            }
 
-        // not an array
-        if (!is_array($this->classes)) {
-            throw new \InvalidArgumentException(sprintf('The file "%s" must contain a YAML array.', $this->file));
+            // not an array
+            if (!is_array($this->classes)) {
+                throw new \InvalidArgumentException(sprintf('The file "%s" must contain a YAML array.', $this->file));
+            }
+
+            if (isset($this->classes['namespaces'])) {
+                foreach ($this->classes['namespaces'] as $prefix => $namespace) {
+                    $this->namespaces[$prefix] = $namespace;
+                }
+
+                unset($this->classes['namespaces']);
+            }
         }
 
         // TODO validation

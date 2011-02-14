@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -10,7 +11,7 @@
 
 namespace Symfony\Tests\Component\Routing\Loader;
 
-use Symfony\Component\Routing\Loader\LoaderResolver;
+use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Loader\AnnotationGlobLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -26,7 +27,7 @@ class AnnotationGlobLoaderTest extends \PHPUnit_Framework_TestCase
            ->disableOriginalConstructor()
            ->getMockForAbstractClass();
 
-        $loader = new AnnotationGlobLoader($annotationClassLoader);
+        $loader = new AnnotationGlobLoader($this->getMock('Symfony\Component\Config\FileLocator'), $annotationClassLoader);
 
         $this->assertTrue($loader->supports('*'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');

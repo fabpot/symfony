@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection;
-
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection;
+
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 
 /**
  * InterfaceInjector is used for Interface Injection.
@@ -85,7 +85,7 @@ class InterfaceInjector
      * Inspects if current interface injector is to be used with a given class
      *
      * @param string $object
-     * @return boolean
+     * @return Boolean
      */
     public function supports($object)
     {
@@ -146,11 +146,11 @@ class InterfaceInjector
      *
      * @param  string $method    The method name to search for
      *
-     * @return boolean
+     * @return Boolean
      */
     public function hasMethodCall($method)
     {
-        foreach ($this->calls as $i => $call) {
+        foreach ($this->calls as $call) {
             if ($call[0] === $method) {
                 return true;
             }

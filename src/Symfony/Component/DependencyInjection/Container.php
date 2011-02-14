@@ -1,19 +1,19 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Container is a dependency injection container.
@@ -51,11 +51,17 @@ use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
  *                                    (for instance, ignore a setter if the service does not exist)
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
+ * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
 class Container implements ContainerInterface
 {
     protected $parameterBag;
     protected $services;
+    protected $scopes;
+    protected $scopeChildren;
+    protected $scopedServices;
+    protected $scopeStacks;
+    protected $loading = array();
 
     /**
      * Constructor.
@@ -65,19 +71,25 @@ class Container implements ContainerInterface
     public function __construct(ParameterBagInterface $parameterBag = null)
     {
         $this->parameterBag = null === $parameterBag ? new ParameterBag() : $parameterBag;
-        $this->services = array();
+
+        $this->services =
+        $this->scopes =
+        $this->scopeChildren =
+        $this->scopedServices =
+        $this->scopeStacks = array();
+
         $this->set('service_container', $this);
     }
 
     /**
-     * Freezes the container.
+     * Compiles the container.
      *
      * This method does two things:
      *
      *  * Parameter values are resolved;
      *  * The parameter bag is frozen.
      */
-    public function freeze()
+    public function compile()
     {
         $this->parameterBag->resolve();
 
@@ -123,7 +135,7 @@ class Container implements ContainerInterface
      *
      * @param  string $name The parameter name
      *
-     * @return boolean The presence of parameter in container
+     * @return Boolean The presence of parameter in container
      */
     public function hasParameter($name)
     {
@@ -146,10 +158,25 @@ class Container implements ContainerInterface
      *
      * @param string $id      The service identifier
      * @param object $service The service instance
+     * @param string $scope   The scope of the service
      */
-    public function set($id, $service)
+    public function set($id, $service, $scope = self::SCOPE_CONTAINER)
     {
-        $this->services[strtolower($id)] = $service;
+        if (self::SCOPE_PROTOTYPE === $scope) {
+            throw new \InvalidArgumentException('You cannot set services of scope "prototype".');
+        }
+
+        $id = strtolower($id);
+
+        if (self::SCOPE_CONTAINER !== $scope) {
+            if (!isset($this->scopedServices[$scope])) {
+                throw new \RuntimeException('You cannot set services of inactive scopes.');
+            }
+
+            $this->scopedServices[$scope][$id] = $service;
+        }
+
+        $this->services[$id] = $service;
     }
 
     /**
@@ -183,24 +210,22 @@ class Container implements ContainerInterface
      */
     public function get($id, $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE)
     {
-        static $loading = array();
-
         $id = strtolower($id);
 
         if (isset($this->services[$id])) {
             return $this->services[$id];
         }
 
-        if (isset($loading[$id])) {
-            throw new \LogicException(sprintf('Circular reference detected for service "%s" (services currently loading: %s).', $id, implode(', ', array_keys($loading))));
+        if (isset($this->loading[$id])) {
+            throw new \LogicException(sprintf('Circular reference detected for service "%s" (services currently loading: %s).', $id, implode(', ', array_keys($this->loading))));
         }
 
         if (method_exists($this, $method = 'get'.strtr($id, array('_' => '', '.' => '_')).'Service')) {
-            $loading[$id] = true;
+            $this->loading[$id] = true;
 
             $service = $this->$method();
 
-            unset($loading[$id]);
+            unset($this->loading[$id]);
 
             return $service;
         }
@@ -220,12 +245,144 @@ class Container implements ContainerInterface
         $ids = array();
         $r = new \ReflectionClass($this);
         foreach ($r->getMethods() as $method) {
-            if (preg_match('/^get(.+)Service$/', $name = $method->getName(), $match)) {
+            if (preg_match('/^get(.+)Service$/', $method->getName(), $match)) {
                 $ids[] = self::underscore($match[1]);
             }
         }
 
         return array_merge($ids, array_keys($this->services));
+    }
+
+    /**
+     * This is called when you enter a scope
+     *
+     * @param string $name
+     * @return void
+     */
+    public function enterScope($name)
+    {
+        if (!isset($this->scopes[$name])) {
+            throw new \InvalidArgumentException(sprintf('The scope "%s" does not exist.', $name));
+        }
+
+        if (self::SCOPE_CONTAINER !== $this->scopes[$name] && !isset($this->scopedServices[$this->scopes[$name]])) {
+            throw new \RuntimeException(sprintf('The parent scope "%s" must be active when entering this scope.', $this->scopes[$name]));
+        }
+
+        // check if a scope of this name is already active, if so we need to
+        // remove all services of this scope, and those of any of its child
+        // scopes from the global services map
+        if (isset($this->scopedServices[$name])) {
+            $services = array($this->services, $name => $this->scopedServices[$name]);
+            unset($this->scopedServices[$name]);
+
+            foreach ($this->scopeChildren[$name] as $child) {
+                $services[$child] = $this->scopedServices[$child];
+                unset($this->scopedServices[$child]);
+            }
+
+            // update global map
+            $this->services = call_user_func_array('array_diff_key', $services);
+            array_shift($services);
+
+            // add stack entry for this scope so we can restore the removed services later
+            if (!isset($this->scopeStacks[$name])) {
+                $this->scopeStacks[$name] = new \SplStack();
+            }
+            $this->scopeStacks[$name]->push($services);
+        }
+
+        $this->scopedServices[$name] = array();
+    }
+
+    /**
+     * This is called to leave the current scope, and move back to the parent
+     * scope.
+     *
+     * @return void
+     */
+    public function leaveScope($name)
+    {
+        if (!isset($this->scopedServices[$name])) {
+            throw new \InvalidArgumentException(sprintf('The scope "%s" is not active.', $name));
+        }
+
+        // remove all services of this scope, or any of its child scopes from
+        // the global service map
+        $services = array($this->services, $this->scopedServices[$name]);
+        unset($this->scopedServices[$name]);
+        foreach ($this->scopeChildren[$name] as $child) {
+            if (!isset($this->scopedServices[$child])) {
+                continue;
+            }
+
+            $services[] = $this->scopedServices[$child];
+            unset($this->scopedServices[$child]);
+        }
+        $this->services = call_user_func_array('array_diff_key', $services);
+
+        // check if we need to restore services of a previous scope of this type
+        if (isset($this->scopeStacks[$name]) && count($this->scopeStacks[$name]) > 0) {
+            $services = $this->scopeStacks[$name]->pop();
+            $this->scopedServices += $services;
+
+            array_unshift($services, $this->services);
+            $this->services = call_user_func_array('array_merge', $services);
+        }
+    }
+
+    /**
+     * Adds a scope to the container
+     *
+     * @param ScopeInterface $scope
+     * @return void
+     */
+    public function addScope(ScopeInterface $scope)
+    {
+        $name = $scope->getName();
+        $parentScope = $scope->getParentName();
+
+        if (self::SCOPE_CONTAINER === $name || self::SCOPE_PROTOTYPE === $name) {
+            throw new \InvalidArgumentException(sprintf('The scope "%s" is reserved.', $name));
+        }
+        if (isset($this->scopes[$name])) {
+            throw new \InvalidArgumentException(sprintf('A scope with name "%s" already exists.', $name));
+        }
+        if (self::SCOPE_CONTAINER !== $parentScope && !isset($this->scopes[$parentScope])) {
+            throw new \InvalidArgumentException(sprintf('The parent scope "%s" does not exist, or is invalid.', $parentScope));
+        }
+
+        $this->scopes[$name] = $parentScope;
+        $this->scopeChildren[$name] = array();
+
+        // normalize the child relations
+        while ($parentScope !== self::SCOPE_CONTAINER) {
+            $this->scopeChildren[$parentScope][] = $name;
+            $parentScope = $this->scopes[$parentScope];
+        }
+    }
+
+    /**
+     * Returns whether this container has a certain scope
+     *
+     * @return Boolean
+     */
+    public function hasScope($name)
+    {
+        return isset($this->scopes[$name]);
+    }
+
+    /**
+     * Returns whether this scope is currently active
+     *
+     * This does not actually check if the passed scope actually exists.
+     *
+     * @param string $name
+     * @return Boolean
+     */
+    public function isScopeActive($name)
+    {
+        return isset($this->scopedServices[$name]);
     }
 
     static public function camelize($id)

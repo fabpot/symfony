@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\CssSelector;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -10,6 +8,8 @@ namespace Symfony\Component\CssSelector;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\CssSelector;
 
 /**
  * XPathExprOr represents XPath |'d expressions.
@@ -23,12 +23,23 @@ namespace Symfony\Component\CssSelector;
  */
 class XPathExprOr extends XPathExpr
 {
+    /**
+     * Constructor.
+     *
+     * @param array  $items  The items in the expression.
+     * @param string $prefix Optional prefix for the expression.
+     */
     public function __construct($items, $prefix = null)
     {
         $this->items = $items;
         $this->prefix = $prefix;
     }
 
+    /**
+     * Get a string representation of this |'d expression.
+     *
+     * @return string
+     */
     public function __toString()
     {
         $prefix = $this->prefix;

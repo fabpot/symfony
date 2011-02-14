@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -17,7 +18,8 @@ use Symfony\Component\DependencyInjection\Loader\Loader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\IniFileLoader;
-use Symfony\Component\DependencyInjection\Loader\LoaderResolver;
+use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Config\FileLocator;
 
 class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -32,7 +34,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadFile()
     {
-        $loader = new ProjectLoader3(new ContainerBuilder(), self::$fixturesPath.'/ini');
+        $loader = new ProjectLoader3(new ContainerBuilder(), new FileLocator(self::$fixturesPath.'/ini'));
 
         try {
             $loader->loadFile('foo.yml');
@@ -50,7 +52,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals('The service file "parameters.ini" is not valid.', $e->getMessage(), '->load() throws an InvalidArgumentException if the loaded file is not a valid YAML file');
         }
 
-        $loader = new ProjectLoader3(new ContainerBuilder(), self::$fixturesPath.'/yaml');
+        $loader = new ProjectLoader3(new ContainerBuilder(), new FileLocator(self::$fixturesPath.'/yaml'));
 
         foreach (array('nonvalid1', 'nonvalid2') as $fixture) {
             try {
@@ -66,7 +68,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadParameters()
     {
         $container = new ContainerBuilder();
-        $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
+        $loader = new ProjectLoader3($container, new FileLocator(self::$fixturesPath.'/yaml'));
         $loader->load('services2.yml');
         $this->assertEquals(array('foo' => 'bar', 'values' => array(true, false, 0, 1000.3), 'bar' => 'foo', 'foo_bar' => new Reference('foo_bar')), $container->getParameterBag()->all(), '->load() converts YAML keys to lowercase');
     }
@@ -75,9 +77,9 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $container = new ContainerBuilder();
         $resolver = new LoaderResolver(array(
-            new IniFileLoader($container, self::$fixturesPath.'/yaml'),
-            new XmlFileLoader($container, self::$fixturesPath.'/yaml'),
-            $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml'),
+            new IniFileLoader($container, new FileLocator(self::$fixturesPath.'/yaml')),
+            new XmlFileLoader($container, new FileLocator(self::$fixturesPath.'/yaml')),
+            $loader = new ProjectLoader3($container, new FileLocator(self::$fixturesPath.'/yaml')),
         ));
         $loader->setResolver($resolver);
         $loader->load('services4.yml');
@@ -90,14 +92,15 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadServices()
     {
         $container = new ContainerBuilder();
-        $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
+        $loader = new ProjectLoader3($container, new FileLocator(self::$fixturesPath.'/yaml'));
         $loader->load('services6.yml');
         $services = $container->getDefinitions();
         $this->assertTrue(isset($services['foo']), '->load() parses service elements');
         $this->assertEquals('Symfony\\Component\\DependencyInjection\\Definition', get_class($services['foo']), '->load() converts service element to Definition instances');
         $this->assertEquals('FooClass', $services['foo']->getClass(), '->load() parses the class attribute');
-        $this->assertTrue($services['shared']->isShared(), '->load() parses the shared attribute');
-        $this->assertFalse($services['non_shared']->isShared(), '->load() parses the shared attribute');
+        $this->assertEquals('container', $services['scope.container']->getScope());
+        $this->assertEquals('custom', $services['scope.custom']->getScope());
+        $this->assertEquals('prototype', $services['scope.prototype']->getScope());
         $this->assertEquals('getInstance', $services['constructor']->getFactoryMethod(), '->load() parses the factory_method attribute');
         $this->assertEquals('%path%/foo.php', $services['file']->getFile(), '->load() parses the file tag');
         $this->assertEquals(array('foo', new Reference('foo'), array(true, false)), $services['arguments']->getArguments(), '->load() parses the argument tags');
@@ -121,9 +124,9 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $container = new ContainerBuilder();
         $container->registerExtension(new \ProjectExtension());
-        $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
+        $loader = new ProjectLoader3($container, new FileLocator(self::$fixturesPath.'/yaml'));
         $loader->load('services10.yml');
-        $container->freeze();
+        $container->compile();
         $services = $container->getDefinitions();
         $parameters = $container->getParameterBag()->all();
 
@@ -155,7 +158,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSupports()
     {
-        $loader = new YamlFileLoader(new ContainerBuilder());
+        $loader = new YamlFileLoader(new ContainerBuilder(), new FileLocator());
 
         $this->assertTrue($loader->supports('foo.yml'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');
@@ -164,7 +167,7 @@ class YamlFileLoaderTest extends \PHPUnit_Framework_TestCase
     public function testLoadInterfaceInjectors()
     {
         $container = new ContainerBuilder();
-        $loader = new ProjectLoader3($container, self::$fixturesPath.'/yaml');
+        $loader = new ProjectLoader3($container, new FileLocator(self::$fixturesPath.'/yaml'));
         $loader->load('interfaces1.yml');
         $interfaces = $container->getInterfaceInjectors('FooClass');
         $this->assertEquals(1, count($interfaces), '->load() parses interfaces');

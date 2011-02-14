@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\Compiler;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection\Compiler;
 
 /**
  * Compiler Pass Configuration
@@ -42,14 +42,20 @@ class PassConfig
         $this->beforeRemovingPasses = array();
 
         $this->optimizationPasses = array(
+            new ResolveDefinitionTemplatesPass(),
             new ResolveParameterPlaceHoldersPass(),
+            new CheckDefinitionValidityPass(),
             new ResolveReferencesToAliasesPass(),
             new ResolveInterfaceInjectorsPass(),
             new ResolveInvalidReferencesPass(),
+            new AnalyzeServiceReferencesPass(true),
+            new CheckCircularReferencesPass(),
+            new CheckReferenceValidityPass(),
         );
 
         $this->removingPasses = array(
             new RemovePrivateAliasesPass(),
+            new RemoveAbstractDefinitionsPass(),
             new ReplaceAliasByActualDefinitionPass(),
             new RepeatedPass(array(
                 new AnalyzeServiceReferencesPass(),
@@ -83,6 +89,11 @@ class PassConfig
         $passes[] = $pass;
     }
 
+    public function getAfterRemovingPasses()
+    {
+        return $this->afterRemovingPasses;
+    }
+
     public function getBeforeOptimizationPasses()
     {
         return $this->beforeOptimizationPasses;
@@ -111,6 +122,11 @@ class PassConfig
     public function setMergePass(CompilerPassInterface $pass)
     {
         $this->mergePass = $pass;
+    }
+
+    public function setAfterRemovingPasses(array $passes)
+    {
+        $this->afterRemovingPasses = $passes;
     }
 
     public function setBeforeOptimizationPasses(array $passes)

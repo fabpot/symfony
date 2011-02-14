@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\ParameterBag;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection\ParameterBag;
 
 /**
  * 
@@ -136,7 +136,7 @@ class ParameterBag implements ParameterBagInterface
         }
 
         if (preg_match('/^%([^%]+)%$/', $value, $match)) {
-            // we do this to deal with non string values (boolean, integer, ...)
+            // we do this to deal with non string values (Boolean, integer, ...)
             // the preg_replace_callback converts them to strings
             return $this->get(strtolower($match[1]));
         }

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -13,15 +22,6 @@ use Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper;
 use Doctrine\ORM\Mapping\Driver\DatabaseDriver;
 use Doctrine\ORM\Tools\DisconnectedClassMetadataFactory;
 use Doctrine\ORM\Tools\Export\ClassMetadataExporter;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Import Doctrine ORM metadata mapping information from an existing database.
@@ -42,33 +42,20 @@ class ImportMappingDoctrineCommand extends DoctrineCommand
             ->setHelp(<<<EOT
 The <info>doctrine:mapping:import</info> command imports mapping information from an existing database:
 
-  <info>./symfony doctrine:mapping:import "Bundle\MyCustomBundle" xml</info>
+  <info>./app/console doctrine:mapping:import "MyCustomBundle" xml</info>
 
 You can also optionally specify which entity manager to import from with the <info>--em</info> option:
 
-  <info>./symfony doctrine:mapping:import "Bundle\MyCustomBundle" xml --em=default</info>
+  <info>./app/console doctrine:mapping:import "MyCustomBundle" xml --em=default</info>
 EOT
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $bundleClass = null;
-        $bundleDirs = $this->container->get('kernel')->getBundleDirs();
-        foreach ($this->container->get('kernel')->getBundles() as $bundle) {
-            if (strpos(get_class($bundle), $input->getArgument('bundle')) !== false) {
-                $tmp = dirname(str_replace('\\', '/', get_class($bundle)));
-                $namespace = str_replace('/', '\\', dirname($tmp));
-                $class = basename($tmp);
+        $bundle = $this->application->getKernel()->getBundle($input->getArgument('bundle'));
 
-                if (isset($bundleDirs[$namespace])) {
-                    $destPath = realpath($bundleDirs[$namespace]).'/'.$class;
-                    $bundleClass = $class;
-                    break;
-                }
-            }
-        }
-
+        $destPath = $bundle->getPath();
         $type = $input->getArgument('mapping-type') ? $input->getArgument('mapping-type') : 'xml';
         if ('annotation' === $type) {
             $destPath .= '/Entity';
@@ -87,9 +74,7 @@ EOT
             $exporter->setEntityGenerator($entityGenerator);
         }
 
-        $emName = $input->getOption('em') ? $input->getOption('em') : 'default';
-        $emServiceName = sprintf('doctrine.orm.%s_entity_manager', $emName);
-        $em = $this->container->get($emServiceName);
+        $em = $this->getEntityManager($this->container, $input->getOption('em'));
         $databaseDriver = new DatabaseDriver($em->getConnection()->getSchemaManager());
         $em->getConfiguration()->setMetadataDriverImpl($databaseDriver);
 
@@ -100,7 +85,7 @@ EOT
             $output->writeln(sprintf('Importing mapping information from "<info>%s</info>" entity manager', $emName));
             foreach ($metadata as $class) {
                 $className = $class->name;
-                $class->name = $namespace.'\\'.$bundleClass.'\\Entity\\'.$className;
+                $class->name = $bundle->getNamespace().'\\Entity\\'.$className;
                 if ('annotation' === $type) {
                     $path = $destPath.'/'.$className.'.php';
                 } else {

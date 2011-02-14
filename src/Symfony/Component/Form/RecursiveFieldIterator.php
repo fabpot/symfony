@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
 
 /**
  * Iterator that traverses fields of a field group
@@ -21,7 +21,7 @@ namespace Symfony\Component\Form;
  */
 class RecursiveFieldIterator extends \IteratorIterator implements \RecursiveIterator
 {
-    public function __construct(FieldGroupInterface $group)
+    public function __construct(FormInterface $group)
     {
         parent::__construct($group);
     }
@@ -33,7 +33,7 @@ class RecursiveFieldIterator extends \IteratorIterator implements \RecursiveIter
 
     public function hasChildren()
     {
-        return $this->current() instanceof FieldGroupInterface
+        return $this->current() instanceof FormInterface
                 && $this->current()->isVirtual();
     }
 }

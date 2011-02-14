@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating\Loader;
-
-use Symfony\Component\Templating\Storage;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\Templating\Storage;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Templating\Loader;
+
+use Symfony\Component\Templating\Storage;
 
 /**
  * ChainLoader is a loader that calls other loaders to load templates.
@@ -48,7 +48,7 @@ class ChainLoader extends Loader
     /**
      * Loads a template.
      *
-     * @param string $template The logical template name
+     * @param array $template The template name as an array
      *
      * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
      */
@@ -66,7 +66,7 @@ class ChainLoader extends Loader
     /**
      * Returns true if the template is still fresh.
      *
-     * @param string    $template The template name
+     * @param array     $template The template name as an array
      * @param timestamp $time     The last modification time of the cached template
      */
     public function isFresh($template, $time)

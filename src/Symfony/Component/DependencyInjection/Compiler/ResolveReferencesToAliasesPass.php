@@ -1,19 +1,19 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Replaces all references to aliases with references to the actual service.
@@ -28,8 +28,12 @@ class ResolveReferencesToAliasesPass implements CompilerPassInterface
     {
         $this->container = $container;
 
-        foreach ($container->getDefinitions() as $id => $definition)
+        foreach ($container->getDefinitions() as $definition)
         {
+            if ($definition->isSynthetic() || $definition->isAbstract()) {
+                continue;
+            }
+
             $definition->setArguments($this->processArguments($definition->getArguments()));
             $definition->setMethodCalls($this->processArguments($definition->getMethodCalls()));
         }
@@ -51,7 +55,7 @@ class ResolveReferencesToAliasesPass implements CompilerPassInterface
                 $defId = $this->getDefinitionId($id = (string) $argument);
 
                 if ($defId !== $id) {
-                    $arguments[$k] = new Reference($defId, $argument->getInvalidBehavior());
+                    $arguments[$k] = new Reference($defId, $argument->getInvalidBehavior(), $argument->isStrict());
                 }
             }
         }
@@ -61,8 +65,8 @@ class ResolveReferencesToAliasesPass implements CompilerPassInterface
 
     protected function getDefinitionId($id)
     {
-        if ($this->container->hasAlias($id)) {
-            return $this->getDefinitionId((string) $this->container->getAlias($id));
+        while ($this->container->hasAlias($id)) {
+            $id = (string) $this->container->getAlias($id);
         }
 
         return $id;

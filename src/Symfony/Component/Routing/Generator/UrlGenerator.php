@@ -1,18 +1,18 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\Routing\Generator;
 
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * UrlGenerator generates URL based on a set of routes.
@@ -39,6 +39,16 @@ class UrlGenerator implements UrlGeneratorInterface
         $this->context = $context;
         $this->defaults = $defaults;
         $this->cache = array();
+    }
+
+    /**
+     * Sets the request context.
+     *
+     * @param array $context  The context
+     */
+    public function setContext(array $context = array())
+    {
+        $this->context = $context;
     }
 
     /**
@@ -115,7 +125,13 @@ class UrlGenerator implements UrlGeneratorInterface
         $url = (isset($this->context['base_url']) ? $this->context['base_url'] : '').$url;
 
         if ($absolute && isset($this->context['host'])) {
-            $url = 'http'.(isset($this->context['is_secure']) && $this->context['is_secure'] ? 's' : '').'://'.$this->context['host'].$url;
+            $isSecure = (isset($this->context['is_secure']) && $this->context['is_secure']);
+            $port = isset($this->context['port']) ? $this->context['port'] : 80;
+            $urlBeginning = 'http'.($isSecure ? 's' : '').'://'.$this->context['host'];
+            if (($isSecure && $port != 443) || (!$isSecure && $port != 80)) {
+                $urlBeginning .= ':'.$port;
+            }
+            $url = $urlBeginning.$url;
         }
 
         return $url;

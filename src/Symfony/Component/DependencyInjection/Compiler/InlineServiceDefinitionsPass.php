@@ -1,19 +1,20 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection\Compiler;
+
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Inline service definitions where this is possible.
@@ -32,9 +33,9 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
 
     public function process(ContainerBuilder $container)
     {
-        $this->graph = $this->repeatedPass->getCompiler()->getServiceReferenceGraph();
+        $this->graph = $container->getCompiler()->getServiceReferenceGraph();
 
-        foreach ($container->getDefinitions() as $id => $definition) {
+        foreach ($container->getDefinitions() as $definition) {
             $definition->setArguments(
                 $this->inlineArguments($container, $definition->getArguments())
             );
@@ -56,7 +57,7 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
                 }
 
                 if ($this->isInlinableDefinition($container, $id, $definition = $container->getDefinition($id))) {
-                    if ($definition->isShared()) {
+                    if (ContainerInterface::SCOPE_PROTOTYPE !== $definition->getScope()) {
                         $arguments[$k] = $definition;
                     } else {
                         $arguments[$k] = clone $definition;
@@ -73,7 +74,7 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
 
     protected function isInlinableDefinition(ContainerBuilder $container, $id, Definition $definition)
     {
-        if (!$definition->isShared()) {
+        if (ContainerInterface::SCOPE_PROTOTYPE === $definition->getScope()) {
             return true;
         }
 

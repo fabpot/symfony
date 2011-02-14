@@ -1,11 +1,18 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Security\Acl\Domain;
 
 use Symfony\Component\Security\Acl\Domain\UserSecurityIdentity;
-
-use Symfony\Component\Security\Role\Role;
-
+use Symfony\Component\Security\Core\Role\Role;
 use Symfony\Component\Security\Acl\Domain\RoleSecurityIdentity;
 
 class RoleSecurityIdentityTest extends \PHPUnit_Framework_TestCase
@@ -31,8 +38,7 @@ class RoleSecurityIdentityTest extends \PHPUnit_Framework_TestCase
     {
         if ($equal) {
             $this->assertTrue($id1->equals($id2));
-        }
-        else {
+        } else {
             $this->assertFalse($id1->equals($id2));
         }
     }

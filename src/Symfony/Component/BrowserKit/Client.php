@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\BrowserKit;
 
 use Symfony\Component\DomCrawler\Crawler;
@@ -9,15 +18,6 @@ use Symfony\Component\Process\PhpProcess;
 use Symfony\Component\BrowserKit\Request;
 use Symfony\Component\BrowserKit\Response;
 use Symfony\Component\BrowserKit\Client;
-
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 /**
  * Client simulates a browser.
@@ -179,11 +179,12 @@ abstract class Client
      * @param array   $parameters    The Request parameters
      * @param array   $files         The files
      * @param array   $server        The server parameters (HTTP headers are referenced with a HTTP_ prefix as PHP does)
+     * @param string  $content       The raw body data
      * @param Boolean $changeHistory Whether to update the history or not (only used internally for back(), forward(), and reload())
      *
      * @return Crawler
      */
-    public function request($method, $uri, array $parameters = array(), array $files = array(), array $server = array(), $changeHistory = true)
+    public function request($method, $uri, array $parameters = array(), array $files = array(), array $server = array(), $content = null, $changeHistory = true)
     {
         $uri = $this->getAbsoluteUri($uri);
 
@@ -194,7 +195,7 @@ abstract class Client
         $server['HTTP_HOST'] = parse_url($uri, PHP_URL_HOST);
         $server['HTTPS'] = 'https' == parse_url($uri, PHP_URL_SCHEME);
 
-        $request = new Request($uri, $method, $parameters, $files, $this->cookieJar->getValues($uri), $server);
+        $request = new Request($uri, $method, $parameters, $files, $this->cookieJar->getValues($uri), $server, $content);
 
         $this->request = $this->filterRequest($request);
 
@@ -265,16 +266,39 @@ abstract class Client
         // @codeCoverageIgnoreEnd
     }
 
+    /**
+     * Filters the request.
+     *
+     * @param Request $request The request to filter
+     *
+     * @return Request
+     */
     protected function filterRequest(Request $request)
     {
         return $request;
     }
 
+    /**
+     * Filters the Response.
+     *
+     * @param Response $response The Response to filter
+     *
+     * @return Response
+     */
     protected function filterResponse($response)
     {
         return $response;
     }
 
+    /**
+     * Creates a crawler.
+     *
+     * @param string $uri A uri
+     * @param string $content Content for the crawler to use
+     * @param string $type Content type
+     *
+     * @return Crawler
+     */
     protected function createCrawlerFromContent($uri, $content, $type)
     {
         $crawler = new Crawler(null, $uri);
@@ -285,6 +309,8 @@ abstract class Client
 
     /**
      * Goes back in the browser history.
+     *
+     * @return Crawler
      */
     public function back()
     {
@@ -293,6 +319,8 @@ abstract class Client
 
     /**
      * Goes forward in the browser history.
+     *
+     * @return Crawler
      */
     public function forward()
     {
@@ -301,6 +329,8 @@ abstract class Client
 
     /**
      * Reloads the current browser.
+     *
+     * @return Crawler
      */
     public function reload()
     {
@@ -334,6 +364,12 @@ abstract class Client
         $this->history->clear();
     }
 
+    /**
+     * Takes a URI and converts it to absolute if it is not already absolute.
+     *
+     * @param string $uri A uri
+     * @return string An absolute uri
+     */
     protected function getAbsoluteUri($uri)
     {
         // already absolute?
@@ -378,6 +414,6 @@ abstract class Client
      */
     protected function requestFromRequest(Request $request, $changeHistory = true)
     {
-        return $this->request($request->getMethod(), $request->getUri(), $request->getParameters(), array(), $request->getFiles(), $request->getServer(), $changeHistory);
+        return $this->request($request->getMethod(), $request->getUri(), $request->getParameters(), array(), $request->getFiles(), $request->getServer(), $request->getContent(), $changeHistory);
     }
 }

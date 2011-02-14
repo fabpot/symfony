@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\Yaml;
-
 /*
  * This file is part of the Symfony package.
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
@@ -9,6 +7,8 @@ namespace Symfony\Component\Yaml;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Yaml;
 
 /**
  * Parser parses YAML strings to convert them to PHP arrays.
@@ -130,7 +130,7 @@ class Parser
                             }
                         } else {
                             // Associative array, merge
-                            $merged = array_merge($merge, $parsed);
+                            $merged = array_merge($merged, $parsed);
                         }
 
                         $isProcessed = $merged;
@@ -143,9 +143,8 @@ class Parser
                 if ($isProcessed) {
                     // Merge keys
                     $data = $isProcessed;
-                }
                 // hash
-                else if (!isset($values['value']) || '' == trim($values['value'], ' ') || 0 === strpos(ltrim($values['value'], ' '), '#')) {
+                } else if (!isset($values['value']) || '' == trim($values['value'], ' ') || 0 === strpos(ltrim($values['value'], ' '), '#')) {
                     // if next line is less indented or equal, then it means that the current value is null
                     if ($this->isNextLineIndented()) {
                         $data[$key] = null;
@@ -294,6 +293,8 @@ class Parser
 
     /**
      * Moves the parser to the next line.
+     *
+     * @return Boolean
      */
     protected function moveToNextLine()
     {
@@ -321,7 +322,7 @@ class Parser
      *
      * @return mixed  A PHP value
      *
-     * @throws ParserException When reference doesn't not exist
+     * @throws ParserException When reference does not exist
      */
     protected function parseValue($value)
     {

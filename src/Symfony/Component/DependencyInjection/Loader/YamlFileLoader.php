@@ -1,25 +1,26 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\DependencyInjection\Loader;
 
-use Symfony\Component\DependencyInjection\Alias;
+use Symfony\Component\DependencyInjection\DefinitionDecorator;
 
+use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\InterfaceInjector;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Yaml\Yaml;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * YamlFileLoader loads YAML files service definitions.
@@ -34,10 +35,11 @@ class YamlFileLoader extends FileLoader
      * Loads a Yaml file.
      *
      * @param mixed $resource The resource
+     * @param string $type    The resource type
      */
-    public function load($file)
+    public function load($file, $type = null)
     {
-        $path = $this->findFile($file);
+        $path = $this->locator->locate($file);
 
         $content = $this->loadFile($path);
 
@@ -71,11 +73,12 @@ class YamlFileLoader extends FileLoader
     /**
      * Returns true if this class supports the given resource.
      *
-     * @param  mixed $resource A resource
+     * @param mixed  $resource A resource
+     * @param string $type     The resource type
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
-    public function supports($resource)
+    public function supports($resource, $type = null)
     {
         return is_string($resource) && 'yml' === pathinfo($resource, PATHINFO_EXTENSION);
     }
@@ -138,18 +141,34 @@ class YamlFileLoader extends FileLoader
             return;
         }
 
-        $definition = new Definition();
+        if (isset($service['parent'])) {
+            $definition = new DefinitionDecorator($service['parent']);
+        } else {
+            $definition = new Definition();
+        }
 
         if (isset($service['class'])) {
             $definition->setClass($service['class']);
         }
 
-        if (isset($service['shared'])) {
-            $definition->setShared($service['shared']);
+        if (isset($service['scope'])) {
+            $definition->setScope($service['scope']);
+        }
+
+        if (isset($service['synthetic'])) {
+            $definition->setSynthetic($service['synthetic']);
         }
 
         if (isset($service['public'])) {
             $definition->setPublic($service['public']);
+        }
+
+        if (isset($service['abstract'])) {
+            $definition->setAbstract($service['abstract']);
+        }
+
+        if (isset($service['factory_class'])) {
+            $definition->setFactoryClass($service['factory_class']);
         }
 
         if (isset($service['factory_method'])) {
@@ -237,10 +256,23 @@ class YamlFileLoader extends FileLoader
     {
         if (is_array($value)) {
             $value = array_map(array($this, 'resolveServices'), $value);
-        } else if (is_string($value) && 0 === strpos($value, '@?')) {
-            $value = new Reference(substr($value, 2), ContainerInterface::IGNORE_ON_INVALID_REFERENCE);
-        } else if (is_string($value) && 0 === strpos($value, '@')) {
-            $value = new Reference(substr($value, 1));
+        } else if (is_string($value) &&  0 === strpos($value, '@')) {
+            if (0 === strpos($value, '@?')) {
+                $value = substr($value, 2);
+                $invalidBehavior = ContainerInterface::IGNORE_ON_INVALID_REFERENCE;
+            } else {
+                $value = substr($value, 1);
+                $invalidBehavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE;
+            }
+
+            if ('=' === substr($value, -1)) {
+                $value = substr($value, 0, -1);
+                $strict = false;
+            } else {
+                $strict = true;
+            }
+
+            $value = new Reference($value, $invalidBehavior, $strict);
         }
 
         return $value;

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\HttpKernel\Profiler;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -7,15 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\ProfilerStorageInterface;
 use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Profiler.
@@ -105,7 +105,7 @@ class Profiler
     public function export()
     {
         $data = base64_encode(serialize(array($this->token, $this->collectors, $this->ip, $this->url, $this->time)));
-        
+
         return $data;
     }
 
@@ -231,7 +231,6 @@ class Profiler
             return;
         }
 
-        $response = $response;
         $response->headers->set('X-Debug-Token', $this->getToken());
 
         foreach ($this->collectors as $collector) {
@@ -243,12 +242,14 @@ class Profiler
         $this->time = time();
 
         $data = base64_encode(serialize($this->collectors));
-        try {
-            $this->storage->write($this->token, $data, $this->ip, $this->url, $this->time);
+
+        if (true === $this->storage->write($this->token, $data, $this->ip, $this->url, $this->time)) {
             $this->empty = false;
-        } catch (\Exception $e) {
-            if (null !== $this->logger) {
-                $this->logger->err(sprintf('Unable to store the profiler information (%s).', $e->getMessage()));
+        } elseif (null !== $this->logger) {
+            if (null !== $exception) {
+                $this->logger->err(sprintf('Unable to store the profiler information (%s).', $exception->getMessage()));
+            } else {
+                $this->logger->err('Unable to store the profiler information (%s).');
             }
         }
     }

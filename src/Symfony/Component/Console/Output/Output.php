@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Console\Output;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Console\Output;
 
 /**
  * Base class for output classes.
@@ -179,6 +179,12 @@ abstract class Output implements OutputInterface
     }
 
     /**
+     * Replaces the starting style of the output.
+     *
+     * @param array $match
+     *
+     * @return string The replaced style
+     *
      * @throws \InvalidArgumentException When style is unknown
      */
     protected function replaceStartStyle($match)
@@ -220,6 +226,13 @@ abstract class Output implements OutputInterface
         return "\033[".implode(';', $codes).'m';
     }
 
+    /**
+     * Replaces the end style.
+     *
+     * @param string $match The text to match
+     *
+     * @return string The end style
+     */
     protected function replaceEndStyle($match)
     {
         if (!$this->decorated) {

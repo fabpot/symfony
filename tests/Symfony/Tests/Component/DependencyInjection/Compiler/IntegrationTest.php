@@ -1,9 +1,17 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Alias;
-
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -24,22 +32,22 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
 
         $a = $container
-            ->register('a')
+            ->register('a', '\stdClass')
             ->addArgument(new Reference('c'))
         ;
 
         $b = $container
-            ->register('b')
+            ->register('b', '\stdClass')
             ->addArgument(new Reference('c'))
             ->setPublic(false)
         ;
 
         $c = $container
-            ->register('c')
+            ->register('c', '\stdClass')
             ->setPublic(false)
         ;
 
-        $container->freeze();
+        $container->compile();
 
         $this->assertTrue($container->hasDefinition('a'));
         $arguments = $a->getArguments();
@@ -53,18 +61,18 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
 
         $a = $container
-            ->register('a')
+            ->register('a', '\stdClass')
             ->addArgument(new Reference('b'))
         ;
 
         $container->setAlias('b', new Alias('c', false));
 
         $c = $container
-            ->register('c')
+            ->register('c', '\stdClass')
             ->setPublic(false)
         ;
 
-        $container->freeze();
+        $container->compile();
 
         $this->assertTrue($container->hasDefinition('a'));
         $arguments = $a->getArguments();
@@ -78,23 +86,23 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
 
         $container
-            ->register('a')
+            ->register('a', '\stdClass')
             ->addArgument(new Reference('b'))
             ->addMethodCall('setC', array(new Reference('c')))
         ;
 
         $container
-            ->register('b')
+            ->register('b', '\stdClass')
             ->addArgument(new Reference('c'))
             ->setPublic(false)
         ;
 
         $container
-            ->register('c')
+            ->register('c', '\stdClass')
             ->setPublic(false)
         ;
 
-        $container->freeze();
+        $container->compile();
 
         $this->assertTrue($container->hasDefinition('a'));
         $this->assertFalse($container->hasDefinition('b'));

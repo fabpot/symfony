@@ -1,25 +1,37 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Form;
 
 require_once __DIR__ . '/Fixtures/TestField.php';
 
 use Symfony\Component\Form\CollectionField;
-use Symfony\Component\Form\FieldGroup;
+use Symfony\Component\Form\Form;
 use Symfony\Tests\Component\Form\Fixtures\TestField;
-
 
 class CollectionFieldTest extends \PHPUnit_Framework_TestCase
 {
     public function testContainsNoFieldsByDefault()
     {
-        $field = new CollectionField(new TestField('emails'));
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
+        ));
         $this->assertEquals(0, count($field));
     }
 
     public function testSetDataAdjustsSize()
     {
-        $field = new CollectionField(new TestField('emails'));
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
+        ));
         $field->setData(array('foo@foo.com', 'foo@bar.com'));
 
         $this->assertTrue($field[0] instanceof TestField);
@@ -37,7 +49,8 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
 
     public function testSetDataAdjustsSizeIfModifiable()
     {
-        $field = new CollectionField(new TestField('emails'), array(
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
             'modifiable' => true,
         ));
         $field->setData(array('foo@foo.com', 'foo@bar.com'));
@@ -56,14 +69,17 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
 
     public function testThrowsExceptionIfObjectIsNotTraversable()
     {
-        $field = new CollectionField(new TestField('emails'));
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
+        ));
         $this->setExpectedException('Symfony\Component\Form\Exception\UnexpectedTypeException');
         $field->setData(new \stdClass());
     }
 
     public function testModifiableCollectionsContainExtraField()
     {
-        $field = new CollectionField(new TestField('emails'), array(
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
             'modifiable' => true,
         ));
         $field->setData(array('foo@bar.com'));
@@ -73,11 +89,13 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, count($field));
     }
 
-    public function testNotResizedIfBoundWithMissingData()
+    public function testNotResizedIfSubmittedWithMissingData()
     {
-        $field = new CollectionField(new TestField('emails'));
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
+        ));
         $field->setData(array('foo@foo.com', 'bar@bar.com'));
-        $field->bind(array('foo@bar.com'));
+        $field->submit(array('foo@bar.com'));
 
         $this->assertTrue($field->has('0'));
         $this->assertTrue($field->has('1'));
@@ -85,37 +103,41 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(null, $field[1]->getData());
     }
 
-    public function testResizedIfBoundWithMissingDataAndModifiable()
+    public function testResizedIfSubmittedWithMissingDataAndModifiable()
     {
-        $field = new CollectionField(new TestField('emails'), array(
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
             'modifiable' => true,
         ));
         $field->setData(array('foo@foo.com', 'bar@bar.com'));
-        $field->bind(array('foo@bar.com'));
+        $field->submit(array('foo@bar.com'));
 
         $this->assertTrue($field->has('0'));
         $this->assertFalse($field->has('1'));
         $this->assertEquals('foo@bar.com', $field[0]->getData());
     }
 
-    public function testNotResizedIfBoundWithExtraData()
+    public function testNotResizedIfSubmittedWithExtraData()
     {
-        $field = new CollectionField(new TestField('emails'));
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
+        ));
         $field->setData(array('foo@bar.com'));
-        $field->bind(array('foo@foo.com', 'bar@bar.com'));
+        $field->submit(array('foo@foo.com', 'bar@bar.com'));
 
         $this->assertTrue($field->has('0'));
         $this->assertFalse($field->has('1'));
         $this->assertEquals('foo@foo.com', $field[0]->getData());
     }
 
-    public function testResizedUpIfBoundWithExtraDataAndModifiable()
+    public function testResizedUpIfSubmittedWithExtraDataAndModifiable()
     {
-        $field = new CollectionField(new TestField('emails'), array(
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
             'modifiable' => true,
         ));
         $field->setData(array('foo@bar.com'));
-        $field->bind(array('foo@foo.com', 'bar@bar.com'));
+        $field->submit(array('foo@foo.com', 'bar@bar.com'));
 
         $this->assertTrue($field->has('0'));
         $this->assertTrue($field->has('1'));
@@ -124,13 +146,14 @@ class CollectionFieldTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo@foo.com', 'bar@bar.com'), $field->getData());
     }
 
-    public function testResizedDownIfBoundWithLessDataAndModifiable()
+    public function testResizedDownIfSubmittedWithLessDataAndModifiable()
     {
-        $field = new CollectionField(new TestField('emails'), array(
+        $field = new CollectionField('emails', array(
+            'prototype' => new TestField(),
             'modifiable' => true,
         ));
         $field->setData(array('foo@bar.com', 'bar@bar.com'));
-        $field->bind(array('foo@foo.com'));
+        $field->submit(array('foo@foo.com'));
 
         $this->assertTrue($field->has('0'));
         $this->assertFalse($field->has('1'));

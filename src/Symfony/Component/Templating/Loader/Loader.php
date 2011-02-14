@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating\Loader;
-
-use Symfony\Component\Templating\DebuggerInterface;
-use Symfony\Component\Templating\TemplateNameParserInterface;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -14,6 +9,10 @@ use Symfony\Component\Templating\TemplateNameParserInterface;
  * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Templating\Loader;
+
+use Symfony\Component\Templating\DebuggerInterface;
+
 /**
  * Loader is the base class for all template loader classes.
  *
@@ -22,27 +21,6 @@ use Symfony\Component\Templating\TemplateNameParserInterface;
 abstract class Loader implements LoaderInterface
 {
     protected $debugger;
-    protected $nameParser;
-
-    /**
-     * Constructor.
-     *
-     * @param TemplateNameParserInterface $nameParser A TemplateNameParserInterface instance
-     */
-    public function __construct(TemplateNameParserInterface $nameParser)
-    {
-        $this->nameParser = $nameParser;
-    }
-
-    /**
-     * Gets the template name parser.
-     *
-     * @return TemplateNameParserInterface A TemplateNameParserInterface instance
-     */
-    public function getTemplateNameParser()
-    {
-        return $this->nameParser;
-    }
 
     /**
      * Sets the debugger to use for this loader.

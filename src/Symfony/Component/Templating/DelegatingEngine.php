@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Templating;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Templating;
 
 /**
  * DelegatingEngine selects an engine for a given template.
@@ -90,7 +90,7 @@ class DelegatingEngine implements EngineInterface
      *
      * @param string $name A template name
      *
-     * @return boolean True if this class supports the given template, false otherwise
+     * @return Boolean True if this class supports the given template, false otherwise
      */
     public function supports($name)
     {
@@ -103,6 +103,15 @@ class DelegatingEngine implements EngineInterface
         return false;
     }
 
+    /**
+     * Get an engine able to render the given template.
+     *
+     * @param string $name A template name
+     *
+     * @return EngineInterface The engine
+     *
+     * @throws \RuntimeException if no engine able to work with the template is found
+     */
     protected function getEngine($name)
     {
         foreach ($this->engines as $engine) {

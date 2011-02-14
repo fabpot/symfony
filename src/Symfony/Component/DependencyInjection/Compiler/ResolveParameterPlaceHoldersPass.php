@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\DependencyInjection\Compiler;
-
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\DependencyInjection\Compiler;
+
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Resolves all parameter placeholders "%somevalue%" to their real values.
@@ -26,7 +26,7 @@ class ResolveParameterPlaceHoldersPass implements CompilerPassInterface
     {
         $this->parameterBag = $container->getParameterBag();
 
-        foreach ($container->getDefinitions() as $id => $definition) {
+        foreach ($container->getDefinitions() as $definition) {
             $definition->setClass($this->resolveValue($definition->getClass()));
             $definition->setFile($this->resolveValue($definition->getFile()));
             $definition->setArguments($this->resolveValue($definition->getArguments()));
@@ -50,6 +50,11 @@ class ResolveParameterPlaceHoldersPass implements CompilerPassInterface
             $injectors[$this->resolveValue($class)] = $injector;
         }
         $container->setInterfaceInjectors($injectors);
+
+        $parameterBag = $container->getParameterBag();
+        foreach ($parameterBag->all() as $key => $value) {
+            $parameterBag->set($key, $this->resolveValue($value));
+        }
     }
 
     protected function resolveValue($value)

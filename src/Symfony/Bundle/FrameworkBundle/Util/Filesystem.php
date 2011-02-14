@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Util;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Util;
 
 /**
  * Provides basic utility to manipulate the file system.
@@ -57,7 +57,7 @@ class Filesystem
      * @param  string $path  The directory path
      * @param  int    $mode  The directory mode
      *
-     * @return bool true if the directory has been created, false otherwise
+     * @return Boolean true if the directory has been created, false otherwise
      */
     public function mkdirs($path, $mode = 0777)
     {
@@ -161,9 +161,9 @@ class Filesystem
     /**
      * Creates a symbolic link or copy a directory.
      *
-     * @param string $originDir      The origin directory path
-     * @param string $targetDir      The symbolic link name
-     * @param bool   $copyOnWindows  Whether to copy files if on windows
+     * @param string  $originDir      The origin directory path
+     * @param string  $targetDir      The symbolic link name
+     * @param Boolean $copyOnWindows  Whether to copy files if on windows
      */
     public function symlink($originDir, $targetDir, $copyOnWindows = false)
     {

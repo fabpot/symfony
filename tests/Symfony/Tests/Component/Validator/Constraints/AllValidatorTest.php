@@ -1,8 +1,17 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Validator;
 
-use Symfony\Component\Validator\ValidationContext;
+use Symfony\Component\Validator\ExecutionContext;
 use Symfony\Component\Validator\Constraints\Min;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\AllValidator;
@@ -18,7 +27,7 @@ class AllValidatorTest extends \PHPUnit_Framework_TestCase
         $this->walker = $this->getMock('Symfony\Component\Validator\GraphWalker', array(), array(), '', false);
         $metadataFactory = $this->getMock('Symfony\Component\Validator\Mapping\ClassMetadataFactoryInterface');
 
-        $this->context = new ValidationContext('Root', $this->walker, $metadataFactory);
+        $this->context = new ExecutionContext('Root', $this->walker, $metadataFactory);
 
         $this->validator = new AllValidator();
         $this->validator->initialize($this->context);

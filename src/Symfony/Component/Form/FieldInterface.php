@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-use Symfony\Component\I18N\TranslatorInterface;
+namespace Symfony\Component\Form;
+
+use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * A form field that can be embedded in a form.
@@ -114,7 +114,7 @@ interface FieldInterface
      *
      * @param array|object $objectOrArray
      */
-    function updateFromProperty(&$objectOrArray);
+    function readProperty(&$objectOrArray);
 
     /**
      * Writes a the field value into a property of the object
@@ -123,16 +123,7 @@ interface FieldInterface
      *
      * @param array|object $objectOrArray
      */
-    function updateProperty(&$objectOrArray);
-
-    /**
-     * Returns the normalized data of the field.
-     *
-     * @return mixed  When the field is not bound, the default data is returned.
-     *                When the field is bound, the normalized bound data is
-     *                returned if the field is valid, null otherwise.
-     */
-    function getData();
+    function writeProperty(&$objectOrArray);
 
     /**
      * Returns the data of the field as it is displayed to the user.
@@ -142,24 +133,6 @@ interface FieldInterface
      *                       the bound data is returned.
      */
     function getDisplayedData();
-
-    /**
-     * Sets the default data
-     *
-     * @param mixed $default            The default data
-     * @throws UnexpectedTypeException  If the default data is invalid
-     */
-    function setData($default);
-
-    /**
-     * Binds POST data to the field, transforms and validates it.
-     *
-     * @param  string|array $taintedData  The POST data
-     * @return boolean                    Whether the form is valid
-     * @throws InvalidConfigurationException when the field is not configured
-     *                                       correctly
-     */
-    function bind($taintedData);
 
     /**
      * Recursively adds constraint violations to the fields
@@ -181,30 +154,22 @@ interface FieldInterface
      * ...
      * </code>
      *
-     * @param FieldError $error
+     * @param Error $error
      * @param PropertyPathIterator $pathIterator
-     * @param ConstraintViolation$violation
      */
-    function addError(FieldError $error, PropertyPathIterator $pathIterator = null, $type = null);
-
-    /**
-     * Returns whether the field is bound.
-     *
-     * @return boolean
-     */
-    function isBound();
+    function addError(Error $error, PropertyPathIterator $pathIterator = null);
 
     /**
      * Returns whether the field is valid.
      *
-     * @return boolean
+     * @return Boolean
      */
     function isValid();
 
     /**
      * Returns whether the field requires a multipart form.
      *
-     * @return boolean
+     * @return Boolean
      */
     function isMultipart();
 
@@ -215,7 +180,7 @@ interface FieldInterface
      * will always return false. Otherwise the value set with setRequired()
      * is returned.
      *
-     * @return boolean
+     * @return Boolean
      */
     function isRequired();
 
@@ -228,21 +193,28 @@ interface FieldInterface
      * Fields whose parents are disabled are considered disabled regardless of
      * their own state.
      *
-     * @return boolean
+     * @return Boolean
      */
     function isDisabled();
 
     /**
      * Returns whether the field is hidden
      *
-     * @return boolean
+     * @return Boolean
      */
     function isHidden();
 
     /**
      * Sets whether this field is required to be filled out when submitted.
      *
-     * @param boolean $required
+     * @param Boolean $required
      */
     function setRequired($required);
+
+    /**
+     * Writes posted data into the field
+     *
+     * @param mixed $data  The data from the POST request
+     */
+    function submit($data);
 }

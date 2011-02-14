@@ -1,21 +1,22 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle\DataCollector;
 
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouterInterface;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * ConfigDataCollector.
@@ -30,10 +31,10 @@ class ConfigDataCollector extends DataCollector
     /**
      * Constructor.
      *
-     * @param Kernel          $kernel A Kernel instance
-     * @param RouterInterface $router A Router instance
+     * @param KernelInterface $kernel A KernelInterface instance
+     * @param RouterInterface $router A RouterInterface instance
      */
-    public function __construct(Kernel $kernel, RouterInterface $router = null)
+    public function __construct(KernelInterface $kernel, RouterInterface $router = null)
     {
         $this->kernel = $kernel;
         $this->router = $router;

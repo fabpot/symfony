@@ -1,11 +1,10 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Parameter;
-use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
+
 
 /**
  * ProjectServiceContainer
@@ -13,14 +12,23 @@ use Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag;
  * This class has been auto-generated
  * by the Symfony Dependency Injection Component.
  */
-class ProjectServiceContainer extends Container implements TaggedContainerInterface
+class ProjectServiceContainer extends Container
 {
     /**
      * Constructor.
      */
     public function __construct()
     {
-        parent::__construct(new FrozenParameterBag($this->getDefaultParameters()));
+        $this->parameters = $this->getDefaultParameters();
+
+        $this->services =
+        $this->scopedServices =
+        $this->scopeStacks = array();
+
+        $this->set('service_container', $this);
+
+        $this->scopes = array();
+        $this->scopeChildren = array();
     }
 
     /**
@@ -41,21 +49,34 @@ class ProjectServiceContainer extends Container implements TaggedContainerInterf
     }
 
     /**
-     * Returns service ids for a given tag.
-     *
-     * @param string $name The tag name
-     *
-     * @return array An array of tags
+     * {@inheritdoc}
      */
-    public function findTaggedServiceIds($name)
+    public function getParameter($name)
     {
-        static $tags = array(
+        $name = strtolower($name);
 
-        );
+        if (!array_key_exists($name, $this->parameters)) {
+            throw new \InvalidArgumentException(sprintf('The parameter "%s" must be defined.', $name));
+        }
 
-        return isset($tags[$name]) ? $tags[$name] : array();
+        return $this->parameters[$name];
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function hasParameter($name)
+    {
+        return array_key_exists(strtolower($name), $this->parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setParameter($name, $value)
+    {
+        throw new \LogicException('Impossible to call set() on a frozen ParameterBag.');
+    }
     /**
      * Gets the default parameters.
      *

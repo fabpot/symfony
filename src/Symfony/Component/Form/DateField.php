@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
 
 use Symfony\Component\Form\ValueTransformer\ReversedTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToStringTransformer;
@@ -18,6 +18,30 @@ use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
 use Symfony\Component\Form\ValueTransformer\DateTimeToLocalizedStringTransformer;
 use Symfony\Component\Form\ValueTransformer\DateTimeToArrayTransformer;
 
+/**
+ * Represents a date field.
+ *
+ * Available options:
+ *
+ *  * widget:         How to render the field ("input" or "choice"). Default: "choice".
+ *  * type:           The type of the date stored on the object. Default: "datetime":
+ *                    * datetime:   A DateTime object;
+ *                    * string:     A raw string (e.g. 2011-05-01, Y-m-d);
+ *                    * timestamp:  A unix timestamp (e.g. 1304208000);
+ *                    * raw:        A year, month, day array.
+ *  * pattern:        The pattern for the select boxes when "widget" is "choice".
+ *                    You can use the placeholders "{{ year }}", "{{ month }}" and "{{ day }}".
+ *                    Default: locale dependent.
+ *
+ *  * years:          An array of years for the year select tag.
+ *  * months:         An array of months for the month select tag.
+ *  * days:           An array of days for the day select tag.
+ *
+ *  * format:         The date format type to use for displaying the data. Default: medium.
+ *  * data_timezone:  The timezone of the data. Default: UTC.
+ *  * user_timezone:  The timezone of the user entering a new value. Default: UTC.
+ *
+ */
 class DateField extends HybridField
 {
     const FULL = 'full';
@@ -66,39 +90,34 @@ class DateField extends HybridField
     protected $formatter;
 
     /**
-     * Configures the text field.
-     *
-     * Available options:
-     *
-     *  * widget:         How to render the field ("input" or "select"). Default: "input"
-     *  * years:          An array of years for the year select tag (optional)
-     *  * months:         An array of months for the month select tag (optional)
-     *  * days:           An array of days for the day select tag (optional)
-     *  * format:         See DateValueTransformer. Default: medium
-     *  * type:           The type of the date ("date", "datetime" or "timestamp"). Default: "date"
-     *  * data_timezone:  The timezone of the data
-     *  * user_timezone:  The timezone of the user entering a new value
-     *  * pattern:        The pattern for the select boxes when "widget" is "select".
-     *                    You can use the placeholders "{{ year }}", "{{ month }}" and "{{ day }}".
-     *                    Default: locale dependent
-     *
-     * @param array $options Options for this field
-     * @throws \InvalidArgumentException  Thrown if you want to show a timestamp with the select widget.
+     * {@inheritDoc}
      */
+    public function __construct($key, array $options = array())
+    {
+        // Override parent option
+        // \DateTime objects are never edited by reference, because
+        // we treat them like value objects
+        $this->addOption('by_reference', false);
+
+        parent::__construct($key, $options);
+    }
+
     protected function configure()
     {
+        $this->addOption('widget', self::CHOICE, self::$widgets);
+        $this->addOption('type', self::DATETIME, self::$types);
+        $this->addOption('pattern');
+
         $this->addOption('years', range(date('Y') - 5, date('Y') + 5));
         $this->addOption('months', range(1, 12));
         $this->addOption('days', range(1, 31));
+
         $this->addOption('format', self::MEDIUM, self::$formats);
-        $this->addOption('type', self::DATETIME, self::$types);
         $this->addOption('data_timezone', 'UTC');
         $this->addOption('user_timezone', 'UTC');
-        $this->addOption('widget', self::CHOICE, self::$widgets);
-        $this->addOption('pattern');
 
         $this->formatter = new \IntlDateFormatter(
-            $this->locale,
+            \Locale::getDefault(),
             self::$intlFormats[$this->getOption('format')],
             \IntlDateFormatter::NONE
         );
@@ -143,7 +162,7 @@ class DateField extends HybridField
                 'output_timezone' => $this->getOption('user_timezone'),
             )));
 
-            $this->setFieldMode(self::GROUP);
+            $this->setFieldMode(self::FORM);
 
             $this->addChoiceFields();
         }
@@ -237,7 +256,7 @@ class DateField extends HybridField
      * The year is valid if it is contained in the list passed to the field's
      * option "years".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isYearWithinRange()
     {
@@ -252,7 +271,7 @@ class DateField extends HybridField
      * The month is valid if it is contained in the list passed to the field's
      * option "months".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isMonthWithinRange()
     {
@@ -267,7 +286,7 @@ class DateField extends HybridField
      * The day is valid if it is contained in the list passed to the field's
      * option "days".
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isDayWithinRange()
     {

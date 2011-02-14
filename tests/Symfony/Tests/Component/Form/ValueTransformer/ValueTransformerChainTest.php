@@ -1,9 +1,17 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Form\ValueTransformer;
 
 use Symfony\Component\Form\ValueTransformer\ValueTransformerChain;
-
 
 class ValueTransformerChainTest extends \PHPUnit_Framework_TestCase
 {
@@ -41,21 +49,5 @@ class ValueTransformerChainTest extends \PHPUnit_Framework_TestCase
         $chain = new ValueTransformerChain(array($transformer1, $transformer2));
 
         $this->assertEquals('baz', $chain->reverseTransform('foo', null));
-    }
-
-    public function testSetLocale()
-    {
-        $transformer1 = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-        $transformer1->expects($this->once())
-                                 ->method('setLocale')
-                                 ->with($this->identicalTo('de_DE'));
-        $transformer2 = $this->getMock('Symfony\Component\Form\ValueTransformer\ValueTransformerInterface');
-        $transformer2->expects($this->once())
-                                 ->method('setLocale')
-                                 ->with($this->identicalTo('de_DE'));
-
-        $chain = new ValueTransformerChain(array($transformer1, $transformer2));
-
-        $chain->setLocale('de_DE');
     }
 }

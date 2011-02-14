@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\Templating;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -11,36 +9,36 @@ namespace Symfony\Component\Templating;
  * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Templating;
+
 /**
  * TemplateNameParser is the default implementation of TemplateNameParserInterface.
+ *
+ * This implementation takes everything as the template name
+ * and the extension for the engine.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class TemplateNameParser implements TemplateNameParserInterface
 {
-    protected $defaultOptions = array();
-
     /**
-     * Parses a template to a template name and an array of options.
+     * Parses a template to an array of parameters.
      *
-     * @param string $name     A template name
-     * @param array  $defaults An array of default options
+     * @param string $name A template name
      *
-     * @return array An array composed of the template name and an array of options
+     * @return array An array of parameters
      */
-    public function parse($name, array $defaults = array())
+    public function parse($name)
     {
-        return array($name, array_merge($this->defaultOptions, $defaults));
-    }
+        if (is_array($name)) {
+            return $name;
+        }
 
-    /**
-     * Sets a default option.
-     *
-     * @param string $name  The option name
-     * @param mixed  $value The option value
-     */
-    public function setDefaultOption($name, $value)
-    {
-        $this->defaultOptions[$name] = $value;
+        $engine = null;
+        if (false !== $pos = strrpos($name, '.')) {
+            $engine = substr($name, $pos + 1);
+        }
+
+        return array('name' => $name, 'engine' => $engine);
     }
 }

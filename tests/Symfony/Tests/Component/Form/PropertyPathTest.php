@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Form;
 
 require_once __DIR__ . '/Fixtures/Author.php';
@@ -26,6 +35,24 @@ class PropertyPathTest extends \PHPUnit_Framework_TestCase
         $array = array('Bernhard');
 
         $path = new PropertyPath('0');
+
+        $this->assertEquals('Bernhard', $path->getValue($array));
+    }
+
+    public function testGetValueReadsIndexWithSpecialChars()
+    {
+        $array = array('#!@$.' => 'Bernhard');
+
+        $path = new PropertyPath('[#!@$.]');
+
+        $this->assertEquals('Bernhard', $path->getValue($array));
+    }
+
+    public function testGetValueReadsNestedIndexWithSpecialChars()
+    {
+        $array = array('root' => array('#!@$.' => 'Bernhard'));
+
+        $path = new PropertyPath('root[#!@$.]');
 
         $this->assertEquals('Bernhard', $path->getValue($array));
     }

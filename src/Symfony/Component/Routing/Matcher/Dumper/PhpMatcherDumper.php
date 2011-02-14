@@ -1,17 +1,17 @@
 <?php
 
-namespace Symfony\Component\Routing\Matcher\Dumper;
-
-use Symfony\Component\Routing\Route;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Routing\Matcher\Dumper;
+
+use Symfony\Component\Routing\Route;
 
 /**
  * PhpMatcherDumper creates a PHP class able to match URLs for a given set of routes.
@@ -60,8 +60,14 @@ class PhpMatcherDumper extends MatcherDumper
                 $conditions[] = sprintf("isset(\$this->context['method']) && preg_match('#^(%s)$#xi', \$this->context['method'])", $req);
             }
 
+            $hasTrailingSlash = false;
             if (!count($compiledRoute->getVariables()) && false !== preg_match('#^(.)\^(?P<url>.*?)\$\1#', $compiledRoute->getRegex(), $m)) {
-                $conditions[] = sprintf("\$url === '%s'", str_replace('\\', '', $m['url']));
+                if (substr($m['url'], -1) === '/' && $m['url'] !== '/') {
+                    $conditions[] = sprintf("rtrim(\$url, '/') === '%s'", rtrim(str_replace('\\', '', $m['url']), '/'));
+                    $hasTrailingSlash = true;
+                } else {
+                    $conditions[] = sprintf("\$url === '%s'", str_replace('\\', '', $m['url']));
+                }
 
                 $matches = 'array()';
             } else {
@@ -69,15 +75,34 @@ class PhpMatcherDumper extends MatcherDumper
                     $conditions[] = sprintf("0 === strpos(\$url, '%s')", $compiledRoute->getStaticPrefix());
                 }
 
-                $conditions[] = sprintf("preg_match('%s', \$url, \$matches)", $compiledRoute->getRegex());
+                $regex = $compiledRoute->getRegex();
+                if ($pos = strpos($regex, '/$')) {
+                    $regex = substr($regex, 0, $pos) . '/?$' . substr($regex, $pos+2);
+                    $conditions[] = sprintf("preg_match('%s', \$url, \$matches)", $regex);
+                    $hasTrailingSlash = true;
+                } else {
+                    $conditions[] = sprintf("preg_match('%s', \$url, \$matches)", $regex);
+                }
 
                 $matches = '$matches';
             }
 
             $conditions = implode(' && ', $conditions);
 
-            $code[] = sprintf(<<<EOF
+            $code[] = <<<EOF
         if ($conditions) {
+EOF;
+
+            if ($hasTrailingSlash) {
+                $code[] = sprintf(<<<EOF
+            if (substr(\$url, -1) !== '/') {
+                return array('_controller' => 'Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::urlRedirectAction', 'url' => \$this->context['base_url'].\$url.'/', 'permanent' => true, '_route' => '%s');
+            }
+EOF
+            , $name);
+            }
+
+            $code[] = sprintf(<<<EOF
             return array_merge(\$this->mergeDefaults($matches, %s), array('_route' => '%s'));
         }
 

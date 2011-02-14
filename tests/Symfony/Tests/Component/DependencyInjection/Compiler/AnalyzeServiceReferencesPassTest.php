@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Definition;
@@ -78,9 +87,8 @@ class AnalyzeServiceReferencesPassTest extends \PHPUnit_Framework_TestCase
     protected function process(ContainerBuilder $container)
     {
         $pass = new RepeatedPass(array(new AnalyzeServiceReferencesPass()));
-        $pass->setCompiler($compiler = new Compiler());
         $pass->process($container);
 
-        return $compiler->getServiceReferenceGraph();
+        return $container->getCompiler()->getServiceReferenceGraph();
     }
 }

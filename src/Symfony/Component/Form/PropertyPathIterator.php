@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
 
 /**
  * Traverses a property path and provides additional methods to find out
@@ -40,7 +40,7 @@ class PropertyPathIterator extends \ArrayIterator
     /**
      * Returns whether next() can be called without making the iterator invalid
      *
-     * @return boolean
+     * @return Boolean
      */
     public function hasNext()
     {
@@ -51,7 +51,7 @@ class PropertyPathIterator extends \ArrayIterator
      * Returns whether the current element in the property path is an array
      * index
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isIndex()
     {
@@ -62,7 +62,7 @@ class PropertyPathIterator extends \ArrayIterator
      * Returns whether the current element in the property path is a property
      * names
      *
-     * @return boolean
+     * @return Boolean
      */
     public function isProperty()
     {

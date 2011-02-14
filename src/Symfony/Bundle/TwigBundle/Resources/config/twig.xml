@@ -14,9 +14,10 @@
         <parameter key="twig.loader.class">Symfony\Bundle\TwigBundle\Loader\FilesystemLoader</parameter>
         <parameter key="twig.globals.class">Symfony\Bundle\TwigBundle\GlobalVariables</parameter>
         <parameter key="twig.form.resources" type="collection">
-            <parameter>TwigBundle::form.twig.html</parameter>
+            <parameter>TwigBundle::form.html.twig</parameter>
         </parameter>
         <parameter key="templating.engine.twig.class">Symfony\Bundle\TwigBundle\TwigEngine</parameter>
+        <parameter key="templating.cache_warmer.templates_cache.class">Symfony\Bundle\TwigBundle\CacheWarmer\TemplateCacheCacheWarmer</parameter>
     </parameters>
 
     <services>
@@ -25,16 +26,19 @@
             <argument>%twig.options%</argument>
         </service>
 
-        <service id="twig.loader" class="%twig.loader.class%">
-            <argument type="service" id="templating.name_parser" />
-            <argument>%templating.loader.filesystem.path%</argument>
-            <argument type="service" id="logger" on-invalid="ignore" />
+        <service id="templating.cache_warmer.templates_cache" class="%templating.cache_warmer.templates_cache.class%" public="false">
+            <argument type="service" id="service_container" />
         </service>
 
-        <service id="templating.engine.twig" class="%templating.engine.twig.class%">
-            <tag name="templating.engine" priority="255" />
-            <argument type="service" id="service_container" />
+        <service id="twig.loader" class="%twig.loader.class%">
+            <argument type="service" id="templating.locator" />
+            <argument type="service" id="templating.name_parser" />
+        </service>
+
+        <service id="templating.engine.twig" class="%templating.engine.twig.class%" public="false">
             <argument type="service" id="twig" />
+            <argument type="service" id="service_container" />
+            <argument type="service" id="templating.name_parser" />
             <argument type="service" id="twig.globals" />
         </service>
 
@@ -57,13 +61,8 @@
             <argument>%twig.form.resources%</argument>
         </service>
 
-        <service id="twig.security.form" class="Symfony\Bundle\TwigBundle\Extension\SecurityExtension" public="false">
-            <tag name="twig.extension" />
-            <argument type="service" id="security.context" on-invalid="ignore" />
-        </service>
+        <service id="twig.extension.text" class="Twig_Extensions_Extension_Text" public="false" />
 
-        <service id="twig.extension.text" class="Twig_Extensions_Extension_Text" />
-
-        <service id="twig.extension.debug" class="Twig_Extensions_Extension_Debug" />
+        <service id="twig.extension.debug" class="Twig_Extensions_Extension_Debug" public="false" />
     </services>
 </container>

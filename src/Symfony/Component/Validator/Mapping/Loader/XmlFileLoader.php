@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Validator\Mapping\Loader;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Validator\Mapping\Loader;
 
 use Symfony\Component\Validator\Exception\MappingException;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -30,6 +30,10 @@ class XmlFileLoader extends FileLoader
         if (null === $this->classes) {
             $this->classes = array();
             $xml = $this->parseFile($this->file);
+
+            foreach ($xml->namespace as $namespace) {
+                $this->namespaces[(string)$namespace['prefix']] = trim((string)$namespace);
+            }
 
             foreach ($xml->class as $class) {
                 $this->classes[(string)$class['name']] = $class;

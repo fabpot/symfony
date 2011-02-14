@@ -1,17 +1,18 @@
 <?php
 
-namespace Symfony\Component\HttpFoundation\File\MimeType;
-
-use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
-use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
-
 /*
- * This file is part of the symfony package.
+ * This file is part of the Symfony package.
+ * 
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\HttpFoundation\File\MimeType;
+
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
+use Symfony\Component\HttpFoundation\File\Exception\AccessDeniedException;
 
 /**
  * Guesses the mime type using the PHP function mime_content_type().
@@ -23,7 +24,7 @@ class ContentTypeMimeTypeGuesser implements MimeTypeGuesserInterface
     /**
      * Returns whether this guesser is supported on the current OS/PHP setup
      *
-     * @return boolean
+     * @return Boolean
      */
     static public function isSupported()
     {

@@ -1,15 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Definition;
-
 use Symfony\Component\DependencyInjection\Compiler\AnalyzeServiceReferencesPass;
-
 use Symfony\Component\DependencyInjection\Compiler\Compiler;
-
 use Symfony\Component\DependencyInjection\Compiler\RepeatedPass;
-
 use Symfony\Component\DependencyInjection\Compiler\InlineServiceDefinitionsPass;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -36,7 +41,7 @@ class InlineServiceDefinitionsPassTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($container->getDefinition('inlinable.service'), $arguments[0]);
     }
 
-    public function testProcessDoesNotInlinesWhenAliasedServiceIsNotShared()
+    public function testProcessDoesNotInlineWhenAliasedServiceIsNotOfPrototypeScope()
     {
         $container = new ContainerBuilder();
         $container
@@ -56,17 +61,17 @@ class InlineServiceDefinitionsPassTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($ref, $arguments[0]);
     }
 
-    public function testProcessDoesInlineNonSharedService()
+    public function testProcessDoesInlineServiceOfPrototypeScope()
     {
         $container = new ContainerBuilder();
         $container
             ->register('foo')
-            ->setShared(false)
+            ->setScope('prototype')
         ;
         $container
             ->register('bar')
             ->setPublic(false)
-            ->setShared(false)
+            ->setScope('prototype')
         ;
         $container->setAlias('moo', 'bar');
 
@@ -108,7 +113,6 @@ class InlineServiceDefinitionsPassTest extends \PHPUnit_Framework_TestCase
     protected function process(ContainerBuilder $container)
     {
         $repeatedPass = new RepeatedPass(array(new AnalyzeServiceReferencesPass(), new InlineServiceDefinitionsPass()));
-        $repeatedPass->setCompiler(new Compiler());
         $repeatedPass->process($container);
     }
 }

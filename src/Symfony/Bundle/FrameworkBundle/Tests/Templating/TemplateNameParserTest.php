@@ -24,20 +24,21 @@ class TemplateNameParserTest extends TestCase
     {
         $kernel = new Kernel();
         $kernel->boot();
-        $converter = new TemplateNameParser($kernel);
+        $parser = new TemplateNameParser($kernel);
 
-        $this->assertEquals($parameters, $converter->parse($name));
+        $this->assertEquals($parameters, $parser->parse($name));
     }
 
     public function getParseTests()
     {
         return array(
-            array('FooBundle:Post:index.php.html', array('index', array('bundle' => 'FooBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => 'html'))),
-            array('FooBundle:Post:index.twig.html', array('index', array('bundle' => 'FooBundle', 'controller' => 'Post', 'renderer' => 'twig', 'format' => 'html'))),
-            array('FooBundle:Post:index.php.xml', array('index', array('bundle' => 'FooBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => 'xml'))),
-            array('SensioFooBundle:Post:index.php.html', array('index', array('bundle' => 'Sensio\\FooBundle', 'controller' => 'Post', 'renderer' => 'php', 'format' => 'html'))),
-            array(':Post:index.php.html', array('index', array('bundle' => '', 'controller' => 'Post', 'renderer' => 'php', 'format' => 'html'))),
-            array('::index.php.html', array('index', array('bundle' => '', 'controller' => '', 'renderer' => 'php', 'format' => 'html'))),
+            array('FooBundle:Post:index.html.php', array('name' => 'index', 'bundle' => 'FooBundle', 'controller' => 'Post', 'engine' => 'php', 'format' => 'html')),
+            array('FooBundle:Post:index.html.twig', array('name' => 'index', 'bundle' => 'FooBundle', 'controller' => 'Post', 'engine' => 'twig', 'format' => 'html')),
+            array('FooBundle:Post:index.xml.php', array('name' => 'index', 'bundle' => 'FooBundle', 'controller' => 'Post', 'engine' => 'php', 'format' => 'xml')),
+            array('SensioFooBundle:Post:index.html.php', array('name' => 'index', 'bundle' => 'SensioFooBundle', 'controller' => 'Post', 'engine' => 'php', 'format' => 'html')),
+            array('SensioCmsFooBundle:Post:index.html.php', array('name' => 'index', 'bundle' => 'SensioCmsFooBundle', 'controller' => 'Post', 'engine' => 'php', 'format' => 'html')),
+            array(':Post:index.html.php',array('name' => 'index', 'bundle' => '', 'controller' => 'Post', 'engine' => 'php', 'format' => 'html')),
+            array('::index.html.php', array('name' => 'index', 'bundle' => '', 'controller' => '', 'engine' => 'php', 'format' => 'html')),
         );
     }
 
@@ -49,15 +50,15 @@ class TemplateNameParserTest extends TestCase
     {
         $kernel = new Kernel();
         $kernel->boot();
-        $converter = new TemplateNameParser($kernel);
+        $parser = new TemplateNameParser($kernel);
 
-        $converter->parse($name);
+        $parser->parse($name);
     }
 
     public function getParseInvalidTests()
     {
         return array(
-            array('BarBundle:Post:index.php.html'),
+            array('BarBundle:Post:index.html.php'),
             array('FooBundle:Post:index'),
             array('FooBundle:Post'),
             array('FooBundle:Post:foo:bar'),

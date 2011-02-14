@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -10,6 +11,7 @@
 
 namespace Symfony\Tests\Component\DependencyInjection;
 
+use Symfony\Component\DependencyInjection\Scope;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -29,14 +31,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Symfony\Component\DependencyInjection\Container::freeze
+     * @covers Symfony\Component\DependencyInjection\Container::compile
      */
-    public function testFreeze()
+    public function testcompile()
     {
         $sc = new Container(new ParameterBag(array('foo' => 'bar')));
-        $sc->freeze();
-        $this->assertInstanceOf('Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag', $sc->getParameterBag(), '->freeze() changes the parameter bag to a FrozenParameterBag instance');
-        $this->assertEquals(array('foo' => 'bar'), $sc->getParameterBag()->all(), '->freeze() copies the current parameters to the new parameter bag');
+        $sc->compile();
+        $this->assertInstanceOf('Symfony\Component\DependencyInjection\ParameterBag\FrozenParameterBag', $sc->getParameterBag(), '->compile() changes the parameter bag to a FrozenParameterBag instance');
+        $this->assertEquals(array('foo' => 'bar'), $sc->getParameterBag()->all(), '->compile() copies the current parameters to the new parameter bag');
     }
 
     /**
@@ -46,7 +48,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $sc = new Container(new ParameterBag(array('foo' => 'bar')));
         $this->assertFalse($sc->isFrozen(), '->isFrozen() returns false if the parameters are not frozen');
-        $sc->freeze();
+        $sc->compile();
         $this->assertTrue($sc->isFrozen(), '->isFrozen() returns true if the parameters are frozen');
     }
 
@@ -96,7 +98,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('service_container', 'foo', 'bar'), $sc->getServiceIds(), '->getServiceIds() returns all defined service ids');
 
         $sc = new ProjectServiceContainer();
-        $this->assertEquals(array('bar', 'foo_bar', 'foo.baz', 'service_container'), $sc->getServiceIds(), '->getServiceIds() returns defined service ids by getXXXService() methods');
+        $this->assertEquals(array('scoped', 'scoped_foo', 'bar', 'foo_bar', 'foo.baz', 'service_container'), $sc->getServiceIds(), '->getServiceIds() returns defined service ids by getXXXService() methods');
     }
 
     /**
@@ -107,6 +109,37 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $sc = new Container();
         $sc->set('foo', $foo = new \stdClass());
         $this->assertEquals($foo, $sc->get('foo'), '->set() sets a service');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSetDoesNotAllowPrototypeScope()
+    {
+        $c = new Container();
+        $c->set('foo', new \stdClass(), 'prototype');
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testSetDoesNotAllowInactiveScope()
+    {
+        $c = new Container();
+        $c->addScope(new Scope('foo'));
+        $c->set('foo', new \stdClass(), 'foo');
+    }
+
+    public function testSetAlsoSetsScopedService()
+    {
+        $c = new Container();
+        $c->addScope(new Scope('foo'));
+        $c->enterScope('foo');
+        $c->set('foo', $foo = new \stdClass(), 'foo');
+
+        $services = $this->getField($c, 'scopedServices');
+        $this->assertTrue(isset($services['foo']['foo']));
+        $this->assertSame($foo, $services['foo']['foo']);
     }
 
     /**
@@ -147,6 +180,151 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($sc->has('foo_bar'), '->has() returns true if a get*Method() is defined');
         $this->assertTrue($sc->has('foo.baz'), '->has() returns true if a get*Method() is defined');
     }
+
+    public function testEnterLeaveCurrentScope()
+    {
+        $container = new ProjectServiceContainer();
+        $container->addScope(new Scope('foo'));
+
+        $container->enterScope('foo');
+        $scoped1 = $container->get('scoped');
+        $scopedFoo1 = $container->get('scoped_foo');
+
+        $container->enterScope('foo');
+        $scoped2 = $container->get('scoped');
+        $scoped3 = $container->get('scoped');
+        $scopedFoo2 = $container->get('scoped_foo');
+
+        $container->leaveScope('foo');
+        $scoped4 = $container->get('scoped');
+        $scopedFoo3 = $container->get('scoped_foo');
+
+        $this->assertNotSame($scoped1, $scoped2);
+        $this->assertSame($scoped2, $scoped3);
+        $this->assertSame($scoped1, $scoped4);
+        $this->assertNotSame($scopedFoo1, $scopedFoo2);
+        $this->assertSame($scopedFoo1, $scopedFoo3);
+    }
+
+    public function testEnterLeaveScopeWithChildScopes()
+    {
+        $container = new Container();
+        $container->addScope(new Scope('foo'));
+        $container->addScope(new Scope('bar', 'foo'));
+
+        $this->assertFalse($container->isScopeActive('foo'));
+
+        $container->enterScope('foo');
+        $container->enterScope('bar');
+
+        $this->assertTrue($container->isScopeActive('foo'));
+        $this->assertFalse($container->has('a'));
+
+        $a = new \stdClass();
+        $container->set('a', $a, 'bar');
+
+        $services = $this->getField($container, 'scopedServices');
+        $this->assertTrue(isset($services['bar']['a']));
+        $this->assertSame($a, $services['bar']['a']);
+
+        $this->assertTrue($container->has('a'));
+        $container->leaveScope('foo');
+
+        $services = $this->getField($container, 'scopedServices');
+        $this->assertFalse(isset($services['bar']));
+
+        $this->assertFalse($container->isScopeActive('foo'));
+        $this->assertFalse($container->has('a'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @dataProvider getBuiltInScopes
+     */
+    public function testAddScopeDoesNotAllowBuiltInScopes($scope)
+    {
+        $container = new Container();
+        $container->addScope(new Scope($scope));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testAddScopeDoesNotAllowExistingScope()
+    {
+        $container = new Container();
+        $container->addScope(new Scope('foo'));
+        $container->addScope(new Scope('foo'));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @dataProvider getInvalidParentScopes
+     */
+    public function testAddScopeDoesNotAllowInvalidParentScope($scope)
+    {
+        $c = new Container();
+        $c->addScope(new Scope('foo', $scope));
+    }
+
+    public function testAddScope()
+    {
+        $c = new Container();
+        $c->addScope(new Scope('foo'));
+        $c->addScope(new Scope('bar', 'foo'));
+
+        $this->assertSame(array('foo' => 'container', 'bar' => 'foo'), $this->getField($c, 'scopes'));
+        $this->assertSame(array('foo' => array('bar'), 'bar' => array()), $this->getField($c, 'scopeChildren'));
+    }
+
+    public function testHasScope()
+    {
+        $c = new Container();
+
+        $this->assertFalse($c->hasScope('foo'));
+        $c->addScope(new Scope('foo'));
+        $this->assertTrue($c->hasScope('foo'));
+    }
+
+    public function testIsScopeActive()
+    {
+        $c = new Container();
+
+        $this->assertFalse($c->isScopeActive('foo'));
+        $c->addScope(new Scope('foo'));
+
+        $this->assertFalse($c->isScopeActive('foo'));
+        $c->enterScope('foo');
+
+        $this->assertTrue($c->isScopeActive('foo'));
+        $c->leaveScope('foo');
+
+        $this->assertFalse($c->isScopeActive('foo'));
+    }
+
+    public function getInvalidParentScopes()
+    {
+        return array(
+            array(ContainerInterface::SCOPE_PROTOTYPE),
+            array('bar'),
+        );
+    }
+
+    public function getBuiltInScopes()
+    {
+        return array(
+            array(ContainerInterface::SCOPE_CONTAINER),
+            array(ContainerInterface::SCOPE_PROTOTYPE),
+        );
+    }
+
+    protected function getField($obj, $field)
+    {
+        $reflection = new \ReflectionProperty($obj, $field);
+        $reflection->setAccessible(true);
+
+        return $reflection->getValue($obj);
+    }
 }
 
 class ProjectServiceContainer extends Container
@@ -160,6 +338,24 @@ class ProjectServiceContainer extends Container
         $this->__bar = new \stdClass();
         $this->__foo_bar = new \stdClass();
         $this->__foo_baz = new \stdClass();
+    }
+
+    protected function getScopedService()
+    {
+        if (!isset($this->scopedServices['foo'])) {
+            throw new \RuntimeException('Invalid call');
+        }
+
+        return $this->services['scoped'] = $this->scopedServices['foo']['scoped'] = new \stdClass();
+    }
+
+    protected function getScopedFooService()
+    {
+        if (!isset($this->scopedServices['foo'])) {
+            throw new \RuntimeException('invalid call');
+        }
+
+        return $this->services['scoped_foo'] = $this->scopedServices['foo']['scoped_foo'] = new \stdClass();
     }
 
     protected function getBarService()

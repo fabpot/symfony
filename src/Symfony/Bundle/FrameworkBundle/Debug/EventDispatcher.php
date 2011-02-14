@@ -1,13 +1,5 @@
 <?php
 
-namespace Symfony\Bundle\FrameworkBundle\Debug;
-
-use Symfony\Bundle\FrameworkBundle\EventDispatcher as BaseEventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\HttpKernel\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Debug\EventDispatcherTraceableInterface;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -16,6 +8,14 @@ use Symfony\Component\HttpKernel\Debug\EventDispatcherTraceableInterface;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Bundle\FrameworkBundle\Debug;
+
+use Symfony\Bundle\FrameworkBundle\EventDispatcher as BaseEventDispatcher;
+use Symfony\Component\EventDispatcher\EventInterface;
+use Symfony\Component\HttpKernel\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Debug\EventDispatcherTraceableInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * EventDispatcher extends the original EventDispatcher class to add some debugging tools.
@@ -30,10 +30,13 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherTrac
     /**
      * Constructor.
      *
-     * @param LoggerInterface $logger A LoggerInterface instance
+     * @param ContainerInterface $container A ContainerInterface instance
+     * @param LoggerInterface    $logger    A LoggerInterface instance
      */
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(ContainerInterface $container, LoggerInterface $logger = null)
     {
+        parent::__construct($container);
+
         $this->logger = $logger;
         $this->called = array();
     }
@@ -41,26 +44,33 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherTrac
     /**
      * {@inheritDoc}
      */
-    public function notify(Event $event)
+    public function notify(EventInterface $event)
     {
         foreach ($this->getListeners($event->getName()) as $listener) {
+            if (is_array($listener) && is_string($listener[0])) {
+                $listener[0] = $this->container->get($listener[0]);
+            }
+
             $this->addCall($event, $listener, 'notify');
 
             call_user_func($listener, $event);
         }
-
-        return $event;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function notifyUntil(Event $event)
+    public function notifyUntil(EventInterface $event)
     {
         foreach ($this->getListeners($event->getName()) as $i => $listener) {
+            if (is_array($listener) && is_string($listener[0])) {
+                $listener[0] = $this->container->get($listener[0]);
+            }
+
             $this->addCall($event, $listener, 'notifyUntil');
 
-            if (call_user_func($listener, $event)) {
+            $ret = call_user_func($listener, $event);
+            if ($event->isProcessed()) {
                 if (null !== $this->logger) {
                     $this->logger->debug(sprintf('Listener "%s" processed the event "%s"', $this->listenerToString($listener), $event->getName()));
 
@@ -70,28 +80,27 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherTrac
                     }
                 }
 
-                $event->setProcessed(true);
-                break;
+                return $ret;
             }
         }
-
-        return $event;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function filter(Event $event, $value)
+    public function filter(EventInterface $event, $value)
     {
         foreach ($this->getListeners($event->getName()) as $listener) {
+            if (is_array($listener) && is_string($listener[0])) {
+                $listener[0] = $this->container->get($listener[0]);
+            }
+
             $this->addCall($event, $listener, 'filter');
 
             $value = call_user_func($listener, $event, $value);
         }
 
-        $event->setReturnValue($value);
-
-        return $event;
+        return $value;
     }
 
     /**
@@ -111,6 +120,10 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherTrac
 
         foreach (array_keys($this->listeners) as $name) {
             foreach ($this->getListeners($name) as $listener) {
+                if (is_array($listener) && is_string($listener[0])) {
+                    $listener[0] = $this->container->get($listener[0]);
+                }
+
                 $listener = $this->listenerToString($listener);
 
                 if (!isset($this->called[$name.'.'.$listener])) {
@@ -140,7 +153,7 @@ class EventDispatcher extends BaseEventDispatcher implements EventDispatcherTrac
         }
     }
 
-    protected function addCall(Event $event, $listener, $type)
+    protected function addCall(EventInterface $event, $listener, $type)
     {
         $listener = $this->listenerToString($listener);
 

@@ -1,15 +1,15 @@
 <?php
 
-namespace Symfony\Component\Form\ValueTransformer;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form\ValueTransformer;
 
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
@@ -21,7 +21,6 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
  *  * "input": The type of the normalized format ("time" or "timestamp"). Default: "datetime"
  *  * "output": The type of the transformed format ("string" or "array"). Default: "string"
  *  * "format": The format of the time string ("short", "medium", "long" or "full"). Default: "short"
- *  * "locale": The locale of the localized string. Default: Result of Locale::getDefault()
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  * @author Florian Eckerstorfer <florian@eckerstorfer.org>
@@ -96,7 +95,7 @@ class DateTimeToArrayTransformer extends BaseDateTimeTransformer
      * @param  array $value  Localized date string/array
      * @return DateTime      Normalized date
      */
-    public function reverseTransform($value, $originalValue)
+    public function reverseTransform($value)
     {
         if (null === $value) {
             return null;

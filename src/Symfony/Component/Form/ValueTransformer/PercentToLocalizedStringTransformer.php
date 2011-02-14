@@ -1,16 +1,17 @@
 <?php
 
-namespace Symfony\Component\Form\ValueTransformer;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Form\ValueTransformer;
+
+use Symfony\Component\Form\Configurable;
 use Symfony\Component\Form\Exception\UnexpectedTypeException;
 
 /**
@@ -19,7 +20,7 @@ use Symfony\Component\Form\Exception\UnexpectedTypeException;
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  * @author Florian Eckerstorfer <florian@eckerstorfer.org>
  */
-class PercentToLocalizedStringTransformer extends BaseValueTransformer
+class PercentToLocalizedStringTransformer extends Configurable implements ValueTransformerInterface
 {
     const FRACTIONAL = 'fractional';
     const INTEGER = 'integer';
@@ -81,7 +82,7 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
      * @param  number $value  Percentage value.
      * @return number         Normalized value.
      */
-    public function reverseTransform($value, $originalValue)
+    public function reverseTransform($value)
     {
         if (!is_string($value)) {
             throw new UnexpectedTypeException($value, 'string');
@@ -113,7 +114,7 @@ class PercentToLocalizedStringTransformer extends BaseValueTransformer
      */
     protected function getNumberFormatter()
     {
-        $formatter = new \NumberFormatter($this->locale, \NumberFormatter::DECIMAL);
+        $formatter = new \NumberFormatter(\Locale::getDefault(), \NumberFormatter::DECIMAL);
 
         $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, $this->getOption('precision'));
 

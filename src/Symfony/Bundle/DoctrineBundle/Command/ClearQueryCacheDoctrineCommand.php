@@ -1,20 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineBundle\Command;
 
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\Tools\Console\Command\ClearCache\QueryCommand;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Command to clear the query cache of the various cache drivers.
@@ -35,11 +35,11 @@ class ClearQueryCacheDoctrineCommand extends QueryCommand
             ->setHelp(<<<EOT
 The <info>doctrine:cache:clear-query</info> command clears all query cache for the default entity manager:
 
-  <info>./symfony doctrine:cache:clear-query</info>
+  <info>./app/console doctrine:cache:clear-query</info>
 
 You can also optionally specify the <comment>--em</comment> option to specify which entity manager to clear the cache for:
 
-  <info>./symfony doctrine:cache:clear-query --em=default</info>
+  <info>./app/console doctrine:cache:clear-query --em=default</info>
 EOT
         );
     }

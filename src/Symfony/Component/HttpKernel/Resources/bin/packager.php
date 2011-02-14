@@ -1,18 +1,18 @@
 <?php
 
-require_once __DIR__.'/../../../HttpFoundation/UniversalClassLoader.php';
+require_once __DIR__.'/../../../ClassLoader/UniversalClassLoader.php';
 
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-use Symfony\Component\HttpFoundation\UniversalClassLoader;
-use Symfony\Component\HttpKernel\ClassCollectionLoader;
+use Symfony\Component\ClassLoader\UniversalClassLoader;
+use Symfony\Component\ClassLoader\ClassCollectionLoader;
 
 $loader = new UniversalClassLoader();
 $loader->registerNamespaces(array('Symfony' => __DIR__.'/../../../../..'));
@@ -23,16 +23,54 @@ if (file_exists(__DIR__.'/../../bootstrap.php')) {
 }
 
 ClassCollectionLoader::load(array(
-    'Symfony\\Component\\HttpKernel\\Bundle\\Bundle',
-    'Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface',
-    'Symfony\\Component\\HttpKernel\\Debug\\ErrorHandler',
-    'Symfony\\Component\\HttpKernel\\ClassCollectionLoader',
-
+    'Symfony\\Component\\DependencyInjection\\ContainerInterface',
     'Symfony\\Component\\DependencyInjection\\Container',
     'Symfony\\Component\\DependencyInjection\\ContainerAwareInterface',
-    'Symfony\\Component\\DependencyInjection\\ContainerInterface',
-    'Symfony\\Component\\DependencyInjection\\ParameterBag\\FrozenParameterBag',
-    'Symfony\\Component\\DependencyInjection\\ParameterBag\\ParameterBagInterface',
-    'Symfony\\Component\\DependencyInjection\\TaggedContainerInterface',
+    'Symfony\\Component\\DependencyInjection\\ContainerAware',
 
+    'Symfony\\Component\\HttpKernel\\Bundle\\BundleInterface',
+    'Symfony\\Component\\HttpKernel\\Bundle\\Bundle',
+    'Symfony\\Component\\HttpKernel\\Debug\\ErrorHandler',
+    'Symfony\\Component\\HttpKernel\\HttpKernelInterface',
+    'Symfony\\Component\\HttpKernel\\HttpKernel',
+    'Symfony\\Component\\HttpKernel\\KernelInterface',
+    'Symfony\\Component\\HttpKernel\\Kernel',
+
+    'Symfony\\Component\\HttpFoundation\\ParameterBag',
+    'Symfony\\Component\\HttpFoundation\\FileBag',
+    'Symfony\\Component\\HttpFoundation\\ServerBag',
+    'Symfony\\Component\\HttpFoundation\\HeaderBag',
+    'Symfony\\Component\\HttpFoundation\\Request',
+    'Symfony\\Component\\HttpFoundation\\ApacheRequest',
+
+    'Symfony\\Component\\ClassLoader\\ClassCollectionLoader',
+    'Symfony\\Component\\ClassLoader\\UniversalClassLoader',
+    'Symfony\\Component\\ClassLoader\\MapFileClassLoader',
+
+    'Symfony\\Component\\Config\\ConfigCache',
 ), __DIR__.'/../..', 'bootstrap', false);
+
+if (file_exists(__DIR__.'/../../bootstrap_cache.php')) {
+    unlink(__DIR__.'/../../bootstrap_cache.php');
+}
+
+ClassCollectionLoader::load(array(
+    'Symfony\\Component\\HttpKernel\\KernelInterface',
+    'Symfony\\Component\\HttpKernel\\Kernel',
+    'Symfony\\Component\\HttpKernel\\HttpKernelInterface',
+    'Symfony\\Component\\HttpKernel\\HttpCache\\HttpCache',
+    'Symfony\\Component\\HttpKernel\\HttpCache\\StoreInterface',
+    'Symfony\\Component\\HttpKernel\\HttpCache\\Store',
+    'Symfony\\Component\\HttpKernel\\HttpCache\\Esi',
+
+    'Symfony\\Component\\HttpFoundation\\ParameterBag',
+    'Symfony\\Component\\HttpFoundation\\FileBag',
+    'Symfony\\Component\\HttpFoundation\\ServerBag',
+    'Symfony\\Component\\HttpFoundation\\HeaderBag',
+    'Symfony\\Component\\HttpFoundation\\Request',
+    'Symfony\\Component\\HttpFoundation\\ApacheRequest',
+    'Symfony\\Component\\HttpFoundation\\ResponseHeaderBag',
+    'Symfony\\Component\\HttpFoundation\\Response',
+
+    'Symfony\\Component\\ClassLoader\\UniversalClassLoader',
+), __DIR__.'/../..', 'bootstrap_cache', false);

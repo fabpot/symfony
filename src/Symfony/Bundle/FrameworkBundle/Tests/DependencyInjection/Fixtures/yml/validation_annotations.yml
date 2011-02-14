@@ -1,0 +1,6 @@
+app.config:
+    validation:
+        enabled:     true
+        annotations:
+            namespaces:
+                app: Application\Validator\Constraints\

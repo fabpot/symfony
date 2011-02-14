@@ -1,9 +1,19 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\Security\Acl\Dbal;
 
 use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Driver\Statement;
+use Symfony\Component\Security\Acl\Model\AclInterface;
 use Symfony\Component\Security\Acl\Domain\Acl;
 use Symfony\Component\Security\Acl\Domain\Entry;
 use Symfony\Component\Security\Acl\Domain\FieldEntry;
@@ -16,15 +26,6 @@ use Symfony\Component\Security\Acl\Model\AclCacheInterface;
 use Symfony\Component\Security\Acl\Model\AclProviderInterface;
 use Symfony\Component\Security\Acl\Model\ObjectIdentityInterface;
 use Symfony\Component\Security\Acl\Model\PermissionGrantingStrategyInterface;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * An ACL provider implementation.
@@ -320,11 +321,9 @@ class AclProvider implements AclProviderInterface
             // has the ACL been hydrated during this hydration cycle?
             if (isset($acls[$aclId])) {
                 $acl = $acls[$aclId];
-            }
-
             // has the ACL been hydrated during any previous cycle, or was possibly loaded
             // from cache?
-            else if (isset($loadedAcls[$classType][$objectIdentifier])) {
+            } else if (isset($loadedAcls[$classType][$objectIdentifier])) {
                 $acl = $loadedAcls[$classType][$objectIdentifier];
 
                 // keep reference in local array (saves us some hash calculations)
@@ -337,10 +336,8 @@ class AclProvider implements AclProviderInterface
                     $oidCache[$objectIdentifier.$classType] = $acl->getObjectIdentity();
                 }
                 $result->attach($oidCache[$objectIdentifier.$classType], $acl);
-            }
-
             // so, this hasn't been hydrated yet
-            else {
+            } else {
                 // create object identity if we haven't done so yet
                 $oidLookupKey = $objectIdentifier.$classType;
                 if (!isset($oidCache[$oidLookupKey])) {

@@ -1,20 +1,20 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle\Controller;
 
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\HttpKernel\Exception\FlattenException;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * ExceptionController.
@@ -36,8 +36,12 @@ class ExceptionController extends ContainerAware
     {
         $this->container->get('request')->setRequestFormat($format);
 
+        // the count variable avoids an infinite loop on
+        // some Windows configurations where ob_get_level()
+        // never reaches 0
+        $count = 100;
         $currentContent = '';
-        while (ob_get_level()) {
+        while (ob_get_level() && --$count) {
             $currentContent .= ob_get_clean();
         }
 
@@ -47,12 +51,12 @@ class ExceptionController extends ContainerAware
         if ($this->container->get('kernel')->isDebug() && 'html' == $format) {
             $name = 'exception_full';
         }
-        $template = 'FrameworkBundle:Exception:'.$name.'.twig.'.$format;
+        $template = 'FrameworkBundle:Exception:'.$name.'.'.$format.'.twig';
 
         $templating = $this->container->get('templating');
         if (!$templating->exists($template)) {
             $this->container->get('request')->setRequestFormat('html');
-            $template = 'FrameworkBundle:Exception:'.$name.'.twig.html';
+            $template = 'FrameworkBundle:Exception:'.$name.'.html.twig';
         }
 
         $response = $templating->renderResponse(
@@ -74,7 +78,7 @@ class ExceptionController extends ContainerAware
     protected function getStatusCode(FlattenException $exception)
     {
         switch ($exception->getClass()) {
-            case 'Symfony\Component\Security\Exception\AccessDeniedException':
+            case 'Symfony\Component\Security\Core\Exception\AccessDeniedException':
                 return 403;
             case 'Symfony\Component\HttpKernel\Exception\NotFoundHttpException':
                 return 404;

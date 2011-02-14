@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -123,7 +124,7 @@ class PhpDumperTest extends \PHPUnit_Framework_TestCase
         $interfaceInjector->addMethodCall('setBar', array('someValue'));
         $container = include self::$fixturesPath.'/containers/interfaces1.php';
         $container->addInterfaceInjector($interfaceInjector);
-        $container->freeze();
+        $container->compile();
 
         $dumper = new PhpDumper($container);
 

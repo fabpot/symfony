@@ -1,16 +1,19 @@
 <?php
 
-namespace Symfony\Component\Validator;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Validator;
+
+/**
+ * Represents a single violation of a constraint.
+ */
 class ConstraintViolation
 {
     protected $messageTemplate;
@@ -28,16 +31,27 @@ class ConstraintViolation
         $this->invalidValue = $invalidValue;
     }
 
+    /**
+     * @return string
+     */
     public function getMessageTemplate()
     {
         return $this->messageTemplate;
     }
 
+    /**
+     * @return array
+     */
     public function getMessageParameters()
     {
         return $this->messageParameters;
     }
 
+    /**
+     * Returns the violation message.
+     *
+     * @return string
+     */
     public function getMessage()
     {
         return str_replace(array_keys($this->messageParameters), array_values($this->messageParameters), $this->messageTemplate);

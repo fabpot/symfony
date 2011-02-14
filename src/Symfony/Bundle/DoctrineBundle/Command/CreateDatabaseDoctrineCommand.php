@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,15 +20,6 @@ use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
 use Doctrine\Common\Cli\Configuration;
 use Doctrine\Common\Cli\CliController as DoctrineCliController;
 use Doctrine\DBAL\Connection;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Database tool allows you to easily drop and create your configured databases.
@@ -38,37 +38,19 @@ class CreateDatabaseDoctrineCommand extends DoctrineCommand
             ->setHelp(<<<EOT
 The <info>doctrine:database:create</info> command creates the default connections database:
 
-  <info>./symfony doctrine:database:create</info>
+  <info>./app/console doctrine:database:create</info>
 
 You can also optionally specify the name of a connection to create the database for:
 
-  <info>./symfony doctrine:database:create --connection=default</info>
+  <info>./app/console doctrine:database:create --connection=default</info>
 EOT
         );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $found = false;
-        $connections = $this->getDoctrineConnections();
-        foreach ($connections as $name => $connection) {
-            if ($input->getOption('connection') && $name != $input->getOption('connection')) {
-                continue;
-            }
-            $this->createDatabaseForConnection($connection, $output);
-            $found = true;
-        }
-        if (false === $found) {
-            if ($input->getOption('connection')) {
-                throw new \InvalidArgumentException(sprintf('<error>Could not find a connection named <comment>%s</comment></error>', $input->getOption('connection')));
-            } else {
-                throw new \InvalidArgumentException(sprintf('<error>Could not find any configured connections</error>', $input->getOption('connection')));
-            }
-        }
-    }
-
-    protected function createDatabaseForConnection(Connection $connection, OutputInterface $output)
-    {
+        $connection = $this->getDoctrineConnection($input->getOption('connection'));
+        
         $params = $connection->getParams();
         $name = isset($params['path']) ? $params['path']:$params['dbname'];
 

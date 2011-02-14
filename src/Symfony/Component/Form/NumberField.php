@@ -1,21 +1,36 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\Form;
 
 use Symfony\Component\Form\ValueTransformer\NumberToLocalizedStringTransformer;
 
 /**
  * A localized field for entering numbers.
  *
+ * Available options:
+ *
+ *  * precision:        The number of digits to allow when rounding. Default
+ *                      is locale-specific.
+ *  * grouping:
+ *  * rounding-mode:    The method to use to round to get to the needed level
+ *                      of precision. Options include:
+ *                       * NumberToLocalizedStringTransformer::ROUND_FLOOR
+ *                       * NumberToLocalizedStringTransformer::ROUND_DOWN
+ *                       * NumberToLocalizedStringTransformer::ROUND_HALFDOWN
+ *                       * NumberToLocalizedStringTransformer::ROUND_HALFUP (default)
+ *                       * NumberToLocalizedStringTransformer::ROUND_UP
+ *                       * NumberToLocalizedStringTransformer::ROUND_CEILING
+ *
+ * @see \NumberFormatter
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
 class NumberField extends Field

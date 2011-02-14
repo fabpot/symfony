@@ -1,26 +1,27 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Component\HttpKernel\Debug;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventInterface;
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Exception\FlattenException;
 use Symfony\Component\HttpFoundation\Request;
 
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
-
 /**
  * ExceptionListener.
+ *
+ * The handle method must be connected to the core.exception event.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -35,22 +36,15 @@ class ExceptionListener
         $this->logger = $logger;
     }
 
-    /**
-     * Registers a core.exception listener.
-     *
-     * @param EventDispatcher $dispatcher An EventDispatcher instance
-     * @param integer         $priority   The priority
-     */
-    public function register(EventDispatcher $dispatcher, $priority = 0)
+    public function handle(EventInterface $event)
     {
-        $dispatcher->connect('core.exception', array($this, 'handle'), $priority);
-    }
+        static $handling;
 
-    public function handle(Event $event)
-    {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
+        if (true === $handling) {
             return false;
         }
+
+        $handling = true;
 
         $exception = $event->get('exception');
         $request = $event->get('request');
@@ -76,16 +70,21 @@ class ExceptionListener
         try {
             $response = $event->getSubject()->handle($request, HttpKernelInterface::SUB_REQUEST, true);
         } catch (\Exception $e) {
+            $message = sprintf('Exception thrown when handling an exception (%s: %s)', get_class($e), $e->getMessage());
             if (null !== $this->logger) {
-                $this->logger->err(sprintf('Exception thrown when handling an exception (%s: %s)', get_class($e), $e->getMessage()));
+                $this->logger->err($message);
+            } else {
+                error_log($message);
             }
 
             // re-throw the exception as this is a catch-all
-            throw new \RuntimeException('Exception thrown when handling an exception.', 0, $e);
+            throw $exception;
         }
 
-        $event->setReturnValue($response);
+        $event->setProcessed();
 
-        return true;
+        $handling = false;
+
+        return $response;
     }
 }

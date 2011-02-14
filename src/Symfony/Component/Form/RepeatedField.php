@@ -1,22 +1,27 @@
 <?php
 
-namespace Symfony\Component\Form;
-
 /*
- * This file is part of the Symfony framework.
+ * This file is part of the Symfony package.
  *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\Form;
+
 /**
- * A field for repeated input of values
+ * A field for repeated input of values.
+ *
+ * Available options:
+ *
+ *  * first_key:        The key to use for the first field.
+ *  * second_key:       The key to use for the second field.
  *
  * @author Bernhard Schussek <bernhard.schussek@symfony-project.com>
  */
-class RepeatedField extends FieldGroup
+class RepeatedField extends Form
 {
     /**
      * The prototype for the inner fields
@@ -25,7 +30,7 @@ class RepeatedField extends FieldGroup
     protected $prototype;
 
     /**
-     * Repeats the given field twice to verify the user's input
+     * Repeats the given field twice to verify the user's input.
      *
      * @param FieldInterface $innerField
      */
@@ -41,27 +46,30 @@ class RepeatedField extends FieldGroup
      */
     protected function configure()
     {
-        $field = clone $this->prototype;
-        $field->setKey('first');
-        $field->setPropertyPath('first');
-        $this->add($field);
-
-        $field = clone $this->prototype;
-        $field->setKey('second');
-        $field->setPropertyPath('second');
-        $this->add($field);
+        $this->addOption('first_key', 'first');
+        $this->addOption('second_key', 'second');
 
         parent::configure();
+
+        $field = clone $this->prototype;
+        $field->setKey($this->getOption('first_key'));
+        $field->setPropertyPath($this->getOption('first_key'));
+        $this->add($field);
+
+        $field = clone $this->prototype;
+        $field->setKey($this->getOption('second_key'));
+        $field->setPropertyPath($this->getOption('second_key'));
+        $this->add($field);
     }
 
     /**
      * Returns whether both entered values are equal
      *
-     * @return bool
+     * @return Boolean
      */
     public function isFirstEqualToSecond()
     {
-        return $this->get('first')->getData() === $this->get('second')->getData();
+        return $this->get($this->getOption('first_key'))->getData() === $this->get($this->getOption('second_key'))->getData();
     }
 
     /**
@@ -71,20 +79,30 @@ class RepeatedField extends FieldGroup
      */
     public function setData($data)
     {
-        parent::setData(array('first' => $data, 'second' => $data));
+        parent::setData(array(
+            $this->getOption('first_key') => $data,
+            $this->getOption('second_key') => $data
+        ));
     }
 
     /**
-     * Return only value of first password field.
+     * Return the value of a child field
      *
-     * @return string The password.
+     * If the value of the first field is set, this value is returned.
+     * Otherwise the value of the second field is returned. This way,
+     * this field will never trigger a NotNull/NotBlank error if any of the
+     * child fields was filled in.
+     *
+     * @return string The field value
      */
     public function getData()
     {
-        if ($this->isBound() && $this->isFirstEqualToSecond()) {
-            return $this->get('first')->getData();
-        }
+        // Return whichever data is set. This should not return NULL if any of
+        // the fields is set, otherwise this might trigger a NotNull/NotBlank
+        // error even though some value was set
+        $data1 = $this->get($this->getOption('first_key'))->getData();
+        $data2 = $this->get($this->getOption('second_key'))->getData();
 
-        return null;
+        return $data1 ?: $data2;
     }
 }

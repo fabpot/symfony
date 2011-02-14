@@ -5,14 +5,7 @@
     targetNamespace="http://www.symfony-project.org/schema/dic/doctrine"
     elementFormDefault="qualified">
 
-    <xsd:element name="dbal" type="dbal" />
-
-    <xsd:complexType name="dbal">
-        <xsd:sequence>
-            <xsd:element name="connections" type="connections" minOccurs="0" maxOccurs="1" />
-        </xsd:sequence>
-
-        <xsd:attribute name="default-connection" type="xsd:string" />
+    <xsd:attributeGroup name="connection-config">
         <xsd:attribute name="dbname" type="xsd:string" />
         <xsd:attribute name="host" type="xsd:string" />
         <xsd:attribute name="port" type="xsd:integer" />
@@ -25,33 +18,43 @@
         <xsd:attribute name="unix-socket" type="xsd:string" />
         <xsd:attribute name="memory" type="xsd:boolean" />
         <xsd:attribute name="charset" type="xsd:string" />
+        <xsd:attribute name="wrapper-class" type="xsd:string" />
         <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="logging" type="xsd:string" default="false" />
+    </xsd:attributeGroup>
+
+    <xsd:element name="dbal" type="dbal" />
+
+    <xsd:complexType name="dbal">
+        <xsd:all>
+            <xsd:element name="connections" type="connections" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="types" type="types" minOccurs="0" maxOccurs="1" />
+        </xsd:all>
+
+        <xsd:attribute name="default-connection" type="xsd:string" />
+        <xsd:attributeGroup ref="connection-config" />
     </xsd:complexType>
 
     <xsd:complexType name="connections">
-        <xsd:sequence>
-            <xsd:element name="connection" type="connection" minOccurs="1" maxOccurs="unbounded" />
-        </xsd:sequence>
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="connection" type="connection" />
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="types">
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="type" type="type" />
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:complexType name="type">
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="class" type="xsd:string" use="required" />
     </xsd:complexType>
 
     <xsd:complexType name="connection">
-        <xsd:attribute name="id" type="xsd:string" use="required" />
-        <xsd:attribute name="dbname" type="xsd:string" use="required" />
-        <xsd:attribute name="host" type="xsd:string" />
-        <xsd:attribute name="port" type="xsd:integer" />
-        <xsd:attribute name="user" type="xsd:string" />
-        <xsd:attribute name="password" type="xsd:string" />
-        <xsd:attribute name="driver" type="xsd:string" />
-        <xsd:attribute name="driver-class" type="xsd:string" />
-        <xsd:attribute name="options" type="xsd:string" />
-        <xsd:attribute name="path" type="xsd:string" />
-        <xsd:attribute name="unix-socket" type="xsd:string" />
-        <xsd:attribute name="memory" type="xsd:boolean" />
-        <xsd:attribute name="charset" type="xsd:string" />
-        <xsd:attribute name="configuration-class" type="xsd:string" />
-        <xsd:attribute name="event-manager-class" type="xsd:string" />
-        <xsd:attribute name="wrapper-class" type="xsd:string" />
-        <xsd:attribute name="platform-service" type="xsd:string" />
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attributeGroup ref="connection-config" />
     </xsd:complexType>
 
     <xsd:element name="orm" type="orm" />
@@ -66,34 +69,41 @@
     </xsd:complexType>
 
     <xsd:complexType name="mappings">
-        <xsd:sequence>
-            <xsd:element name="mapping" type="mapping" minOccurs="1" maxOccurs="unbounded" />
-        </xsd:sequence>
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="mapping" type="mapping" />
+        </xsd:choice>
     </xsd:complexType>
 
     <xsd:complexType name="orm">
-        <xsd:sequence>
+        <xsd:all>
             <xsd:element name="entity-managers" type="entity_managers" minOccurs="0" maxOccurs="1" />
             <xsd:element name="mappings" type="mappings" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="auto-generate-proxy-classes" type="xsd:string" minOccurs="0" maxOccurs="1" />
-        </xsd:sequence>
+        </xsd:all>
 
         <xsd:attribute name="default-entity-manager" type="xsd:string" />
-        <xsd:attribute name="metadata-driver" type="xsd:string" />
-        <xsd:attribute name="cache-driver" type="xsd:string" />
+        <xsd:attribute name="default-connection" type="xsd:string" />
+
+        <xsd:attribute name="auto-generate-proxy-classes" type="xsd:string" default="false" />
+        <xsd:attribute name="result-cache-driver" type="xsd:string" />
+        <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
+        <xsd:attribute name="query-cache-driver" type="xsd:string" />
     </xsd:complexType>
 
     <xsd:complexType name="entity_managers">
-        <xsd:sequence>
-            <xsd:element name="entity-manager" type="entity_manager" minOccurs="1" maxOccurs="unbounded" />
-        </xsd:sequence>
+        <xsd:choice minOccurs="1" maxOccurs="unbounded">
+            <xsd:element name="entity-manager" type="entity_manager" />
+        </xsd:choice>
     </xsd:complexType>
 
     <xsd:complexType name="entity_manager">
-        <xsd:sequence>
+        <xsd:all>
             <xsd:element name="mappings" type="mappings" minOccurs="0" maxOccurs="1" />
-        </xsd:sequence>
+        </xsd:all>
 
         <xsd:attribute name="connection" type="xsd:string" />
+        <xsd:attribute name="name" type="xsd:string" />
+        <xsd:attribute name="result-cache-driver" type="xsd:string" />
+        <xsd:attribute name="metadata-cache-driver" type="xsd:string" />
+        <xsd:attribute name="query-cache-driver" type="xsd:string" />
     </xsd:complexType>
 </xsd:schema>

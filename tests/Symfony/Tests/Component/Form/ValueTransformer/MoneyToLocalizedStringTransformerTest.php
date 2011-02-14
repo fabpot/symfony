@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Tests\Component\Form\ValueTransformer;
 
 require_once __DIR__ . '/../LocalizedTestCase.php';
@@ -10,12 +19,18 @@ use Symfony\Tests\Component\Form\LocalizedTestCase;
 
 class MoneyToLocalizedStringTransformerTest extends LocalizedTestCase
 {
+    protected function setUp()
+    {
+        parent::setUp();
+
+        \Locale::setDefault('de_AT');
+    }
+
     public function testTransform()
     {
         $transformer = new MoneyToLocalizedStringTransformer(array(
             'divisor' => 100,
         ));
-        $transformer->setLocale('de_AT');
 
         $this->assertEquals('1,23', $transformer->transform(123));
     }
@@ -43,7 +58,6 @@ class MoneyToLocalizedStringTransformerTest extends LocalizedTestCase
         $transformer = new MoneyToLocalizedStringTransformer(array(
             'divisor' => 100,
         ));
-        $transformer->setLocale('de_AT');
 
         $this->assertEquals(123, $transformer->reverseTransform('1,23', null));
     }

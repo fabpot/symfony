@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineMongoDBBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,20 +18,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Finder\Finder;
 use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
+use Symfony\Bundle\DoctrineAbstractBundle\Common\DataFixtures\Loader as DataFixturesLoader;
 use Doctrine\Common\Cli\Configuration;
 use Doctrine\Common\Cli\CliController as DoctrineCliController;
+use Doctrine\Common\DataFixtures\Executor\MongoDBExecutor;
+use Doctrine\Common\DataFixtures\Purger\MongoDBPurger;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Internal\CommitOrderCalculator;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Load data fixtures from bundles.
@@ -43,15 +46,15 @@ class LoadDataFixturesDoctrineODMCommand extends DoctrineODMCommand
             ->setHelp(<<<EOT
 The <info>doctrine:mongodb:data:load</info> command loads data fixtures from your bundles:
 
-  <info>./symfony doctrine:mongodb:data:load</info>
+  <info>./app/console doctrine:mongodb:data:load</info>
 
 You can also optionally specify the path to fixtures with the <info>--fixtures</info> option:
 
-  <info>./symfony doctrine:mongodb:data:load --fixtures=/path/to/fixtures1 --fixtures=/path/to/fixtures2</info>
+  <info>./app/console doctrine:mongodb:data:load --fixtures=/path/to/fixtures1 --fixtures=/path/to/fixtures2</info>
 
 If you want to append the fixtures instead of flushing the database first you can use the <info>--append</info> option:
 
-  <info>./symfony doctrine:mongodb:data:load --append</info>
+  <info>./app/console doctrine:mongodb:data:load --append</info>
 EOT
         );
     }
@@ -67,25 +70,20 @@ EOT
             $paths = is_array($dirOrFile) ? $dirOrFile : array($dirOrFile);
         } else {
             $paths = array();
-            $bundleDirs = $this->container->get('kernel')->getBundleDirs();
             foreach ($this->container->get('kernel')->getBundles() as $bundle) {
-                $tmp = dirname(str_replace('\\', '/', get_class($bundle)));
-                $namespace = str_replace('/', '\\', dirname($tmp));
-                $class = basename($tmp);
-
-                if (isset($bundleDirs[$namespace]) && is_dir($dir = $bundleDirs[$namespace].'/'.$class.'/DataFixtures/MongoDB')) {
-                    $paths[] = $dir;
-                }
+                $paths[] = $bundle->getPath().'/DataFixtures/MongoDB';
             }
         }
 
-        $loader = new \Doctrine\Common\DataFixtures\Loader();
+        $loader = new DataFixturesLoader($this->container);
         foreach ($paths as $path) {
-            $loader->loadFromDirectory($path);
+            if (is_dir($path)) {
+                $loader->loadFromDirectory($path);
+            }
         }
         $fixtures = $loader->getFixtures();
-        $purger = new \Doctrine\Common\DataFixtures\Purger\MongoDBPurger($dm);
-        $executor = new \Doctrine\Common\DataFixtures\Executor\MongoDBExecutor($dm, $purger);
+        $purger = new MongoDBPurger($dm);
+        $executor = new MongoDBExecutor($dm, $purger);
         $executor->setLogger(function($message) use ($output) {
             $output->writeln(sprintf('  <comment>></comment> <info>%s</info>', $message));
         });

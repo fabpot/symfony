@@ -12,9 +12,9 @@
 namespace Symfony\Bundle\FrameworkBundle\Tests;
 
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
-use Symfony\Component\DependencyInjection\Loader\LoaderInterface;
 use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
-use Symfony\Component\HttpFoundation\UniversalClassLoader;
+use Symfony\Component\ClassLoader\UniversalClassLoader;
+use Symfony\Component\Config\Loader\LoaderInterface;
 
 class Kernel extends BaseKernel
 {
@@ -33,7 +33,8 @@ class Kernel extends BaseKernel
 
         $loader = new UniversalClassLoader();
         $loader->registerNamespaces(array(
-            'TestBundle' => __DIR__.'/Fixtures/',
+            'TestBundle'      => __DIR__.'/Fixtures/',
+            'TestApplication' => __DIR__.'/Fixtures/',
         ));
         $loader->register();
     }
@@ -53,18 +54,10 @@ class Kernel extends BaseKernel
     {
         return array(
             new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new \TestBundle\FooBundle\FooBundle(),
             new \TestBundle\Sensio\FooBundle\SensioFooBundle(),
-        );
-    }
-
-    public function registerBundleDirs()
-    {
-        return array(
-            'Application'     => __DIR__.'/../src/Application',
-            'Bundle'          => __DIR__.'/../src/Bundle',
-            'TestBundle'      => __DIR__.'/Fixtures/TestBundle',
-            'Symfony\\Bundle' => __DIR__.'/../src/vendor/symfony/src/Symfony/Bundle',
+            new \TestBundle\Sensio\Cms\FooBundle\SensioCmsFooBundle(),
+            new \TestBundle\FooBundle\FooBundle(),
+            new \TestBundle\Fabpot\FooBundle\FabpotFooBundle(),
         );
     }
 

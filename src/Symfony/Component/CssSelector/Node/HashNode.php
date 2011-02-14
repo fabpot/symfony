@@ -1,9 +1,5 @@
 <?php
 
-namespace Symfony\Component\CssSelector\Node;
-
-use Symfony\Component\CssSelector\XPathExpr;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -12,6 +8,10 @@ use Symfony\Component\CssSelector\XPathExpr;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\CssSelector\Node;
+
+use Symfony\Component\CssSelector\XPathExpr;
 
 /**
  * HashNode represents a "selector#id" node.
@@ -26,17 +26,29 @@ class HashNode implements NodeInterface
     protected $selector;
     protected $id;
 
+    /**
+     * Constructor.
+     *
+     * @param NodeInterface $selector The NodeInterface object
+     * @param string $id The ID
+     */
     public function __construct($selector, $id)
     {
         $this->selector = $selector;
         $this->id = $id;
     }
 
+    /** 
+     * {@inheritDoc}
+     */
     public function __toString()
     {
         return sprintf('%s[%s#%s]', __CLASS__, $this->selector, $this->id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function toXpath()
     {
         $path = $this->selector->toXpath();

@@ -1,7 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpFoundation;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -11,6 +9,8 @@ namespace Symfony\Component\HttpFoundation;
  * file that was distributed with this source code.
  */
 
+namespace Symfony\Component\HttpFoundation;
+
 /**
  * ResponseHeaderBag is a container for Response HTTP headers.
  *
@@ -19,6 +19,20 @@ namespace Symfony\Component\HttpFoundation;
 class ResponseHeaderBag extends HeaderBag
 {
     protected $computedCacheControl = array();
+
+    /**
+     * Constructor.
+     *
+     * @param array $headers An array of HTTP headers
+     */
+    public function __construct(array $headers = array())
+    {
+        // this line is not necessary, but including it avoids any stupid
+        // errors if we add code to the parent's constructor
+        parent::__construct();
+
+        $this->replace($headers);
+    }
 
     /**
      * {@inheritdoc}
@@ -62,47 +76,6 @@ class ResponseHeaderBag extends HeaderBag
     /**
      * {@inheritdoc}
      */
-    public function setCookie($name, $value, $domain = null, $expires = null, $path = '/', $secure = false, $httponly = true)
-    {
-        $this->validateCookie($name, $value);
-
-        $cookie = sprintf('%s=%s', $name, urlencode($value));
-
-        if (null !== $expires) {
-            if (is_numeric($expires)) {
-                $expires = (int) $expires;
-            } elseif ($expires instanceof \DateTime) {
-                $expires = $expires->getTimestamp();
-            } else {
-                $expires = strtotime($expires);
-                if (false === $expires || -1 == $expires) {
-                    throw new \InvalidArgumentException(sprintf('The "expires" cookie parameter is not valid.', $expires));
-                }
-            }
-
-            $cookie .= '; expires='.substr(\DateTime::createFromFormat('U', $expires, new \DateTimeZone('UTC'))->format('D, d-M-Y H:i:s T'), 0, -5);
-        }
-
-        if ($domain) {
-            $cookie .= '; domain='.$domain;
-        }
-
-        $cookie .= '; path='.$path;
-
-        if ($secure) {
-            $cookie .= '; secure';
-        }
-
-        if ($httponly) {
-            $cookie .= '; httponly';
-        }
-
-        $this->set('Set-Cookie', $cookie, false);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function hasCacheControlDirective($key)
     {
         return array_key_exists($key, $this->computedCacheControl);
@@ -114,6 +87,19 @@ class ResponseHeaderBag extends HeaderBag
     public function getCacheControlDirective($key)
     {
         return array_key_exists($key, $this->computedCacheControl) ? $this->computedCacheControl[$key] : null;
+    }
+
+    /**
+     * Clears a cookie in the browser
+     *
+     * @param string $name
+     * @param string $path
+     * @param string $domain
+     * @return void
+     */
+    public function clearCookie($name, $path = null, $domain = null)
+    {
+        $this->setCookie(new Cookie($name, null, time() - 86400, $path, $domain));
     }
 
     /**

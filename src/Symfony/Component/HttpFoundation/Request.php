@@ -1,10 +1,5 @@
 <?php
 
-namespace Symfony\Component\HttpFoundation;
-
-use Symfony\Component\HttpFoundation\SessionStorage\NativeSessionStorage;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-
 /*
  * This file is part of the Symfony package.
  *
@@ -13,6 +8,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
+namespace Symfony\Component\HttpFoundation;
+
+use Symfony\Component\HttpFoundation\SessionStorage\NativeSessionStorage;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Request represents an HTTP request.
@@ -73,16 +73,17 @@ class Request
     /**
      * Constructor.
      *
-     * @param array $query      The GET parameters
-     * @param array $request    The POST parameters
-     * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
-     * @param array $cookies    The COOKIE parameters
-     * @param array $files      The FILES parameters
-     * @param array $server     The SERVER parameters
+     * @param array  $query      The GET parameters
+     * @param array  $request    The POST parameters
+     * @param array  $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
+     * @param array  $cookies    The COOKIE parameters
+     * @param array  $files      The FILES parameters
+     * @param array  $server     The SERVER parameters
+     * @param string $content    The raw body data
      */
-    public function __construct(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function __construct(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array(), $content = null)
     {
-        $this->initialize($query, $request, $attributes, $cookies, $files, $server);
+        $this->initialize($query, $request, $attributes, $cookies, $files, $server, $content);
     }
 
     /**
@@ -90,24 +91,25 @@ class Request
      *
      * This method also re-initializes all properties.
      *
-     * @param array $query      The GET parameters
-     * @param array $request    The POST parameters
-     * @param array $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
-     * @param array $cookies    The COOKIE parameters
-     * @param array $files      The FILES parameters
-     * @param array $server     The SERVER parameters
+     * @param array  $query      The GET parameters
+     * @param array  $request    The POST parameters
+     * @param array  $attributes The request attributes (parameters parsed from the PATH_INFO, ...)
+     * @param array  $cookies    The COOKIE parameters
+     * @param array  $files      The FILES parameters
+     * @param array  $server     The SERVER parameters
+     * @param string $content    The raw body data
      */
-    public function initialize(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
+    public function initialize(array $query = array(), array $request = array(), array $attributes = array(), array $cookies = array(), array $files = array(), array $server = array(), $content = null)
     {
-        $this->request = new ParameterBag(null !== $request ? $request : $_POST);
-        $this->query = new ParameterBag(null !== $query ? $query : $_GET);
-        $this->attributes = new ParameterBag(null !== $attributes ? $attributes : array());
-        $this->cookies = new ParameterBag(null !== $cookies ? $cookies : $_COOKIE);
-        $this->files = new ParameterBag($this->convertFileInformation(null !== $files ? $files : $_FILES));
-        $this->server = new ParameterBag(null !== $server ? $server : $_SERVER);
-        $this->headers = new HeaderBag($this->initializeHeaders());
+        $this->request = new ParameterBag($request);
+        $this->query = new ParameterBag($query);
+        $this->attributes = new ParameterBag($attributes);
+        $this->cookies = new ParameterBag($cookies);
+        $this->files = new FileBag($files);
+        $this->server = new ServerBag($server);
+        $this->headers = new HeaderBag($this->server->getHeaders());
 
-        $this->content = null;
+        $this->content = $content;
         $this->languages = null;
         $this->charsets = null;
         $this->acceptableContentTypes = null;
@@ -120,6 +122,16 @@ class Request
     }
 
     /**
+     * Creates a new request with values from PHP's super globals.
+     *
+     * @return Request A new request
+     */
+    static public function createfromGlobals()
+    {
+        return new static($_GET, $_POST, array(), $_COOKIE, $_FILES, $_SERVER);
+    }
+
+    /**
      * Creates a Request based on a given URI and configuration.
      *
      * @param string $uri        The URI
@@ -128,10 +140,11 @@ class Request
      * @param array  $cookies    The request cookies ($_COOKIE)
      * @param array  $files      The request files ($_FILES)
      * @param array  $server     The server parameters ($_SERVER)
+     * @param string $content    The raw body data
      *
      * @return Request A Request instance
      */
-    static public function create($uri, $method = 'GET', $parameters = array(), $cookies = array(), $files = array(), $server = array())
+    static public function create($uri, $method = 'GET', $parameters = array(), $cookies = array(), $files = array(), $server = array(), $content = null)
     {
         $defaults = array(
             'SERVER_NAME'          => 'localhost',
@@ -194,7 +207,7 @@ class Request
             'QUERY_STRING'         => $queryString,
         ));
 
-        return new self($query, $request, array(), $cookies, $files, $server);
+        return new static($query, $request, array(), $cookies, $files, $server, $content);
     }
 
     /**
@@ -210,14 +223,34 @@ class Request
     public function duplicate(array $query = null, array $request = null, array $attributes = null, array $cookies = null, array $files = null, array $server = null)
     {
         $dup = clone $this;
-        $dup->initialize(
-            null !== $query ? $query : $this->query->all(),
-            null !== $request ? $request : $this->request->all(),
-            null !== $attributes ? $attributes : $this->attributes->all(),
-            null !== $cookies ? $cookies : $this->cookies->all(),
-            null !== $files ? $files : $this->files->all(),
-            null !== $server ? $server : $this->server->all()
-        );
+        if ($query !== null) {
+          $dup->query = new ParameterBag($query);
+        }
+        if ($request !== null) {
+          $dup->request = new ParameterBag($request);
+        }
+        if ($attributes !== null) {
+          $dup->attributes = new ParameterBag($attributes);
+        }
+        if ($cookies !== null) {
+          $dup->cookies = new ParameterBag($cookies);
+        }
+        if ($files !== null) {
+          $dup->files = new FileBag($files);
+        }
+        if ($server !== null) {
+          $dup->server = new ServerBag($server);
+          $dup->headers = new HeaderBag($dup->server->getHeaders());
+        }
+        $this->languages = null;
+        $this->charsets = null;
+        $this->acceptableContentTypes = null;
+        $this->pathInfo = null;
+        $this->requestUri = null;
+        $this->baseUrl = null;
+        $this->basePath = null;
+        $this->method = null;
+        $this->format = null;
 
         return $dup;
     }
@@ -501,7 +534,11 @@ class Request
 
             $host = trim($elements[count($elements) - 1]);
         } else {
-            $host = $this->headers->get('HOST', $this->server->get('SERVER_NAME', $this->server->get('SERVER_ADDR', '')));
+            if (!$host = $this->headers->get('HOST')) {
+                if (!$host = $this->server->get('SERVER_NAME')) {
+                    $host = $this->server->get('SERVER_ADDR', '');
+                }
+            }
         }
 
         // Remove port number from host
@@ -619,7 +656,7 @@ class Request
     /**
      * Returns the request body content.
      *
-     * @param  bool $asResource If true, a resource will be returned
+     * @param  Boolean $asResource If true, a resource will be returned
      *
      * @return string|resource The request body content or a resource to read the body stream.
      */
@@ -749,7 +786,7 @@ class Request
      * It works if your JavaScript library set an X-Requested-With HTTP header.
      * It is known to work with Prototype, Mootools, jQuery.
      *
-     * @return bool true if the request is an XMLHttpRequest, false otherwise
+     * @return Boolean true if the request is an XMLHttpRequest, false otherwise
      */
     public function isXmlHttpRequest()
     {
@@ -930,112 +967,16 @@ class Request
         return (string) $pathInfo;
     }
 
-    /**
-     * Converts uploaded files to UploadedFile instances.
-     *
-     * @param  array $files A (multi-dimensional) array of uploaded file information
-     *
-     * @return array A (multi-dimensional) array of UploadedFile instances
-     */
-    protected function convertFileInformation(array $files)
-    {
-        $fixedFiles = array();
-
-        foreach ($files as $key => $data) {
-            $fixedFiles[$key] = $this->fixPhpFilesArray($data);
-        }
-
-        $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
-        foreach ($fixedFiles as $key => $data) {
-            if (is_array($data)) {
-                $keys = array_keys($data);
-                sort($keys);
-
-                if ($keys == $fileKeys) {
-                    $data['error'] = (int) $data['error'];
-                }
-
-                if ($keys != $fileKeys) {
-                    $fixedFiles[$key] = $this->convertFileInformation($data);
-                } else if ($data['error'] === UPLOAD_ERR_NO_FILE) {
-                    $fixedFiles[$key] = null;
-                } else {
-                    $fixedFiles[$key] = new UploadedFile($data['tmp_name'], $data['name'], $data['type'], $data['size'], $data['error']);
-                }
-            }
-        }
-
-        return $fixedFiles;
-    }
-
-    /**
-     * Fixes a malformed PHP $_FILES array.
-     *
-     * PHP has a bug that the format of the $_FILES array differs, depending on
-     * whether the uploaded file fields had normal field names or array-like
-     * field names ("normal" vs. "parent[child]").
-     *
-     * This method fixes the array to look like the "normal" $_FILES array.
-     *
-     * It's safe to pass an already converted array, in which case this method
-     * just returns the original array unmodified.
-     *
-     * @param  array $data
-     * @return array
-     */
-    protected function fixPhpFilesArray($data)
-    {
-        if (!is_array($data)) {
-            return $data;
-        }
-
-        $fileKeys = array('error', 'name', 'size', 'tmp_name', 'type');
-        $keys = array_keys($data);
-        sort($keys);
-
-        if ($fileKeys != $keys || !isset($data['name']) || !is_array($data['name'])) {
-            return $data;
-        }
-
-        $files = $data;
-        foreach ($fileKeys as $k) {
-            unset($files[$k]);
-        }
-        foreach (array_keys($data['name']) as $key) {
-            $files[$key] = $this->fixPhpFilesArray(array(
-                'error'    => $data['error'][$key],
-                'name'     => $data['name'][$key],
-                'type'     => $data['type'][$key],
-                'tmp_name' => $data['tmp_name'][$key],
-                'size'     => $data['size'][$key],
-            ));
-        }
-
-        return $files;
-    }
-
-    protected function initializeHeaders()
-    {
-        $headers = array();
-        foreach ($this->server->all() as $key => $value) {
-            if ('http_' === strtolower(substr($key, 0, 5))) {
-                $headers[substr($key, 5)] = $value;
-            }
-        }
-
-        return $headers;
-    }
-
     static protected function initializeFormats()
     {
         static::$formats = array(
-            'txt'  => 'text/plain',
+            'txt'  => array('text/plain'),
             'js'   => array('application/javascript', 'application/x-javascript', 'text/javascript'),
-            'css'  => 'text/css',
+            'css'  => array('text/css'),
             'json' => array('application/json', 'application/x-json'),
             'xml'  => array('text/xml', 'application/xml', 'application/x-xml'),
-            'rdf'  => 'application/rdf+xml',
-            'atom' => 'application/atom+xml',
+            'rdf'  => array('application/rdf+xml'),
+            'atom' => array('application/atom+xml'),
         );
     }
 }

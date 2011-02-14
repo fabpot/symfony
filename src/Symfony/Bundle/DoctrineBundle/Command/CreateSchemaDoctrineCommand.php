@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\DoctrineBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -8,15 +17,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\Output;
 use Doctrine\ORM\Tools\Console\Command\SchemaTool\CreateCommand;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Command to create the database schema for a set of classes based on their mappings.
@@ -36,11 +36,11 @@ class CreateSchemaDoctrineCommand extends CreateCommand
             ->setHelp(<<<EOT
 The <info>doctrine:schema:create</info> command creates the default entity managers schema:
 
-  <info>./symfony doctrine:schema:create</info>
+  <info>./app/console doctrine:schema:create</info>
 
 You can also optionally specify the name of a entity manager to create the schema for:
 
-  <info>./symfony doctrine:schema:create --em=default</info>
+  <info>./app/console doctrine:schema:create --em=default</info>
 EOT
         );
     }

@@ -1,21 +1,22 @@
 <?php
 
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\FrameworkBundle\Console;
 
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\Kernel;
-
-/*
- * This file is part of the Symfony framework.
- *
- * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
- *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
- */
 
 /**
  * Application.
@@ -29,17 +30,17 @@ class Application extends BaseApplication
     /**
      * Constructor.
      */
-    public function __construct(Kernel $kernel)
+    public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
 
-        parent::__construct('Symfony', Kernel::VERSION.' - '.$kernel->getName());
+        parent::__construct('Symfony', Kernel::VERSION.' - '.$kernel->getName().'/'.$kernel->getEnvironment().($kernel->isDebug() ? '/debug' : ''));
 
         $this->definition->addOption(new InputOption('--shell', '-s', InputOption::VALUE_NONE, 'Launch the shell.'));
+        $this->definition->addOption(new InputOption('--env', '-e', InputOption::VALUE_REQUIRED, 'The Environment name.', 'dev'));
+        $this->definition->addOption(new InputOption('--debug', '-d', InputOption::VALUE_NONE, 'Whether to run in debug mode.'));
 
-        if (!$this->kernel->isBooted()) {
-            $this->kernel->boot();
-        }
+        $this->kernel->boot();
 
         $this->registerCommands();
     }
@@ -47,7 +48,7 @@ class Application extends BaseApplication
     /**
      * Gets the Kernel associated with this Console.
      *
-     * @return Kernel A Kernel instance
+     * @return KernelInterface A KernelInterface instance
      */
     public function getKernel()
     {

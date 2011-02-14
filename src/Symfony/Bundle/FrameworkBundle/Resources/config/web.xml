@@ -7,12 +7,10 @@
     <parameters>
         <parameter key="request_listener.class">Symfony\Bundle\FrameworkBundle\RequestListener</parameter>
         <parameter key="controller_resolver.class">Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver</parameter>
-        <parameter key="controller_name_converter.class">Symfony\Bundle\FrameworkBundle\Controller\ControllerNameConverter</parameter>
+        <parameter key="controller_name_converter.class">Symfony\Bundle\FrameworkBundle\Controller\ControllerNameParser</parameter>
         <parameter key="response_listener.class">Symfony\Component\HttpKernel\ResponseListener</parameter>
         <parameter key="exception_listener.class">Symfony\Component\HttpKernel\Debug\ExceptionListener</parameter>
         <parameter key="exception_listener.controller">Symfony\Bundle\FrameworkBundle\Controller\ExceptionController::showAction</parameter>
-        <parameter key="esi.class">Symfony\Component\HttpKernel\Cache\Esi</parameter>
-        <parameter key="esi_listener.class">Symfony\Component\HttpKernel\Cache\EsiListener</parameter>
     </parameters>
 
     <services>
@@ -27,26 +25,19 @@
             <argument type="service" id="logger" on-invalid="ignore" />
         </service>
 
-        <service id="request_listener" class="%request_listener.class%" public="false">
-            <tag name="kernel.listener" />
+        <service id="request_listener" class="%request_listener.class%">
+            <tag name="kernel.listener" event="core.request" method="handle" />
             <argument type="service" id="service_container" />
             <argument type="service" id="router" />
             <argument type="service" id="logger" on-invalid="ignore" />
         </service>
 
-        <service id="esi" class="%esi.class%" public="false" />
-
-        <service id="esi_listener" class="%esi_listener.class%" public="false">
-          <tag name="kernel.listener" />
-          <argument type="service" id="esi" on-invalid="ignore" />
+        <service id="response_listener" class="%response_listener.class%">
+            <tag name="kernel.listener" event="core.response" method="filter" />
         </service>
 
-        <service id="response_listener" class="%response_listener.class%" public="false">
-            <tag name="kernel.listener" />
-        </service>
-
-        <service id="exception_listener" class="%exception_listener.class%" public="false">
-            <tag name="kernel.listener" priority="-128" />
+        <service id="exception_listener" class="%exception_listener.class%">
+            <tag name="kernel.listener" event="core.exception" method="handle" priority="-128" />
             <argument>%exception_listener.controller%</argument>
             <argument type="service" id="logger" on-invalid="null" />
         </service>

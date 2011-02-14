@@ -2,6 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
+ *
  * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -17,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use Symfony\Component\DependencyInjection\Resource\FileResource;
+use Symfony\Component\Config\Resource\FileResource;
 
 require_once __DIR__.'/Fixtures/includes/classes.php';
 require_once __DIR__.'/Fixtures/includes/ProjectExtension.php';
@@ -108,10 +109,10 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
             @$builder->get('baz');
             $this->fail('->get() throws a LogicException if the service has a circular reference to itself');
         } catch (\LogicException $e) {
-            $this->assertEquals('The service "baz" has a circular reference to itself.', $e->getMessage(), '->get() throws a LogicException if the service has a circular reference to itself');
+            $this->assertEquals('Circular reference detected for service "baz" (services currently loading: baz).', $e->getMessage(), '->get() throws a LogicException if the service has a circular reference to itself');
         }
 
-        $builder->register('foobar', 'stdClass')->setShared(true);
+        $builder->register('foobar', 'stdClass')->setScope('container');
         $this->assertTrue($builder->get('bar') === $builder->get('bar'), '->get() always returns the same instance if the service is shared');
     }
 
@@ -246,7 +247,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $builder = new ContainerBuilder();
         $builder->register('bar', 'stdClass');
-        $builder->register('foo1', 'FooClass')->setFactoryMethod('getInstance')->addArgument(array('foo' => '%value%', '%value%' => 'foo', new Reference('bar')));
+        $builder->register('foo1', 'FooClass')->setFactoryClass('FooClass')->setFactoryMethod('getInstance')->addArgument(array('foo' => '%value%', '%value%' => 'foo', new Reference('bar')));
         $builder->setParameter('value', 'bar');
         $this->assertTrue($builder->get('foo1')->called, '->createService() calls the factory method to create the service instance');
         $this->assertEquals(array('foo' => 'bar', 'bar' => 'foo', $builder->get('bar')), $builder->get('foo1')->arguments, '->createService() passes the arguments to the factory method');
@@ -327,14 +328,14 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $config = new ContainerBuilder(new ParameterBag(array('foo' => '%bar%')));
         $container->merge($config);
 ////// FIXME
-        $container->freeze();
+        $container->compile();
         $this->assertEquals(array('bar' => 'foo', 'foo' => 'foo'), $container->getParameterBag()->all(), '->merge() evaluates the values of the parameters towards already defined ones');
 
         $container = new ContainerBuilder(new ParameterBag(array('bar' => 'foo')));
         $config = new ContainerBuilder(new ParameterBag(array('foo' => '%bar%', 'baz' => '%foo%')));
         $container->merge($config);
 ////// FIXME
-        $container->freeze();
+        $container->compile();
         $this->assertEquals(array('bar' => 'foo', 'foo' => 'foo', 'baz' => 'foo'), $container->getParameterBag()->all(), '->merge() evaluates the values of the parameters towards already defined ones');
 
         $container = new ContainerBuilder();
@@ -364,7 +365,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     public function testMergeLogicException()
     {
         $container = new ContainerBuilder();
-        $container->freeze();
+        $container->compile();
         $container->merge(new ContainerBuilder());
     }
 
@@ -410,7 +411,13 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
         $container = new ContainerBuilder();
         $container->addResource($a = new FileResource(__DIR__.'/Fixtures/xml/services1.xml'));
         $container->addResource($b = new FileResource(__DIR__.'/Fixtures/xml/services2.xml'));
-        $this->assertEquals(array($a, $b), $container->getResources(), '->getResources() returns an array of resources read for the current configuration');
+        $resources = array();
+        foreach ($container->getResources() as $resource) {
+            if (false === strpos($resource, '.php')) {
+                $resources[] = $resource;
+            }
+        }
+        $this->assertEquals(array($a, $b), $resources, '->getResources() returns an array of resources read for the current configuration');
     }
 
     /**
@@ -458,7 +465,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     public function testThrowsExceptionWhenSetServiceOnAFrozenContainer()
     {
         $container = new ContainerBuilder();
-        $container->freeze();
+        $container->compile();
         $container->set('a', new \stdClass());
     }
 
@@ -468,7 +475,7 @@ class ContainerBuilderTest extends \PHPUnit_Framework_TestCase
     public function testThrowsExceptionWhenSetDefinitionOnAFrozenContainer()
     {
         $container = new ContainerBuilder();
-        $container->freeze();
+        $container->compile();
         $container->setDefinition('a', new Definition());
     }
 
