@@ -14,6 +14,7 @@ namespace Symfony\Bundle\TwigBundle\Tests\Loader;
 use Symfony\Bundle\TwigBundle\Tests\TestCase;
 use Symfony\Bundle\TwigBundle\Loader\FilesystemLoader;
 use Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateLocatorInterface;
+use Symfony\Bundle\FrameworkBundle\Templating\Template;
 use Symfony\Component\Templating\TemplateNameParserInterface;
 use InvalidArgumentException;
 
@@ -33,6 +34,12 @@ class FilesystemLoaderTest extends TestCase
         $this->locator = $this->getMock('Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateLocatorInterface');
         $this->parser = $this->getMock('Symfony\Component\Templating\TemplateNameParserInterface');
         $this->loader = new FilesystemLoader($this->locator, $this->parser);
+
+        $this->parser->expects($this->once())
+                ->method('parse')
+                ->with('name.engine.format')
+                ->will($this->returnValue(new Template('', '', 'name', 'engine', 'format')))
+        ;
     }
 
     public function testTwigErrorIfLocatorThrowsInvalid()
@@ -43,7 +50,7 @@ class FilesystemLoaderTest extends TestCase
                       ->method('locate')
                       ->will($this->throwException($invalidException));
 
-        $this->loader->getCacheKey('NonExistent');
+        $this->loader->getCacheKey('name.engine.format');
     }
 
     public function testTwigErrorIfLocatorReturnsFalse()
@@ -53,6 +60,6 @@ class FilesystemLoaderTest extends TestCase
                       ->method('locate')
                       ->will($this->returnValue(false));
 
-        $this->loader->getCacheKey('NonExistent');
+        $this->loader->getCacheKey('name.engine.format');
     }
 }

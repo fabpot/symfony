@@ -134,7 +134,7 @@ class TwigEngine implements EngineInterface
         try {
             return $this->environment->loadTemplate($name);
         } catch (\Twig_Error_Loader $e) {
-            throw new \InvalidArgumentExecption($e->getMessage());
+            throw new \InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
         
     }
