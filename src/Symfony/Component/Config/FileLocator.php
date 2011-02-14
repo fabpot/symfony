@@ -34,14 +34,7 @@ class FileLocator implements FileLocatorInterface
     }
 
     /**
-     * Returns a full path for a given file name.
-     *
-     * @param mixed  $name        The file name to locate
-     * @param string $currentPath The current path
-     *
-     * @return string The full path for the file
-     *
-     * @throws \InvalidArgumentException When file is not found
+     * {@inheritDoc}
      */
     public function locate($name, $currentPath = null, $first = true)
     {
@@ -54,13 +47,19 @@ class FileLocator implements FileLocatorInterface
         }
 
         $filepaths = array();
-        if (null !== $currentPath && file_exists($currentPath.DIRECTORY_SEPARATOR.$name)) {
-            $filepaths[] = $currentPath.DIRECTORY_SEPARATOR.$name;
+        if (null !== $currentPath && file_exists($file = $currentPath.DIRECTORY_SEPARATOR.$name)) {
+            if (true === $first) {
+                return $file;
+            }
+            $filepaths[] = $file;
         }
 
         foreach ($this->paths as $path) {
-            if (file_exists($path.DIRECTORY_SEPARATOR.$name)) {
-                $filepaths[] = $path.DIRECTORY_SEPARATOR.$name;
+            if (file_exists($file = $path.DIRECTORY_SEPARATOR.$name)) {
+                if (true === $first) {
+                    return $file;
+                }
+                $filepaths[] = $file;
             }
         }
 
@@ -68,7 +67,7 @@ class FileLocator implements FileLocatorInterface
             throw new \InvalidArgumentException(sprintf('The file "%s" does not exist (in: %s%s).', $name, null !== $currentPath ? $currentPath.', ' : '', implode(', ', $this->paths)));
         }
 
-        return true === $first ? $filepaths[0] : $filepaths;
+        return $filepaths;
     }
 
     /**

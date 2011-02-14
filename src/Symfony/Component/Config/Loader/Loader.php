@@ -21,9 +21,7 @@ abstract class Loader implements LoaderInterface
     protected $resolver;
 
     /**
-     * Gets the loader resolver.
-     *
-     * @return LoaderResolver A LoaderResolver instance
+     * {@inheritDoc}
      */
     public function getResolver()
     {
@@ -31,9 +29,7 @@ abstract class Loader implements LoaderInterface
     }
 
     /**
-     * Sets the loader resolver.
-     *
-     * @param LoaderResolver $resolver A LoaderResolver instance
+     * {@inheritDoc}
      */
     public function setResolver(LoaderResolver $resolver)
     {
@@ -63,12 +59,12 @@ abstract class Loader implements LoaderInterface
      */
     public function resolve($resource, $type = null)
     {
-        $loader = false;
+        
         if ($this->supports($resource, $type)) {
-            $loader = $this;
-        } elseif (null !== $this->resolver) {
-            $loader = $this->resolver->resolve($resource, $type);
+            return $this;
         }
+
+        $loader = null === $this->resolver ? false : $this->resolver->resolve($resource, $type);
 
         if (false === $loader) {
             throw new \InvalidArgumentException(sprintf('Unable to load the "%s" resource.', is_string($resource) ? $resource : (is_object($resource) ? get_class($resource) : 'RESOURCE')));
@@ -76,4 +72,5 @@ abstract class Loader implements LoaderInterface
 
         return $loader;
     }
+    
 }

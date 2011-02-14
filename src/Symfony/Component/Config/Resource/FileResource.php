@@ -41,9 +41,7 @@ class FileResource implements ResourceInterface
     }
 
     /**
-     * Returns the resource tied to this Resource.
-     *
-     * @return mixed The resource
+     * {@inheritDoc}
      */
     public function getResource()
     {
@@ -51,11 +49,7 @@ class FileResource implements ResourceInterface
     }
 
     /**
-     * Returns true if the resource has not been updated since the given timestamp.
-     *
-     * @param timestamp $timestamp The last time the resource was loaded
-     *
-     * @return Boolean true if the resource has not been updated, false otherwise
+     * {@inheritDoc}
      */
     public function isFresh($timestamp)
     {
