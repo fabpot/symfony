@@ -1,6 +1,6 @@
 <?php
 
-namespace Symfony\Tests\Component\Form\Fixtures;
+namespace Symfony\Bundle\DoctrineBundle\Tests\Fixtures;
 
 /** @Entity */
 class SingleIdentEntity
