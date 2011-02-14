@@ -21,7 +21,9 @@ abstract class Loader implements LoaderInterface
     protected $resolver;
 
     /**
-     * {@inheritDoc}
+     * Gets the loader resolver.
+     *
+     * @return LoaderResolver A LoaderResolver instance
      */
     public function getResolver()
     {
@@ -29,7 +31,9 @@ abstract class Loader implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the loader resolver.
+     *
+     * @param LoaderResolver $resolver A LoaderResolver instance
      */
     public function setResolver(LoaderResolver $resolver)
     {
