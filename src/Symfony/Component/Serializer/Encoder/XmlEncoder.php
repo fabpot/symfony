@@ -91,8 +91,7 @@ class XmlEncoder extends AbstractEncoder
             if ($subnode->count()) {
                 $value = $this->parseXml($subnode);
                 if ($subnode->attributes()) {
-                    foreach($subnode->attributes() as $attrkey => $attr)
-                    {
+                    foreach ($subnode->attributes() as $attrkey => $attr) {
                         $value['@'.$attrkey] = (string) $attr;
                     }
                 }
@@ -108,9 +107,8 @@ class XmlEncoder extends AbstractEncoder
                     $data[] = $tmp;
                     $data[] = $value;
                 }
-            } elseif(key_exists($key, $data)) {
-
-                if(false === is_array($data[$key])) {
+            } elseif (key_exists($key, $data)) {
+                if (false === is_array($data[$key])) {
                     $data[$key] = array($data[$key]);
                 }
                 $data[$key][] = $value;
@@ -223,7 +221,7 @@ class XmlEncoder extends AbstractEncoder
             return $this->appendCData($node, $val);
         } elseif (is_bool($val)) {
             return $this->appendText($node, (int) $val);
-        } elseif ($val instanceof \DOMNode){
+        } elseif ($val instanceof \DOMNode) {
             $child = $this->dom->importNode($val, true);
             $node->appendChild($child);
         }
