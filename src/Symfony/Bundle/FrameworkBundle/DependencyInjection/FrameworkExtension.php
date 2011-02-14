@@ -238,6 +238,10 @@ class FrameworkExtension extends Extension
             $container->setAlias('router', 'router.cached');
         }
 
+        if (is_array($config['defaults'])) {
+            $container->getDefinition('router')->setArgument(4, $config['defaults']);
+        }
+
         $this->addClassesToCompile(array(
             'Symfony\\Component\\Routing\\RouterInterface',
             'Symfony\\Component\\Routing\\Matcher\\UrlMatcherInterface',

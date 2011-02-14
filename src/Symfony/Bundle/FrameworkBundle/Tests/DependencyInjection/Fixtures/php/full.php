@@ -16,6 +16,9 @@ $container->loadFromExtension('app', 'config', array(
         'cache_warmer' => true,
         'resource'     => '%kernel.root_dir%/config/routing.xml',
         'type'         => 'xml',
+        'defaults'     => array(
+            '_locale' => 'en',
+        ),
     ),
     'session' => array(
         'auto_start'     => true,

@@ -11,6 +11,8 @@ app.config:
         cache_warmer: true
         resource:     %kernel.root_dir%/config/routing.xml
         type:         xml
+        defaults:
+            _locale: en
     session:
         auto_start:     true
         class:          Session

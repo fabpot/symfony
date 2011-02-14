@@ -96,6 +96,16 @@ class Configuration
                 ->scalarNode('cache_warmer')->end()
                 ->scalarNode('resource')->isRequired()->end()
                 ->scalarNode('type')->end()
+                ->fixXmlConfig('default')
+                ->arrayNode('defaults')
+                    ->useAttributeAsKey('key')
+                    ->prototype('scalar')
+                        ->beforeNormalization()
+                            ->ifTrue(function($v) { return is_array($v) && isset($v['value']); })
+                            ->then(function($v) { return $v['value']; })
+                        ->end()
+                    ->end()
+                ->end()
                 ->end()
         ;
     }
