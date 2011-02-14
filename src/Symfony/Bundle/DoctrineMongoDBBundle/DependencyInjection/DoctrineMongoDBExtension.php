@@ -163,6 +163,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
 
         $odmDmArgs = array(
             new Reference(sprintf('doctrine.odm.mongodb.%s_connection', isset($documentManager['connection']) ? $documentManager['connection'] : $documentManager['name'])),
+            $defaultDatabase,
             new Reference(sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name'])),
             new Reference($eventManagerId),
         );
