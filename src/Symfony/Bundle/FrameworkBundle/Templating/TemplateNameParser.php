@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * TemplateNameParser converts template names from the short notation
- * "bundle:section:template.format.engine" to a TemplateReferenceInterface
+ * "bundle:section:template.format.engine" to TemplateReferenceInterface
  * instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
