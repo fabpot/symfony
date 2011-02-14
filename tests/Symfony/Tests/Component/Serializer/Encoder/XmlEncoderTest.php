@@ -53,28 +53,28 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $this->encoder->encode($obj, 'xml'));
     }
 
-	public function testAttributes()
-	{
-		$obj = new ScalarDummy;
+    public function testAttributes()
+    {
+        $obj = new ScalarDummy;
         $obj->xmlFoo = array(
             'foo-bar' => array(
-				'@id' => 1,
-				'@name' => 'Bar'
-			),
-			'Foo' => array(
-				'Bar' => "Test",
-				'@Type' => 'test'
-			),
+                '@id' => 1,
+                '@name' => 'Bar'
+            ),
+            'Foo' => array(
+                'Bar' => "Test",
+                '@Type' => 'test'
+            ),
             'föo_bär' => '',
         );
-		$expected = '<?xml version="1.0"?>'."\n".
+        $expected = '<?xml version="1.0"?>'."\n".
             '<response>'.
             '<foo-bar id="1" name="Bar"/>'.
             '<Foo Type="test"><Bar><![CDATA[Test]]></Bar></Foo>'.
             '<föo_bär><![CDATA[]]></föo_bär>'.
             '</response>'."\n";
-		$this->assertEquals($expected, $this->encoder->encode($obj, 'xml'));
-	}
+        $this->assertEquals($expected, $this->encoder->encode($obj, 'xml'));
+    }
 
     public function testElementNameValid()
     {
