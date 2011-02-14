@@ -65,7 +65,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.format.engine").', $name));
         }
 
-        $template = $this->createTemplate($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
+        $template = new Template($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
 
         if ($template->get('bundle')) {
             try {
@@ -93,18 +93,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             return false;
         }
 
-        return $this->createTemplate('', implode('/', $parts), $elements[0], $elements[1], $elements[2]);
+        return new Template('', implode('/', $parts), $elements[0], $elements[1], $elements[2]);
     }
 
-    protected function createTemplate($bundle, $controller, $name, $format, $engine)
-    {
-        $template = $this->kernel->getContainer()->get('templating.template');
-        $template->set('bundle', $bundle);
-        $template->set('controller', $controller);
-        $template->set('name', $name);
-        $template->set('format', $format);
-        $template->set('engine', $engine);
-
-        return $template;
-    }
 }

@@ -18,7 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Templating\Template;
 class TemplateTest extends TestCase
 {
     /**
-     * @dataProvider getPathsProvider
+     * @dataProvider getTemplateToPathProvider
      */
     public function testGetPathForTemplatesInABundle($template, $path)
     {
@@ -28,7 +28,7 @@ class TemplateTest extends TestCase
     }
 
     /**
-     * @dataProvider getPathsProvider
+     * @dataProvider getTemplateToPathProvider
      */
     public function testGetPathForTemplatesOutOfABundle($template, $path)
     {
@@ -37,7 +37,7 @@ class TemplateTest extends TestCase
         }        
     }
 
-    public function getPathsProvider()
+    public function getTemplateToPathProvider()
     {
         return array(
             array(new Template('FooBundle', 'Post', 'index', 'html', 'php'), '@FooBundle/Resources/views/Post/index.html.php'),

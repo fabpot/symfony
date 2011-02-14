@@ -13,7 +13,6 @@
         <parameter key="templating.loader.filesystem.class">Symfony\Bundle\FrameworkBundle\Templating\Loader\FilesystemLoader</parameter>
         <parameter key="templating.loader.cache.class">Symfony\Component\Templating\Loader\CacheLoader</parameter>
         <parameter key="templating.loader.chain.class">Symfony\Component\Templating\Loader\ChainLoader</parameter>
-        <parameter key="templating.template.class">Symfony\Bundle\FrameworkBundle\Templating\Template</parameter>
         <parameter key="templating.assets.version">null</parameter>
         <parameter key="templating.assets.base_urls" type="collection"></parameter>
         <parameter key="debug.file_link_format">null</parameter>
@@ -58,7 +57,5 @@
         </service>
 
         <service id="templating.loader" alias="templating.loader.filesystem" />
-
-        <service id="templating.template" class="%templating.template.class%" scope="prototype" />
     </services>
 </container>

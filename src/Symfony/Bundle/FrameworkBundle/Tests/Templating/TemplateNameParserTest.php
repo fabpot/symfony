@@ -12,6 +12,8 @@
 namespace Symfony\Bundle\FrameworkBundle\Tests\Templating;
 
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser;
+use Symfony\Bundle\FrameworkBundle\Tests\Kernel;
 use Symfony\Bundle\FrameworkBundle\Templating\Template;
 
 class TemplateNameParserTest extends TestCase
@@ -20,13 +22,10 @@ class TemplateNameParserTest extends TestCase
 
     protected function  setUp()
     {
-        $this->parser = $this
-            ->getMockBuilder('Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser')
-            ->setMethods(array('createTemplate'))
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
+        $kernel = new Kernel();
+        $kernel->boot();
 
+        $this->parser = new TemplateNameParser($kernel);
     }
 
     protected function tearDown()
@@ -35,50 +34,39 @@ class TemplateNameParserTest extends TestCase
     }
 
     /**
-     * @dataProvider getParseTests
+     * @dataProvider getLogicalNameToTemplateProvider
      */
-    public function testParse($name, $params)
+    public function testParse($name, $ref)
     {
-        $this->parser
-            ->expects($this->once())
-            ->method('createTemplate')
-            ->with($params[0], $params[1], $params[2], $params[3], $params[4])
-            ->will($this->returnValue(new Template()))
-        ;
+        $template = $this->parser->parse($name);
 
-        $this->parser->parse($name);
+        $this->assertEquals($template->getSignature(), $ref->getSignature());
+                
     }
 
-    public function getParseTests()
+    public function getLogicalNameToTemplateProvider()
     {
         return array(
-            array('FooBundle:Post:index.html.php', array('FooBundle', 'Post', 'index', 'html', 'php')),
-            array('FooBundle:Post:index.html.twig', array('FooBundle', 'Post', 'index', 'html', 'twig')),
-            array('FooBundle:Post:index.xml.php', array('FooBundle', 'Post', 'index', 'xml', 'php')),
-            array('SensioFooBundle:Post:index.html.php', array('SensioFooBundle', 'Post', 'index', 'html', 'php')),
-            array('SensioCmsFooBundle:Post:index.html.php', array('SensioCmsFooBundle', 'Post', 'index', 'html', 'php')),
-            array(':Post:index.html.php', array('', 'Post', 'index', 'html', 'php')),
-            array('::index.html.php', array('', '', 'index', 'html', 'php')),
+            array('FooBundle:Post:index.html.php', new Template('FooBundle', 'Post', 'index', 'html', 'php')),
+            array('FooBundle:Post:index.html.twig', new Template('FooBundle', 'Post', 'index', 'html', 'twig')),
+            array('FooBundle:Post:index.xml.php', new Template('FooBundle', 'Post', 'index', 'xml', 'php')),
+            array('SensioFooBundle:Post:index.html.php', new Template('SensioFooBundle', 'Post', 'index', 'html', 'php')),
+            array('SensioCmsFooBundle:Post:index.html.php', new Template('SensioCmsFooBundle', 'Post', 'index', 'html', 'php')),
+            array(':Post:index.html.php', new Template('', 'Post', 'index', 'html', 'php')),
+            array('::index.html.php', new Template('', '', 'index', 'html', 'php')),
         );
     }
 
     /**
-     * @dataProvider      getParseInvalidTests
+     * @dataProvider      getInvalidLogicalNameProvider
      * @expectedException \InvalidArgumentException
      */
-    public function testParseInvalid($name)
+    public function testParseInvalidName($name)
     {
-        $this->parser
-            ->expects($this->any())
-            ->method('createTemplate')
-            ->will($this->returnValue(new Template()))
-        ;
-
         $this->parser->parse($name);
-
     }
 
-    public function getParseInvalidTests()
+    public function getInvalidLogicalNameProvider()
     {
         return array(
             array('BarBundle:Post:index.html.php'),
@@ -86,6 +74,31 @@ class TemplateNameParserTest extends TestCase
             array('FooBundle:Post'),
             array('FooBundle:Post:foo:bar'),
             array('FooBundle:Post:index.foo.bar.foobar'),
+        );
+    }
+
+    /**
+     * @dataProvider getFilenameToTemplateProvider
+     */
+    public function testParseFromFilename($file, $ref)
+    {
+        $template = $this->parser->parseFromFilename($file);
+        
+        if ($ref === false) {
+            $this->assertFalse($template);
+        } else {
+            $this->assertEquals($template->getSignature(), $ref->getSignature());
+        }
+    }
+
+    public function getFilenameToTemplateProvider()
+    {
+        return array(
+            array('/path/to/section/name.format.engine', new Template('', '/path/to/section', 'name', 'format', 'engine')),
+            array('\\path\\to\\section\\name.format.engine', new Template('', '/path/to/section', 'name', 'format', 'engine')),
+            array('name.format.engine', new Template('', '', 'name', 'format', 'engine')),
+            array('name.format', false),
+            array('name', false),
         );
     }
 
