@@ -51,6 +51,8 @@ class Template implements TemplateInterface
         } else {
             throw new \InvalidArgumentException(sprintf('The template does not support the "%s" parameter.', $name));
         }
+
+        return $this;
     }
 
     /**

@@ -122,7 +122,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
      *
      * @param mixed $name A template name or a TemplateInterface instance
      *
-     * @return Boolean True if this class supports the given resource, false otherwise
+     * @return Boolean true if this class supports the given resource, false otherwise
      */
     public function supports($name)
     {

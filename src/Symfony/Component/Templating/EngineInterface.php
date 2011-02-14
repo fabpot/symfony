@@ -56,7 +56,7 @@ interface EngineInterface
      *
      * @param mixed $name A template name or a TemplateInterface instance
      *
-     * @return Boolean True if this class supports the given template, false otherwise
+     * @return Boolean true if this class supports the given template, false otherwise
      */
     function supports($name);
 }
