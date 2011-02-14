@@ -36,7 +36,7 @@ class DelegatingEngine implements EngineInterface
     /**
      * Renders a template.
      *
-     * @param mixed $name       A template name or a TemplateInterface instance
+     * @param mixed $name       A template name or a TemplateReferenceInterface instance
      * @param array $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
@@ -52,7 +52,7 @@ class DelegatingEngine implements EngineInterface
     /**
      * Returns true if the template exists.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if the template exists, false otherwise
      */
@@ -74,7 +74,7 @@ class DelegatingEngine implements EngineInterface
     /**
      * Returns true if this class is able to render the given template.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if this class supports the given template, false otherwise
      */
@@ -92,7 +92,7 @@ class DelegatingEngine implements EngineInterface
     /**
      * Get an engine able to render the given template.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return EngineInterface The engine
      *

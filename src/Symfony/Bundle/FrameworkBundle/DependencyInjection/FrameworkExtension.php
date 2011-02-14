@@ -347,9 +347,9 @@ class FrameworkExtension extends Extension
         $this->addClassesToCompile(array(
             'Symfony\\Bundle\\FrameworkBundle\\Templating\\EngineInterface',
             'Symfony\\Component\\Templating\\EngineInterface',
-            'Symfony\\Component\\Templating\\TemplateInterface',
-            'Symfony\\Component\\Templating\\Template',
-            'Symfony\\Bundle\\FrameworkBundle\\Templating\\Template',
+            'Symfony\\Component\\Templating\\TemplateReferenceInterface',
+            'Symfony\\Component\\Templating\\TemplateReference',
+            'Symfony\\Bundle\\FrameworkBundle\\Templating\\TemplateReference',
             'Symfony\\Bundle\\FrameworkBundle\\Templating\\Loader\\TemplateLocatorInterface',
             $container->findDefinition('templating.locator')->getClass(),
         ));

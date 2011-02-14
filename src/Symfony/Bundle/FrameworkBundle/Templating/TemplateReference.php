@@ -11,14 +11,14 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Templating;
 
-use Symfony\Component\Templating\Template as BaseTemplate;
+use Symfony\Component\Templating\TemplateReference as BaseTemplateReference;
 
 /**
  * Internal representation of a template.
  *
  * @author Victor Berchet <victor@suumit.com>
  */
-class Template extends BaseTemplate
+class TemplateReference extends BaseTemplateReference
 {
     public function __construct($bundle = null, $controller = null, $name = null, $format = null, $engine = null)
     {

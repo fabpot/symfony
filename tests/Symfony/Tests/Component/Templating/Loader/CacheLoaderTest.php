@@ -17,8 +17,8 @@ use Symfony\Component\Templating\Loader\Loader;
 use Symfony\Component\Templating\Loader\CacheLoader;
 use Symfony\Component\Templating\Storage\StringStorage;
 use Symfony\Component\Templating\TemplateNameParser;
-use Symfony\Component\Templating\TemplateInterface;
-use Symfony\Component\Templating\Template;
+use Symfony\Component\Templating\TemplateReferenceInterface;
+use Symfony\Component\Templating\TemplateReference;
 
 class CacheLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -35,10 +35,10 @@ class CacheLoaderTest extends \PHPUnit_Framework_TestCase
         mkdir($dir, 0777, true);
         $loader = new ProjectTemplateLoader($varLoader = new ProjectTemplateLoaderVar(new TemplateNameParser()), $dir);
         $loader->setDebugger($debugger = new \ProjectTemplateDebugger());
-        $this->assertFalse($loader->load(new Template('foo', 'php')), '->load() returns false if the embed loader is not able to load the template');
-        $loader->load(new Template('index'));
+        $this->assertFalse($loader->load(new TemplateReference('foo', 'php')), '->load() returns false if the embed loader is not able to load the template');
+        $loader->load(new TemplateReference('index'));
         $this->assertTrue($debugger->hasMessage('Storing template'), '->load() logs a "Storing template" message if the template is found');
-        $loader->load(new Template('index'));
+        $loader->load(new TemplateReference('index'));
         $this->assertTrue($debugger->hasMessage('Fetching template'), '->load() logs a "Storing template" message if the template is fetched from cache');
     }
 }
@@ -68,7 +68,7 @@ class ProjectTemplateLoaderVar extends Loader
         return 'Hello {{ name }}';
     }
 
-    public function load(TemplateInterface $template)
+    public function load(TemplateReferenceInterface $template)
     {
         if (method_exists($this, $method = 'get'.ucfirst($template->get('name')).'Template')) {
             return new StringStorage($this->$method());
@@ -77,7 +77,7 @@ class ProjectTemplateLoaderVar extends Loader
         return false;
     }
 
-    public function isFresh(TemplateInterface $template, $time)
+    public function isFresh(TemplateReferenceInterface $template, $time)
     {
         return false;
     }

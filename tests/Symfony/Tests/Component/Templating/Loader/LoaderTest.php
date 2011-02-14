@@ -15,7 +15,7 @@ require_once __DIR__.'/../Fixtures/ProjectTemplateDebugger.php';
 
 use Symfony\Component\Templating\Loader\Loader;
 use Symfony\Component\Templating\Loader\TemplateNameParser;
-use Symfony\Component\Templating\TemplateInterface;
+use Symfony\Component\Templating\TemplateReferenceInterface;
 
 class LoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -29,7 +29,7 @@ class LoaderTest extends \PHPUnit_Framework_TestCase
 
 class ProjectTemplateLoader4 extends Loader
 {
-    public function load(TemplateInterface $template)
+    public function load(TemplateReferenceInterface $template)
     {
     }
 
@@ -38,7 +38,7 @@ class ProjectTemplateLoader4 extends Loader
         return $this->debugger;
     }
 
-    public function isFresh(TemplateInterface $template, $time)
+    public function isFresh(TemplateReferenceInterface $template, $time)
     {
         return false;
     }

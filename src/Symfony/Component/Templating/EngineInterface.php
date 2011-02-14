@@ -20,8 +20,8 @@ namespace Symfony\Component\Templating;
  * anywhere, like in a database).
  *
  * The methods should accept any name. If the name is not an instance of 
- * TemplateInterface, a TemplateNameParserInterface should be used to
- * convert the name to a TemplateInterface instance.
+ * TemplateReferenceInterface, a TemplateNameParserInterface should be used to
+ * convert the name to a TemplateReferenceInterface instance.
  *
  * Each template loader use the logical template name to look for
  * the template.
@@ -33,7 +33,7 @@ interface EngineInterface
     /**
      * Renders a template.
      *
-     * @param mixed $name       A template name or a TemplateInterface instance
+     * @param mixed $name       A template name or a TemplateReferenceInterface instance
      * @param array $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
@@ -45,7 +45,7 @@ interface EngineInterface
     /**
      * Returns true if the template exists.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if the template exists, false otherwise
      */
@@ -54,7 +54,7 @@ interface EngineInterface
     /**
      * Returns true if this class is able to render the given template.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if this class supports the given template, false otherwise
      */

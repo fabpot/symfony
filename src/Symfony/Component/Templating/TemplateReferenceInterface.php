@@ -16,7 +16,7 @@ namespace Symfony\Component\Templating;
  *
  * @author Victor Berchet <victor@suumit.com>
  */
-interface TemplateInterface
+interface TemplateReferenceInterface
 {
     /**
      * Gets the template parameters.
@@ -30,6 +30,8 @@ interface TemplateInterface
      *
      * @param string $name   The parameter name
      * @param string $value  The parameter value
+     *
+     * @return TemplateReferenceInterface The TemplateReferenceInterface instance
      *
      * @throws  \InvalidArgumentException if the parameter is not defined
      */

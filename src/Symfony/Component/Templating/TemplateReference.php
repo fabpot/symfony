@@ -16,7 +16,7 @@ namespace Symfony\Component\Templating;
  *
  * @author Victor Berchet <victor@suumit.com>
  */
-class Template implements TemplateInterface
+class TemplateReference implements TemplateReferenceInterface
 {
     protected $parameters;
 

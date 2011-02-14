@@ -12,12 +12,13 @@
 namespace Symfony\Bundle\FrameworkBundle\Templating;
 
 use Symfony\Component\Templating\TemplateNameParser as BaseTemplateNameParser;
-use Symfony\Component\Templating\TemplateInterface;
+use Symfony\Component\Templating\TemplateReferenceInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * TemplateNameParser converts template names from the short notation
- * "bundle:section:template.format.engine" to a TemplateInterface instances.
+ * "bundle:section:template.format.engine" to a TemplateReferenceInterface
+ * instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
@@ -42,7 +43,7 @@ class TemplateNameParser extends BaseTemplateNameParser
      */
     public function parse($name)
     {
-        if ($name instanceof TemplateInterface) {
+        if ($name instanceof TemplateReferenceInterface) {
             return $name;
         } else if (isset($this->cache[$name])) {
             return $this->cache[$name];
@@ -65,7 +66,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             throw new \InvalidArgumentException(sprintf('Template name "%s" is not valid (format is "bundle:section:template.format.engine").', $name));
         }
 
-        $template = new Template($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
+        $template = new TemplateReference($parts[0], $parts[1], $elements[0], $elements[1], $elements[2]);
 
         if ($template->get('bundle')) {
             try {
@@ -82,7 +83,7 @@ class TemplateNameParser extends BaseTemplateNameParser
      * Convert a filename to a template.
      *
      * @param string $file The filename
-     * @return TemplateInterface A template
+     * @return TemplateReferenceInterface A template
      */
     public function parseFromFilename($file)
     {
@@ -93,7 +94,7 @@ class TemplateNameParser extends BaseTemplateNameParser
             return false;
         }
 
-        return new Template('', implode('/', $parts), $elements[0], $elements[1], $elements[2]);
+        return new TemplateReference('', implode('/', $parts), $elements[0], $elements[1], $elements[2]);
     }
 
 }

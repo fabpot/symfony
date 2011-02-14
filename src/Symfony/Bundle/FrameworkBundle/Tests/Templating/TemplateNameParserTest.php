@@ -12,9 +12,9 @@
 namespace Symfony\Bundle\FrameworkBundle\Tests\Templating;
 
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
-use Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser;
 use Symfony\Bundle\FrameworkBundle\Tests\Kernel;
-use Symfony\Bundle\FrameworkBundle\Templating\Template;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateNameParser;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateReference;
 
 class TemplateNameParserTest extends TestCase
 {
@@ -47,13 +47,13 @@ class TemplateNameParserTest extends TestCase
     public function getLogicalNameToTemplateProvider()
     {
         return array(
-            array('FooBundle:Post:index.html.php', new Template('FooBundle', 'Post', 'index', 'html', 'php')),
-            array('FooBundle:Post:index.html.twig', new Template('FooBundle', 'Post', 'index', 'html', 'twig')),
-            array('FooBundle:Post:index.xml.php', new Template('FooBundle', 'Post', 'index', 'xml', 'php')),
-            array('SensioFooBundle:Post:index.html.php', new Template('SensioFooBundle', 'Post', 'index', 'html', 'php')),
-            array('SensioCmsFooBundle:Post:index.html.php', new Template('SensioCmsFooBundle', 'Post', 'index', 'html', 'php')),
-            array(':Post:index.html.php', new Template('', 'Post', 'index', 'html', 'php')),
-            array('::index.html.php', new Template('', '', 'index', 'html', 'php')),
+            array('FooBundle:Post:index.html.php', new TemplateReference('FooBundle', 'Post', 'index', 'html', 'php')),
+            array('FooBundle:Post:index.html.twig', new TemplateReference('FooBundle', 'Post', 'index', 'html', 'twig')),
+            array('FooBundle:Post:index.xml.php', new TemplateReference('FooBundle', 'Post', 'index', 'xml', 'php')),
+            array('SensioFooBundle:Post:index.html.php', new TemplateReference('SensioFooBundle', 'Post', 'index', 'html', 'php')),
+            array('SensioCmsFooBundle:Post:index.html.php', new TemplateReference('SensioCmsFooBundle', 'Post', 'index', 'html', 'php')),
+            array(':Post:index.html.php', new TemplateReference('', 'Post', 'index', 'html', 'php')),
+            array('::index.html.php', new TemplateReference('', '', 'index', 'html', 'php')),
         );
     }
 
@@ -94,9 +94,9 @@ class TemplateNameParserTest extends TestCase
     public function getFilenameToTemplateProvider()
     {
         return array(
-            array('/path/to/section/name.format.engine', new Template('', '/path/to/section', 'name', 'format', 'engine')),
-            array('\\path\\to\\section\\name.format.engine', new Template('', '/path/to/section', 'name', 'format', 'engine')),
-            array('name.format.engine', new Template('', '', 'name', 'format', 'engine')),
+            array('/path/to/section/name.format.engine', new TemplateReference('', '/path/to/section', 'name', 'format', 'engine')),
+            array('\\path\\to\\section\\name.format.engine', new TemplateReference('', '/path/to/section', 'name', 'format', 'engine')),
+            array('name.format.engine', new TemplateReference('', '', 'name', 'format', 'engine')),
             array('name.format', false),
             array('name', false),
         );

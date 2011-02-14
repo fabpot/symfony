@@ -14,7 +14,7 @@ namespace Symfony\Bundle\TwigBundle\Tests\Loader;
 use Symfony\Bundle\TwigBundle\Tests\TestCase;
 use Symfony\Bundle\TwigBundle\Loader\FilesystemLoader;
 use Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateLocatorInterface;
-use Symfony\Bundle\FrameworkBundle\Templating\Template;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateReference;
 use Symfony\Component\Templating\TemplateNameParserInterface;
 use InvalidArgumentException;
 
@@ -38,7 +38,7 @@ class FilesystemLoaderTest extends TestCase
         $this->parser->expects($this->once())
                 ->method('parse')
                 ->with('name.engine.format')
-                ->will($this->returnValue(new Template('', '', 'name', 'engine', 'format')))
+                ->will($this->returnValue(new TemplateReference('', '', 'name', 'engine', 'format')))
         ;
     }
 

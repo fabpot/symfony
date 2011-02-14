@@ -12,7 +12,7 @@
 namespace Symfony\Component\Templating;
 
 /**
- * TemplateNameParserInterface converts template names to TemplateInterface
+ * TemplateNameParserInterface converts template names to TemplateReferenceInterface
  * instances.
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
@@ -20,11 +20,11 @@ namespace Symfony\Component\Templating;
 interface TemplateNameParserInterface
 {
     /**
-     * Convert a template name to a TemplateInterface instance.
+     * Convert a template name to a TemplateReferenceInterface instance.
      *
      * @param string $name A template name
      *
-     * @return TemplateInterface A template
+     * @return TemplateReferenceInterface A template
      */
     function parse($name);
 }

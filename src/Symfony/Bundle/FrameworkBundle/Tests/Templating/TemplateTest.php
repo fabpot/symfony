@@ -13,7 +13,7 @@ namespace Symfony\Bundle\FrameworkBundle\Tests\Templating;
 
 use Symfony\Bundle\FrameworkBundle\Tests\TestCase;
 use Symfony\Bundle\FrameworkBundle\Tests\Kernel;
-use Symfony\Bundle\FrameworkBundle\Templating\Template;
+use Symfony\Bundle\FrameworkBundle\Templating\TemplateReference;
 
 class TemplateTest extends TestCase
 {
@@ -40,10 +40,10 @@ class TemplateTest extends TestCase
     public function getTemplateToPathProvider()
     {
         return array(
-            array(new Template('FooBundle', 'Post', 'index', 'html', 'php'), '@FooBundle/Resources/views/Post/index.html.php'),
-            array(new Template('FooBundle', '', 'index', 'html', 'twig'), '@FooBundle/Resources/views/index.html.twig'),
-            array(new Template('', 'Post', 'index', 'html', 'php'), '/views/Post/index.html.php'),
-            array(new Template('', '', 'index', 'html', 'php'), '/views/index.html.php'),
+            array(new TemplateReference('FooBundle', 'Post', 'index', 'html', 'php'), '@FooBundle/Resources/views/Post/index.html.php'),
+            array(new TemplateReference('FooBundle', '', 'index', 'html', 'twig'), '@FooBundle/Resources/views/index.html.twig'),
+            array(new TemplateReference('', 'Post', 'index', 'html', 'php'), '/views/Post/index.html.php'),
+            array(new TemplateReference('', '', 'index', 'html', 'php'), '/views/index.html.php'),
         );
     }
 }

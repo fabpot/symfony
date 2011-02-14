@@ -63,7 +63,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Renders a template.
      *
-     * @param mixed $name       A template name or a TemplateInterface instance
+     * @param mixed $name       A template name or a TemplateReferenceInterface instance
      * @param array $parameters An array of parameters to pass to the template
      *
      * @return string The evaluated template as a string
@@ -102,7 +102,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Returns true if the template exists.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if the template exists, false otherwise
      */
@@ -120,7 +120,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Returns true if this class is able to render the given template.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Boolean true if this class supports the given resource, false otherwise
      */
@@ -478,7 +478,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Loads the given template.
      *
-     * @param mixed $name A template name or a TemplateInterface instance
+     * @param mixed $name A template name or a TemplateReferenceInterface instance
      *
      * @return Storage A Storage instance
      *

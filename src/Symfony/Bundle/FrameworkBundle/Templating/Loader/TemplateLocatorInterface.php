@@ -11,7 +11,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Templating\Loader;
 
-use Symfony\Component\Templating\TemplateInterface;
+use Symfony\Component\Templating\TemplateReferenceInterface;
 
 /**
  * Interfaces for classes that locates templates on disk
@@ -23,9 +23,9 @@ interface TemplateLocatorInterface
     /**
      * Locates a template on the filesystem.
      *
-     * @param TemplateInterface $template A template
+     * @param TemplateReferenceInterface $template A template
      *
      * @return string An absolute file name
      */
-    function locate(TemplateInterface $template);
+    function locate(TemplateReferenceInterface $template);
 }

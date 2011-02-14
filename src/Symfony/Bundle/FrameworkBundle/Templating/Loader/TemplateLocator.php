@@ -12,7 +12,7 @@
 namespace Symfony\Bundle\FrameworkBundle\Templating\Loader;
 
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Templating\TemplateInterface;
+use Symfony\Component\Templating\TemplateReferenceInterface;
 
 /**
  * TemplateLocator locates templates in bundles.
@@ -41,11 +41,11 @@ class TemplateLocator implements TemplateLocatorInterface
     /**
      * Locates a template on the filesystem.
      *
-     * @param TemplateInterface $template A template
+     * @param TemplateReferenceInterface $template A template
      *
      * @return string An absolute file name
      */
-    public function locate(TemplateInterface $template)
+    public function locate(TemplateReferenceInterface $template)
     {
         $key = $template->getSignature();
 

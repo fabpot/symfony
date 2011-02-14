@@ -13,7 +13,7 @@ namespace Symfony\Component\Templating\Loader;
 
 use Symfony\Component\Templating\Storage\Storage;
 use Symfony\Component\Templating\Storage\FileStorage;
-use Symfony\Component\Templating\TemplateInterface;
+use Symfony\Component\Templating\TemplateReferenceInterface;
 
 /**
  * CacheLoader is a loader that caches other loaders responses
@@ -44,11 +44,11 @@ class CacheLoader extends Loader
     /**
      * Loads a template.
      *
-     * @param TemplateInterface $template A template
+     * @param TemplateReferenceInterface $template A template
      *
      * @return Storage|Boolean false if the template cannot be loaded, a Storage instance otherwise
      */
-    public function load(TemplateInterface $template)
+    public function load(TemplateReferenceInterface $template)
     {
         $key = $template->getSignature();
         $dir = $this->dir.DIRECTORY_SEPARATOR.substr($key, 0, 2);
@@ -85,10 +85,10 @@ class CacheLoader extends Loader
     /**
      * Returns true if the template is still fresh.
      *
-     * @param TemplateInterface     $template A template
-     * @param integer               $time     The last modification time of the cached template (timestamp)
+     * @param TemplateReferenceInterface    $template A template
+     * @param integer                       $time     The last modification time of the cached template (timestamp)
      */
-    public function isFresh(TemplateInterface $template, $time)
+    public function isFresh(TemplateReferenceInterface $template, $time)
     {
         return $this->loader->isFresh($template, $time);
     }

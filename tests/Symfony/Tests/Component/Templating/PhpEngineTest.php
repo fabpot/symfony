@@ -19,8 +19,8 @@ use Symfony\Component\Templating\Storage\Storage;
 use Symfony\Component\Templating\Storage\StringStorage;
 use Symfony\Component\Templating\Helper\SlotsHelper;
 use Symfony\Component\Templating\TemplateNameParser;
-use Symfony\Component\Templating\TemplateInterface;
-use Symfony\Component\Templating\Template;
+use Symfony\Component\Templating\TemplateReferenceInterface;
+use Symfony\Component\Templating\TemplateReference;
 
 class PhpEngineTest extends \PHPUnit_Framework_TestCase
 {
@@ -152,11 +152,11 @@ class ProjectTemplateLoader extends Loader
 
     public function setTemplate($name, $content)
     {
-        $template = new Template($name, 'php');
+        $template = new TemplateReference($name, 'php');
         $this->templates[$template->getSignature()] = $content;
     }
 
-    public function load(TemplateInterface $template)
+    public function load(TemplateReferenceInterface $template)
     {
         if (isset($this->templates[$template->getSignature()])) {
             return new StringStorage($this->templates[$template->getSignature()]);
@@ -165,7 +165,7 @@ class ProjectTemplateLoader extends Loader
         return false;
     }
 
-    public function isFresh(TemplateInterface $template, $time)
+    public function isFresh(TemplateReferenceInterface $template, $time)
     {
         return false;
     }
