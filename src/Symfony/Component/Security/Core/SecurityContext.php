@@ -45,7 +45,7 @@ class SecurityContext implements SecurityContextInterface
         $this->alwaysAuthenticate = $alwaysAuthenticate;
     }
 
-    public final function vote($attributes, $object = null)
+    public function vote($attributes, $object = null)
     {
         if (null === $this->token) {
             throw new AuthenticationCredentialsNotFoundException('The security context contains no authentication token.');
