@@ -30,7 +30,11 @@ class DocumentChoiceFieldTest extends TestCase
     {
         parent::setUp();
         $this->dm = $this->createTestDocumentManager();
-        $this->dm->getDocumentCollection(self::DOCUMENT_CLASS)->drop();
+        try {
+            $this->dm->getDocumentCollection(self::DOCUMENT_CLASS)->drop();
+        } catch (\MongoConnectionException $exception) {
+            $this->markTestSkipped('This test requires a working MongoDB connection.');
+        }
     }
 
     protected function persist(array $entities)
