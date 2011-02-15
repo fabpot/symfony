@@ -102,6 +102,7 @@ class XmlFileLoader extends FileLoader
     protected function parseImports(SimpleXMLElement $xml, $file)
     {
         $imports = $xml->xpath('//container:imports/container:import');
+        $imports = $imports ?: array();
         foreach ($imports as $import) {
             $this->currentDir = dirname($file);
             $this->import((string) $import['resource'], (Boolean) $import->getAttributeAsPhp('ignore-errors'));
@@ -152,6 +153,7 @@ class XmlFileLoader extends FileLoader
     protected function parseDefinitions(SimpleXMLElement $xml, $file)
     {
         $services = $xml->xpath('//container:services/container:service');
+        $services = $services ?: array();
         foreach ($services as $service) {
             $this->parseDefinition((string) $service['id'], $service, $file);
         }
@@ -265,6 +267,7 @@ class XmlFileLoader extends FileLoader
 
         // anonymous services as arguments
         $nodes = $xml->xpath('//container:argument[@type="service"][not(@id)]');
+        $nodes = $nodes ?: array();
         foreach ($nodes as $node) {
             // give it a unique name
             $node['id'] = sprintf('%s_%d', md5($file), ++$count);
@@ -275,6 +278,7 @@ class XmlFileLoader extends FileLoader
 
         // anonymous services "in the wild"
         $nodes = $xml->xpath('//container:services/container:service[not(@id)]');
+        $nodes = $nodes ?: array();
         foreach ($nodes as $node) {
             // give it a unique name
             $node['id'] = sprintf('%s_%d', md5($file), ++$count);
