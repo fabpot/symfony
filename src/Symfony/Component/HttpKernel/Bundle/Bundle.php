@@ -117,7 +117,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
 
         $prefix = $this->getNamespace().'\\DependencyInjection';
         foreach ($finder as $file) {
-            $class = $prefix.strtr($file->getPath(), array($dir => '', '/' => '\\')).'\\'.$file->getBasename('.php');
+            $class = $prefix.str_replace('/', '\\', $file->getRelativePath()).'\\'.$file->getBasename('.php');
 
             $container->registerExtension(new $class());
         }
@@ -144,7 +144,7 @@ abstract class Bundle extends ContainerAware implements BundleInterface
 
         $prefix = $this->getNamespace().'\\Command';
         foreach ($finder as $file) {
-            $r = new \ReflectionClass($prefix.strtr($file->getPath(), array($dir => '', '/' => '\\')).'\\'.$file->getBasename('.php'));
+            $r = new \ReflectionClass($prefix.str_replace('/', '\\', $file->getRelativePath()).'\\'.$file->getBasename('.php'));
             if ($r->isSubclassOf('Symfony\\Component\\Console\\Command\\Command') && !$r->isAbstract()) {
                 $application->add($r->newInstance());
             }
