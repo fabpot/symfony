@@ -22,7 +22,7 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
 
         $container = new ContainerBuilder();
         $loader = new DoctrineMongoDBExtension();
-        $loader->mongodbLoad(array(array('pretend_config' => 'bar')), $container);
+        $loader->load(array(array('pretend_config' => 'bar')), $container);
     }
 
     /**
@@ -32,7 +32,7 @@ class DoctrineMongoDBExtensionTest extends \PHPUnit_Framework_TestCase
     {
         $container = new ContainerBuilder();
         $loader = new DoctrineMongoDBExtension();
-        $loader->mongodbLoad(array(array($option => $value)), $container);
+        $loader->load(array(array($option => $value)), $container);
 
         $this->assertEquals($value, $container->getParameter('doctrine.odm.mongodb.'.$parameter));
     }
