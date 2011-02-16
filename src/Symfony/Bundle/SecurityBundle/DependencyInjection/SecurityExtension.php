@@ -90,15 +90,19 @@ class SecurityExtension extends Extension
         $processor = new Processor();
         $config = $processor->process($this->configuration->getAclConfigTree(), $configs);
 
+        if (empty ($config['acl'])) {
+            return;
+        }
+
         $loader = new XmlFileLoader($container, new FileLocator(array(__DIR__.'/../Resources/config', __DIR__.'/Resources/config')));
         $loader->load('security_acl.xml');
 
-        if (isset($config['connection'])) {
-            $container->setAlias('security.acl.dbal.connection', sprintf('doctrine.dbal.%s_connection', $config['connection']));
+        if (isset($config['acl']['connection'])) {
+            $container->setAlias('security.acl.dbal.connection', sprintf('doctrine.dbal.%s_connection', $config['acl']['connection']));
         }
 
-        if (isset($config['cache'])) {
-            $container->setAlias('security.acl.cache', sprintf('security.acl.cache.%s', $config['cache']));
+        if (isset($config['acl']['cache'])) {
+            $container->setAlias('security.acl.cache', sprintf('security.acl.cache.%s', $config['acl']['cache']));
         }
     }
 

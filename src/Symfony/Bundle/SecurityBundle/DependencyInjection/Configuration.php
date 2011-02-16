@@ -23,8 +23,10 @@ class Configuration
 
         return $tb
             ->root('security', 'array')
-                ->scalarNode('connection')->end()
-                ->scalarNode('cache')->end()
+                ->arrayNode('acl')
+                    ->scalarNode('connection')->end()
+                    ->scalarNode('cache')->end()
+                ->end()
             ->end()
             ->buildTree();
     }
