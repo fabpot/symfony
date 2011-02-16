@@ -95,6 +95,7 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
         $this->loadDocumentManagers(
             $options['document_managers'],
             $options['default_document_manager'],
+            $options['default_database'],
             $options['metadata_cache_driver'],
             $container
         );
@@ -252,15 +253,19 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
     /**
      * Loads the document managers configuration.
      *
-     * @param array $options An array of extension options
-     * @param ContainerBuilder $container A ContainerBuilder instance
+     * @param array $options An array of document manager configuration
+     * @param string $defaultManager The name of the default document manager
+     * @param string $defaultDatabaseName The default database name
+     * @param string $defaultMetadataCacheDriver The name of the default metadata cache driver
+     * * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManagers(array $documentManagers, $defaultManager, $defaultMetadataCacheDriver, ContainerBuilder $container)
+    protected function loadDocumentManagers(array $documentManagers, $defaultManager, $defaultDatabaseName, $defaultMetadataCacheDriver, ContainerBuilder $container)
     {
         foreach ($documentManagers as $name => $documentManager) {
             $documentManager['name'] = $name;
             $this->loadDocumentManager(
                 $defaultManager,
+                $defaultDatabaseName,
                 $defaultMetadataCacheDriver,
                 $documentManager,
                 $container
@@ -273,13 +278,14 @@ class DoctrineMongoDBExtension extends AbstractDoctrineExtension
      * Loads a document manager configuration.
      *
      * @param string $defaultManagerName  The name of the default manager
+     * @param string $defaultDatabaseName The name of the default database
      * @param string $defaultMetadataCacheDriver The name of the default metadata cache driver
      * @param array $documentManager      A document manager configuration array
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
-    protected function loadDocumentManager($defaultManagerName, $defaultMetadataCacheDriver, array $documentManager, ContainerBuilder $container)
+    protected function loadDocumentManager($defaultManagerName, $defaultDatabaseName, $defaultMetadataCacheDriver, array $documentManager, ContainerBuilder $container)
     {
-        $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : $defaultManagerName;
+        $defaultDatabase = isset($documentManager['default_database']) ? $documentManager['default_database'] : $defaultDatabaseName;
         $configServiceName = sprintf('doctrine.odm.mongodb.%s_configuration', $documentManager['name']);
 
         if ($container->hasDefinition($configServiceName)) {

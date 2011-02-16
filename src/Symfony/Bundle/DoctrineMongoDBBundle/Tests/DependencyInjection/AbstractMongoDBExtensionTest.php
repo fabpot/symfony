@@ -198,8 +198,7 @@ abstract class AbstractMongoDBExtensionTest extends TestCase
         $arguments = $definition->getArguments();
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[0]);
         $this->assertEquals('doctrine.odm.mongodb.conn1_connection', (string) $arguments[0]);
-        // the database defaults to the default_document_manager, which is set to dm2
-        $this->assertEquals('dm2', $arguments[1]);
+        $this->assertEquals('default', $arguments[1]);
         $this->assertInstanceOf('Symfony\Component\DependencyInjection\Reference', $arguments[2]);
         $this->assertEquals('doctrine.odm.mongodb.dm1_configuration', (string) $arguments[2]);
 
