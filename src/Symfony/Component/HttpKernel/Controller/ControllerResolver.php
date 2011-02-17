@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel\Controller;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpKernel\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -50,7 +52,7 @@ class ControllerResolver implements ControllerResolverInterface
      *
      * @throws \InvalidArgumentException|\LogicException If the controller can't be found
      */
-    public function getController(Request $request)
+    public function getController(Request $request, Response $response)
     {
         if (!$controller = $request->attributes->get('_controller')) {
             if (null !== $this->logger) {
@@ -85,7 +87,7 @@ class ControllerResolver implements ControllerResolverInterface
      *
      * @throws \RuntimeException When value for argument given is not provided
      */
-    public function getArguments(Request $request, $controller)
+    public function getArguments(Request $request, Response $response, $controller)
     {
         $attributes = $request->attributes->all();
 
@@ -99,7 +101,12 @@ class ControllerResolver implements ControllerResolverInterface
 
         $arguments = array();
         foreach ($r->getParameters() as $param) {
-            if (array_key_exists($param->getName(), $attributes)) {
+            $class = $param->getClass();
+            if ($class && $class->isSubClassOf('Symfony\Component\HttpFoundation\Request')) {
+                $arguments[] = $request;
+            } else if ($class && $class->isSubClassOf('Symfony\Component\HttpFoundation\Response')) {
+                $arguments[] = $response;
+            } else if (array_key_exists($param->getName(), $attributes)) {
                 $arguments[] = $attributes[$param->getName()];
             } elseif ($param->isDefaultValueAvailable()) {
                 $arguments[] = $param->getDefaultValue();

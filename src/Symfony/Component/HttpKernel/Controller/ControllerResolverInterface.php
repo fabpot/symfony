@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel\Controller;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -41,7 +43,7 @@ interface ControllerResolverInterface
      *
      * @throws \InvalidArgumentException|\LogicException If the controller can't be found
      */
-    function getController(Request $request);
+    function getController(Request $request, Response $response);
 
     /**
      * Returns the arguments to pass to the controller.
@@ -53,5 +55,5 @@ interface ControllerResolverInterface
      *
      * @throws \RuntimeException When value for argument given is not provided
      */
-    function getArguments(Request $request, $controller);
+    function getArguments(Request $request, Response $response, $controller);
 }
