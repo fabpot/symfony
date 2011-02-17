@@ -2,6 +2,7 @@
 
 namespace Symfony\Bundle\FrameworkBundle;
 
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
@@ -68,7 +69,7 @@ class HttpKernel extends BaseHttpKernel
         $attributes['_controller'] = $controller;
         $subRequest = $this->container->get('request')->duplicate($query, null, $attributes);
 
-        return $this->handle($subRequest, HttpKernelInterface::SUB_REQUEST);
+        return $this->handle($subRequest, null, HttpKernelInterface::SUB_REQUEST);
     }
 
     /**
@@ -134,7 +135,7 @@ class HttpKernel extends BaseHttpKernel
         }
 
         try {
-            $response = $this->handle($subRequest, HttpKernelInterface::SUB_REQUEST, false);
+            $response = $this->handle($subRequest, null, HttpKernelInterface::SUB_REQUEST, false);
 
             if (!$response->isSuccessful()) {
                 throw new \RuntimeException(sprintf('Error when rendering "%s" (Status code is %s).', $request->getUri(), $response->getStatusCode()));

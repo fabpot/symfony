@@ -43,7 +43,7 @@ interface ControllerResolverInterface
      *
      * @throws \InvalidArgumentException|\LogicException If the controller can't be found
      */
-    function getController(Request $request, Response $response);
+    function getController(Request $request);
 
     /**
      * Returns the arguments to pass to the controller.

@@ -131,7 +131,7 @@ class HttpCache implements HttpKernelInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
         // FIXME: catch exceptions and implement a 500 error page here? -> in Varnish, there is a built-in error page mechanism
         if (HttpKernelInterface::MASTER_REQUEST === $type) {
@@ -389,7 +389,7 @@ class HttpCache implements HttpKernelInterface
         }
 
         // always a "master" request (as the real master request can be in cache)
-        $response = $this->kernel->handle($request, HttpKernelInterface::MASTER_REQUEST, $catch);
+        $response = $this->kernel->handle($request, null, HttpKernelInterface::MASTER_REQUEST, $catch);
         // FIXME: we probably need to also catch exceptions if raw === true
 
         // we don't implement the stale-if-error on Requests, which is nonetheless part of the RFC

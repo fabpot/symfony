@@ -66,26 +66,22 @@ class ProfilerListener
      * Handles the core.response event.
      *
      * @param EventInterface $event An EventInterface instance
-     *
-     * @return Response $response A Response instance
      */
-    public function handleResponse(EventInterface $event, Response $response)
+    public function handleResponse(EventInterface $event)
     {
         if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
+            return;
         }
 
         if (null !== $this->matcher && !$this->matcher->matches($event->get('request'))) {
-            return $response;
+            return;
         }
 
         if ($this->onlyException && null === $this->exception) {
-            return $response;
+            return;
         }
 
-        $this->container->get('profiler')->collect($event->get('request'), $response, $this->exception);
+        $this->profiler->collect($event->get('request'), $event->get('response'), $this->exception);
         $this->exception = null;
-
-        return $response;
     }
 }

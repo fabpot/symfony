@@ -139,18 +139,17 @@ class RememberMeListener implements ListenerInterface
      * Update cookies
      * @param Event $event
      */
-    public function updateCookies(EventInterface $event, Response $response)
+    public function updateCookies(EventInterface $event)
     {
         if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
+            return;
         }
 
+        $response = $event->get('response');
         if ($this->lastState instanceof TokenInterface) {
             $this->rememberMeServices->loginSuccess($event->get('request'), $response, $this->lastState);
         } else if ($this->lastState instanceof AuthenticationException) {
             $this->rememberMeServices->loginFail($event->get('request'), $response);
         }
-
-        return $response;
     }
 }

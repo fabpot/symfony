@@ -52,7 +52,7 @@ class ControllerResolver implements ControllerResolverInterface
      *
      * @throws \InvalidArgumentException|\LogicException If the controller can't be found
      */
-    public function getController(Request $request, Response $response)
+    public function getController(Request $request)
     {
         if (!$controller = $request->attributes->get('_controller')) {
             if (null !== $this->logger) {

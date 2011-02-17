@@ -34,20 +34,12 @@ class ResponseListener
      * Filters the Response.
      *
      * @param EventInterface $event    An EventInterface instance
-     * @param Response       $response A Response instance
      */
-    public function filter(EventInterface $event, Response $response)
+    public function filter(EventInterface $event)
     {
-        if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
-        }
-
-        if (null === $response->getCharset()) {
-            $response->setCharset($this->charset);
-        }
-
+        $response = $event->get('response');
         if ($response->headers->has('Content-Type')) {
-            return $response;
+            return;
         }
 
         $request = $event->get('request');
@@ -55,7 +47,5 @@ class ResponseListener
         if ((null !== $format) && $mimeType = $request->getMimeType($format)) {
             $response->headers->set('Content-Type', $mimeType);
         }
-
-        return $response;
     }
 }

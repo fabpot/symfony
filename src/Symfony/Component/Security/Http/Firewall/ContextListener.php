@@ -102,18 +102,18 @@ class ContextListener implements ListenerInterface
      *
      * @param EventInterface $event An EventInterface instance
      */
-    public function write(EventInterface $event, Response $response)
+    public function write(EventInterface $event)
     {
         if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
+            return;
         }
 
         if (null === $token = $this->context->getToken()) {
-            return $response;
+            return;
         }
 
         if (null === $token || $token instanceof AnonymousToken) {
-            return $response;
+            return;
         }
 
         if (null !== $this->logger) {
@@ -121,8 +121,6 @@ class ContextListener implements ListenerInterface
         }
 
         $event->get('request')->getSession()->set('_security_'.$this->contextKey, serialize($token));
-
-        return $response;
     }
 
     /**

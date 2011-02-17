@@ -41,12 +41,13 @@ class WebDebugToolbarListener
         $this->interceptRedirects = $interceptRedirects;
     }
 
-    public function handle(EventInterface $event, Response $response)
+    public function handle(EventInterface $event)
     {
         if (HttpKernelInterface::MASTER_REQUEST !== $event->get('request_type')) {
-            return $response;
+            return;
         }
 
+        $response = $event->get('response');
         if ($response->headers->has('X-Debug-Token') && $response->isRedirect() && $this->interceptRedirects) {
             $response->setContent(
                 sprintf('<html><head></head><body><h1>This Request redirects to<br /><a href="%1$s">%1$s</a>.</h1><h4>The redirect was intercepted by the web debug toolbar to help debugging.<br/>For more information, see the "intercept-redirects" option of the Profiler.</h4></body></html>',
@@ -63,12 +64,10 @@ class WebDebugToolbarListener
             || 'html' !== $request->getRequestFormat()
             || $request->isXmlHttpRequest()
         ) {
-            return $response;
+            return;
         }
 
         $this->injectToolbar($response);
-
-        return $response;
     }
 
     /**

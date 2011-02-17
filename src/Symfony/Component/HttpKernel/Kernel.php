@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
@@ -126,13 +128,13 @@ abstract class Kernel implements KernelInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
         if (false === $this->booted) {
             $this->boot();
         }
 
-        return $this->getHttpKernel()->handle($request, $type, $catch);
+        return $this->getHttpKernel()->handle($request, $response, $type, $catch);
     }
 
     /**

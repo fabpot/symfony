@@ -94,7 +94,7 @@ class HttpKernel implements HttpKernelInterface
         }
 
         // load controller
-        if (false === $controller = $this->resolver->getController($request, $response)) {
+        if (false === $controller = $this->resolver->getController($request)) {
             throw new NotFoundHttpException(sprintf('Unable to find the controller for path "%s". Maybe you forgot to add the matching route in your routing configuration?', $request->getPathInfo()));
         }
 
@@ -107,15 +107,15 @@ class HttpKernel implements HttpKernelInterface
         }
 
         // controller arguments
-        $arguments = $this->resolver->getArguments($request, $controller);
+        $arguments = $this->resolver->getArguments($request, $response, $controller);
 
         // call controller
         $actionResult = call_user_func_array($controller, $arguments);
 
         // view
         if (null !== $actionResult) {
-            $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'response' => $response));
-            $this->dispatcher->notify($event, $actionResult);
+            $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'response' => $response, 'parameters' => $actionResult));
+            $this->dispatcher->notifyUntil($event);
         }
 
         $this->notifyResponse($response, $request, $type);
