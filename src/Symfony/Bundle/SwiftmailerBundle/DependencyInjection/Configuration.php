@@ -35,6 +35,7 @@ class Configuration
         $rootNode = $treeBuilder->root('swiftmailer', 'array');
 
         $rootNode
+            ->addDefaultsIfNotSet()
             ->scalarNode('transport')
                 ->defaultValue('smtp')
                 ->validate()
@@ -62,6 +63,7 @@ class Configuration
             ->end()
             ->arrayNode('spool')
                 ->addDefaultsIfNotSet()
+                ->booleanNode('enabled')->defaultFalse()->end()
                 ->scalarNode('type')->defaultValue('file')->end()
                 ->scalarNode('path')->defaultValue('%kernel.cache_dir%/swiftmailer/spool')->end()
             ->end()

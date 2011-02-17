@@ -76,7 +76,7 @@ class SwiftMailerExtension extends Extension
         }
 
         // spool?
-        if (isset($config['spool'])) {
+        if (isset($config['spool']['enabled']) && $config['spool']['enabled']) {
             $type = $config['spool']['type'];
 
             $container->setAlias('swiftmailer.transport.real', 'swiftmailer.transport.'.$transport);
