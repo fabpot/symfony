@@ -48,9 +48,6 @@
     <parameter key="doctrine.odm.mongodb.yml_mapping_dirs">%doctrine.odm.mongodb.mapping_dirs%</parameter>
     <parameter key="doctrine.odm.mongodb.document_dirs" type="collection"></parameter>
 
-    <!-- security/user -->
-    <parameter key="security.user.provider.document.class">Symfony\Bundle\DoctrineMongoDBBundle\Security\DocumentUserProvider</parameter>
-
     <!-- proxy cache warmer -->
     <parameter key="doctrine.odm.mongodb.proxy_cache_warmer.class">Symfony\Bundle\DoctrineMongoDBBundle\CacheWarmer\ProxyCacheWarmer</parameter>
 
@@ -92,8 +89,6 @@
       <tag name="data_collector" template="DoctrineMongoDBBundle:Collector:mongodb" id="mongodb" />
       <argument type="service" id="doctrine.odm.mongodb.logger" />
     </service>
-
-    <service id="security.user.document_manager" alias="doctrine.odm.mongodb.default_document_manager" />
 
     <service id="doctrine.odm.mongodb.proxy_cache_warmer" class="%doctrine.odm.mongodb.proxy_cache_warmer.class%" public="false">
         <tag name="kernel.cache_warmer" />

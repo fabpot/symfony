@@ -15,6 +15,7 @@
         <parameter key="security.encoder.plain.class">Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder</parameter>
 
         <parameter key="security.user.provider.entity.class">Symfony\Component\Security\Core\User\EntityUserProvider</parameter>
+        <parameter key="security.user.provider.document.class">Symfony\Component\Security\Core\User\DocumentUserProvider</parameter>
         <parameter key="security.user.provider.in_memory.class">Symfony\Component\Security\Core\User\InMemoryUserProvider</parameter>
         <parameter key="security.user.provider.in_memory.user.class">Symfony\Component\Security\Core\User\User</parameter>
         <parameter key="security.user.provider.chain.class">Symfony\Component\Security\Core\User\ChainUserProvider</parameter>
@@ -127,6 +128,11 @@
             <argument type="service" id="security.user.entity_manager" />
         </service>
         <service id="security.user.entity_manager" alias="doctrine.orm.default_entity_manager" public="false" />
+
+        <service id="security.user.provider.document" class="%security.user.provider.document.class%" abstract="true" public="false">
+            <argument type="service" id="security.user.document_manager" />
+        </service>
+        <service id="security.user.document_manager" alias="doctrine.odm.mongodb.default_document_manager" />
 
         <service id="security.user.provider.in_memory" class="%security.user.provider.in_memory.class%" abstract="true" public="false" />
         <service id="security.user.provider.in_memory.user" class="%security.user.provider.in_memory.user.class%" abstract="true" public="false" />

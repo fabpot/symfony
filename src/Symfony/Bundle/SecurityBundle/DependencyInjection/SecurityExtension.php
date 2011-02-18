@@ -485,6 +485,17 @@ class SecurityExtension extends Extension
             return $name;
         }
 
+        // Doctrine Document DAO provider
+        if (isset($provider['document'])) {
+            $container
+                ->setDefinition($name, new DefinitionDecorator('security.user.provider.document'))
+                ->addArgument($provider['entity']['class'])
+                ->addArgument($provider['entity']['property'])
+            ;
+
+            return $name;
+        }
+
         // In-memory DAO provider
         $definition = $container->setDefinition($name, new DefinitionDecorator('security.user.provider.in_memory'));
         foreach ($provider['users'] as $username => $user) {

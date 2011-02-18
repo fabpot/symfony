@@ -9,10 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Bundle\DoctrineMongoDBBundle\Security;
+namespace Symfony\Component\Security\Core\User;
 
-use Symfony\Component\Security\Core\User\AccountInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Security\Core\Exception\UnsupportedAccountException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 
@@ -22,15 +21,15 @@ class DocumentUserProvider implements UserProviderInterface
     protected $repository;
     protected $property;
 
-    public function __construct($em, $class, $property = null)
+    public function __construct(DocumentManager $dm, $class, $property = null)
     {
         $this->class = $class;
 
         if (false !== strpos($this->class, ':')) {
-            $this->class = $em->getClassMetadata($class)->getName();
+            $this->class = $dm->getClassMetadata($class)->getName();
         }
 
-        $this->repository = $em->getRepository($class);
+        $this->repository = $dm->getRepository($class);
         $this->property = $property;
     }
 
