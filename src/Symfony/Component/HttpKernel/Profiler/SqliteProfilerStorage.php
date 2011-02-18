@@ -156,7 +156,10 @@ class SqliteProfilerStorage implements ProfilerStorageInterface
                 $stmt->bindValue($arg, $val, is_int($val) ? \SQLITE3_INTEGER : \SQLITE3_TEXT);
             }
 
-            $res = $stmt->execute();
+            $res = @$stmt->execute();
+            if (!$res) {
+                throw new \RuntimeException(sprintf('Error executing SQLite query "%s"', $query));
+            }
             $res->finalize();
         } else {
             foreach ($args as $arg => $val) {
