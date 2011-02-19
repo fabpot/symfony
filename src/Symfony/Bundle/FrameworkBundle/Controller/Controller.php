@@ -84,7 +84,7 @@ class Controller extends ContainerAware
      */
     public function render($view, array $parameters = array())
     {
-        $this->container->get('templating')->populateResponse($view, $parameters);
+        $this->container->get('templating')->renderResponse($view, $parameters);
     }
 
     /**

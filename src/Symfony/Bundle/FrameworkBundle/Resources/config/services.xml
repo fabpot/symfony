@@ -48,6 +48,12 @@
         -->
         <service id="request" scope="request" synthetic="true" />
 
+        <service id="response" class="%response.class%" scope="request">
+            <call method="setCharset">
+                <argument>%kernel.charset%</argument>
+            </call>
+        </service>
+
         <service id="filesystem" class="%filesystem.class%"></service>
 
         <service id="file_locator" class="%file_locator.class%">

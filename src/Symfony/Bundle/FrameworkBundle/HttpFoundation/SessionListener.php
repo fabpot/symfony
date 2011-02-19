@@ -34,7 +34,7 @@ class SessionListener
      *
      * @return Response
      */
-    public function filter(EventInterface $event, Response $response)
+    public function filter(EventInterface $event)
     {
         if ($request = $event->get('request')) {
             if (HttpKernelInterface::MASTER_REQUEST === $event->get('request_type')) {
@@ -44,6 +44,6 @@ class SessionListener
             }
         }
 
-        return $response;
+        return $event->get('response');
     }
 }

@@ -48,6 +48,7 @@ class ExceptionListener
 
         $exception = $event->get('exception');
         $request = $event->get('request');
+        $response = $event->get('response');
 
         if (null !== $this->logger) {
             $this->logger->err(sprintf('%s: %s (uncaught exception)', get_class($exception), $exception->getMessage()));
@@ -68,7 +69,7 @@ class ExceptionListener
         $request = $request->duplicate(null, null, $attributes);
 
         try {
-            $response = $event->getSubject()->handle($request, HttpKernelInterface::SUB_REQUEST, true);
+            $event->getSubject()->handle($request, $response, HttpKernelInterface::SUB_REQUEST, true);
         } catch (\Exception $e) {
             $message = sprintf('Exception thrown when handling an exception (%s: %s)', get_class($e), $e->getMessage());
             if (null !== $this->logger) {
