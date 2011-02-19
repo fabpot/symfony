@@ -112,6 +112,15 @@ class HttpKernel implements HttpKernelInterface
         // call controller
         $actionResult = call_user_func_array($controller, $arguments);
 
+        // FIXME: This is only intended for easing the transition and can be removed before release
+        if ($actionResult instanceof Response) {
+            if ($actionResult === $response) {
+                $actionResult = null;
+            } else {
+                throw new \RuntimeException('Your controller returned a response which does not belong to the current request cycle.');
+            }
+        }
+
         // view
         if (null !== $actionResult) {
             $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'response' => $response, 'parameters' => $actionResult));
