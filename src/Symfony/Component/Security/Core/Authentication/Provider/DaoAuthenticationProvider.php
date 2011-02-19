@@ -88,6 +88,8 @@ class DaoAuthenticationProvider extends UserAuthenticationProvider
             return $user;
         } catch (UsernameNotFoundException $notFound) {
             throw $notFound;
+        } catch (\PDOException $pdo) {
+            throw $pdo;
         } catch (\Exception $repositoryProblem) {
             throw new AuthenticationServiceException($repositoryProblem->getMessage(), $token, 0, $repositoryProblem);
         }
