@@ -26,9 +26,8 @@ interface EngineInterface extends BaseEngineInterface
      *
      * @param string   $view       The view name
      * @param array    $parameters An array of parameters to pass to the view
-     * @param Response $response   A Response instance
      *
-     * @return Response A Response instance
+     * @return Response
      */
-    function renderResponse($view, array $parameters = array(), Response $response = null);
+    function renderResponse($view, array $parameters = array());
 }

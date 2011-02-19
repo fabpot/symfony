@@ -77,16 +77,12 @@ class DelegatingEngine extends BaseDelegatingEngine implements EngineInterface
      *
      * @param string   $view       The view name
      * @param array    $parameters An array of parameters to pass to the view
-     * @param Response $response   A Response instance
      *
      * @return Response A Response instance
      */
-    public function renderResponse($view, array $parameters = array(), Response $response = null)
+    public function renderResponse($view, array $parameters = array())
     {
-        if (null === $response) {
-            $response = new Response();
-        }
-
+        $response = $this->container->get('response');
         $response->setContent($this->render($view, $parameters));
 
         return $response;
