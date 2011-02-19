@@ -52,6 +52,18 @@ class Controller extends ContainerAware
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * Populates an HTTP redirect Response.
+     */
+    public function redirect($url, $status = 302)
+    {
+        $response = $this->container->get('response');
+        $response->setRedirect($url, $status);
+    }
+
+    /**
+>>>>>>> bcd125e... wip
      * Returns a rendered view.
      *
      * @param string $view       The view name
@@ -69,13 +81,10 @@ class Controller extends ContainerAware
      *
      * @param string   $view The view name
      * @param array    $parameters An array of parameters to pass to the view
-     * @param Response $response A response instance
-     *
-     * @return Response A Response instance
      */
-    public function render($view, array $parameters = array(), Response $response = null)
+    public function render($view, array $parameters = array())
     {
-        return $this->container->get('templating')->renderResponse($view, $parameters, $response);
+        $this->container->get('templating')->populateResponse($view, $parameters);
     }
 
     /**
