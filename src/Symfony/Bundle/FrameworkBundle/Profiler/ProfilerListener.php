@@ -81,7 +81,7 @@ class ProfilerListener
             return;
         }
 
-        $this->profiler->collect($event->get('request'), $event->get('response'), $this->exception);
+        $this->container->get('profiler')->collect($event->get('request'), $event->get('response'), $this->exception);
         $this->exception = null;
     }
 }
