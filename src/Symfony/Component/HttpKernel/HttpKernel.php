@@ -117,7 +117,7 @@ class HttpKernel implements HttpKernelInterface
             if ($actionResult === $response) {
                 $actionResult = null;
             } else {
-                throw new \RuntimeException('Your controller returned a response which does not belong to the current request cycle.');
+                throw new \RuntimeException('Your controller returned a response which does not belong to the current request cycle. Please add "Response $response" to your controller\'s action method signature and perform any changes on the injected response.');
             }
         }
 
@@ -125,6 +125,10 @@ class HttpKernel implements HttpKernelInterface
         if (null !== $actionResult) {
             $event = new Event($this, 'core.view', array('request_type' => $type, 'request' => $request, 'response' => $response, 'parameters' => $actionResult));
             $this->dispatcher->notifyUntil($event);
+
+            if (!$event->isProcessed()) {
+                throw new \RuntimeException(sprintf('Your controller returned a non-null value %s which could not be processed by any listener on "core.view".', json_encode($actionResult)));
+            }
         }
 
         $this->notifyResponse($response, $request, $type);
