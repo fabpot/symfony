@@ -43,12 +43,8 @@ class HttpKernel implements HttpKernelInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $response, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
-        if (null === $response) {
-            throw new \InvalidArgumentException('This implementation requires a non-null Response object.');
-        }
-
         try {
             $this->handleRaw($request, $response, $type);
         } catch (\Exception $e) {

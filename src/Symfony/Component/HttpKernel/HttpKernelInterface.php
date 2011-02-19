@@ -41,5 +41,5 @@ interface HttpKernelInterface
      *
      * @throws \Exception When an Exception occurs during processing
      */
-    function handle(Request $request, Response $response = null, $type = self::MASTER_REQUEST, $catch = true);
+    function handle(Request $request, Response $response, $type = self::MASTER_REQUEST, $catch = true);
 }
