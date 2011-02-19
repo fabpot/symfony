@@ -56,7 +56,7 @@ class DigestAuthenticationEntryPoint implements AuthenticationEntryPointInterfac
             $this->logger->debug(sprintf('WWW-Authenticate header sent to user agent: "%s"', $authenticateHeader));
         }
 
-        $response = new Response();
+        $response = $event->get('response');
         $response->headers->set('WWW-Authenticate', $authenticateHeader);
         $response->setStatusCode(401, $authException->getMessage());
 

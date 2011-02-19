@@ -50,6 +50,9 @@ class FormAuthenticationEntryPoint implements AuthenticationEntryPointInterface
             return $event->getSubject()->handle(Request::create($this->loginPath), HttpKernelInterface::SUB_REQUEST);
         }
 
-        return new RedirectResponse(0 !== strpos($this->loginPath, 'http') ? $request->getUriForPath($this->loginPath) : $this->loginPath, 302);
+        $response = $event->get('response');
+        $response->setRedirect(0 !== strpos($this->loginPath, 'http') ? $request->getUriForPath($this->loginPath) : $this->loginPath, 302);
+
+        return $response;
     }
 }

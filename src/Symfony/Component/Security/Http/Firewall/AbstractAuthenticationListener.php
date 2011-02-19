@@ -205,7 +205,10 @@ abstract class AbstractAuthenticationListener implements ListenerInterface
 
             $request->getSession()->set(SecurityContextInterface::AUTHENTICATION_ERROR, $failed);
 
-            return new RedirectResponse(0 !== strpos($this->options['failure_path'], 'http') ? $request->getUriForPath($this->options['failure_path']) : $this->options['failure_path'], 302);
+            $response = $event->get('response');
+            $response->setRedirect(0 !== strpos($this->options['failure_path'], 'http') ? $request->getUriForPath($this->options['failure_path']) : $this->options['failure_path'], 302);
+
+            return $response;
         }
     }
 
@@ -228,6 +231,10 @@ abstract class AbstractAuthenticationListener implements ListenerInterface
         if (null !== $this->successHandler) {
             $response = $this->successHandler->onAuthenticationSuccess($event, $request, $token);
         } else {
+<<<<<<< HEAD
+=======
+            $response = $event->get('response');
+>>>>>>> f20fea2... replaced new Response() calls
             $path = $this->determineTargetUrl($request);
             $response = new RedirectResponse(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
         }
