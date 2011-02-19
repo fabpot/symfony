@@ -53,13 +53,20 @@ class Controller extends ContainerAware
 
     /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
      * Populates an HTTP redirect Response.
+=======
+     * Returns an HTTP redirect Response.
+     *
+     * @return Response A Response instance
+>>>>>>> 42bb965... reverted f2e72497bd7f3b683e0e82f243af9310328c086b
      */
     public function redirect($url, $status = 302)
     {
         $response = $this->container->get('response');
         $response->setRedirect($url, $status);
+        return $response;
     }
 
     /**
@@ -81,10 +88,13 @@ class Controller extends ContainerAware
      *
      * @param string   $view The view name
      * @param array    $parameters An array of parameters to pass to the view
+     * @param Response $response A response instance
+     *
+     * @return Response A Response instance
      */
-    public function render($view, array $parameters = array())
+    public function render($view, array $parameters = array(), Response $response = null)
     {
-        $this->container->get('templating')->renderResponse($view, $parameters);
+        return $this->container->get('templating')->renderResponse($view, $parameters, $response);
     }
 
     /**
