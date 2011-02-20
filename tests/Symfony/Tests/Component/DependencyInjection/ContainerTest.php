@@ -194,6 +194,10 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($sc->has('foo.baz'), '->has() returns true if a get*Method() is defined');
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::enterScope
+     * @covers Symfony\Component\DependencyInjection\Container::leaveScope
+     */
     public function testEnterLeaveCurrentScope()
     {
         $container = new ProjectServiceContainer();
@@ -219,6 +223,10 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($scopedFoo1, $scopedFoo3);
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::enterScope
+     * @covers Symfony\Component\DependencyInjection\Container::leaveScope
+     */
     public function testEnterLeaveScopeWithChildScopes()
     {
         $container = new Container();
@@ -250,6 +258,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($container->has('a'));
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::leaveScope
+     */
     public function testLeaveScopeNotActive()
     {
         $container = new Container();
@@ -302,6 +313,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $c->addScope(new Scope('foo', $scope));
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::addScope
+     */
     public function testAddScope()
     {
         $c = new Container();
@@ -312,6 +326,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(array('foo' => array('bar'), 'bar' => array()), $this->getField($c, 'scopeChildren'));
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::hasScope
+     */
     public function testHasScope()
     {
         $c = new Container();
@@ -321,6 +338,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($c->hasScope('foo'));
     }
 
+    /**
+     * @covers Symfony\Component\DependencyInjection\Container::isScopeActive
+     */
     public function testIsScopeActive()
     {
         $c = new Container();
