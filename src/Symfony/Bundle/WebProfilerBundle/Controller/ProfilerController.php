@@ -130,26 +130,37 @@ class ProfilerController extends ContainerAware
      *
      * @return Response A Response instance
      */
-    public function toolbarAction($token = null, $position = null)
+    public function toolbarAction($token, $position = null)
     {
+        if (null === $token) {
+            return $this->container->get('response');
+        }
+
         $profiler = $this->container->get('profiler');
+        $profiler->disable();
 
-        if (null !== $token) {
-            $profiler = $profiler->loadFromToken($token);
+        $profiler = $profiler->loadFromToken($token);
 
-            if ($profiler->isEmpty()) {
-                return $this->container->get('response');
-            }
+        if ($profiler->isEmpty()) {
+            return $this->container->get('response');
         }
 
         if (null === $position) {
             $position = false === strpos($this->container->get('request')->headers->get('user-agent'), 'Mobile') ? 'fixed' : 'absolute';
         }
 
+        $url = null;
+        try {
+            $url = $this->container->get('router')->generate('_profiler', array('token' => $token));
+        } catch (\Exception $e) {
+            // the profiler is not enabled
+        }
+
         return $this->container->get('templating')->renderResponse('WebProfilerBundle:Profiler:toolbar.html.twig', array(
-            'position'  => $position,
-            'profiler'  => $profiler,
-            'templates' => $this->getTemplates($profiler),
+            'position'     => $position,
+            'profiler'     => $profiler,
+            'templates'    => $this->getTemplates($profiler),
+            'profiler_url' => $url,
         ));
     }
 

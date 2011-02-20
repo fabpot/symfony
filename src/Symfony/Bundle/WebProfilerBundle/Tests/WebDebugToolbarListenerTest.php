@@ -21,19 +21,20 @@ class WebDebugToolbarListenerTest extends \PHPUnit_Framework_TestCase
      */
     public function testInjectToolbar($content, $expected)
     {
-        $resolver = $this->getMock('Symfony\Bundle\FrameworkBundle\HttpKernel', array(), array(), '', false);
-        $resolver->expects($this->any())
+        $kernel = $this->getMock('Symfony\Bundle\FrameworkBundle\HttpKernel', array(), array(), '', false);
+        $templating = $this->getMock('Symfony\Bundle\TwigBundle\TwigEngine', array(), array(), '', false);
+        $templating->expects($this->any())
                  ->method('render')
                  ->will($this->returnValue('WDT'));
         ;
         $request = $this->getMock('Symfony\Component\HttpFoundation\Request');
-        $listener = new WebDebugToolbarListener($resolver);
+        $listener = new WebDebugToolbarListener($kernel, $templating);
         $m = new \ReflectionMethod($listener, 'injectToolbar');
         $m->setAccessible(true);
 
         $response = new Response($content);
 
-        $m->invoke($listener, $request, $response);
+        $m->invoke($listener, $response);
         $this->assertEquals($expected, $response->getContent());
     }
 

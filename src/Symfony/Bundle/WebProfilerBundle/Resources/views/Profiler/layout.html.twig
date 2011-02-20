@@ -7,7 +7,7 @@
             Symfony Profiler
         </h1>
         <div>
-            <em>{{ profiler.url }}</em> by <em>{{ profiler.ip }}</em> at <em>{{ profiler.time|date('r') }}</em>
+            <em><a href="{{ profiler.url }}">{{ profiler.url }}</a></em> by <em>{{ profiler.ip }}</em> at <em>{{ profiler.time|date('r') }}</em>
         </div>
     </div>
 
@@ -19,7 +19,7 @@
                 <ul>
                     {% for name, template in templates %}
                         {% set menu %}{{ template.renderBlock('menu', { 'collector': profiler.get(name)}) }}{% endset %}
-                        {% if menu %}
+                        {% if menu != '' %}
                             <li
                                 {% if name == panel %}class="selected"{% endif %}
                             >

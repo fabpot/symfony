@@ -27,6 +27,11 @@ class GlobalVariables
         $this->container = $container;
     }
 
+    /**
+     * Returns the security context service.
+     *
+     * @return Symfony\Component\Security\Core\SecurityContext|void The security context
+     */
     public function getSecurity()
     {
         if ($this->container->has('security.context')) {
@@ -34,6 +39,13 @@ class GlobalVariables
         }
     }
 
+    /**
+     * Returns the current user.
+     *
+     * @return mixed|void
+     *
+     * @see Symfony\Component\Security\Core\Authentication\Token\TokenInterface::getUser()
+     */
     public function getUser()
     {
         if (!$security = $this->getSecurity()) {
@@ -52,6 +64,11 @@ class GlobalVariables
         return $user;
     }
 
+    /**
+     * Returns the security context service.
+     *
+     * @return Symfony\Component\HttpFoundation\Request|void The http request object
+     */
     public function getRequest()
     {
         if ($this->container->has('request') && $request = $this->container->get('request')) {
@@ -59,10 +76,35 @@ class GlobalVariables
         }
     }
 
+    /**
+     * Returns the security context service.
+     *
+     * @return Symfony\Component\HttpFoundation\Session|void The session
+     */
     public function getSession()
     {
         if ($request = $this->getRequest()) {
             return $request->getSession();
         }
+    }
+
+    /**
+     * Returns the current app environment.
+     *
+     * @return string The current environment string (e.g 'dev')
+     */
+    public function getEnvironment()
+    {
+        return $this->container->getParameter('kernel.environment');
+    }
+
+    /**
+     * Returns the current app debug mode.
+     *
+     * @return Boolean The current debug mode
+     */
+    public function getDebug()
+    {
+        return (bool) $this->container->getParameter('kernel.debug');
     }
 }

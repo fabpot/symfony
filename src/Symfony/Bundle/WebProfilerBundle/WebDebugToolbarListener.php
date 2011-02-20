@@ -16,22 +16,28 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\HttpKernel;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Bundle\TwigBundle\TwigEngine;
 
 /**
  * WebDebugToolbarListener injects the Web Debug Toolbar.
  *
  * The handle method must be connected to the core.response event.
  *
+ * The WDT is only injected on well-formed HTML (with a proper </body> tag).
+ * This means that the WDT is never included in sub-requests or ESI requests.
+ *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class WebDebugToolbarListener
 {
     protected $kernel;
+    protected $templating;
     protected $interceptRedirects;
 
-    public function __construct(HttpKernel $kernel, $interceptRedirects = false)
+    public function __construct(HttpKernel $kernel, TwigEngine $templating, $interceptRedirects = false)
     {
         $this->kernel = $kernel;
+        $this->templating = $templating;
         $this->interceptRedirects = $interceptRedirects;
     }
 
@@ -60,19 +66,17 @@ class WebDebugToolbarListener
             return $response;
         }
 
-        $this->injectToolbar($request, $response);
+        $this->injectToolbar($response);
 
         return $response;
     }
 
     /**
-     * Injects the web debug toolbar into a given HTML string.
+     * Injects the web debug toolbar into the given Response.
      *
-     * @param string $content The HTML content
-     *
-     * @return Response A Response instance
+     * @param Response $response A Response instance
      */
-    protected function injectToolbar(Request $request, Response $response)
+    protected function injectToolbar(Response $response)
     {
         if (function_exists('mb_stripos')) {
             $posrFunction = 'mb_strripos';
@@ -82,12 +86,10 @@ class WebDebugToolbarListener
             $substrFunction = 'substr';
         }
 
-        $toolbar = "\n".str_replace("\n", '', $this->kernel->render('WebProfilerBundle:Profiler:toolbar'))."\n";
+        $toolbar = "\n".str_replace("\n", '', $this->templating->render('WebProfilerBundle:Profiler:toolbar_js.html.twig', array('token' => $response->headers->get('X-Debug-Token'))))."\n";
         $content = $response->getContent();
 
-        if (false === $pos = $posrFunction($content, '</body>')) {
-            $content .= $toolbar;
-        } else {
+        if (false !== $pos = $posrFunction($content, '</body>')) {
             $content = $substrFunction($content, 0, $pos).$toolbar.$substrFunction($content, $pos);
         }
 
