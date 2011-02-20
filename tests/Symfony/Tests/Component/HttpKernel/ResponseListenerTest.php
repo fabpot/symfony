@@ -22,26 +22,29 @@ class ResponseListenerTest extends \PHPUnit_Framework_TestCase
 {
     public function testFilterDoesNothingForSubRequests()
     {
-        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::SUB_REQUEST));
-        $this->getDispatcher()->filter($event, $response = new Response('foo'));
+        $response = new Response('foo');
+        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::SUB_REQUEST, 'response' => $response));
+        $this->getDispatcher()->notifyUntil($event);
 
         $this->assertEquals('', $response->headers->get('content-type'));
     }
 
     public function testFilterDoesNothingIfContentTypeIsSet()
     {
-        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST));
         $response = new Response('foo');
         $response->headers->set('Content-Type', 'text/plain');
-        $this->getDispatcher()->filter($event, $response);
+
+        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST, 'response' => $response));
+        $this->getDispatcher()->notifyUntil($event);
 
         $this->assertEquals('text/plain', $response->headers->get('content-type'));
     }
 
     public function testFilterDoesNothingIfRequestFormatIsNotDefined()
     {
-        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST, 'request' => Request::create('/')));
-        $this->getDispatcher()->filter($event, $response = new Response('foo'));
+        $response = new Response('foo');
+        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST, 'request' => Request::create('/'), 'response' => $response));
+        $this->getDispatcher()->notifyUntil($event);
 
         $this->assertEquals('', $response->headers->get('content-type'));
     }
@@ -50,8 +53,9 @@ class ResponseListenerTest extends \PHPUnit_Framework_TestCase
     {
         $request = Request::create('/');
         $request->setRequestFormat('json');
-        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST, 'request' => $request));
-        $this->getDispatcher()->filter($event, $response = new Response('foo'));
+        $response = new Response('foo');
+        $event = new Event(null, 'core.response', array('request_type' => HttpKernelInterface::MASTER_REQUEST, 'request' => $request, 'response' => $response));
+        $this->getDispatcher()->notifyUntil($event);
 
         $this->assertEquals('application/json', $response->headers->get('content-type'));
     }

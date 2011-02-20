@@ -122,7 +122,7 @@ class HttpCacheTestCase extends \PHPUnit_Framework_TestCase
         $this->cache = new HttpCache($this->kernel, $this->store, $this->esi, $this->cacheConfig);
         $this->request = Request::create($uri, $method, array(), $cookies, array(), $server);
 
-        $this->response = $this->cache->handle($this->request, HttpKernelInterface::MASTER_REQUEST, $this->catch);
+        $this->response = $this->cache->handle($this->request, null, HttpKernelInterface::MASTER_REQUEST, $this->catch);
 
         $this->responses[] = $this->response;
     }

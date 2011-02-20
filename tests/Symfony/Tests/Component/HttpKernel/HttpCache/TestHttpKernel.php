@@ -11,6 +11,8 @@
 
 namespace Symfony\Tests\Component\HttpKernel\HttpCache;
 
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+
 use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,6 +43,10 @@ class TestHttpKernel extends HttpKernel implements ControllerResolverInterface
 
     public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = false)
     {
+        if (null === $response) {
+            $response = new Response();
+        }
+
         $this->catch = $catch;
         return parent::handle($request, $response, $type, $catch);
     }
@@ -57,20 +63,20 @@ class TestHttpKernel extends HttpKernel implements ControllerResolverInterface
 
     public function getArguments(Request $request, Response $response, $controller)
     {
-        return array($request);
+        return array($request, $response);
     }
 
-    public function callController(Request $request)
+    public function callController(Request $request, Response $response)
     {
         $this->called = true;
 
-        $response = new Response($this->body, $this->status, $this->headers);
+        $response->setContent($this->body);
+        $response->setStatusCode($this->status);
+        $response->headers = new ResponseHeaderBag($this->headers);
 
         if (null !== $this->customizer) {
             call_user_func($this->customizer, $request, $response);
         }
-
-        return $response;
     }
 
     public function hasBeenCalled()

@@ -131,7 +131,7 @@ class HttpCache implements HttpKernelInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
+    public function handle(Request $request, Response $passedResponse = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
         // FIXME: catch exceptions and implement a 500 error page here? -> in Varnish, there is a built-in error page mechanism
         if (HttpKernelInterface::MASTER_REQUEST === $type) {
@@ -172,7 +172,17 @@ class HttpCache implements HttpKernelInterface
             }
         }
 
-        return $response;
+        if (null === $passedResponse) {
+            return $response;
+        }
+
+        $passedResponse->headers = $response->headers;
+        $passedResponse->setContent($response->getContent());
+        $passedResponse->setProtocolVersion($response->getProtocolVersion());
+        $passedResponse->setStatusCode($response->getStatusCode(), $response->getStatusText());
+        $passedResponse->setCharset($response->getCharset());
+
+        return $passedResponse;
     }
 
     /**
@@ -470,7 +480,6 @@ class HttpCache implements HttpKernelInterface
                     $entry->setContent($new->getContent());
                     $entry->setStatusCode($new->getStatusCode());
                     $entry->setProtocolVersion($new->getProtocolVersion());
-                    $entry->setCookies($new->getCookies());
 
                     return true;
                 } else {

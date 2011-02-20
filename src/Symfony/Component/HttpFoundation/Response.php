@@ -125,6 +125,18 @@ class Response
     }
 
     /**
+     * Merges cookies of the passed response into this instance.
+     *
+     * @param Response $response
+     */
+    public function mergeCookies(Response $response)
+    {
+        foreach ($response->headers->getCookies() as $cookie) {
+            $this->headers->setCookie($cookie);
+        }
+    }
+
+    /**
      * Sends HTTP headers.
      */
     public function sendHeaders()
@@ -232,6 +244,16 @@ class Response
     public function getStatusCode()
     {
         return $this->statusCode;
+    }
+
+    /**
+     * Retrieves the status text for the current web response.
+     *
+     * @return string Status Text
+     */
+    public function getStatusText()
+    {
+        return $this->statusText;
     }
 
     /**
