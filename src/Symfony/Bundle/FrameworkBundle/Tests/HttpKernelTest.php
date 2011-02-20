@@ -17,7 +17,7 @@ class HttpKernelTest extends \PHPUnit_Framework_TestCase
     public function testHandle($type)
     {
         $request = new Request();
-        $expected = new Response();
+        $response = new Response();
 
         $container = $this->getMock('Symfony\Component\DependencyInjection\ContainerInterface');
         $container
@@ -30,34 +30,20 @@ class HttpKernelTest extends \PHPUnit_Framework_TestCase
             ->method('leaveScope')
             ->with($this->equalTo('request'))
         ;
-        $container
-            ->expects($this->once())
-            ->method('set')
-            ->with($this->equalTo('request'), $this->equalTo($request), $this->equalTo('request'))
-        ;
 
         $dispatcher = new EventDispatcher();
         $resolver = $this->getMock('Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface');
         $kernel = new HttpKernel($container, $resolver);
         $kernel->setEventDispatcher($dispatcher);
 
-        $controller = function() use($expected)
-        {
-            return $expected;
-        };
-
         $resolver->expects($this->once())
             ->method('getController')
-            ->with($request)
-            ->will($this->returnValue($controller));
+            ->will($this->returnValue(function() { }));
         $resolver->expects($this->once())
             ->method('getArguments')
-            ->with($request, $controller)
             ->will($this->returnValue(array()));
 
-        $actual = $kernel->handle($request, $type);
-
-        $this->assertSame($expected, $actual, '->handle() returns the response');
+        $this->assertSame($response, $kernel->handle($request, $response, $type), '->handle() returns the response');
     }
 
     /**
@@ -79,35 +65,32 @@ class HttpKernelTest extends \PHPUnit_Framework_TestCase
             ->method('leaveScope')
             ->with($this->equalTo('request'))
         ;
-        $container
-            ->expects($this->once())
-            ->method('set')
-            ->with($this->equalTo('request'), $this->equalTo($request), $this->equalTo('request'))
-        ;
 
+        $response = new Response();
         $dispatcher = new EventDispatcher();
         $resolver = $this->getMock('Symfony\\Component\\HttpKernel\\Controller\\ControllerResolverInterface');
         $kernel = new HttpKernel($container, $resolver);
         $kernel->setEventDispatcher($dispatcher);
 
-        $controller = function() use ($expected)
-        {
+        $controller = function() use($expected) {
             throw $expected;
         };
 
         $resolver->expects($this->once())
             ->method('getController')
-            ->with($request)
             ->will($this->returnValue($controller));
         $resolver->expects($this->once())
             ->method('getArguments')
-            ->with($request, $controller)
             ->will($this->returnValue(array()));
 
         try {
-            $kernel->handle($request, $type);
+            $kernel->handle($request, $response, $type);
             $this->fail('->handle() suppresses the controller exception');
         } catch (\Exception $actual) {
+            if ($actual instanceof \PHPUnit_Framework_AssertionFailedError) {
+                throw $actual;
+            }
+
             $this->assertSame($expected, $actual, '->handle() throws the controller exception');
         }
     }

@@ -54,9 +54,9 @@ class SessionListenerTest extends \PHPUnit_Framework_TestCase
         $request->setSession($this->session);
         $response = new Response();
 
-        $this->assertSame($response, $this->listener->filter(new Event(
-            $this, 'core.response', array('request' => $request, 'request_type' => $type)
-        ), $response));
+        $this->listener->filter(new Event(
+            $this, 'core.response', array('request' => $request, 'request_type' => $type, 'response' => $response)
+        ));
     }
 
     private function sessionMustNotBeSaved()

@@ -23,6 +23,10 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
 
     static public function setUpBeforeClass()
     {
+        if (!isset($_SERVER['PHP_SELF'])) {
+            $_SERVER['PHP_SELF'] = '';
+        }
+
         self::$fixturesPath = realpath(__DIR__.'/Fixtures/');
         require_once self::$fixturesPath.'/FooCommand.php';
         require_once self::$fixturesPath.'/Foo1Command.php';

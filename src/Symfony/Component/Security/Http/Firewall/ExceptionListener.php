@@ -114,10 +114,6 @@ class ExceptionListener implements ListenerInterface
                 try {
                     if (null !== $this->accessDeniedHandler) {
                         $response = $this->accessDeniedHandler->handle($event, $request, $exception);
-
-                        if (!$response instanceof Response) {
-                            return;
-                        }
                     } else {
                         if (null === $this->errorPage) {
                             return;
@@ -126,7 +122,7 @@ class ExceptionListener implements ListenerInterface
                         $subRequest = Request::create($this->errorPage);
                         $subRequest->attributes->set(SecurityContextInterface::ACCESS_DENIED_ERROR, $exception->getMessage());
 
-                        $response = $event->getSubject()->handle($subRequest, HttpKernelInterface::SUB_REQUEST, true);
+                        $response = $event->getSubject()->handle($subRequest, $event->get('response'), HttpKernelInterface::SUB_REQUEST, true);
                         $response->setStatusCode(403);
                     }
                 } catch (\Exception $e) {
@@ -144,8 +140,6 @@ class ExceptionListener implements ListenerInterface
         }
 
         $event->setProcessed();
-
-        return $response;
     }
 
     protected function startAuthentication(EventInterface $event, Request $request, AuthenticationException $authException)

@@ -30,6 +30,10 @@ class CommandTest extends \PHPUnit_Framework_TestCase
 
     static public function setUpBeforeClass()
     {
+        if (!isset($_SERVER['PHP_SELF'])) {
+            $_SERVER['PHP_SELF'] = '';
+        }
+
         self::$fixturesPath = __DIR__.'/../Fixtures/';
         require_once self::$fixturesPath.'/TestCommand.php';
     }

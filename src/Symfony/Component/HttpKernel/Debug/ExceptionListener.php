@@ -85,7 +85,5 @@ class ExceptionListener
         $event->setProcessed();
 
         $handling = false;
-
-        return $response;
     }
 }
