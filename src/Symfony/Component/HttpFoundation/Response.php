@@ -117,6 +117,15 @@ class Response
     }
 
     /**
+     * Clones a response
+     *
+     */
+    public function duplicate()
+    {
+        return new static();
+    }
+
+    /**
      * Clones the current Response instance.
      */
     public function __clone()

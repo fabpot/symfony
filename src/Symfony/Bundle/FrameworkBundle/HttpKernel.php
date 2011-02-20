@@ -68,8 +68,9 @@ class HttpKernel extends BaseHttpKernel
     {
         $attributes['_controller'] = $controller;
         $subRequest = $this->container->get('request')->duplicate($query, null, $attributes);
+        $subResponse = $this->container->get('response')->duplicate();
 
-        return $this->handle($subRequest, null, HttpKernelInterface::SUB_REQUEST);
+        return $this->handle($subRequest, $subResponse, HttpKernelInterface::SUB_REQUEST);
     }
 
     /**
@@ -135,13 +136,14 @@ class HttpKernel extends BaseHttpKernel
         }
 
         try {
-            $response = $this->handle($subRequest, null, HttpKernelInterface::SUB_REQUEST, false);
+            $subResponse = $this->container->get('response')->duplicate();
+            $this->handle($subRequest, $subResponse, HttpKernelInterface::SUB_REQUEST, false);
 
-            if (!$response->isSuccessful()) {
-                throw new \RuntimeException(sprintf('Error when rendering "%s" (Status code is %s).', $request->getUri(), $response->getStatusCode()));
+            if (!$subResponse->isSuccessful()) {
+                throw new \RuntimeException(sprintf('Error when rendering "%s" (Status code is %s).', $subRequest->getUri(), $subResponse->getStatusCode()));
             }
 
-            return $response->getContent();
+            return $subResponse->getContent();
         } catch (\Exception $e) {
             if ($options['alt']) {
                 $alt = $options['alt'];
