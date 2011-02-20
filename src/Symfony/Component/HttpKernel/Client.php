@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\HttpKernel;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\BrowserKit\Client as BaseClient;
@@ -54,7 +56,7 @@ class Client extends BaseClient
      */
     protected function doRequest($request)
     {
-        return $this->kernel->handle($request);
+        return $this->kernel->handle($request, new Response());
     }
 
     /**
@@ -81,8 +83,10 @@ require_once '$requirePath';
 \$loader->registerNamespaces(array('Symfony' => '$symfonyPath'));
 \$loader->register();
 
+use Symfony\Component\HttpFoundation\Response;
+
 \$kernel = unserialize('$kernel');
-echo serialize(\$kernel->handle(unserialize('$request')));
+echo serialize(\$kernel->handle(unserialize('$request'), new Response()));
 EOF;
     }
 

@@ -29,13 +29,13 @@ class TestHttpKernel extends HttpKernel implements ControllerResolverInterface
         return array($this, 'callController');
     }
 
-    public function getArguments(Request $request, $controller)
+    public function getArguments(Request $request, Response $response, $controller)
     {
-        return array($request);
+        return array($request, $response);
     }
 
-    public function callController(Request $request)
+    public function callController(Request $request, Response $response)
     {
-        return new Response('Request: '.$request->getRequestUri());
+        $response->setContent('Request: '.$request->getRequestUri());
     }
 }

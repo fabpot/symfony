@@ -102,9 +102,9 @@ class ControllerResolver implements ControllerResolverInterface
         $arguments = array();
         foreach ($r->getParameters() as $param) {
             $class = $param->getClass();
-            if ($class && $class->isSubClassOf('Symfony\Component\HttpFoundation\Request')) {
+            if ($class && $class->isInstance($request)) {
                 $arguments[] = $request;
-            } else if ($class && $class->isSubClassOf('Symfony\Component\HttpFoundation\Response')) {
+            } else if ($class && $class->isInstance($response)) {
                 $arguments[] = $response;
             } else if (array_key_exists($param->getName(), $attributes)) {
                 $arguments[] = $attributes[$param->getName()];

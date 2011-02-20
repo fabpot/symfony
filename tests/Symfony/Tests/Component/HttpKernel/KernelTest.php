@@ -11,6 +11,8 @@
 
 namespace Symfony\Tests\Component\HttpKernel;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -157,6 +159,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $type = HttpKernelInterface::MASTER_REQUEST;
         $catch = true;
         $request = new Request();
+        $response = new Response();
 
         $httpKernelMock = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernel')
             ->disableOriginalConstructor()
@@ -164,7 +167,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $httpKernelMock
             ->expects($this->once())
             ->method('handle')
-            ->with($request, $type, $catch);
+            ->with($request, $response, $type, $catch);
 
         $kernel = $this->getMockBuilder('Symfony\Tests\Component\HttpKernel\KernelForTest')
             ->disableOriginalConstructor()
@@ -175,7 +178,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
             ->method('getHttpKernel')
             ->will($this->returnValue($httpKernelMock));
 
-        $kernel->handle($request, $type, $catch);
+        $kernel->handle($request, $response, $type, $catch);
     }
 
     public function testHandleBootsTheKernel()
@@ -183,6 +186,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         $type = HttpKernelInterface::MASTER_REQUEST;
         $catch = true;
         $request = new Request();
+        $response = new Response();
 
         $httpKernelMock = $this->getMockBuilder('Symfony\Component\HttpKernel\HttpKernel')
             ->disableOriginalConstructor()
@@ -204,7 +208,7 @@ class KernelTest extends \PHPUnit_Framework_TestCase
         // in the kernel constructor, which we don't call
         $kernel->setIsBooted(false);
 
-        $kernel->handle($request, $type, $catch);
+        $kernel->handle($request, $response, $type, $catch);
     }
 
     public function testStripComments()

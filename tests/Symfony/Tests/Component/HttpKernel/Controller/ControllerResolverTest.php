@@ -11,6 +11,8 @@
 
 namespace Symfony\Tests\Component\HttpKernel;
 
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -67,25 +69,31 @@ class ControllerResolverTest extends \PHPUnit_Framework_TestCase
 
         $request = Request::create('/');
         $controller = array(new self(), 'testGetArguments');
-        $this->assertEquals(array(), $resolver->getArguments($request, $controller), '->getArguments() returns an empty array if the method takes no arguments');
+        $this->assertEquals(array(), $resolver->getArguments($request, new Response(), $controller), '->getArguments() returns an empty array if the method takes no arguments');
 
         $request = Request::create('/');
         $request->attributes->set('foo', 'foo');
         $controller = array(new self(), 'controllerMethod1');
-        $this->assertEquals(array('foo'), $resolver->getArguments($request, $controller), '->getArguments() returns an array of arguments for the controller method');
+        $this->assertEquals(array('foo'), $resolver->getArguments($request, new Response(), $controller), '->getArguments() returns an array of arguments for the controller method');
 
         $request = Request::create('/');
         $request->attributes->set('foo', 'foo');
         $controller = array(new self(), 'controllerMethod2');
-        $this->assertEquals(array('foo', null), $resolver->getArguments($request, $controller), '->getArguments() uses default values if present');
+        $this->assertEquals(array('foo', null), $resolver->getArguments($request, new Response(), $controller), '->getArguments() uses default values if present');
 
         $request->attributes->set('bar', 'bar');
-        $this->assertEquals(array('foo', 'bar'), $resolver->getArguments($request, $controller), '->getArguments() overrides default values if provided in the request attributes');
+        $this->assertEquals(array('foo', 'bar'), $resolver->getArguments($request, new Response(), $controller), '->getArguments() overrides default values if provided in the request attributes');
 
         $request = Request::create('/');
         $request->attributes->set('foo', 'foo');
         $controller = function ($foo) {};
-        $this->assertEquals(array('foo'), $resolver->getArguments($request, $controller));
+        $this->assertEquals(array('foo'), $resolver->getArguments($request, new Response(), $controller));
+
+        $request = Request::create('/');
+        $request->attributes->set('foo', 'bar');
+        $response = new Response();
+        $controller = function(Request $req, $foo, Response $resp) { };
+        $this->assertEquals(array($request, 'bar', $response), $resolver->getArguments($request, $response, $controller));
 
         $request = Request::create('/');
         $request->attributes->set('foo', 'foo');
@@ -93,9 +101,13 @@ class ControllerResolverTest extends \PHPUnit_Framework_TestCase
         $controller = array(new self(), 'controllerMethod3');
 
         try {
-            $resolver->getArguments($request, $controller);
+            $resolver->getArguments($request, new Response(), $controller);
             $this->fail('->getArguments() throws a \RuntimeException exception if it cannot determine the argument value');
         } catch (\Exception $e) {
+            if ($e instanceof \PHPUnit_Framework_AssertionFailedError) {
+                throw $e;
+            }
+
             $this->assertInstanceOf('\RuntimeException', $e, '->getArguments() throws a \RuntimeException exception if it cannot determine the argument value');
         }
     }

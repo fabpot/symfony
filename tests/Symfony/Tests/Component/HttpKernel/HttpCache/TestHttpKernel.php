@@ -39,10 +39,10 @@ class TestHttpKernel extends HttpKernel implements ControllerResolverInterface
         parent::__construct(new EventDispatcher(), $this);
     }
 
-    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = false)
+    public function handle(Request $request, Response $response = null, $type = HttpKernelInterface::MASTER_REQUEST, $catch = false)
     {
         $this->catch = $catch;
-        return parent::handle($request, $type, $catch);
+        return parent::handle($request, $response, $type, $catch);
     }
 
     public function isCatchingExceptions()
@@ -55,7 +55,7 @@ class TestHttpKernel extends HttpKernel implements ControllerResolverInterface
         return array($this, 'callController');
     }
 
-    public function getArguments(Request $request, $controller)
+    public function getArguments(Request $request, Response $response, $controller)
     {
         return array($request);
     }
