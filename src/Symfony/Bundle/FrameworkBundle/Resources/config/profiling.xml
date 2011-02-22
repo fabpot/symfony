@@ -6,7 +6,8 @@
 
     <parameters>
         <parameter key="profiler.class">Symfony\Component\HttpKernel\Profiler\Profiler</parameter>
-        <parameter key="profiler.storage.class">Symfony\Component\HttpKernel\Profiler\SqliteProfilerStorage</parameter>
+        <parameter key="profiler.storage.sqlite.class">Symfony\Component\HttpKernel\Profiler\SqliteProfilerStorage</parameter>
+        <parameter key="profiler.storage.pdo.class">Symfony\Component\HttpKernel\Profiler\PdoProfilerStorage</parameter>
         <parameter key="profiler.storage.file">%kernel.cache_dir%/profiler.db</parameter>
         <parameter key="profiler.storage.lifetime">86400</parameter>
         <parameter key="profiler_listener.class">Symfony\Bundle\FrameworkBundle\Profiler\ProfilerListener</parameter>
@@ -19,8 +20,13 @@
             <argument type="service" id="logger" on-invalid="null" />
         </service>
 
-        <service id="profiler.storage" class="%profiler.storage.class%" public="false">
+        <service id="profiler.storage.sqlite" class="%profiler.storage.sqlite.class%" public="false">
             <argument>%profiler.storage.file%</argument>
+            <argument>%profiler.storage.lifetime%</argument>
+        </service>
+
+        <service id="profiler.storage.pdo" class="%profiler.storage.pdo.class%" public="false">
+            <argument type="service" id="pdo_connection" />
             <argument>%profiler.storage.lifetime%</argument>
         </service>
 
@@ -31,5 +37,7 @@
             <argument type="service" id="profiler.request_matcher" on-invalid="null" />
             <argument>%profiler_listener.only_exceptions%</argument>
         </service>
+
+        <service id="profiler.storage" alias="profiler.storage.sqlite" public="false" />
     </services>
 </container>

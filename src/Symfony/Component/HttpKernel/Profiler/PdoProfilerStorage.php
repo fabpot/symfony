@@ -1,0 +1,169 @@
+<?php
+
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien.potencier@symfony-project.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Symfony\Component\HttpKernel\Profiler;
+
+use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
+
+/**
+ * PdoProfilerStorage stores profiling information in a PDO supported database.
+ *
+ * @author Pablo Godel <pgodel@gmail.com>
+ */
+class PdoProfilerStorage implements ProfilerStorageInterface
+{
+    protected $db;
+    protected $lifetime;
+
+    /**
+     * Constructor.
+     *
+     * @param string  $db    The PDO object
+     * @param integer $lifetime The lifetime to use for the purge
+     */
+    public function __construct(\PDO $db, $lifetime = 86400)
+    {
+        $this->db = $db;
+        $this->lifetime = (int) $lifetime;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function find($ip, $url, $limit)
+    {
+        $criteria = array();
+        $args = array();
+
+        if ($ip = preg_replace('/[^\d\.]/', '', $ip)) {
+            $criteria[] = 'ip LIKE :ip';
+            $args[':ip'] = '%'.$ip.'%';
+        }
+
+        if ($url) {
+            $criteria[] = 'url LIKE :url ESCAPE "\"';
+            $args[':url'] = '%'.addcslashes($url, '%_\\').'%';
+        }
+
+        $criteria = $criteria ? 'WHERE '.implode(' AND ', $criteria) : '';
+
+        $db = $this->initDb();
+        $tokens = $this->fetch($db, 'SELECT token, ip, url, time FROM data '.$criteria.' ORDER BY time DESC LIMIT '.((integer) $limit), $args);
+
+        return $tokens;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function read($token)
+    {
+        $db = $this->initDb();
+        $args = array(':token' => $token);
+        $data = $this->fetch($db, 'SELECT data, ip, url, time FROM data WHERE token = :token LIMIT 1', $args);
+        if (isset($data[0]['data'])) {
+            return array($data[0]['data'], $data[0]['ip'], $data[0]['url'], $data[0]['time']);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($token, $parent, $data, $ip, $url, $time)
+    {
+        $db = $this->initDb();
+        $args = array(
+            ':token'        => $token,
+            ':parent'       => $parent,
+            ':data'         => $data,
+            ':ip'           => $ip,
+            ':url'          => $url,
+            ':time'         => $time,
+            ':created_at'   => time(),
+        );
+        try {
+            $this->exec($db, 'INSERT INTO data (token, parent, data, ip, url, time, created_at) VALUES (:token, :parent, :data, :ip, :url, :time, :created_at)', $args);
+            $this->cleanup();
+            $status = true;
+        } catch (\Exception $e) {
+            $status = false;
+        }
+
+        return $status;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function purge()
+    {
+        $db = $this->initDb();
+        $this->exec($db, 'DELETE FROM data');
+    }
+
+    protected function cleanup()
+    {
+        $db = $this->initDb();
+        $this->exec($db, 'DELETE FROM data WHERE created_at < :time', array(':time' => time() - $this->lifetime));
+    }
+
+    protected function initDb()
+    {
+        $db->exec('CREATE TABLE IF NOT EXISTS data (token STRING, data STRING, ip STRING, url STRING, time INTEGER, parent STRING, created_at INTEGER)');
+        $db->exec('CREATE INDEX IF NOT EXISTS data_created_at ON data (created_at)');
+        $db->exec('CREATE INDEX IF NOT EXISTS data_ip ON data (ip)');
+        $db->exec('CREATE INDEX IF NOT EXISTS data_url ON data (url)');
+        $db->exec('CREATE INDEX IF NOT EXISTS data_parent ON data (parent)');
+        $db->exec('CREATE UNIQUE INDEX IF NOT EXISTS data_token ON data (token)');
+
+        return $db;
+    }
+
+    /**
+     * @throws \RuntimeException When the database cannot successfully prepare the statement
+     */
+    protected function exec($db, $query, array $args = array())
+    {
+        $stmt = $db->prepare($query);
+
+        if (false === $stmt) {
+            throw new \RuntimeException('The database cannot successfully prepare the statement');
+        }
+
+        foreach ($args as $arg => $val) {
+            $stmt->bindValue($arg, $val, is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
+        }
+        $success = $stmt->execute();
+        if (!$success) {
+            throw new \RuntimeException(sprintf('Error executing SQL query "%s"', $query));
+        }
+    }
+
+    protected function fetch($db, $query, array $args = array())
+    {
+        $return = array();
+        $stmt = $db->prepare($query);
+
+        foreach ($args as $arg => $val) {
+            $stmt->bindValue($arg, $val, is_int($val) ? \PDO::PARAM_INT : \PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $return = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $return;
+    }
+
+    protected function close($db)
+    {
+    }
+}
