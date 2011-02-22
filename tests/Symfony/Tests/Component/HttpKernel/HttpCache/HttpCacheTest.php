@@ -185,7 +185,6 @@ class HttpCacheTest extends HttpCacheTestCase
         $this->assertEquals('"public tag"', $this->response->headers->get('ETag'));
         $this->assertEquals('public data', $this->response->getContent());
         $this->assertTraceContains('miss');
-        $this->assertTraceContains('store');
 
         $this->request('GET', '/', array(), array('authenticated' => ''));
         $this->assertHttpKernelIsCalled();
