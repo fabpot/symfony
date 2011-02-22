@@ -8,6 +8,9 @@
         <parameter key="profiler.class">Symfony\Component\HttpKernel\Profiler\Profiler</parameter>
         <parameter key="profiler.storage.sqlite.class">Symfony\Component\HttpKernel\Profiler\SqliteProfilerStorage</parameter>
         <parameter key="profiler.storage.pdo.class">Symfony\Component\HttpKernel\Profiler\PdoProfilerStorage</parameter>
+        <parameter key="profiler.storage.pdo.dsn">mysql:host=localhost;dbname=sf_profiler</parameter>
+        <parameter key="profiler.storage.pdo.username">root</parameter>
+        <parameter key="profiler.storage.pdo.password"></parameter>
         <parameter key="profiler.storage.file">%kernel.cache_dir%/profiler.db</parameter>
         <parameter key="profiler.storage.lifetime">86400</parameter>
         <parameter key="profiler_listener.class">Symfony\Bundle\FrameworkBundle\Profiler\ProfilerListener</parameter>
@@ -26,7 +29,7 @@
         </service>
 
         <service id="profiler.storage.pdo" class="%profiler.storage.pdo.class%" public="false">
-            <argument type="service" id="pdo_connection" />
+            <argument type="service" id="profiler.storage.pdo_connection"/>
             <argument>%profiler.storage.lifetime%</argument>
         </service>
 
@@ -38,6 +41,13 @@
             <argument>%profiler_listener.only_exceptions%</argument>
         </service>
 
+        <service id="profiler.storage.pdo_connection" class="PDO" public="false">
+          <argument>%profiler.storage.pdo.dsn%</argument>
+          <argument>%profiler.storage.pdo.username%</argument>
+          <argument>%profiler.storage.pdo.password%</argument>
+        </service>
+
         <service id="profiler.storage" alias="profiler.storage.sqlite" public="false" />
+        
     </services>
 </container>

@@ -20,7 +20,16 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollectorInterface;
  */
 class PdoProfilerStorage implements ProfilerStorageInterface
 {
+    /**
+     *
+     * @var \PDO The PDO object
+     */
     protected $db;
+
+    /**
+     *
+     * @var integer The lifetime to use for the purge
+     */
     protected $lifetime;
 
     /**
@@ -101,7 +110,6 @@ class PdoProfilerStorage implements ProfilerStorageInterface
 
         return $status;
     }
-
     /**
      * {@inheritdoc}
      */
@@ -119,7 +127,9 @@ class PdoProfilerStorage implements ProfilerStorageInterface
 
     protected function initDb()
     {
-        $db->exec('CREATE TABLE IF NOT EXISTS data (token STRING, data STRING, ip STRING, url STRING, time INTEGER, parent STRING, created_at INTEGER)');
+        $db = $this->db;
+
+        $db->exec('CREATE TABLE IF NOT EXISTS data (token char(32), data TEXT, ip varchar(255), url varchar(255), time INTEGER, parent varchar(255), created_at INTEGER)');
         $db->exec('CREATE INDEX IF NOT EXISTS data_created_at ON data (created_at)');
         $db->exec('CREATE INDEX IF NOT EXISTS data_ip ON data (ip)');
         $db->exec('CREATE INDEX IF NOT EXISTS data_url ON data (url)');
