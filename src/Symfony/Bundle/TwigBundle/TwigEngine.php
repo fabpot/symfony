@@ -11,9 +11,9 @@
 
 namespace Symfony\Bundle\TwigBundle;
 
+use Symfony\Component\HttpKernel\Controller\Response\Response;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\Templating\TemplateNameParserInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -103,10 +103,7 @@ class TwigEngine implements EngineInterface
      */
     public function renderResponse($view, array $parameters = array())
     {
-        $response = $this->container->get('response');
-        $response->setContent($this->render($view, $parameters));
-
-        return $response;
+        return new Response($this->render($view, $parameters));
     }
 
     /**

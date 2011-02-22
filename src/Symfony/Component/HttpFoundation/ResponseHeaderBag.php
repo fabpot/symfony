@@ -102,6 +102,22 @@ class ResponseHeaderBag extends HeaderBag
         $this->setCookie(new Cookie($name, null, 1, $path, $domain));
     }
 
+    public function merge(ResponseHeaderBag $headerBag)
+    {
+        foreach ($headerBag->all() as $key => $value) {
+            $this->set($key, $value, true);
+        }
+
+        $this->mergeCookies($headerBag->getCookies());
+    }
+
+    public function mergeCookies(array $cookies)
+    {
+        foreach ($cookies as $cookie) {
+            $this->setCookie($cookie);
+        }
+    }
+
     /**
      * Returns the calculated value of the cache-control header.
      *

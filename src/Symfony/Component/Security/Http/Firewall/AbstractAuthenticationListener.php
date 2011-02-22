@@ -231,12 +231,9 @@ abstract class AbstractAuthenticationListener implements ListenerInterface
         if (null !== $this->successHandler) {
             $response = $this->successHandler->onAuthenticationSuccess($event, $request, $token);
         } else {
-<<<<<<< HEAD
-=======
             $response = $event->get('response');
->>>>>>> f20fea2... replaced new Response() calls
             $path = $this->determineTargetUrl($request);
-            $response = new RedirectResponse(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
+            $response->setRedirect(0 !== strpos($path, 'http') ? $request->getUriForPath($path) : $path, 302);
         }
 
         if (null !== $this->rememberMeServices) {

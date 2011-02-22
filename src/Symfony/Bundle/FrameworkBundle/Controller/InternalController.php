@@ -11,8 +11,8 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Controller;
 
+use Symfony\Component\HttpKernel\Controller\Response\Response;
 use Symfony\Component\DependencyInjection\ContainerAware;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * InternalController.
@@ -26,8 +26,6 @@ class InternalController extends ContainerAware
      *
      * @param string $path       The path
      * @param string $controller The controller name
-     *
-     * @return Response A Response instance
      */
     public function indexAction($path, $controller)
     {
@@ -42,6 +40,8 @@ class InternalController extends ContainerAware
             $attributes->add($tmp);
         }
 
-        return $this->container->get('http_kernel')->forward($controller, $attributes->all(), $request->query->all());
+        $subResponse = $this->container->get('http_kernel')->forward($controller, $attributes->all(), $request->query->all());
+
+        return new Response($subResponse->getContent(), $subResponse->getStatusCode(), $subResponse->headers->all(), $subResponse->headers->getCookies());
     }
 }

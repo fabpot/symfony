@@ -11,10 +11,10 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Templating;
 
+use Symfony\Component\HttpKernel\Controller\Response\Response;
 use Symfony\Component\Templating\DelegatingEngine as BaseDelegatingEngine;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * DelegatingEngine selects an engine for a given template.
@@ -82,9 +82,6 @@ class DelegatingEngine extends BaseDelegatingEngine implements EngineInterface
      */
     public function renderResponse($view, array $parameters = array())
     {
-        $response = $this->container->get('response');
-        $response->setContent($this->render($view, $parameters));
-
-        return $response;
+        return new Response($this->render($view, $parameters));
     }
 }

@@ -11,11 +11,11 @@
 
 namespace Symfony\Bundle\FrameworkBundle\Templating;
 
+use Symfony\Component\HttpKernel\Controller\Response\Response;
 use Symfony\Component\Templating\PhpEngine as BasePhpEngine;
 use Symfony\Component\Templating\Loader\LoaderInterface;
 use Symfony\Component\Templating\TemplateNameParserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * This engine knows how to render Symfony templates.
@@ -70,12 +70,11 @@ class PhpEngine extends BasePhpEngine implements EngineInterface
      *
      * @param string   $view       The view name
      * @param array    $parameters An array of parameters to pass to the view
+     *
+     * @return Response
      */
     public function renderResponse($view, array $parameters = array())
     {
-        $response = $this->container->get('response');
-        $response->setContent($this->render($view, $parameters));
-
-        return $response;
+        return new Response($this->render($view, $parameters));
     }
 }

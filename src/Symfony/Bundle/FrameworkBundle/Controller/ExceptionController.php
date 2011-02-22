@@ -69,8 +69,7 @@ class ExceptionController extends ContainerAware
                 'currentContent' => $currentContent,
             )
         );
-
-        $response->setStatusCode($code);
+        $response->statusCode = $code;
 
         return $response;
     }

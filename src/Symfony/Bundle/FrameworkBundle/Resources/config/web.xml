@@ -8,6 +8,7 @@
         <parameter key="request_listener.class">Symfony\Bundle\FrameworkBundle\RequestListener</parameter>
         <parameter key="controller_resolver.class">Symfony\Bundle\FrameworkBundle\Controller\ControllerResolver</parameter>
         <parameter key="controller_name_converter.class">Symfony\Bundle\FrameworkBundle\Controller\ControllerNameParser</parameter>
+        <parameter key="controller_response_listener.class">Symfony\Component\HttpKernel\View\ControllerResponseListener</parameter>
         <parameter key="response_listener.class">Symfony\Component\HttpKernel\ResponseListener</parameter>
         <parameter key="exception_listener.class">Symfony\Component\HttpKernel\Debug\ExceptionListener</parameter>
         <parameter key="exception_listener.controller">Symfony\Bundle\FrameworkBundle\Controller\ExceptionController::showAction</parameter>
@@ -30,6 +31,10 @@
             <argument type="service" id="service_container" />
             <argument type="service" id="router" />
             <argument type="service" id="logger" on-invalid="ignore" />
+        </service>
+
+        <service id="controller_response_listener" class="%controller_response_listener.class%">
+            <tag name="kernel.listener" event="core.view" method="handle" />
         </service>
 
         <service id="response_listener" class="%response_listener.class%">
