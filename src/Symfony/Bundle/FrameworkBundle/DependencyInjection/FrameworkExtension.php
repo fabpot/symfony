@@ -198,17 +198,20 @@ class FrameworkExtension extends Extension
             $container->setParameter('profiler_listener.only_exceptions', $config['only_exceptions']);
         }
 
-        if (isset($config['profiler']['storage_id'])) {
+        if (isset($config['storage_id'])) {
             $container->setAlias('profiler.storage', 'profiler.storage.'.$config['profiler']['storage_id']);
         }
-        if (isset($config['profiler']['pdo']['dsn'])) {
-            $container->setParameter('profiler.storage.pdo.dsn', $config['profiler']['pdo']['dsn']);
-        }
-        if (isset($config['profiler']['pdo']['username'])) {
-            $container->setParameter('profiler.storage.pdo.username', $config['profiler']['pdo']['username']);
-        }
-        if (isset($config['profiler']['pdo']['password'])) {
-            $container->setParameter('profiler.storage.pdo.password', $config['profiler']['pdo']['password']);
+
+        if (isset ($config['pdo'])) {
+            if (isset($config['pdo']['dsn'])) {
+                $container->setParameter('profiler.storage.pdo.dsn', $config['profiler']['pdo']['dsn']);
+            }
+            if (isset($config['pdo']['username'])) {
+                $container->setParameter('profiler.storage.pdo.username', $config['profiler']['pdo']['username']);
+            }
+            if (isset($config['pdo']['password'])) {
+                $container->setParameter('profiler.storage.pdo.password', $config['profiler']['pdo']['password']);
+            }
         }
 
         if (isset($config['matcher'])) {

@@ -85,6 +85,12 @@ class Configuration
                     ->scalarNode('service')->end()
                     ->end()
                 ->end()
+                ->scalarNode('storage_id')->defaultValue('sqlite')->end()
+                ->arrayNode('pdo')
+                    ->scalarNode('dsn')->end()
+                    ->scalarNode('username')->end()
+                    ->scalarNode('password')->end()
+                ->end()
         ;
     }
 
