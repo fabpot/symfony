@@ -25,6 +25,8 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
  * $output = new StreamOutput(fopen('/path/to/output.log', 'a', false));
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @api
  */
 class StreamOutput extends Output
 {
@@ -33,12 +35,15 @@ class StreamOutput extends Output
     /**
      * Constructor.
      *
-     * @param mixed   $stream    A stream resource
-     * @param integer $verbosity The verbosity level (self::VERBOSITY_QUIET, self::VERBOSITY_NORMAL, self::VERBOSITY_VERBOSE)
-     * @param Boolean $decorated Whether to decorate messages or not (null for auto-guessing)
-     * @param OutputFormatter   $formatter  Output formatter instance
+     * @param mixed           $stream    A stream resource
+     * @param integer         $verbosity The verbosity level (self::VERBOSITY_QUIET, self::VERBOSITY_NORMAL,
+     *                                   self::VERBOSITY_VERBOSE)
+     * @param Boolean         $decorated Whether to decorate messages or not (null for auto-guessing)
+     * @param OutputFormatter $formatter Output formatter instance
      *
      * @throws \InvalidArgumentException When first argument is not a real stream
+     *
+     * @api
      */
     public function __construct($stream, $verbosity = self::VERBOSITY_NORMAL, $decorated = null, OutputFormatter $formatter = null)
     {

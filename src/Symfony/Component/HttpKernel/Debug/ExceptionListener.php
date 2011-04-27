@@ -26,8 +26,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ExceptionListener
 {
-    protected $controller;
-    protected $logger;
+    private $controller;
+    private $logger;
 
     public function __construct($controller, LoggerInterface $logger = null)
     {
@@ -56,22 +56,18 @@ class ExceptionListener
 
         $logger = null !== $this->logger ? $this->logger->getDebugLogger() : null;
 
+        $flattenException = FlattenException::create($exception);
+        if ($exception instanceof HttpExceptionInterface) {
+            $flattenException->setStatusCode($exception->getStatusCode());
+            $flattenException->setHeaders($exception->getHeaders());
+        }
+
         $attributes = array(
             '_controller' => $this->controller,
-            'exception'   => FlattenException::create($exception),
+            'exception'   => $flattenException,
             'logger'      => $logger,
             // when using CLI, we force the format to be TXT
             'format'      => 0 === strncasecmp(PHP_SAPI, 'cli', 3) ? 'txt' : $request->getRequestFormat(),
-        );
-
-        $attributes += $exception instanceof HttpExceptionInterface ? array(
-            'code'    => $exception->getStatusCode(),
-            'message' => $exception->getStatusMessage(),
-            'headers' => $exception->getHeaders(),
-        ) : array(
-            'code'    => 500,
-            'message' => 'Internal Server Error',
-            'headers' => array(),
         );
 
         $request = $request->duplicate(null, null, $attributes);

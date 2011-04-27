@@ -16,19 +16,28 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RequestMatcherTest extends \PHPUnit_Framework_TestCase
 {
-    public function testIp()
+    /**
+     * @dataProvider testIpProvider
+     */
+    public function testIp($matches, $remoteAddr, $cidr)
     {
+        $request = Request::create('', 'get', array(), array(), array(), array('REMOTE_ADDR' => $remoteAddr));
+
         $matcher = new RequestMatcher();
+        $matcher->matchIp($cidr);
 
-        $matcher->matchIp('192.168.1.1/1');
-        $request = Request::create('', 'get', array(), array(), array(), array('REMOTE_ADDR' => '192.168.1.1'));
-        $this->assertTrue($matcher->matches($request));
+        $this->assertEquals($matches, $matcher->matches($request));
+    }
 
-        $matcher->matchIp('192.168.1.0/24');
-        $this->assertTrue($matcher->matches($request));
-
-        $matcher->matchIp('1.2.3.4/1');
-        $this->assertFalse($matcher->matches($request));
+    public function testIpProvider()
+    {
+        return array(
+            array(true, '192.168.1.1', '192.168.1.1/1'),
+            array(true, '192.168.1.1', '192.168.1.0/24'),
+            array(false, '192.168.1.1', '1.2.3.4/1'),
+            array(true, '2a01:198:603:0:396e:4789:8e99:890f', '2a01:198:603:0::/65'),
+            array(false, '2a00:198:603:0:396e:4789:8e99:890f', '2a01:198:603:0::/65'),
+        );
     }
 
     public function testMethod()
@@ -50,8 +59,15 @@ class RequestMatcherTest extends \PHPUnit_Framework_TestCase
     {
         $matcher = new RequestMatcher();
 
-        $matcher->matchHost('.*\.example\.com');
         $request = Request::create('', 'get', array(), array(), array(), array('HTTP_HOST' => 'foo.example.com'));
+
+        $matcher->matchHost('.*\.example\.com');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchHost('\.example\.com$');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchHost('^.*\.example\.com$');
         $this->assertTrue($matcher->matches($request));
 
         $matcher->matchMethod('.*\.sensio\.com');
@@ -62,11 +78,39 @@ class RequestMatcherTest extends \PHPUnit_Framework_TestCase
     {
         $matcher = new RequestMatcher();
 
-        $matcher->matchPath('/admin/.*');
         $request = Request::create('/admin/foo');
+
+        $matcher->matchPath('/admin/.*');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchPath('/admin');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchPath('^/admin/.*$');
         $this->assertTrue($matcher->matches($request));
 
         $matcher->matchMethod('/blog/.*');
         $this->assertFalse($matcher->matches($request));
     }
+
+    public function testAttributes()
+    {
+        $matcher = new RequestMatcher();
+
+        $request = Request::create('/admin/foo');
+        $request->attributes->set('foo', 'foo_bar');
+
+        $matcher->matchAttribute('foo', 'foo_.*');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchAttribute('foo', 'foo');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchAttribute('foo', '^foo_bar$');
+        $this->assertTrue($matcher->matches($request));
+
+        $matcher->matchAttribute('foo', 'babar');
+        $this->assertFalse($matcher->matches($request));
+    }
 }
+

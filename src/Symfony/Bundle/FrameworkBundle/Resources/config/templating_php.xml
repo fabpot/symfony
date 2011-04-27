@@ -16,6 +16,7 @@
         <parameter key="templating.helper.translator.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\TranslatorHelper</parameter>
         <parameter key="templating.helper.form.class">Symfony\Bundle\FrameworkBundle\Templating\Helper\FormHelper</parameter>
         <parameter key="templating.globals.class">Symfony\Bundle\FrameworkBundle\Templating\GlobalVariables</parameter>
+        <parameter key="templating.asset_package.class">Symfony\Component\Templating\Asset\AssetPackage</parameter>
     </parameters>
 
     <services>
@@ -34,9 +35,9 @@
         <service id="templating.helper.assets" class="%templating.helper.assets.class%">
             <tag name="templating.helper" alias="assets" />
             <argument type="service" id="request" strict="false" />
-            <argument>%templating.assets.base_urls%</argument>
-            <argument>%templating.assets.version%</argument>
-            <argument>%templating.assets.packages%</argument>
+            <argument type="collection" /> <!-- assets base URLs -->
+            <argument /> <!-- assets version -->
+            <argument type="collection" /> <!-- packages -->
         </service>
 
         <service id="templating.helper.request" class="%templating.helper.request.class%">
@@ -61,7 +62,7 @@
 
         <service id="templating.helper.code" class="%templating.helper.code.class%">
             <tag name="templating.helper" alias="code" />
-            <argument>%debug.file_link_format%</argument>
+            <argument /> <!-- file link format -->
             <argument>%kernel.root_dir%</argument>
         </service>
 

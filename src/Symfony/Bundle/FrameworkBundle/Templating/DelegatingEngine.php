@@ -29,6 +29,7 @@ class DelegatingEngine extends BaseDelegatingEngine implements EngineInterface
      * Constructor.
      *
      * @param ContainerInterface $container The DI container
+     * @param array              $engineIds An array of engine Ids
      */
     public function __construct(ContainerInterface $container, array $engineIds)
     {
@@ -69,7 +70,7 @@ class DelegatingEngine extends BaseDelegatingEngine implements EngineInterface
             }
         }
 
-        throw new \RuntimeException(sprintf('No engine is able to work with the %s template.', json_encode($name)));
+        throw new \RuntimeException(sprintf('No engine is able to work with the template "%s".', $name));
     }
 
     /**

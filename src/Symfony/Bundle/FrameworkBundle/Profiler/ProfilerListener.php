@@ -27,22 +27,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ProfilerListener
 {
     protected $container;
-    protected $exception;
-    protected $onlyException;
     protected $matcher;
+    protected $onlyException;
+    protected $onlyMasterRequests;
+    protected $exception;
 
     /**
      * Constructor.
      *
-     * @param ContainerInterface      $container     A ContainerInterface instance
-     * @param RequestMatcherInterface $matcher       A RequestMatcher instance
-     * @param Boolean                 $onlyException true if the profiler only collects data when an exception occurs, false otherwise
+     * @param ContainerInterface      $container          A ContainerInterface instance
+     * @param RequestMatcherInterface $matcher            A RequestMatcher instance
+     * @param Boolean                 $onlyException      true if the profiler only collects data when an exception occurs, false otherwise
+     * @param Boolean                 $onlyMasterRequests true if the profiler only collects data when the request is a master request, false otherwise
      */
-    public function __construct(ContainerInterface $container, RequestMatcherInterface $matcher = null, $onlyException = false)
+    public function __construct(ContainerInterface $container, RequestMatcherInterface $matcher = null, $onlyException = false, $onlyMasterRequests = false)
     {
         $this->container = $container;
         $this->matcher = $matcher;
-        $this->onlyException = $onlyException;
+        $this->onlyException = (Boolean) $onlyException;
+        $this->onlyMasterRequests = (Boolean) $onlyMasterRequests;
     }
 
     /**
@@ -81,11 +84,17 @@ class ProfilerListener
     {
         $response = $event->getResponse();
 
-        if (null !== $this->matcher && !$this->matcher->matches($event->getRequest())) {
-            return $response;
+        if ($this->onlyMasterRequests && HttpKernelInterface::MASTER_REQUEST !== $event->getRequestType()) {
+            return;
         }
 
         if ($this->onlyException && null === $this->exception) {
+            return;
+        }
+
+        $this->exception = null;
+
+        if (null !== $this->matcher && !$this->matcher->matches($event->getRequest())) {
             return;
         }
 
@@ -96,6 +105,5 @@ class ProfilerListener
         }
 
         $profiler->collect($event->getRequest(), $event->getResponse(), $this->exception);
-        $this->exception = null;
     }
 }

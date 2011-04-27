@@ -12,7 +12,6 @@
 namespace Symfony\Component\Security\Http;
 
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\Events;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -36,7 +35,8 @@ class Firewall
     /**
      * Constructor.
      *
-     * @param FirewallMap $map A FirewallMap instance
+     * @param FirewallMap              $map        A FirewallMap instance
+     * @param EventDispatcherInterface $dispatcher An EventDispatcherInterface instance
      */
     public function __construct(FirewallMapInterface $map, EventDispatcherInterface $dispatcher)
     {

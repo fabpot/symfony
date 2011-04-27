@@ -43,17 +43,17 @@ class ApacheMatcherDumper extends MatcherDumper
         $rules = array("# skip \"real\" requests\nRewriteCond %{REQUEST_FILENAME} -f\nRewriteRule .* - [QSA,L]");
         $methodVars = array();
 
-        foreach ($this->routes->all() as $name => $route) {
+        foreach ($this->getRoutes()->all() as $name => $route) {
             $compiledRoute = $route->compile();
 
             // prepare the apache regex
-            $regex = preg_replace('/\?P<.+?>/', '', substr($compiledRoute->getRegex(), 1, -2));
+            $regex = preg_replace('/\?P<.+?>/', '', substr(str_replace(array("\n", ' '), '', $compiledRoute->getRegex()), 1, -2));
             $regex = '^'.preg_quote($options['base_uri']).substr($regex, 1);
 
             $hasTrailingSlash = '/$' == substr($regex, -2) && '^/$' != $regex;
 
             $variables = array('E=_ROUTING__route:'.$name);
-            foreach (array_keys($compiledRoute->getVariables()) as $i => $variable) {
+            foreach ($compiledRoute->getVariables() as $i => $variable) {
                 $variables[] = 'E=_ROUTING_'.$variable.':%'.($i + 1);
             }
             foreach ($route->getDefaults() as $key => $value) {

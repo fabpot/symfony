@@ -26,7 +26,7 @@ class PhpFileLoader extends FileLoader
     /**
      * Loads a PHP file.
      *
-     * @param mixed  $resource The resource
+     * @param mixed  $file The resource
      * @param string $type The resource type
      */
     public function load($file, $type = null)
@@ -36,7 +36,7 @@ class PhpFileLoader extends FileLoader
         $loader = $this;
 
         $path = $this->locator->locate($file);
-        $this->currentDir = dirname($path);
+        $this->setCurrentDir(dirname($path));
         $this->container->addResource(new FileResource($path));
 
         include $path;

@@ -12,6 +12,7 @@
 namespace Symfony\Component\Config\Loader;
 
 use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\Config\Exception\FileLoaderImportException;
 
 /**
  * FileLoader is the abstract class used by all built-in loaders that are file based.
@@ -21,14 +22,22 @@ use Symfony\Component\Config\FileLocatorInterface;
 abstract class FileLoader extends Loader
 {
     protected $locator;
-    protected $currentDir;
+
+    private $currentDir;
 
     /**
      * Constructor.
+     *
+     * @param FileLocatorInterface $locator A FileLocatorInterface instance
      */
     public function __construct(FileLocatorInterface $locator)
     {
         $this->locator = $locator;
+    }
+
+    public function setCurrentDir($dir)
+    {
+        $this->currentDir = $dir;
     }
 
     public function getLocator()
@@ -45,7 +54,7 @@ abstract class FileLoader extends Loader
      *
      * @return mixed
      */
-    public function import($resource, $type = null, $ignoreErrors = false)
+    public function import($resource, $type = null, $ignoreErrors = false, $sourceResource = null)
     {
         try {
             $loader = $this->resolve($resource, $type);
@@ -57,7 +66,12 @@ abstract class FileLoader extends Loader
             return $loader->load($resource);
         } catch (\Exception $e) {
             if (!$ignoreErrors) {
-                throw $e;
+                // prevent embedded imports from nesting multiple exceptions
+                if ($e instanceof FileLoaderImportException) {
+                    throw $e;
+                }
+
+                throw new FileLoaderImportException($resource, $sourceResource, null, $e);
             }
         }
     }

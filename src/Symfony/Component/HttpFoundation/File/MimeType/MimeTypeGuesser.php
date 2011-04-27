@@ -2,7 +2,7 @@
 
 /*
  * This file is part of the Symfony package.
- * 
+ *
  * (c) Fabien Potencier <fabien@symfony.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -63,7 +63,9 @@ class MimeTypeGuesser implements MimeTypeGuesserInterface
      */
     private function __construct()
     {
-        $this->register(new FileBinaryMimeTypeGuesser());
+        if (FileBinaryMimeTypeGuesser::isSupported()) {
+            $this->register(new FileBinaryMimeTypeGuesser());
+        }
 
         if (ContentTypeMimeTypeGuesser::isSupported()) {
             $this->register(new ContentTypeMimeTypeGuesser());

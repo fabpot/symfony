@@ -17,11 +17,7 @@
             <span style="margin: 0; padding: 0; color: #979696;">|</span>
             <span{{ not collector.route ? ' style="color:#a33"' : '' }}>{{ collector.route ? collector.route : 'NONE' }}</span>
             <span style="margin: 0; padding: 0; color: #979696;">|</span>
-            <span>{{ collector.format }}</span>
-            <span style="margin: 0; padding: 0; color: #979696;">|</span>
             <span style="color: {{ 200 == collector.statuscode ? '#759e1a' : '#a33' }}">{{ collector.statuscode }}</span>
-            <span style="margin: 0; padding: 0; color: #979696;">|</span>
-            <span>{{ collector.contenttype }}</span>
         {% endspaceless %}
     {% endset %}
     {% include 'WebProfilerBundle:Profiler:toolbar_item.html.twig' with { 'link': profiler_url } %}
@@ -75,11 +71,23 @@
         </p>
     {% endif %}
 
-    <h2>Requests Headers</h2>
+    <h2>Request Headers</h2>
 
     {% include 'WebProfilerBundle:Profiler:bag.html.twig' with { 'bag': collector.requestheaders } only %}
 
-    <h2>Requests Server Parameters</h2>
+    <h2>Request Content</h2>
+
+    <p>
+        {% if collector.content == false %}
+            <em>Request content not available (it was retrieved as a resource).</em>
+        {% elseif collector.content %}
+            <pre>{{ collector.content }}</pre>
+        {% else %}
+            <em>No content</em>
+        {% endif %}
+    </p>
+
+    <h2>Request Server Parameters</h2>
 
     {% include 'WebProfilerBundle:Profiler:bag.html.twig' with { 'bag': collector.requestserver } only %}
 
@@ -87,7 +95,7 @@
 
     {% include 'WebProfilerBundle:Profiler:bag.html.twig' with { 'bag': collector.responseheaders } only %}
 
-    <h2>Response Session Attributes</h2>
+    <h2>Session Attributes</h2>
 
     {% if collector.sessionattributes|length %}
         <table>
@@ -95,17 +103,17 @@
                 <th>Key</th>
                 <th>Value</th>
             </tr>
-
-            {% for key, value in collector.sessionattributes %}
+            {% set attributes = collector.sessionattributes %}
+            {% for key in attributes|keys|sort %}
                 <tr>
                     <th>{{ key }}</th>
-                    <td>{{ value|dump }}</td>
+                    <td>{{ attributes[key]|yaml_dump }}</td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
         <p>
-            <em>No request session attributes</em>
+            <em>No session attributes</em>
         </p>
     {% endif %}
 

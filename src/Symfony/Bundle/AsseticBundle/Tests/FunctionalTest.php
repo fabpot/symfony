@@ -13,7 +13,7 @@ namespace Symfony\Bundle\AsseticBundle\Tests;
 
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
+use Symfony\Component\HttpKernel\Util\Filesystem;
 
 /**
  * @group functional
@@ -44,33 +44,27 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider provideDebugAndAssetCount
+     * @dataProvider provideAmDebugAndAssetCount
      */
     public function testKernel($debug, $count)
     {
         $kernel = new TestKernel('test', $debug);
         $kernel->boot();
-        $container = $kernel->getContainer();
 
-        $names = $container->get('assetic.asset_manager')->getNames();
-
-        $this->assertEquals($count, count($names));
+        $this->assertEquals($count, count($kernel->getContainer()->get('assetic.asset_manager')->getNames()));
     }
 
     /**
-     * @dataProvider provideDebugAndAssetCount
+     * @dataProvider provideRouterDebugAndAssetCount
      */
     public function testRoutes($debug, $count)
     {
         $kernel = new TestKernel('test', $debug);
         $kernel->boot();
-        $container = $kernel->getContainer();
-
-        $routes = $container->get('router')->getRouteCollection()->all();
 
         $matches = 0;
-        foreach (array_keys($routes) as $name) {
-            if (0 === strpos($name, 'assetic_')) {
+        foreach (array_keys($kernel->getContainer()->get('router')->getRouteCollection()->all()) as $name) {
+            if (0 === strpos($name, '_assetic_')) {
                 ++$matches;
             }
         }
@@ -108,11 +102,19 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, count($crawler->filter('script[src$=".js"]')));
     }
 
-    public function provideDebugAndAssetCount()
+    public function provideAmDebugAndAssetCount()
     {
         return array(
-            array(true, 5),
-            array(false, 2),
+            array(true, 3),
+            array(false, 3),
+        );
+    }
+
+    public function provideRouterDebugAndAssetCount()
+    {
+        return array(
+            array(true, 9),
+            array(false, 3),
         );
     }
 }

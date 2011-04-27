@@ -199,10 +199,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = new TestClient();
         $client->setNextResponse(new Response('<html><a href="/foo">foo</a></html>', 200, array('Set-Cookie' => 'foo=bar')));
         $client->request('GET', 'http://www.example.com/foo/foobar');
-        $this->assertEquals(array('foo' => 'bar'), $client->getCookieJar()->getValues('http://www.example.com/foo/foobar'), '->request() updates the CookieJar');
+        $this->assertEquals(array('foo' => 'bar'), $client->getCookieJar()->allValues('http://www.example.com/foo/foobar'), '->request() updates the CookieJar');
 
         $client->request('GET', 'bar');
-        $this->assertEquals(array('foo' => 'bar'), $client->getCookieJar()->getValues('http://www.example.com/foo/foobar'), '->request() updates the CookieJar');
+        $this->assertEquals(array('foo' => 'bar'), $client->getCookieJar()->allValues('http://www.example.com/foo/foobar'), '->request() updates the CookieJar');
     }
 
     public function testClick()
@@ -307,5 +307,28 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         } catch (\Exception $e) {
             $this->assertInstanceof('RuntimeException', $e, '->request() throws a \RuntimeException if the script has an error');
         }
+    }
+
+    public function testGetServerParameter()
+    {
+        $client = new TestClient();
+        $this->assertEquals('localhost', $client->getServerParameter('HTTP_HOST'));
+        $this->assertEquals('Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3', $client->getServerParameter('HTTP_USER_AGENT'));
+
+        $this->assertEquals('testvalue', $client->getServerParameter('testkey', 'testvalue'));
+    }
+
+    public function testSetServerParameter()
+    {
+        $client = new TestClient();
+
+        $this->assertEquals('localhost', $client->getServerParameter('HTTP_HOST'));
+        $this->assertEquals('Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3', $client->getServerParameter('HTTP_USER_AGENT'));
+
+        $client->setServerParameter('HTTP_HOST', 'testhost');
+        $this->assertEquals('testhost', $client->getServerParameter('HTTP_HOST'));
+
+        $client->setServerParameter('HTTP_USER_AGENT', 'testua');
+        $this->assertEquals('testua', $client->getServerParameter('HTTP_USER_AGENT'));
     }
 }

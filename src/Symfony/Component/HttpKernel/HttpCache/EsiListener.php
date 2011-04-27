@@ -22,8 +22,8 @@ use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
  */
 class EsiListener
 {
-    protected $i;
-    protected $esi;
+    private $i;
+    private $esi;
 
     /**
      * Constructor.
@@ -38,7 +38,7 @@ class EsiListener
     /**
      * Filters the Response.
      *
-     * @param FilterResponseEvent $event  A FilterResponseEvent instance
+     * @param FilterResponseEvent $event A FilterResponseEvent instance
      */
     public function onCoreResponse(FilterResponseEvent $event)
     {

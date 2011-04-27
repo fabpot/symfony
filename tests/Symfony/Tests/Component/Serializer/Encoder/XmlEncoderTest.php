@@ -65,7 +65,7 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
                 'Bar' => "Test",
                 '@Type' => 'test'
             ),
-            'föo_bär' => '',
+            'föo_bär' => 'a',
             "Bar" => array(1,2,3),
             'a' => 'b',
         );
@@ -73,7 +73,7 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
             '<response>'.
             '<foo-bar id="1" name="Bar"/>'.
             '<Foo Type="test"><Bar><![CDATA[Test]]></Bar></Foo>'.
-            '<föo_bär><![CDATA[]]></föo_bär>'.
+            '<föo_bär><![CDATA[a]]></föo_bär>'.
             '<Bar>1</Bar>'.
             '<Bar>2</Bar>'.
             '<Bar>3</Bar>'.
@@ -86,16 +86,16 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
     {
         $obj = new ScalarDummy;
         $obj->xmlFoo = array(
-            'foo-bar' => '',
-            'foo_bar' => '',
-            'föo_bär' => '',
+            'foo-bar' => 'a',
+            'foo_bar' => 'a',
+            'föo_bär' => 'a',
         );
 
         $expected = '<?xml version="1.0"?>'."\n".
             '<response>'.
-            '<foo-bar><![CDATA[]]></foo-bar>'.
-            '<foo_bar><![CDATA[]]></foo_bar>'.
-            '<föo_bär><![CDATA[]]></föo_bär>'.
+            '<foo-bar><![CDATA[a]]></foo-bar>'.
+            '<foo_bar><![CDATA[a]]></foo_bar>'.
+            '<föo_bär><![CDATA[a]]></föo_bär>'.
             '</response>'."\n";
 
         $this->assertEquals($expected, $this->encoder->encode($obj, 'xml'));
@@ -108,6 +108,18 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
 
         $expected = '<?xml version="1.0"?>'."\n".
             '<response><person><firstname>Peter</firstname></person></response>'."\n";
+
+        $this->assertEquals($expected, $this->encoder->encode($array, 'xml'));
+    }
+
+    public function testEncodeScalarWithAttribute()
+    {
+        $array = array(
+            'person' => array('@gender' => 'M', '#' => 'Peter'),
+        );
+
+        $expected = '<?xml version="1.0"?>'."\n".
+            '<response><person gender="M"><![CDATA[Peter]]></person></response>'."\n";
 
         $this->assertEquals($expected, $this->encoder->encode($array, 'xml'));
     }
@@ -136,6 +148,38 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(get_object_vars($obj), $this->encoder->decode($source, 'xml'));
     }
 
+    public function testDecodeScalarWithAttribute()
+    {
+        $source = '<?xml version="1.0"?>'."\n".
+            '<response><person gender="M">Peter</person></response>'."\n";
+
+        $expected = array(
+            'person' => array('@gender' => 'M', '#' => 'Peter'),
+        );
+
+        $this->assertEquals($expected, $this->encoder->decode($source, 'xml'));
+    }
+
+    public function testDecodeArray()
+    {
+        $source = '<?xml version="1.0"?>'."\n".
+            '<response>'.
+            '<people>'.
+            '<person><firstname>Benjamin</firstname><lastname>Alexandre</lastname></person>'.
+            '<person><firstname>Damien</firstname><lastname>Clay</lastname></person>'.
+            '</people>'.
+            '</response>'."\n";
+
+        $expected = array(
+            'people' => array('person' => array(
+                array('firstname' => 'Benjamin', 'lastname' => 'Alexandre'),
+                array('firstname' => 'Damien', 'lastname' => 'Clay')
+            ))
+        );
+
+        $this->assertEquals($expected, $this->encoder->decode($source, 'xml'));
+    }
+
     protected function getXmlSource()
     {
         return '<?xml version="1.0"?>'."\n".
@@ -153,7 +197,7 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
         $obj = new Dummy;
         $obj->foo = 'foo';
         $obj->bar = array('a', 'b');
-        $obj->baz = array('key' => 'val', 'key2' => 'val', 'A B' => 'bar', "Barry" => array('FooBar' => array("@id"=>1,"Baz"=>"Ed")));
+        $obj->baz = array('key' => 'val', 'key2' => 'val', 'A B' => 'bar', "Barry" => array('FooBar' => array("Baz"=>"Ed", "@id"=>1)));
         $obj->qux = "1";
         return $obj;
     }

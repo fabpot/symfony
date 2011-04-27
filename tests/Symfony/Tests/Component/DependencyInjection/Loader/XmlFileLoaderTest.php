@@ -104,6 +104,9 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
         $expected = array('a string', 'foo' => 'bar', 'values' => array(true, false), 'foo_bar' => new Reference('foo_bar'), 'mixedcase' => array('MixedCaseKey' => 'value'), 'bar' => '%foo%', 'imported_from_ini' => true, 'imported_from_yaml' => true);
 
         $this->assertEquals(array_keys($expected), array_keys($actual), '->load() imports and merges imported files');
+
+        // Bad import throws no exception due to ignore_errors value.
+        $loader->load('services4_bad_import.xml');
     }
 
     public function testLoadAnonymousServices()
@@ -284,16 +287,5 @@ class XmlFileLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($loader->supports('foo.xml'), '->supports() returns true if the resource is loadable');
         $this->assertFalse($loader->supports('foo.foo'), '->supports() returns true if the resource is loadable');
-    }
-
-    public function testLoadInterfaceInjectors()
-    {
-        $container = new ContainerBuilder();
-        $loader = new XmlFileLoader($container, new FileLocator(self::$fixturesPath.'/xml'));
-        $loader->load('interfaces1.xml');
-        $interfaces = $container->getInterfaceInjectors('FooClass');
-        $this->assertEquals(1, count($interfaces), '->load() parses <interface> elements');
-        $interface = $interfaces['FooClass'];
-        $this->assertTrue($interface->hasMethodCall('setBar'), '->load() applies method calls correctly');
     }
 }

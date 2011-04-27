@@ -120,6 +120,7 @@ class HttpKernel extends BaseHttpKernel
         } else {
             $options['attributes']['_controller'] = $controller;
             $options['attributes']['_format'] = $request->getRequestFormat();
+            $options['attributes']['_route'] = '_internal';
             $subRequest = $request->duplicate($options['query'], null, $options['attributes']);
         }
 
@@ -168,7 +169,7 @@ class HttpKernel extends BaseHttpKernel
             'controller' => $controller,
             'path'       => $attributes ? http_build_query($attributes) : 'none',
             '_format'    => $this->container->get('request')->getRequestFormat(),
-        ), true);
+        ));
 
         if ($query) {
             $uri = $uri.'?'.http_build_query($query);

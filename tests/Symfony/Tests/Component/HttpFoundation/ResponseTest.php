@@ -61,6 +61,15 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($response->getMaxAge(), '->getMaxAge() returns null if no freshness information available');
     }
 
+    public function testSetSharedMaxAge()
+    {
+        $response = new Response();
+        $response->setSharedMaxAge(20);
+
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertEquals('public, s-maxage=20', $cacheControl);
+    }
+
     public function testIsPrivate()
     {
         $response = new Response();
@@ -179,6 +188,17 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response->__toString();
     }
 
+    public function testContentTypeCharset()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/css');
+
+        // force fixContentType() to be called
+        $response->__toString();
+
+        $this->assertEquals('text/css; charset=UTF-8', $response->headers->get('Content-Type'));
+    }
+
     public function testSetCache()
     {
         $response = new Response();
@@ -207,7 +227,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $response->setCache($options);
         $this->assertEquals($response->getMaxAge(), 200);
 
-        $this->assertFalse($response->headers->hasCacheControlDirective('public'));
+        $this->assertTrue($response->headers->hasCacheControlDirective('public'));
         $this->assertFalse($response->headers->hasCacheControlDirective('private'));
 
         $response->setCache(array('public' => true));

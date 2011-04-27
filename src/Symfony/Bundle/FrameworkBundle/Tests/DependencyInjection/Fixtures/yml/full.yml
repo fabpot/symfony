@@ -13,9 +13,8 @@ framework:
         type:         xml
     session:
         auto_start:     true
-        class:          Session
         default_locale: fr
-        storage_id:     native
+        storage_id:     session.storage.native
         name:           _SYMFONY
         lifetime:       86400
         path:           /
@@ -28,6 +27,7 @@ framework:
         cache_warmer:     true
         engines:          [php, twig]
         loader:           [loader.foo, loader.bar]
+        cache:            /path/to/cache
         packages:
             images:
                 version: 1.0.0
@@ -41,3 +41,4 @@ framework:
         fallback: fr
     validation:
         enabled: true
+        cache:   apc

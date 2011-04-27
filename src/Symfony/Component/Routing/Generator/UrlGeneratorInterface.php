@@ -21,11 +21,11 @@ interface UrlGeneratorInterface
     /**
      * Generates a URL from the given parameters.
      *
-     * @param  string  $name       The name of the route
-     * @param  array   $parameters An array of parameters
-     * @param  Boolean $absolute   Whether to generate an absolute URL
+     * @param string  $name       The name of the route
+     * @param array   $parameters An array of parameters
+     * @param Boolean $absolute   Whether to generate an absolute URL
      *
      * @return string The generated URL
      */
-    function generate($name, array $parameters, $absolute = false);
+    function generate($name, array $parameters = array(), $absolute = false);
 }

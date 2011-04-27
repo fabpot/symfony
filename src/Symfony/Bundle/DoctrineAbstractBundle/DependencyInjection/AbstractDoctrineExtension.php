@@ -153,7 +153,7 @@ abstract class AbstractDoctrineExtension extends Extension
         }
 
         if (!$bundleConfig['dir']) {
-            if (in_array($bundleConfig['type'], array('annotation', 'static-php'))) {
+            if (in_array($bundleConfig['type'], array('annotation', 'staticphp'))) {
                 $bundleConfig['dir'] = $bundleDir.'/'.$this->getMappingObjectDefaultName();
             } else {
                 $bundleConfig['dir'] = $bundleDir.'/'.$this->getMappingResourceConfigDirectory();
@@ -180,7 +180,7 @@ abstract class AbstractDoctrineExtension extends Extension
         if ($container->hasDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'))) {
             $chainDriverDef = $container->getDefinition($this->getObjectManagerElementName($objectManager['name'] . '_metadata_driver'));
         } else {
-            $chainDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.driver_chain_class%'));
+            $chainDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.driver_chain.class%'));
             $chainDriverDef->setPublic(false);
         }
 
@@ -196,12 +196,12 @@ abstract class AbstractDoctrineExtension extends Extension
                 }
                 $mappingDriverDef->setArguments($args);
             } else if ($driverType == 'annotation') {
-                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '_class%'), array(
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '.class%'), array(
                     new Reference($this->getObjectManagerElementName('metadata.annotation_reader')),
                     array_values($driverPaths)
                 ));
             } else {
-                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '_class%'), array(
+                $mappingDriverDef = new Definition('%'.$this->getObjectManagerElementName('metadata.' . $driverType . '.class%'), array(
                     array_values($driverPaths)
                 ));
             }
@@ -236,7 +236,7 @@ abstract class AbstractDoctrineExtension extends Extension
 
         if (!in_array($mappingConfig['type'], array('xml', 'yml', 'annotation', 'php', 'staticphp'))) {
             throw new \InvalidArgumentException("Can only configure 'xml', 'yml', 'annotation', 'php' or ".
-                "'static-php' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
+                "'staticphp' through the DoctrineBundle. Use your own bundle to configure other metadata drivers. " .
                 "You can register them by adding a a new driver to the ".
                 "'" . $this->getObjectManagerElementName($objectManagerName . ".metadata_driver")."' service definition."
             );

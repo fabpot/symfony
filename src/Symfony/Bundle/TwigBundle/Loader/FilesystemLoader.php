@@ -30,7 +30,8 @@ class FilesystemLoader implements \Twig_LoaderInterface
     /**
      * Constructor.
      *
-     * @param FileLocatorInterface $locator A FileLocatorInterface instance
+     * @param FileLocatorInterface        $locator A FileLocatorInterface instance
+     * @param TemplateNameParserInterface $parser  A TemplateNameParserInterface instance
      */
     public function __construct(FileLocatorInterface $locator, TemplateNameParserInterface $parser)
     {
@@ -76,12 +77,18 @@ class FilesystemLoader implements \Twig_LoaderInterface
         return filemtime($this->findTemplate($name)) < $time;
     }
 
+    /**
+     * Returns the path to the template file
+     *
+     * @param $name The template logical name
+     *
+     * @return string The path to the template file
+     */
     protected function findTemplate($name)
     {
-        $tpl = ($name instanceof TemplateReferenceInterface) ? $name : $this->parser->parse($name);
+        $tpl = $this->parser->parse($name);
 
-        $key = $tpl->getSignature();
-        if (isset($this->cache[$key])) {
+        if (isset($this->cache[$key = $tpl->getSignature()])) {
             return $this->cache[$key];
         }
 
@@ -94,7 +101,7 @@ class FilesystemLoader implements \Twig_LoaderInterface
         }
 
         if (false === $file || null === $file) {
-            throw new \Twig_Error_Loader(sprintf('Unable to find template "%s".', json_encode($name)), 0, null, $previous);
+            throw new \Twig_Error_Loader(sprintf('Unable to find template "%s".', $tpl), -1, null, $previous);
         }
 
         return $this->cache[$key] = $file;

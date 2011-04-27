@@ -8,8 +8,7 @@
         <parameter key="event_dispatcher.class">Symfony\Bundle\FrameworkBundle\ContainerAwareEventDispatcher</parameter>
         <parameter key="http_kernel.class">Symfony\Bundle\FrameworkBundle\HttpKernel</parameter>
         <parameter key="error_handler.class">Symfony\Component\HttpKernel\Debug\ErrorHandler</parameter>
-        <parameter key="error_handler.level">null</parameter>
-        <parameter key="filesystem.class">Symfony\Bundle\FrameworkBundle\Util\Filesystem</parameter>
+        <parameter key="filesystem.class">Symfony\Component\HttpKernel\Util\Filesystem</parameter>
         <parameter key="cache_warmer.class">Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerAggregate</parameter>
         <parameter key="cache_warmer.autoloader_map.class">Symfony\Bundle\FrameworkBundle\CacheWarmer\ClassMapCacheWarmer</parameter>
         <parameter key="file_locator.class">Symfony\Component\HttpKernel\Config\FileLocator</parameter>
@@ -20,8 +19,8 @@
             <argument type="service" id="service_container" />
         </service>
 
-        <service id="error_handler" class="%error_handler.class%" public="false">
-            <argument>%error_handler.level%</argument>
+        <service id="error_handler" class="%error_handler.class%">
+            <argument /> <!-- level (null by default) -->
         </service>
 
         <service id="http_kernel" class="%http_kernel.class%">
@@ -48,10 +47,15 @@
         -->
         <service id="request" scope="request" synthetic="true" />
 
+        <service id="service_container" synthetic="true" />
+
+        <service id="kernel" synthetic="true" />
+
         <service id="filesystem" class="%filesystem.class%"></service>
 
         <service id="file_locator" class="%file_locator.class%">
             <argument type="service" id="kernel" />
+            <argument>%kernel.root_dir%/Resources</argument>
         </service>
     </services>
 </container>

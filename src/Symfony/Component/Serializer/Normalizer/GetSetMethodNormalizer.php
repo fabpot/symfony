@@ -110,9 +110,9 @@ class GetSetMethodNormalizer extends AbstractNormalizer
     /**
      * Checks if the given class has any get{Property} method.
      *
-     * @param  ReflectionClass $class  A ReflectionClass instance of the class
-     *                                 to serialize into or from.
-     * @param  string $format The format being (de-)serialized from or into.
+     * @param ReflectionClass $class  A ReflectionClass instance of the class
+     *                                to serialize into or from.
+     * @param string          $format The format being (de-)serialized from or into.
      * @return Boolean Whether the class has any getters.
      */
     public function supports(\ReflectionClass $class, $format = null)
@@ -133,7 +133,7 @@ class GetSetMethodNormalizer extends AbstractNormalizer
      * @param ReflectionMethod $method the method to check
      * @return Boolean whether the method is a getter.
      */
-    protected function isGetMethod(\ReflectionMethod $method)
+    private function isGetMethod(\ReflectionMethod $method)
     {
         return (
             0 === strpos($method->getName(), 'get') &&

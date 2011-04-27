@@ -12,9 +12,7 @@
 namespace Symfony\Bundle\TwigBundle\Extension;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Bundle\TwigBundle\TokenParser\IncludeTokenParser;
 use Symfony\Bundle\TwigBundle\TokenParser\RenderTokenParser;
-use Symfony\Component\Yaml\Dumper as YamlDumper;
 
 /**
  *
@@ -29,24 +27,12 @@ class TemplatingExtension extends \Twig_Extension
         $this->container = $container;
     }
 
-    public function getContainer()
-    {
-        return $this->container;
-    }
-
-    public function getTemplating()
-    {
-        return $this->container->get('templating');
-    }
-
     /**
      * {@inheritdoc}
      */
     public function getFilters()
     {
         return array(
-            'yaml_encode'           => new \Twig_Filter_Method($this, 'yamlEncode'),
-            'dump'                  => new \Twig_Filter_Method($this, 'dump'),
             'abbr_class'            => new \Twig_Filter_Method($this, 'abbrClass', array('is_safe' => array('html'))),
             'abbr_method'           => new \Twig_Filter_Method($this, 'abbrMethod', array('is_safe' => array('html'))),
             'format_args'           => new \Twig_Filter_Method($this, 'formatArgs', array('is_safe' => array('html'))),
@@ -66,20 +52,8 @@ class TemplatingExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'url'   => new \Twig_Function_Method($this, 'getUrl'),
-            'path'  => new \Twig_Function_Method($this, 'getPath'),
             'asset' => new \Twig_Function_Method($this, 'getAssetUrl'),
         );
-    }
-
-    public function getPath($name, array $parameters = array())
-    {
-        return $this->container->get('router')->generate($name, $parameters, false);
-    }
-
-    public function getUrl($name, array $parameters = array())
-    {
-        return $this->container->get('router')->generate($name, $parameters, true);
     }
 
     public function getAssetUrl($location, $packageName = null)
@@ -100,10 +74,6 @@ class TemplatingExtension extends \Twig_Extension
     {
         $options['attributes'] = $attributes;
 
-        if (isset($options['query'])) {
-            $options['query'] = $options['query'];
-        }
-
         return $this->container->get('http_kernel')->render($controller, $options);
     }
 
@@ -117,21 +87,7 @@ class TemplatingExtension extends \Twig_Extension
         return array(
             // {% render 'BlogBundle:Post:list' with { 'limit': 2 }, { 'alt': 'BlogBundle:Post:error' } %}
             new RenderTokenParser(),
-
-            // {% include 'sometemplate.php' with { 'something' : 'something2' } %}
-            new IncludeTokenParser(),
         );
-    }
-
-    public function yamlEncode($input, $inline = 0)
-    {
-        static $dumper;
-
-        if (null === $dumper) {
-            $dumper = new YamlDumper();
-        }
-
-        return $dumper->dump($input, $inline);
     }
 
     public function abbrClass($class)
@@ -172,19 +128,6 @@ class TemplatingExtension extends \Twig_Extension
     public function formatFileFromText($text)
     {
         return $this->container->get('templating.helper.code')->formatFileFromText($text);
-    }
-
-    public function dump($value)
-    {
-        if (is_resource($value)) {
-            return '%Resource%';
-        }
-
-        if (is_array($value) || is_object($value)) {
-            return '%'.gettype($value).'% '.$this->yamlEncode($value);
-        }
-
-        return $value;
     }
 
     /**

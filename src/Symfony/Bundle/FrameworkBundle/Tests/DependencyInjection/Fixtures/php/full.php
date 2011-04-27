@@ -19,9 +19,8 @@ $container->loadFromExtension('framework', array(
     ),
     'session' => array(
         'auto_start'     => true,
-        'class'          => 'Session',
         'default_locale' => 'fr',
-        'storage_id'     => 'native',
+        'storage_id'     => 'session.storage.native',
         'name'           => '_SYMFONY',
         'lifetime'       => 86400,
         'path'           => '/',
@@ -32,6 +31,7 @@ $container->loadFromExtension('framework', array(
     'templating' => array(
         'assets_version'   => 'SomeVersionScheme',
         'assets_base_urls' => 'http://cdn.example.com',
+        'cache'            => '/path/to/cache',
         'cache_warmer'     => true,
         'engines'          => array('php', 'twig'),
         'loader'           => array('loader.foo', 'loader.bar'),
@@ -54,5 +54,6 @@ $container->loadFromExtension('framework', array(
     ),
     'validation' => array(
         'enabled' => true,
+        'cache'   => 'apc',
     ),
 ));

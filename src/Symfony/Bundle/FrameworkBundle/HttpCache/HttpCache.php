@@ -41,17 +41,17 @@ abstract class HttpCache extends BaseHttpCache
     /**
      * Forwards the Request to the backend and returns the Response.
      *
-     * @param Request  $request  A Request instance
-     * @param Boolean  $raw      Whether to catch exceptions or not
-     * @param Response $response A Response instance (the stale entry if present, null otherwise)
+     * @param Request  $request A Request instance
+     * @param Boolean  $raw     Whether to catch exceptions or not
+     * @param Response $entry   A Response instance (the stale entry if present, null otherwise)
      *
      * @return Response A Response instance
      */
     protected function forward(Request $request, $raw = false, Response $entry = null)
     {
-        $this->kernel->boot();
-        $this->kernel->getContainer()->set('cache', $this);
-        $this->kernel->getContainer()->set('esi', $this->esi);
+        $this->getKernel()->boot();
+        $this->getKernel()->getContainer()->set('cache', $this);
+        $this->getKernel()->getContainer()->set('esi', $this->getEsi());
 
         return parent::forward($request, $raw, $entry);
     }

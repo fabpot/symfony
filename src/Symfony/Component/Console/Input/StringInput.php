@@ -19,6 +19,8 @@ namespace Symfony\Component\Console\Input;
  *     $input = new StringInput('foo --bar="foobar"');
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @api
  */
 class StringInput extends ArgvInput
 {
@@ -30,6 +32,8 @@ class StringInput extends ArgvInput
      *
      * @param string     $input An array of parameters from the CLI (in the argv format)
      * @param InputDefinition $definition A InputDefinition instance
+     *
+     * @api
      */
     public function __construct($input, InputDefinition $definition = null)
     {
@@ -41,7 +45,7 @@ class StringInput extends ArgvInput
     /**
      * Tokenizes a string.
      *
-     * @param string $input The input to tokenise
+     * @param string $input The input to tokenize
      * @throws \InvalidArgumentException When unable to parse input (should never happen)
      */
     private function tokenize($input)

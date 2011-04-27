@@ -13,6 +13,7 @@ namespace Symfony\Bundle\SwiftmailerBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * This class contains the configuration information for the bundle
@@ -22,16 +23,26 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
  *
  * @author Christophe Coevoet <stof@notk.org>
  */
-class Configuration
+class Configuration implements ConfigurationInterface
 {
+    private $debug;
+
     /**
-     * Generates the configuration tree.
+     * Constructor.
      *
-     * @param Boolean $kernelDebug
-     * 
-     * @return \Symfony\Component\Config\Definition\ArrayNode The config tree
+     * @param Boolean $debug The kernel.debug value
      */
-    public function getConfigTree($kernelDebug)
+    public function __construct($debug)
+    {
+        $this->debug = (Boolean) $debug;
+    }
+
+    /**
+     * Generates the configuration tree builder.
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder The tree builder
+     */
+    public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('swiftmailer');
@@ -41,25 +52,25 @@ class Configuration
                 ->scalarNode('transport')
                     ->defaultValue('smtp')
                     ->validate()
-                        ->ifNotInArray(array ('smtp', 'mail', 'sendmail', 'gmail'))
+                        ->ifNotInArray(array('smtp', 'mail', 'sendmail', 'gmail', null))
                         ->thenInvalid('The %s transport is not supported')
                     ->end()
                 ->end()
                 ->scalarNode('username')->defaultNull()->end()
                 ->scalarNode('password')->defaultNull()->end()
                 ->scalarNode('host')->defaultValue('localhost')->end()
-                ->scalarNode('port')->defaultValue(false)->end()
+                ->scalarNode('port')->defaultFalse()->end()
                 ->scalarNode('encryption')
                     ->defaultNull()
                     ->validate()
-                        ->ifNotInArray(array ('tls', 'ssl', null))
+                        ->ifNotInArray(array('tls', 'ssl', null))
                         ->thenInvalid('The %s encryption is not supported')
                     ->end()
                 ->end()
                 ->scalarNode('auth_mode')
                     ->defaultNull()
                     ->validate()
-                        ->ifNotInArray(array ('plain', 'login', 'cram-md5', null))
+                        ->ifNotInArray(array('plain', 'login', 'cram-md5', null))
                         ->thenInvalid('The %s authentication mode is not supported')
                     ->end()
                 ->end()
@@ -71,10 +82,10 @@ class Configuration
                 ->end()
                 ->scalarNode('delivery_address')->end()
                 ->booleanNode('disable_delivery')->end()
-                ->booleanNode('logging')->defaultValue($kernelDebug)->end()
+                ->booleanNode('logging')->defaultValue($this->debug)->end()
             ->end()
         ;
 
-        return $treeBuilder->buildTree();
+        return $treeBuilder;
     }
 }

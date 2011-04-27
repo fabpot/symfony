@@ -25,6 +25,9 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
 {
     private $repeatedPass;
     private $graph;
+    private $compiler;
+    private $formatter;
+    private $currentId;
 
     /**
      * {@inheritDoc}
@@ -41,9 +44,13 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $this->graph = $container->getCompiler()->getServiceReferenceGraph();
+        $this->compiler = $container->getCompiler();
+        $this->formatter = $this->compiler->getLoggingFormatter();
+        $this->graph = $this->compiler->getServiceReferenceGraph();
 
-        foreach ($container->getDefinitions() as $definition) {
+        foreach ($container->getDefinitions() as $id => $definition) {
+            $this->currentId = $id;
+
             $definition->setArguments(
                 $this->inlineArguments($container, $definition->getArguments())
             );
@@ -62,7 +69,7 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
      * Processes inline arguments.
      *
      * @param ContainerBuilder $container The ContainerBuilder
-     * @param array $arguments An array of arguments
+     * @param array            $arguments An array of arguments
      */
     private function inlineArguments(ContainerBuilder $container, array $arguments)
     {
@@ -75,6 +82,8 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
                 }
 
                 if ($this->isInlinableDefinition($container, $id, $definition = $container->getDefinition($id))) {
+                    $this->compiler->addLogMessage($this->formatter->formatInlineService($this, $id, $this->currentId));
+
                     if (ContainerInterface::SCOPE_PROTOTYPE !== $definition->getScope()) {
                         $arguments[$k] = $definition;
                     } else {
@@ -95,9 +104,9 @@ class InlineServiceDefinitionsPass implements RepeatablePassInterface
      * Checks if the definition is inlineable.
      *
      * @param ContainerBuilder $container
-     * @param string $id
-     * @param Definition $definition
-     * @return boolean If the definition is inlineable
+     * @param string           $id
+     * @param Definition       $definition
+     * @return Boolean If the definition is inlineable
      */
     private function isInlinableDefinition(ContainerBuilder $container, $id, Definition $definition)
     {

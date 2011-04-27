@@ -47,28 +47,23 @@ class PhpGeneratorDumper extends GeneratorDumper
         ;
     }
 
-    protected function addGenerator()
+    private function addGenerator()
     {
         $methods = array();
-        foreach ($this->routes->all() as $name => $route) {
+        foreach ($this->getRoutes()->all() as $name => $route) {
             $compiledRoute = $route->compile();
 
             $variables = str_replace("\n", '', var_export($compiledRoute->getVariables(), true));
-            $defaultsMerge = '';
-            foreach ($compiledRoute->getDefaults() as $key => $value) {
-                $defaultsMerge .= '        $defaults[\''.$key.'\'] = '.str_replace("\n", '', var_export($value, true)).';'."\n";
-            }
+            $defaults = str_replace("\n", '', var_export($compiledRoute->getDefaults(), true));
             $requirements = str_replace("\n", '', var_export($compiledRoute->getRequirements(), true));
             $tokens = str_replace("\n", '', var_export($compiledRoute->getTokens(), true));
 
             $escapedName = str_replace('.', '__', $name);
 
             $methods[] = <<<EOF
-    protected function get{$escapedName}RouteInfo()
+    private function get{$escapedName}RouteInfo()
     {
-        \$defaults = \$this->defaults;
-$defaultsMerge
-        return array($variables, \$defaults, $requirements, $tokens);
+        return array($variables, $defaults, $requirements, $tokens);
     }
 
 EOF
@@ -79,7 +74,7 @@ EOF
 
         return <<<EOF
 
-    public function generate(\$name, array \$parameters, \$absolute = false)
+    public function generate(\$name, array \$parameters = array(), \$absolute = false)
     {
         if (!isset(self::\$declaredRouteNames[\$name])) {
             throw new \InvalidArgumentException(sprintf('Route "%s" does not exist.', \$name));
@@ -96,16 +91,18 @@ $methods
 EOF;
     }
 
-    protected function startClass($class, $baseClass)
+    private function startClass($class, $baseClass)
     {
         $routes = array();
-        foreach ($this->routes->all() as $name => $route) {
+        foreach ($this->getRoutes()->all() as $name => $route) {
             $routes[] = "       '$name' => true,";
         }
         $routes  = implode("\n", $routes);
 
         return <<<EOF
 <?php
+
+use Symfony\Component\Routing\RequestContext;
 
 /**
  * $class
@@ -115,7 +112,7 @@ EOF;
  */
 class $class extends $baseClass
 {
-    static protected \$declaredRouteNames = array(
+    static private \$declaredRouteNames = array(
 $routes
     );
 
@@ -123,22 +120,21 @@ $routes
 EOF;
     }
 
-    protected function addConstructor()
+    private function addConstructor()
     {
         return <<<EOF
     /**
      * Constructor.
      */
-    public function __construct(array \$context = array(), array \$defaults = array())
+    public function __construct(RequestContext \$context)
     {
         \$this->context = \$context;
-        \$this->defaults = \$defaults;
     }
 
 EOF;
     }
 
-    protected function endClass()
+    private function endClass()
     {
         return <<<EOF
 }

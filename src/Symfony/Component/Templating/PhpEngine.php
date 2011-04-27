@@ -82,7 +82,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
         $parameters = array_replace($this->getGlobals(), $parameters);
         // render
         if (false === $content = $this->evaluate($storage, $parameters)) {
-            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', json_encode($name)));
+            throw new \RuntimeException(sprintf('The template "%s" cannot be rendered.', $this->parser->parse($name)));
         }
 
         // decorator
@@ -172,7 +172,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
      */
     public function offsetGet($name)
     {
-        return $this->$name = $this->get($name);
+        return $this->get($name);
     }
 
     /**
@@ -190,8 +190,8 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Sets a helper.
      *
-     * @param HelperInterface $value The helper instance
-     * @param string          $alias An alias
+     * @param HelperInterface $name  The helper instance
+     * @param string          $value An alias
      */
     public function offsetSet($name, $value)
     {
@@ -211,7 +211,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * @param Helper[] $helpers An array of helper
      */
-    public function addHelpers(array $helpers = array())
+    public function addHelpers(array $helpers)
     {
         foreach ($helpers as $alias => $helper) {
             $this->set($helper, is_int($alias) ? null : $alias);
@@ -232,8 +232,8 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Sets a helper.
      *
-     * @param HelperInterface $value The helper instance
-     * @param string          $alias An alias
+     * @param HelperInterface $helper The helper instance
+     * @param string          $alias  An alias
      */
     public function set(HelperInterface $helper, $alias = null)
     {
@@ -321,7 +321,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Adds an escaper for the given context.
      *
-     * @param string $name    The escaper context (html, js, ...)
+     * @param string $context The escaper context (html, js, ...)
      * @param mixed  $escaper A PHP callable
      */
     public function setEscaper($context, $escaper)
@@ -332,7 +332,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
     /**
      * Gets an escaper for a given context.
      *
-     * @param  string $name The context name
+     * @param string $context The context name
      *
      * @return mixed  $escaper A PHP callable
      */
@@ -496,7 +496,7 @@ class PhpEngine implements EngineInterface, \ArrayAccess
         $storage = $this->loader->load($template);
 
         if (false === $storage) {
-            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', is_string($name) ? $name : json_encode($name)));
+            throw new \InvalidArgumentException(sprintf('The template "%s" does not exist.', $template));
         }
 
         return $this->cache[$key] = $storage;

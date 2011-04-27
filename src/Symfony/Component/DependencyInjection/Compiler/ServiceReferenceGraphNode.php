@@ -45,7 +45,7 @@ class ServiceReferenceGraphNode
     /**
      * Adds an in edge to this node.
      *
-     * @param ServiceReferenceGraphEdge $edge 
+     * @param ServiceReferenceGraphEdge $edge
      */
     public function addInEdge(ServiceReferenceGraphEdge $edge)
     {
@@ -55,7 +55,7 @@ class ServiceReferenceGraphNode
     /**
      * Adds an out edge to this node.
      *
-     * @param ServiceReferenceGraphEdge $edge 
+     * @param ServiceReferenceGraphEdge $edge
      */
     public function addOutEdge(ServiceReferenceGraphEdge $edge)
     {
@@ -65,7 +65,7 @@ class ServiceReferenceGraphNode
     /**
      * Checks if the value of this node is an Alias.
      *
-     * @return boolean True if the value is an Alias instance
+     * @return Boolean True if the value is an Alias instance
      */
     public function isAlias()
     {
@@ -75,7 +75,7 @@ class ServiceReferenceGraphNode
     /**
      * Checks if the value of this node is a Definition.
      *
-     * @return boolean True if the value is a Definition instance
+     * @return Boolean True if the value is a Definition instance
      */
     public function isDefinition()
     {

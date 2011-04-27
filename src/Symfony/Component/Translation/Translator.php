@@ -17,6 +17,8 @@ use Symfony\Component\Translation\Loader\LoaderInterface;
  * Translator.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @api
  */
 class Translator implements TranslatorInterface
 {
@@ -32,8 +34,10 @@ class Translator implements TranslatorInterface
      *
      * @param string          $locale   The locale
      * @param MessageSelector $selector The message selector for pluralization
+     *
+     * @api
      */
-    public function __construct($locale = null, MessageSelector $selector)
+    public function __construct($locale, MessageSelector $selector)
     {
         $this->locale = $locale;
         $this->selector = $selector;
@@ -47,6 +51,8 @@ class Translator implements TranslatorInterface
      *
      * @param string          $format The name of the loader (@see addResource())
      * @param LoaderInterface $loader A LoaderInterface instance
+     *
+     * @api
      */
     public function addLoader($format, LoaderInterface $loader)
     {
@@ -60,6 +66,8 @@ class Translator implements TranslatorInterface
      * @param mixed  $resource The resource name
      * @param string $locale   The locale
      * @param string $domain   The domain
+     *
+     * @api
      */
     public function addResource($format, $resource, $locale, $domain = 'messages')
     {
@@ -72,6 +80,8 @@ class Translator implements TranslatorInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @api
      */
     public function setLocale($locale)
     {
@@ -80,6 +90,8 @@ class Translator implements TranslatorInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @api
      */
     public function getLocale()
     {
@@ -90,6 +102,8 @@ class Translator implements TranslatorInterface
      * Sets the fallback locale.
      *
      * @param string $locale The fallback locale
+     *
+     * @api
      */
     public function setFallbackLocale($locale)
     {
@@ -101,6 +115,8 @@ class Translator implements TranslatorInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @api
      */
     public function trans($id, array $parameters = array(), $domain = 'messages', $locale = null)
     {
@@ -112,11 +128,13 @@ class Translator implements TranslatorInterface
             $this->loadCatalogue($locale);
         }
 
-        return strtr($this->catalogues[$locale]->get($id, $domain), $parameters);
+        return strtr($this->catalogues[$locale]->get((string) $id, $domain), $parameters);
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @api
      */
     public function transChoice($id, $number, array $parameters = array(), $domain = 'messages', $locale = null)
     {
@@ -128,7 +146,7 @@ class Translator implements TranslatorInterface
             $this->loadCatalogue($locale);
         }
 
-        return strtr($this->selector->choose($this->catalogues[$locale]->get($id, $domain), (int) $number, $locale), $parameters);
+        return strtr($this->selector->choose($this->catalogues[$locale]->get((string) $id, $domain), (int) $number, $locale), $parameters);
     }
 
     protected function loadCatalogue($locale)

@@ -36,7 +36,7 @@ class SwiftmailerExtension extends Extension
      *        <swiftmailer:spool path="/path/to/spool/" />
      *      </swiftmailer:config>
      *
-     * @param array            $config    An array of configuration settings
+     * @param array            $configs   An array of configuration settings
      * @param ContainerBuilder $container A ContainerBuilder instance
      */
     public function load(array $configs, ContainerBuilder $container)
@@ -46,11 +46,11 @@ class SwiftmailerExtension extends Extension
         $container->setAlias('mailer', 'swiftmailer.mailer');
 
         $r = new \ReflectionClass('Swift_Message');
-        $container->setParameter('swiftmailer.base_dir', dirname(dirname(dirname($r->getFilename()))));
+        $container->getDefinition('swiftmailer.mailer')->setFile(dirname(dirname(dirname($r->getFilename()))).'/swift_init.php');
 
-        $configuration = new Configuration();
         $processor = new Processor();
-        $config = $processor->process($configuration->getConfigTree($container->getParameter('kernel.debug')), $configs);
+        $configuration = new Configuration($container->getParameter('kernel.debug'));
+        $config = $processor->processConfiguration($configuration, $configs);
 
         if (null === $config['transport']) {
             $transport = 'null';
@@ -95,7 +95,7 @@ class SwiftmailerExtension extends Extension
 
         if ($config['logging']) {
             $container->findDefinition('swiftmailer.transport')->addMethodCall('registerPlugin', array(new Reference('swiftmailer.plugin.messagelogger')));
-            $container->findDefinition('data_collector.swiftmailer')->addTag('data_collector', array('template' => 'SwiftmailerBundle:Collector:swiftmailer', 'id' => 'swiftmailer'));
+            $container->findDefinition('swiftmailer.data_collector')->addTag('data_collector', array('template' => 'SwiftmailerBundle:Collector:swiftmailer', 'id' => 'swiftmailer'));
         }
 
         if (isset($config['delivery_address']) && $config['delivery_address']) {

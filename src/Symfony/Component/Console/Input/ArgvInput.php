@@ -35,6 +35,8 @@ namespace Symfony\Component\Console\Input;
  *
  * @see http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
  * @see http://www.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap12.html#tag_12_02
+ *
+ * @api
  */
 class ArgvInput extends Input
 {
@@ -46,6 +48,8 @@ class ArgvInput extends Input
      *
      * @param array           $argv An array of parameters from the CLI (in the argv format)
      * @param InputDefinition $definition A InputDefinition instance
+     *
+     * @api
      */
     public function __construct(array $argv = null, InputDefinition $definition = null)
     {
@@ -107,7 +111,7 @@ class ArgvInput extends Input
     /**
      * Parses a short option set.
      *
-     * @param string $token The current token
+     * @param string $name The current token
      *
      * @throws \RuntimeException When option given doesn't exist
      */
@@ -256,9 +260,7 @@ class ArgvInput extends Input
      */
     public function hasParameterOption($values)
     {
-        if (!is_array($values)) {
-            $values = array($values);
-        }
+        $values = (array) $values;
 
         foreach ($this->tokens as $v) {
             if (in_array($v, $values)) {
@@ -281,9 +283,7 @@ class ArgvInput extends Input
      */
     public function getParameterOption($values, $default = false)
     {
-        if (!is_array($values)) {
-            $values = array($values);
-        }
+        $values = (array) $values;
 
         $tokens = $this->tokens;
         while ($token = array_shift($tokens)) {

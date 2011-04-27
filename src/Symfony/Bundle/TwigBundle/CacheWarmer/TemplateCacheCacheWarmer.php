@@ -11,9 +11,10 @@
 
 namespace Symfony\Bundle\TwigBundle\CacheWarmer;
 
-use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
+use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
+use Symfony\Bundle\FrameworkBundle\CacheWarmer\TemplatePathsCacheWarmer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Finder\Finder;
+use Symfony\Bundle\FrameworkBundle\Templating\Loader\TemplateFinder;
 
 /**
  * Generates the Twig cache for all templates.
@@ -23,30 +24,25 @@ use Symfony\Component\Finder\Finder;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class TemplateCacheCacheWarmer extends CacheWarmer
+class TemplateCacheCacheWarmer implements CacheWarmerInterface
 {
-    const TEMPLATES_PATH_IN_BUNDLE = '/Resources/views';
-
     protected $container;
-    protected $parser;
-    protected $kernel;
+    protected $warmer;
 
     /**
      * Constructor.
      *
-     * @param ContainerInterface   $container The dependency injection container
-     * @param string               $rootDir The directory where global templates can be stored
+     * @param ContainerInterface        $container The dependency injection container
+     * @param TemplatePathsCacheWarmer  $warmer    The template paths cache warmer
      */
-    public function __construct(ContainerInterface $container, $rootDir)
+    public function __construct(ContainerInterface $container, TemplateFinder $finder)
     {
-        // we don't inject the Twig environment directly as it needs
-        // the loader, which is a cached one, and the cache is not
-        // yet available when this instance is created (the
-        // TemplateCacheCacheWarmer has not been run yet).
+        // We don't inject the Twig environment directly as it depends on the
+        // template locator (via the loader) which might be a cached one.
+        // The cached template locator is available once the TemplatePathsCacheWarmer
+        // has been warmed up
         $this->container = $container;
-        $this->parser = $container->get('templating.name_parser');
-        $this->kernel = $container->get('kernel');
-        $this->rootDir = $rootDir;
+        $this->finder = $finder;
     }
 
     /**
@@ -58,14 +54,10 @@ class TemplateCacheCacheWarmer extends CacheWarmer
     {
         $twig = $this->container->get('twig');
 
-        foreach ($this->kernel->getBundles() as $name => $bundle) {
-            foreach ($this->findTemplatesIn($bundle->getPath().self::TEMPLATES_PATH_IN_BUNDLE, $name) as $template) {
+        foreach ($this->finder->findAllTemplates() as $template) {
+            if ('twig' === $template->get('engine')) {
                 $twig->loadTemplate($template);
             }
-        }
-
-        foreach ($this->findTemplatesIn($this->rootDir) as $template) {
-            $twig->loadTemplate($template);
         }
     }
 
@@ -77,33 +69,5 @@ class TemplateCacheCacheWarmer extends CacheWarmer
     public function isOptional()
     {
         return true;
-    }
-
-    /**
-     * Find templates in the given directory
-     *
-     * @param string $dir       The folder where to look for templates
-     * @param string $bundle    The name of the bundle (null when out of a bundle)
-     *
-     * @return array An array of TemplateReference
-     */
-    protected function findTemplatesIn($dir, $bundle = null)
-    {
-        $templates = array();
-
-        if (is_dir($dir)) {
-            $finder = new Finder();
-            foreach ($finder->files()->followLinks()->in($dir) as $file) {
-                $template = $this->parser->parseFromFilename($file->getRelativePathname());
-                if (false !== $template && 'twig' == $template->get('engine')) {
-                    if (null !== $bundle) {
-                      $template->set('bundle', $bundle);
-                    }
-                    $templates[] = $template;
-                }
-            }
-        }
-
-        return $templates;
     }
 }

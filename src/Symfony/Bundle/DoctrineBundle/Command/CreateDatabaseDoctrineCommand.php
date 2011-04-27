@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\Output;
-use Symfony\Bundle\FrameworkBundle\Util\Filesystem;
+use Symfony\Component\HttpKernel\Util\Filesystem;
 use Doctrine\DBAL\Connection;
 
 /**
@@ -48,7 +48,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $connection = $this->getDoctrineConnection($input->getOption('connection'));
-        
+
         $params = $connection->getParams();
         $name = isset($params['path']) ? $params['path']:$params['dbname'];
 

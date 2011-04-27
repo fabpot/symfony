@@ -25,15 +25,20 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
  *     $output = new StreamOutput(fopen('php://stdout', 'w'));
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @api
  */
 class ConsoleOutput extends StreamOutput
 {
     /**
      * Constructor.
      *
-     * @param integer $verbosity The verbosity level (self::VERBOSITY_QUIET, self::VERBOSITY_NORMAL, self::VERBOSITY_VERBOSE)
-     * @param Boolean $decorated Whether to decorate messages or not (null for auto-guessing)
-     * @param OutputFormatter   $formatter  Output formatter instance
+     * @param integer         $verbosity The verbosity level (self::VERBOSITY_QUIET, self::VERBOSITY_NORMAL,
+     *                                   self::VERBOSITY_VERBOSE)
+     * @param Boolean         $decorated Whether to decorate messages or not (null for auto-guessing)
+     * @param OutputFormatter $formatter Output formatter instance
+     *
+     * @api
      */
     public function __construct($verbosity = self::VERBOSITY_NORMAL, $decorated = null, OutputFormatter $formatter = null)
     {

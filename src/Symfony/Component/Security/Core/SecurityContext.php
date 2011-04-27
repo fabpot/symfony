@@ -36,7 +36,9 @@ class SecurityContext implements SecurityContextInterface
     /**
      * Constructor.
      *
+     * @param AuthenticationManagerInterface      $authenticationManager An AuthenticationManager instance
      * @param AccessDecisionManagerInterface|null $accessDecisionManager An AccessDecisionManager instance
+     * @param Boolean                             $alwaysAuthenticate
      */
     public function __construct(AuthenticationManagerInterface $authenticationManager, AccessDecisionManagerInterface $accessDecisionManager, $alwaysAuthenticate = false)
     {
@@ -45,6 +47,14 @@ class SecurityContext implements SecurityContextInterface
         $this->alwaysAuthenticate = $alwaysAuthenticate;
     }
 
+    /**
+     * Checks if the attributes are granted against the current token.
+     *
+     * @throws AuthenticationCredentialsNotFoundException when the security context has no authentication token.
+     * @param mixed $attributes
+     * @param mixed|null $object
+     * @return Boolean
+     */
     public final function isGranted($attributes, $object = null)
     {
         if (null === $this->token) {

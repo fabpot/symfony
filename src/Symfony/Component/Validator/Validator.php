@@ -41,6 +41,14 @@ class Validator implements ValidatorInterface
     /**
      * {@inheritDoc}
      */
+    public function getMetadataFactory()
+    {
+        return $this->metadataFactory;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function validate($object, $groups = null)
     {
         $metadata = $this->metadataFactory->getClassMetadata(get_class($object));
@@ -95,7 +103,7 @@ class Validator implements ValidatorInterface
     protected function validateGraph($root, \Closure $walk, $groups = null)
     {
         $walker = new GraphWalker($root, $this->metadataFactory, $this->validatorFactory);
-        $groups = $groups ? (array)$groups : array(Constraint::DEFAULT_GROUP);
+        $groups = $groups ? (array) $groups : array(Constraint::DEFAULT_GROUP);
 
         foreach ($groups as $group) {
             $walk($walker, $group);

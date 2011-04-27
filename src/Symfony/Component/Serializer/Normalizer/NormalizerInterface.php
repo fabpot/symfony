@@ -27,6 +27,7 @@ interface NormalizerInterface
      * @param string $format format the normalization result will be encoded as
      * @param array $properties a list of properties to extract, if null all properties are returned
      * @return array|scalar
+     * @api
      */
     function normalize($object, $format, $properties = null);
 
@@ -37,6 +38,7 @@ interface NormalizerInterface
      * @param string $class the expected class to instantiate
      * @param string $format format the given data was extracted from
      * @return object
+     * @api
      */
     function denormalize($data, $class, $format = null);
 
@@ -44,8 +46,11 @@ interface NormalizerInterface
      * Checks whether the given class is supported by this normalizer
      *
      * @param ReflectionClass $class
-     * @param string $format format the given data was extracted from
+     * @param string          $format format the given data was extracted from
+     *
      * @return Boolean
+     *
+     * @api
      */
     function supports(\ReflectionClass $class, $format = null);
 
@@ -53,6 +58,7 @@ interface NormalizerInterface
      * Sets the owning Serializer object
      *
      * @param SerializerInterface $serializer
+     * @api
      */
     function setSerializer(SerializerInterface $serializer);
 
@@ -60,6 +66,7 @@ interface NormalizerInterface
      * Gets the owning Serializer object
      *
      * @return SerializerInterface
+     * @api
      */
     function getSerializer();
 }
