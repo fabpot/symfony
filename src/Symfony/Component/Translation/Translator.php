@@ -167,7 +167,7 @@ class Translator implements TranslatorInterface
 
     private function optimizeCatalogue($locale)
     {
-        if (strlen($locale) > 3) {
+        if (strrchr($locale, '_') !== false) {
             $fallback = substr($locale, 0, -strlen(strrchr($locale, '_')));
         } else {
             $fallback = $this->fallbackLocale;
