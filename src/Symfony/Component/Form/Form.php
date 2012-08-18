@@ -146,10 +146,6 @@ class Form implements \IteratorAggregate, FormInterface
      */
     public function __construct(FormConfigInterface $config)
     {
-        if (!$config instanceof ImmutableFormConfig) {
-            $config = new ImmutableFormConfig($config);
-        }
-
         // Compound forms always need a data mapper, otherwise calls to
         // `setData` and `add` will not lead to the correct population of
         // the child forms.
@@ -170,7 +166,7 @@ class Form implements \IteratorAggregate, FormInterface
     /**
      * Returns the configuration of the form.
      *
-     * @return ImmutableFormConfig The form's immutable configuration.
+     * @return FormConfigInterface The form's configuration.
      */
     public function getConfig()
     {
@@ -372,13 +368,16 @@ class Form implements \IteratorAggregate, FormInterface
         }
 
         $this->lockSetData = true;
+        $dispatcher = $this->config->getEventDispatcher();
 
         // Hook to change content of the data
-        $event = new FormEvent($this, $modelData);
-        $this->config->getEventDispatcher()->dispatch(FormEvents::PRE_SET_DATA, $event);
-        // BC until 2.3
-        $this->config->getEventDispatcher()->dispatch(FormEvents::SET_DATA, $event);
-        $modelData = $event->getData();
+        if ($dispatcher->hasListeners(FormEvents::PRE_SET_DATA) || $dispatcher->hasListeners(FormEvents::SET_DATA)) {
+            $event = new FormEvent($this, $modelData);
+            $dispatcher->dispatch(FormEvents::PRE_SET_DATA, $event);
+            // BC until 2.3
+            $dispatcher->dispatch(FormEvents::SET_DATA, $event);
+            $modelData = $event->getData();
+        }
 
         // Treat data as strings unless a value transformer exists
         if (!$this->config->getViewTransformers() && !$this->config->getModelTransformers() && is_scalar($modelData)) {
@@ -432,8 +431,10 @@ class Form implements \IteratorAggregate, FormInterface
             $this->config->getDataMapper()->mapDataToForms($viewData, $this->children);
         }
 
-        $event = new FormEvent($this, $modelData);
-        $this->config->getEventDispatcher()->dispatch(FormEvents::POST_SET_DATA, $event);
+        if ($dispatcher->hasListeners(FormEvents::POST_SET_DATA)) {
+            $event = new FormEvent($this, $modelData);
+            $dispatcher->dispatch(FormEvents::POST_SET_DATA, $event);
+        }
 
         return $this;
     }
@@ -526,6 +527,13 @@ class Form implements \IteratorAggregate, FormInterface
             return $this;
         }
 
+        // The data must be initialized if it was not initialized yet.
+        // This is necessary to guarantee that the *_SET_DATA listeners
+        // are always invoked before bind() takes place.
+        if (!$this->initialized) {
+            $this->setData($this->config->getData());
+        }
+
         // Don't convert NULL to a string here in order to determine later
         // whether an empty value has been submitted or whether no value has
         // been submitted at all. This is important for processing checkboxes
@@ -542,13 +550,16 @@ class Form implements \IteratorAggregate, FormInterface
         $normData = null;
         $extraData = array();
         $synchronized = false;
+        $dispatcher = $this->config->getEventDispatcher();
 
         // Hook to change content of the data bound by the browser
-        $event = new FormEvent($this, $submittedData);
-        $this->config->getEventDispatcher()->dispatch(FormEvents::PRE_BIND, $event);
-        // BC until 2.3
-        $this->config->getEventDispatcher()->dispatch(FormEvents::BIND_CLIENT_DATA, $event);
-        $submittedData = $event->getData();
+        if ($dispatcher->hasListeners(FormEvents::PRE_BIND) || $dispatcher->hasListeners(FormEvents::BIND_CLIENT_DATA)) {
+            $event = new FormEvent($this, $submittedData);
+            $dispatcher->dispatch(FormEvents::PRE_BIND, $event);
+            // BC until 2.3
+            $dispatcher->dispatch(FormEvents::BIND_CLIENT_DATA, $event);
+            $submittedData = $event->getData();
+        }
 
         // By default, the submitted data is also the data in view format
         $viewData = $submittedData;
@@ -610,11 +621,13 @@ class Form implements \IteratorAggregate, FormInterface
 
             // Hook to change content of the data into the normalized
             // representation
-            $event = new FormEvent($this, $normData);
-            $this->config->getEventDispatcher()->dispatch(FormEvents::BIND, $event);
-            // BC until 2.3
-            $this->config->getEventDispatcher()->dispatch(FormEvents::BIND_NORM_DATA, $event);
-            $normData = $event->getData();
+            if ($dispatcher->hasListeners(FormEvents::BIND) || $dispatcher->hasListeners(FormEvents::BIND_NORM_DATA)) {
+                $event = new FormEvent($this, $normData);
+                $dispatcher->dispatch(FormEvents::BIND, $event);
+                // BC until 2.3
+                $dispatcher->dispatch(FormEvents::BIND_NORM_DATA, $event);
+                $normData = $event->getData();
+            }
 
             // Synchronize representations - must not change the content!
             $modelData = $this->normToModel($normData);
@@ -630,10 +643,11 @@ class Form implements \IteratorAggregate, FormInterface
         $this->viewData = $viewData;
         $this->extraData = $extraData;
         $this->synchronized = $synchronized;
-        $this->initialized = true;
 
-        $event = new FormEvent($this, $viewData);
-        $this->config->getEventDispatcher()->dispatch(FormEvents::POST_BIND, $event);
+        if ($dispatcher->hasListeners(FormEvents::POST_BIND)) {
+            $event = new FormEvent($this, $viewData);
+            $dispatcher->dispatch(FormEvents::POST_BIND, $event);
+        }
 
         foreach ($this->config->getValidators() as $validator) {
             $validator->validate($this);

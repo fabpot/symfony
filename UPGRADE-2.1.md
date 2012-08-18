@@ -79,7 +79,9 @@
 
  * The current locale for the user is not stored anymore in the session
 
-   You can simulate the old behavior by registering a listener that looks like the following, if the paramater which handle locale value in the request is `_locale`:
+   You can simulate the old behavior by registering a listener that looks like
+   the following if the parameter which handles the locale value in the
+   request is `_locale`:
 
    ```
    namespace XXX;
@@ -161,6 +163,44 @@
     registered during the build method of bundles instead of being registered
     by the end-user. This means that you will you need to remove the 'factories'
     keys in your security configuration.
+
+    Before:
+
+     ``` yaml
+     security:
+       factories:
+         - "%kernel.root_dir%/../src/Acme/DemoBundle/Resources/config/security_factories.yml"
+     ```
+
+     ``` yaml
+     # src/Acme/DemoBundle/Resources/config/security_factories.yml
+     services:
+         security.authentication.factory.custom:
+             class:  Acme\DemoBundle\DependencyInjection\Security\Factory\CustomFactory
+             tags:
+                 - { name: security.listener.factory }
+     ```
+
+     After:
+
+      ```
+      namespace Acme\DemoBundle;
+
+      use Symfony\Component\HttpKernel\Bundle\Bundle;
+      use Symfony\Component\DependencyInjection\ContainerBuilder;
+      use Acme\DemoBundle\DependencyInjection\Security\Factory\CustomFactory;
+
+      class AcmeDemoBundle extends Bundle
+      {
+          public function build(ContainerBuilder $container)
+          {
+              parent::build($container);
+
+              $extension = $container->getExtension('security');
+              $extension->addSecurityListenerFactory(new CustomFactory());
+          }
+      }
+      ```
 
   * The Firewall listener is now registered after the Router listener. This
     means that specific Firewall URLs (like /login_check and /logout) must now
@@ -247,11 +287,10 @@
     reasons. It is now not possible anymore to use custom implementations of
     `FormBuilderInterface` for specific form types.
 
-    If you are in such a situation, you can subclass `FormRegistry` instead and override
-    `resolveType` to return a custom `ResolvedFormTypeInterface` implementation, within
-    which you can create your own `FormBuilderInterface` implementation. You should
-    register this custom registry class under the service name "form.registry" in order
-    to replace the default implementation.
+    If you are in such a situation, you can implement a custom `ResolvedFormTypeInterface`
+    where you create your own `FormBuilderInterface` implementation. You also need to
+    register a custom `ResolvedFormTypeFactoryInterface` implementation under the service
+    name "form.resolved_type_factory" in order to replace the default implementation.
 
   * If you previously inherited from `FieldType`, you should now inherit from
     `FormType`. You should also set the option `compound` to `false` if your field
@@ -493,11 +532,9 @@
     by default. Take care if your JavaScript relies on that. If you want to
     read the actual choice value, read the `value` attribute instead.
 
-  * In the choice field type's template, the structure of the `choices` variable
-    has changed.
-
-    The `choices` variable now contains `ChoiceView` objects with two getters,
-    `getValue()` and `getLabel()`, to access the choice data.
+  * In the choice field type's template, the `_form_is_choice_selected` method
+    used to identify a selected choice has been replaced with the `selectedchoice`
+    filter.
 
     Before:
 
@@ -512,9 +549,9 @@
     After:
 
     ```
-    {% for choice in choices %}
-        <option value="{{ choice.value }}"{% if _form_is_choice_selected(form, choice) %} selected="selected"{% endif %}>
-            {{ choice.label }}
+    {% for choice, label in choices %}
+        <option value="{{ choice.value }}"{% if choice is selectedchoice(choice.value) %} selected="selected"{% endif %}>
+            {{ label }}
         </option>
     {% endfor %}
     ```
@@ -1199,8 +1236,8 @@
     }
     ```
 
-  * Core translation messages are changed. Dot is added at the end of each message.
-    Overwritten core translations should be fixed if any. More info here.
+  * Core translation messages changed. A dot is added at the end of each message.
+    Overwritten core translations need to be fixed.
 
   * Collections (arrays or instances of `\Traversable`) in properties
     annotated with `Valid` are not traversed recursively by default anymore.
@@ -1270,6 +1307,25 @@
     ```
     /** @Assert\Length(min = 8) */
     private $password;
+    ```
+
+  * The classes `ValidatorContext` and `ValidatorFactory` were deprecated and
+    will be removed in Symfony 2.3. You should use the new entry point
+    `Validation` instead.
+
+    Before:
+
+    ```
+    $validator = ValidatorFactory::buildDefault(array('path/to/mapping.xml'))
+        ->getValidator();
+    ```
+
+    After:
+
+    ```
+    $validator = Validation::createValidatorBuilder()
+        ->addXmlMapping('path/to/mapping.xml')
+        ->getValidator();
     ```
 
 ### Session
@@ -1352,6 +1408,11 @@
   * The UrlMatcher urldecodes the route parameters only once, they were
     decoded twice before. Note that the `urldecode()` calls have been changed for a
     single `rawurldecode()` in order to support `+` for input paths.
+
+  * Two new parameters have been added to the DIC: `router.request_context.host`
+    and `router.request_context.scheme`.  You can customize them for your
+    functional tests or for generating urls with the right host and scheme
+    when your are in the cli context.
 
 ### FrameworkBundle
 

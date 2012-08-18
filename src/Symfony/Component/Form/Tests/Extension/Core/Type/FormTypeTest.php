@@ -206,7 +206,7 @@ class FormTypeTest extends TypeTestCase
         $this->assertEquals('test', $view['child']->vars['translation_domain']);
     }
 
-    public function testNonTranlsationDomainFormWithNonTranslationDomainParentBeingTranslationDomainDefault()
+    public function testNonTranslationDomainFormWithNonTranslationDomainParentBeingTranslationDomainDefault()
     {
         $parent = $this->factory->createNamed('parent', 'form');
         $child  = $this->factory->createNamed('child', 'form');
@@ -644,5 +644,19 @@ class FormTypeTest extends TypeTestCase
         $form->setData('foobar');
 
         $this->assertSame('default', $form->getData());
+    }
+
+    public function testNormDataIsPassedToView()
+    {
+        $view = $this->factory->createBuilder('form')
+            ->addViewTransformer(new FixedDataTransformer(array(
+                'foo' => 'bar',
+            )))
+            ->setData('foo')
+            ->getForm()
+            ->createView();
+
+        $this->assertSame('foo', $view->vars['data']);
+        $this->assertSame('bar', $view->vars['value']);
     }
 }

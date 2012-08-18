@@ -15,7 +15,7 @@ use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Util\PropertyPath;
-use Symfony\Component\Form\FormConfig;
+use Symfony\Component\Form\FormConfigBuilder;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -34,7 +34,7 @@ class SimpleFormTest extends AbstractFormTest
             'foo' => 'bar',
         ));
 
-        $config = new FormConfig('name', null, $this->dispatcher);
+        $config = new FormConfigBuilder('name', null, $this->dispatcher);
         $config->addViewTransformer($view);
         $config->addModelTransformer($model);
         $config->setData('default');
@@ -43,6 +43,28 @@ class SimpleFormTest extends AbstractFormTest
         $this->assertSame('default', $form->getData());
         $this->assertSame('foo', $form->getNormData());
         $this->assertSame('bar', $form->getViewData());
+    }
+
+    // https://github.com/symfony/symfony/commit/d4f4038f6daf7cf88ca7c7ab089473cce5ebf7d8#commitcomment-1632879
+    public function testDataIsInitializedFromBind()
+    {
+        $mock = $this->getMockBuilder('\stdClass')
+            ->setMethods(array('preSetData', 'preBind'))
+            ->getMock();
+        $mock->expects($this->at(0))
+            ->method('preSetData');
+        $mock->expects($this->at(1))
+            ->method('preBind');
+
+        $config = new FormConfigBuilder('name', null, $this->dispatcher);
+        $config->addEventListener(FormEvents::PRE_SET_DATA, array($mock, 'preSetData'));
+        $config->addEventListener(FormEvents::PRE_BIND, array($mock, 'preBind'));
+        $form = new Form($config);
+
+        // no call to setData() or similar where the object would be
+        // initialized otherwise
+
+        $form->bind('foobar');
     }
 
     /**
@@ -694,7 +716,7 @@ class SimpleFormTest extends AbstractFormTest
      */
     public function testViewDataMustNotBeObjectIfDataClassIsNull()
     {
-        $config = new FormConfig('name', null, $this->dispatcher);
+        $config = new FormConfigBuilder('name', null, $this->dispatcher);
         $config->addViewTransformer(new FixedDataTransformer(array(
             '' => '',
             'foo' => new \stdClass(),
@@ -707,7 +729,7 @@ class SimpleFormTest extends AbstractFormTest
     public function testViewDataMayBeArrayAccessIfDataClassIsNull()
     {
         $arrayAccess = $this->getMock('\ArrayAccess');
-        $config = new FormConfig('name', null, $this->dispatcher);
+        $config = new FormConfigBuilder('name', null, $this->dispatcher);
         $config->addViewTransformer(new FixedDataTransformer(array(
             '' => '',
             'foo' => $arrayAccess,
@@ -724,7 +746,7 @@ class SimpleFormTest extends AbstractFormTest
      */
     public function testViewDataMustBeObjectIfDataClassIsSet()
     {
-        $config = new FormConfig('name', 'stdClass', $this->dispatcher);
+        $config = new FormConfigBuilder('name', 'stdClass', $this->dispatcher);
         $config->addViewTransformer(new FixedDataTransformer(array(
             '' => '',
             'foo' => array('bar' => 'baz'),
@@ -740,7 +762,7 @@ class SimpleFormTest extends AbstractFormTest
     public function testSetDataCannotInvokeItself()
     {
         // Cycle detection to prevent endless loops
-        $config = new FormConfig('name', 'stdClass', $this->dispatcher);
+        $config = new FormConfigBuilder('name', 'stdClass', $this->dispatcher);
         $config->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
             $event->getForm()->setData('bar');
         });
