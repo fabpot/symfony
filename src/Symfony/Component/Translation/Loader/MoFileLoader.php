@@ -100,12 +100,15 @@ class MoFileLoader extends ArrayLoader implements LoaderInterface
             throw new InvalidResourceException("MO stream content has an invalid format.");
         }
 
-        $formatRevision = $this->readLong($stream, $isBigEndian);
+        // formatRevision
+        $this->readLong($stream, $isBigEndian);
         $count = $this->readLong($stream, $isBigEndian);
         $offsetId = $this->readLong($stream, $isBigEndian);
         $offsetTranslated = $this->readLong($stream, $isBigEndian);
-        $sizeHashes = $this->readLong($stream, $isBigEndian);
-        $offsetHashes = $this->readLong($stream, $isBigEndian);
+        // sizeHashes
+        $this->readLong($stream, $isBigEndian);
+        // offsetHashes
+        $this->readLong($stream, $isBigEndian);
 
         $messages = array();
 
@@ -140,7 +143,6 @@ class MoFileLoader extends ArrayLoader implements LoaderInterface
                 $translated = explode("\000", $translated);
             }
 
-            $ids = array('singular' => $singularId, 'plural' => $pluralId);
             $item = compact('ids', 'translated');
 
             if (is_array($item['translated'])) {
