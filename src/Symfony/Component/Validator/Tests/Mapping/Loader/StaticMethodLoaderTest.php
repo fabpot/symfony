@@ -65,11 +65,26 @@ class StaticMethodLoaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(0, count($metadata->getConstraints()));
     }
+
+    public function testLoadClassMetadataIgnoresAbstractClasses()
+    {
+        $loader = new StaticMethodLoader('loadMetadata');
+        $metadata = new ClassMetadata(__NAMESPACE__.'\AbstractStaticLoader');
+
+        $loader->loadClassMetadata($metadata);
+
+        $this->assertSame(0, count($metadata->getConstraints()));
+    }
 }
 
 interface StaticLoaderInterface
 {
     public static function loadMetadata(ClassMetadata $metadata);
+}
+
+abstract class AbstractStaticLoader
+{
+    abstract public static function loadMetadata(ClassMetadata $metadata);
 }
 
 class StaticLoaderEntity
