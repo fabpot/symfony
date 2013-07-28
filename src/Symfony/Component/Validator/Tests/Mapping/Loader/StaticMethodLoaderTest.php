@@ -84,7 +84,10 @@ interface StaticLoaderInterface
 
 abstract class AbstractStaticLoader
 {
-    abstract public static function loadMetadata(ClassMetadata $metadata);
+    public static function loadMetadata(ClassMetadata $metadata)
+    {
+        $metadata->addConstraint(new ConstraintA());
+    }
 }
 
 class StaticLoaderEntity
