@@ -143,7 +143,8 @@ class MoFileLoader extends ArrayLoader implements LoaderInterface
                 $translated = explode("\000", $translated);
             }
 
-            $item = compact('ids', 'translated');
+            $ids = array('singular' => $singularId, 'plural' => $pluralId);
+            $item = array('ids'=>$ids, 'translated'=>$translated);
 
             if (is_array($item['translated'])) {
                 $messages[$item['ids']['singular']] = stripcslashes($item['translated'][0]);
