@@ -54,9 +54,6 @@
             <argument type="service" id="validator.mapping.class_metadata_factory" />
         </service>
 
-        <!-- PropertyAccessor -->
-        <service id="property_accessor" class="%property_accessor.class%" />
-
         <!-- CoreExtension -->
         <service id="form.type.form" class="Symfony\Component\Form\Extension\Core\Type\FormType">
             <argument type="service" id="property_accessor"/>
