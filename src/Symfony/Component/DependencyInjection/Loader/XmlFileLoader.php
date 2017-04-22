@@ -527,11 +527,12 @@ class XmlFileLoader extends FileLoader
         if ($element = $dom->documentElement->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'schemaLocation')) {
             $items = preg_split('/\s+/', $element);
             for ($i = 0, $nb = count($items); $i < $nb; $i += 2) {
-                if (!$this->container->hasExtension($items[$i])) {
+                $extension_name = basename($items[$i]);
+                if (!$this->container->hasExtension($extension_name)) {
                     continue;
                 }
 
-                if (($extension = $this->container->getExtension($items[$i])) && false !== $extension->getXsdValidationBasePath()) {
+                if (($extension = $this->container->getExtension($extension_name)) && false !== $extension->getXsdValidationBasePath()) {
                     $path = str_replace($extension->getNamespace(), str_replace('\\', '/', $extension->getXsdValidationBasePath()).'/', $items[$i + 1]);
 
                     if (!is_file($path)) {
