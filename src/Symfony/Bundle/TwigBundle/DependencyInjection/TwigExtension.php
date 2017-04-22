@@ -207,6 +207,17 @@ class TwigExtension extends Extension
 
         return $name;
     }
+    /**
+     * Loads the Twig_Extensions configuration.
+     *
+     * @param array            $config    An array of configuration settings
+     * @param ContainerBuilder $container A ContainerBuilder instance
+     */
+    public function extensionsLoad($config, ContainerBuilder $container)
+    {
+        $loader = new XmlFileLoader($container, __DIR__.'/../Resources/config');
+        $loader->load('extensions.xml');
+    }
 
     /**
      * Returns the base path for the XSD files.
