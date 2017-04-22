@@ -41,6 +41,24 @@ class SecurityHelper extends Helper
 
         return $this->securityChecker->isGranted($role, $object);
     }
+    
+    public function getUser()
+    {
+        if (!$this->context) {
+            return;
+        }
+
+        if (!$token = $this->context->getToken()) {
+            return;
+        }
+
+        $user = $token->getUser();
+        if (!is_object($user)) {
+            return;
+        }
+
+        return $user;
+    }
 
     /**
      * {@inheritdoc}
