@@ -7,8 +7,8 @@
 BlaBlaCar.com and Spotify.com) and most of the [popular PHP projects][2] (including
 Drupal and Magento).
 
-Installation
-------------
+Installation Manual
+-------------------
 
 * [Install Symfony][4] with Composer (see [requirements details][3]).
 * Symfony follows the [semantic versioning][5] strictly, publishes "Long Term
