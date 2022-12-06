@@ -16,7 +16,7 @@ use Symfony\Component\Mime\Email;
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class TemplatedEmail extends Email
+class TemplatedEmail extends Email implements RenderableEmailInterface
 {
     private ?string $htmlTemplate = null;
     private ?string $textTemplate = null;
@@ -65,6 +65,18 @@ class TemplatedEmail extends Email
     public function getContext(): array
     {
         return $this->context;
+    }
+
+    public function isRendered(): bool
+    {
+        return null === $this->htmlTemplate && null === $this->textTemplate;
+    }
+
+    public function markAsRendered(): void
+    {
+        $this->textTemplate = null;
+        $this->htmlTemplate = null;
+        $this->context = [];
     }
 
     /**
