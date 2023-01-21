@@ -994,7 +994,6 @@ abstract class FrameworkExtensionTestCase extends TestCase
             'default' => new Reference('messenger.transport.failed'),
             'failed' => new Reference('messenger.transport.failed'),
             'redis' => new Reference('messenger.transport.failed'),
-            'schedule' => new Reference('messenger.transport.failed'),
         ];
 
         $failureTransportsReferences = array_map(function (ServiceClosureArgument $serviceClosureArgument) {

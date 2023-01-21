@@ -215,8 +215,8 @@ use Symfony\Component\RateLimiter\Storage\CacheStorage;
 use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
 use Symfony\Component\RemoteEvent\RemoteEvent;
 use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
-use Symfony\Component\Scheduler\Locator\ScheduleConfigLocatorInterface;
-use Symfony\Component\Scheduler\Messenger\ScheduleTransportFactory;
+use Symfony\Component\Scheduler\Attribute\AsSchedule;
+use Symfony\Component\Scheduler\Messenger\SchedulerTransportFactory;
 use Symfony\Component\Security\Core\AuthenticationEvents;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -528,6 +528,10 @@ class FrameworkExtension extends Extension
         // validation depends on form, annotations being registered
         $this->registerValidationConfiguration($config['validation'], $container, $loader, $propertyInfoEnabled);
 
+        if ($this->readConfigEnabled('scheduler', $container, $config['scheduler'])) {
+            $this->registerSchedulerConfiguration($config['scheduler'], $container, $loader);
+        }
+
         // messenger depends on validation being registered
         if ($this->readConfigEnabled('messenger', $container, $config['messenger'])) {
             $this->registerMessengerConfiguration($config['messenger'], $container, $loader, $config['validation']);
@@ -675,8 +679,6 @@ class FrameworkExtension extends Extension
             ->addTag('messenger.message_handler');
         $container->registerForAutoconfiguration(TransportFactoryInterface::class)
             ->addTag('messenger.transport_factory');
-        $container->registerForAutoconfiguration(ScheduleConfigLocatorInterface::class)
-            ->addTag('scheduler.schedule_config_locator');
         $container->registerForAutoconfiguration(MimeTypeGuesserInterface::class)
             ->addTag('mime.mime_type_guesser');
         $container->registerForAutoconfiguration(LoggerAwareInterface::class)
@@ -710,9 +712,11 @@ class FrameworkExtension extends Extension
             }
             $definition->addTag('messenger.message_handler', $tagAttributes);
         });
-
         $container->registerAttributeForAutoconfiguration(AsTargetedValueResolver::class, static function (ChildDefinition $definition, AsTargetedValueResolver $attribute): void {
             $definition->addTag('controller.targeted_value_resolver', $attribute->name ? ['name' => $attribute->name] : []);
+        });
+        $container->registerAttributeForAutoconfiguration(AsSchedule::class, static function (ChildDefinition $definition, AsSchedule $attribute, \ReflectionClass $reflector): void {
+            $definition->addTag('scheduler.schedule_provider', ['name' => $attribute->name]);
         });
 
         if (!$container->getParameter('kernel.debug')) {
@@ -1999,6 +2003,19 @@ class FrameworkExtension extends Extension
         }
     }
 
+    private function registerSchedulerConfiguration(array $config, ContainerBuilder $container, PhpFileLoader $loader): void
+    {
+        if (!class_exists(SchedulerTransportFactory::class)) {
+            throw new LogicException('Scheduler support cannot be enabled as the Scheduler component is not installed. Try running "composer require symfony/scheduler".');
+        }
+
+        if (!interface_exists(MessageBusInterface::class)) {
+            throw new LogicException('Scheduler support cannot be enabled as the Messenger component is not installed. Try running "composer require symfony/messenger".');
+        }
+
+        $loader->load('scheduler.php');
+    }
+
     private function registerMessengerConfiguration(array $config, ContainerBuilder $container, PhpFileLoader $loader, array $validationConfig): void
     {
         if (!interface_exists(MessageBusInterface::class)) {
@@ -2029,10 +2046,6 @@ class FrameworkExtension extends Extension
 
         if (ContainerBuilder::willBeAvailable('symfony/beanstalkd-messenger', BeanstalkdTransportFactory::class, ['symfony/framework-bundle', 'symfony/messenger'])) {
             $container->getDefinition('messenger.transport.beanstalkd.factory')->addTag('messenger.transport_factory');
-        }
-
-        if (ContainerBuilder::willBeAvailable('symfony/scheduler', ScheduleTransportFactory::class, ['symfony/framework-bundle', 'symfony/messenger'])) {
-            $loader->load('scheduler.php');
         }
 
         if (null === $config['default_bus'] && 1 === \count($config['buses'])) {

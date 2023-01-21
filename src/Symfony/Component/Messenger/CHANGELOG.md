@@ -14,7 +14,7 @@ CHANGELOG
  * Deprecate `StopWorkerOnSigtermSignalListener` in favor of
    `StopWorkerOnSignalsListener` and make it configurable with SIGINT and
    SIGTERM by default
- * Add `ScheduleTransport` to generate messages on a schedule
+ * Add `RedispatchMessage` and `RedispatchMessageHandler`
 
 6.2
 ---

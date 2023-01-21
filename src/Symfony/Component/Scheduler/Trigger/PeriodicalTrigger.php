@@ -13,6 +13,9 @@ namespace Symfony\Component\Scheduler\Trigger;
 
 use Symfony\Component\Scheduler\Exception\InvalidArgumentException;
 
+/**
+ * @experimental
+ */
 final class PeriodicalTrigger implements TriggerInterface
 {
     public function __construct(
@@ -67,6 +70,28 @@ final class PeriodicalTrigger implements TriggerInterface
         return new self($interval, $firstRun, $priorTo);
     }
 
+    public function getNextRunDate(\DateTimeImmutable $run): ?\DateTimeImmutable
+    {
+        if ($this->firstRun > $run) {
+            return $this->firstRun;
+        }
+        if ($this->priorTo <= $run) {
+            return null;
+        }
+
+        $delta = $run->format('U.u') - $this->firstRun->format('U.u');
+        $recurrencesPassed = (int) ($delta / $this->intervalInSeconds);
+        $nextRunTimestamp = ($recurrencesPassed + 1) * $this->intervalInSeconds + $this->firstRun->getTimestamp();
+        /** @var \DateTimeImmutable $nextRun */
+        $nextRun = \DateTimeImmutable::createFromFormat('U.u', $nextRunTimestamp.$this->firstRun->format('.u'));
+
+        if ($this->priorTo <= $nextRun) {
+            return null;
+        }
+
+        return $nextRun;
+    }
+
     private static function calcInterval(\DateTimeImmutable $from, \DateTimeImmutable $to): int
     {
         if (8 <= \PHP_INT_SIZE) {
@@ -86,27 +111,5 @@ final class PeriodicalTrigger implements TriggerInterface
         if ($interval > \PHP_INT_MAX) {
             throw new InvalidArgumentException('The interval for a periodical message is too big. If you need to run it once, use `$priorTo` argument.');
         }
-    }
-
-    public function nextTo(\DateTimeImmutable $run): ?\DateTimeImmutable
-    {
-        if ($this->firstRun > $run) {
-            return $this->firstRun;
-        }
-        if ($this->priorTo <= $run) {
-            return null;
-        }
-
-        $delta = (float) $run->format('U.u') - (float) $this->firstRun->format('U.u');
-        $recurrencesPassed = (int) ($delta / $this->intervalInSeconds);
-        $nextRunTimestamp = ($recurrencesPassed + 1) * $this->intervalInSeconds + $this->firstRun->getTimestamp();
-        /** @var \DateTimeImmutable $nextRun */
-        $nextRun = \DateTimeImmutable::createFromFormat('U.u', $nextRunTimestamp.$this->firstRun->format('.u'));
-
-        if ($this->priorTo <= $nextRun) {
-            return null;
-        }
-
-        return $nextRun;
     }
 }

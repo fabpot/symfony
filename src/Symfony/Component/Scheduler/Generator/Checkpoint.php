@@ -9,17 +9,25 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\Scheduler\State;
+namespace Symfony\Component\Scheduler\Generator;
 
 use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\NoLock;
+use Symfony\Contracts\Cache\CacheInterface;
 
-final class LockStateDecorator implements StateInterface
+/**
+ * @experimental
+ */
+final class Checkpoint implements CheckpointInterface
 {
+    private \DateTimeImmutable $time;
+    private int $index = -1;
     private bool $reset = false;
 
     public function __construct(
-        private readonly State $inner,
-        private readonly LockInterface $lock,
+        private readonly string $name,
+        private readonly LockInterface $lock = new NoLock(),
+        private readonly ?CacheInterface $cache = null,
     ) {
     }
 
@@ -34,25 +42,32 @@ final class LockStateDecorator implements StateInterface
 
         if ($this->reset) {
             $this->reset = false;
-            $this->inner->save($now, -1);
+            $this->save($now, -1);
         }
 
-        return $this->inner->acquire($now);
+        $this->time ??= $now;
+        if ($this->cache) {
+            $this->save(...$this->cache->get($this->name, fn () => [$now, -1]));
+        }
+
+        return true;
     }
 
     public function time(): \DateTimeImmutable
     {
-        return $this->inner->time();
+        return $this->time;
     }
 
     public function index(): int
     {
-        return $this->inner->index();
+        return $this->index;
     }
 
     public function save(\DateTimeImmutable $time, int $index): void
     {
-        $this->inner->save($time, $index);
+        $this->time = $time;
+        $this->index = $index;
+        $this->cache?->get($this->name, fn () => [$time, $index], \INF);
     }
 
     /**
@@ -62,8 +77,6 @@ final class LockStateDecorator implements StateInterface
      */
     public function release(\DateTimeImmutable $now, ?\DateTimeImmutable $nextTime): void
     {
-        $this->inner->release($now, $nextTime);
-
         if (!$nextTime) {
             $this->lock->release();
         } elseif ($remaining = $this->lock->getRemainingLifetime()) {

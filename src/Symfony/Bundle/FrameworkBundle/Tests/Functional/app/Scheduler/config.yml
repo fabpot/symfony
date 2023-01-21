@@ -3,16 +3,13 @@ imports:
 
 framework:
     lock: ~
+    scheduler: ~
     messenger:
         transports:
-            schedule:
-                dsn: 'schedule://default'
-                options:
-                    cache: 'app'
-                    lock: 'default'
+            sync: sync://
 
 services:
-    Symfony\Bundle\FrameworkBundle\Tests\Fixtures\Messenger\DummyScheduleConfigLocator:
+    Symfony\Bundle\FrameworkBundle\Tests\Fixtures\Messenger\DummySchedule:
         autoconfigure: true
 
     clock:

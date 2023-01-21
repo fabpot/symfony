@@ -9,12 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\Scheduler\State;
+namespace Symfony\Component\Messenger\Message;
 
-interface StateFactoryInterface
+use Symfony\Component\Messenger\Envelope;
+
+/**
+ * @internal
+ */
+final class RedispatchMessage
 {
-    /**
-     * @param array<string, int|float|string|bool|null> $options
-     */
-    public function create(string $scheduleName, array $options): StateInterface;
+    public function __construct(
+        public readonly Envelope $envelope,
+    ) {
+    }
 }
