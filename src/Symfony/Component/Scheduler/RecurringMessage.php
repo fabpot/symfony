@@ -60,4 +60,14 @@ final class RecurringMessage
     {
         return $this->trigger;
     }
+
+    /**
+     * @return $this
+     */
+    public function transport(string $name, string ...$names): self
+    {
+        $this->message = Envelope::wrap($this->message, [new TransportNamesStamp([$name, ...$names])]);
+
+        return $this;
+    }
 }
