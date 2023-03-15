@@ -21,13 +21,13 @@
     ],
     "require": {
         "php": ">=8.1",
-        "symfony/clock": "^6.3",
-        "symfony/lock": "^5.4|^6.0"
+        "symfony/clock": "^6.3"
     },
     "require-dev": {
         "dragonmantank/cron-expression": "^3",
         "symfony/cache": "^5.4|^6.0",
         "symfony/dependency-injection": "^5.4|^6.0",
+        "symfony/lock": "^5.4|^6.0",
         "symfony/messenger": "^6.3"
     },
     "autoload": {

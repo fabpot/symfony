@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-use Symfony\Component\Scheduler\Messenger\ScheduledMessageHandler;
 use Symfony\Component\Scheduler\Messenger\SchedulerTransportFactory;
 
 return static function (ContainerConfigurator $container) {

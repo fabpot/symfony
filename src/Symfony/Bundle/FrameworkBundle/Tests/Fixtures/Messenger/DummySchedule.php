@@ -8,10 +8,10 @@ use Symfony\Component\Lock\Lock;
 use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\Schedule;
-use Symfony\Component\Scheduler\ScheduleableInterface;
+use Symfony\Component\Scheduler\ScheduleProviderInterface;
 
 #[AsSchedule('dummy')]
-class DummySchedule implements ScheduleableInterface
+class DummySchedule implements ScheduleProviderInterface
 {
     public static array $recurringMessages;
 

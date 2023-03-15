@@ -12,7 +12,6 @@
 namespace Symfony\Component\Scheduler\Messenger;
 
 use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Message\RedispatchMessage;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Component\Scheduler\Exception\LogicException;
@@ -36,7 +35,7 @@ class SchedulerTransport implements TransportInterface, MessageCountAwareInterfa
     public function get(): iterable
     {
         foreach ($this->messageGenerator->getMessages() as $message) {
-            yield new Envelope(new RedispatchMessage(Envelope::wrap($message, [new ScheduledStamp()])));
+            yield Envelope::wrap($message, [new ScheduledStamp()]);
         }
     }
 

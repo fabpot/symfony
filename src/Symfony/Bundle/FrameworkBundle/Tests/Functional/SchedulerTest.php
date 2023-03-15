@@ -18,15 +18,14 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Scheduler\Messenger\SchedulerTransport;
 use Symfony\Component\Scheduler\RecurringMessage;
-use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 
 class SchedulerTest extends AbstractWebTestCase
 {
     public function testScheduler()
     {
         $scheduledMessages = [
-            new RecurringMessage($foo = new FooMessage(), PeriodicalTrigger::create(600, '2020-01-01T00:00:00Z')),
-            new RecurringMessage($bar = new BarMessage(), PeriodicalTrigger::create(600, '2020-01-01T00:01:00Z')),
+            RecurringMessage::every('5 minutes', $foo = new FooMessage()),
+            RecurringMessage::every('5 minutes', $bar = new BarMessage()),
         ];
         DummySchedule::$recurringMessages = $scheduledMessages;
 

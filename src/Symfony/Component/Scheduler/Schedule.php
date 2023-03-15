@@ -18,7 +18,7 @@ use Symfony\Contracts\Cache\CacheInterface;
 /**
  * @experimental
  */
-final class Schedule implements ScheduleableInterface
+final class Schedule implements ScheduleProviderInterface
 {
     /** @var array<RecurringMessage> */
     private array $messages = [];
@@ -28,7 +28,7 @@ final class Schedule implements ScheduleableInterface
     /**
      * @return $this
      */
-    public function add(RecurringMessage $message, RecurringMessage ...$messages): self
+    public function add(RecurringMessage $message, RecurringMessage ...$messages): static
     {
         $this->messages[] = $message;
         $this->messages = array_merge($this->messages, $messages);
@@ -39,7 +39,7 @@ final class Schedule implements ScheduleableInterface
     /**
      * @return $this
      */
-    public function lock(LockInterface $lock): self
+    public function lock(LockInterface $lock): static
     {
         $this->lock = $lock;
 
@@ -54,7 +54,7 @@ final class Schedule implements ScheduleableInterface
     /**
      * @return $this
      */
-    public function stateful(CacheInterface $state): self
+    public function stateful(CacheInterface $state): static
     {
         $this->state = $state;
 
@@ -77,7 +77,7 @@ final class Schedule implements ScheduleableInterface
     /**
      * @return $this
      */
-    public function getSchedule(): self
+    public function getSchedule(): static
     {
         return $this;
     }

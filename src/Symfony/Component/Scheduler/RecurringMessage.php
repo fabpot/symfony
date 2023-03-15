@@ -11,9 +11,6 @@
 
 namespace Symfony\Component\Scheduler;
 
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
-use Symfony\Component\Scheduler\Exception\LogicException;
 use Symfony\Component\Scheduler\Trigger\CronExpressionTrigger;
 use Symfony\Component\Scheduler\Trigger\PeriodicalTrigger;
 use Symfony\Component\Scheduler\Trigger\TriggerInterface;
@@ -21,12 +18,32 @@ use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 /**
  * @experimental
  */
-final class RecurringMessage
+class RecurringMessage
 {
-    public function __construct(
-        private object $message,
-        private TriggerInterface $trigger = new CronExpressionTrigger(),
+    private function __construct(
+        private readonly TriggerInterface $trigger,
+        private readonly object $message,
     ) {
+    }
+
+    /**
+     * Uses a relative date format to define the frequency.
+     *
+     * @see https://php.net/datetime.formats.relative
+     */
+    public static function every(string $frequency, object $message, \DateTimeImmutable $from = new \DateTimeImmutable(), ?\DateTimeImmutable $until = new \DateTimeImmutable('3000-01-01')): static
+    {
+        return new self(PeriodicalTrigger::create(\DateInterval::createFromDateString($frequency), $from, $until), $message);
+    }
+
+    public static function cron(string $expression, object $message): static
+    {
+        return new self(CronExpressionTrigger::fromSpec($expression), $message);
+    }
+
+    public static function trigger(TriggerInterface $trigger, object $message): static
+    {
+        return new self($trigger, $message);
     }
 
     public function getMessage(): object
@@ -37,38 +54,5 @@ final class RecurringMessage
     public function getTrigger(): TriggerInterface
     {
         return $this->trigger;
-    }
-
-    /**
-     * @return $this
-     */
-    public function transport(string $name, string ...$names): self
-    {
-        $this->message = Envelope::wrap($this->message, [new TransportNamesStamp([$name, ...$names])]);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function trigger(TriggerInterface $trigger): self
-    {
-        $this->trigger = $trigger;
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function every(string $expression): self
-    {
-        $this->trigger = PeriodicalTrigger::create(
-            \DateInterval::createFromDateString($expression),
-            'now',
-        );
-
-        return $this;
     }
 }

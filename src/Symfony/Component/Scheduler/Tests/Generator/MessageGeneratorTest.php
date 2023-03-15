@@ -34,7 +34,7 @@ class MessageGeneratorTest extends TestCase
 
         $schedule->stateful(new ArrayAdapter());
 
-        $scheduler = new MessageGenerator('dummy', $schedule, $clock);
+        $scheduler = new MessageGenerator($schedule, 'dummy', $clock);
 
         // Warmup. The first run is always returns nothing.
         $this->assertSame([], iterator_to_array($scheduler->getMessages()));
@@ -128,7 +128,7 @@ class MessageGeneratorTest extends TestCase
                 '22:12:01' => [],
             ],
             'schedule' => (new Schedule())->add(
-                new RecurringMessage((object) [], $this->createMock(TriggerInterface::class)),
+                RecurringMessage::trigger($this->createMock(TriggerInterface::class), (object) []),
             ),
         ];
     }
@@ -161,7 +161,7 @@ class MessageGeneratorTest extends TestCase
                 $this->fail(sprintf('There is no next run for tick %s', $lastTick->format(\DateTimeImmutable::RFC3339_EXTENDED)));
             });
 
-        return new RecurringMessage($message, $trigger);
+        return RecurringMessage::trigger($trigger, $message);
     }
 
     private static function makeDateTime(string $time): \DateTimeImmutable

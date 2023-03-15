@@ -14,7 +14,7 @@ namespace Symfony\Component\Scheduler\Generator;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Scheduler\Schedule;
-use Symfony\Component\Scheduler\ScheduleableInterface;
+use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 
 /**
@@ -25,24 +25,17 @@ final class MessageGenerator implements MessageGeneratorInterface
     private TriggerHeap $triggerHeap;
     private ?\DateTimeImmutable $waitUntil;
     private CheckpointInterface $checkpoint;
-    private Schedule $schedule;
 
     public function __construct(
-        private readonly string $name,
-        ScheduleableInterface $scheduleProvider,
-        private readonly ClockInterface $clock = new Clock(),
+        private Schedule $schedule,
+        string|CheckpointInterface $checkpoint,
+        private ClockInterface $clock = new Clock(),
     ) {
         $this->waitUntil = new \DateTimeImmutable('@0');
-        $this->schedule = $scheduleProvider->getSchedule();
-        $this->checkpoint = new Checkpoint('scheduler_checkpoint_'.$name, $this->schedule->getLock(), $this->schedule->getState());
-    }
-
-    public function withCheckpoint(CheckpointInterface $checkpoint): static
-    {
-        $generator = clone $this;
-        $generator->checkpoint = $checkpoint;
-
-        return $generator;
+        if (\is_string($checkpoint)) {
+            $checkpoint = new Checkpoint('scheduler_checkpoint_'.$checkpoint, $this->schedule->getLock(), $this->schedule->getState());
+        }
+        $this->checkpoint = $checkpoint;
     }
 
     public function getMessages(): \Generator

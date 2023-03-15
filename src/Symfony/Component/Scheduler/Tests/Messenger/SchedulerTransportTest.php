@@ -34,8 +34,6 @@ class SchedulerTransportTest extends TestCase
 
         foreach ($transport->get() as $envelope) {
             $this->assertInstanceOf(Envelope::class, $envelope);
-            $this->assertInstanceOf(RedispatchMessage::class, $envelope->getMessage());
-            $envelope = $envelope->getMessage()->envelope;
             $this->assertNotNull($envelope->last(ScheduledStamp::class));
             $this->assertSame(array_shift($messages), $envelope->getMessage());
         }

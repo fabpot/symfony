@@ -715,7 +715,7 @@ class FrameworkExtension extends Extension
         $container->registerAttributeForAutoconfiguration(AsTargetedValueResolver::class, static function (ChildDefinition $definition, AsTargetedValueResolver $attribute): void {
             $definition->addTag('controller.targeted_value_resolver', $attribute->name ? ['name' => $attribute->name] : []);
         });
-        $container->registerAttributeForAutoconfiguration(AsSchedule::class, static function (ChildDefinition $definition, AsSchedule $attribute, \ReflectionClass $reflector): void {
+        $container->registerAttributeForAutoconfiguration(AsSchedule::class, static function (ChildDefinition $definition, AsSchedule $attribute): void {
             $definition->addTag('scheduler.schedule_provider', ['name' => $attribute->name]);
         });
 

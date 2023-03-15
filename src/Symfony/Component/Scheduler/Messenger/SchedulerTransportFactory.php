@@ -17,7 +17,9 @@ use Symfony\Component\Clock\Clock;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Scheduler\Exception\InvalidArgumentException;
+use Symfony\Component\Scheduler\Generator\Checkpoint;
 use Symfony\Component\Scheduler\Generator\MessageGenerator;
+use Symfony\Component\Scheduler\Schedule;
 
 /**
  * @experimental
@@ -39,20 +41,17 @@ class SchedulerTransportFactory implements TransportFactoryInterface
             throw new InvalidArgumentException(sprintf('The given Schedule DSN "%s" is invalid.', $dsn));
         }
         if (!$this->scheduleProviders->has($scheduleName)) {
-            throw new InvalidArgumentException(sprintf('The schedule "not-exists" is not found.', $scheduleName));
+            throw new InvalidArgumentException(sprintf('The schedule "%s" is not found.', $scheduleName));
         }
 
-        return new SchedulerTransport(
-            new MessageGenerator($scheduleName, $this->scheduleProviders->get($scheduleName), $this->clock)
-        );
+        /** @var Schedule $schedule */
+        $schedule = $this->scheduleProviders->get($scheduleName)->getSchedule();
+        $checkpoint = new Checkpoint('scheduler_checkpoint_'.$scheduleName, $schedule->getLock(), $schedule->getState());
+
+        return new SchedulerTransport(new MessageGenerator($schedule, $checkpoint, $this->clock));
     }
 
     public function supports(string $dsn, array $options): bool
-    {
-        return self::isSupported($dsn);
-    }
-
-    final public static function isSupported(string $dsn): bool
     {
         return str_starts_with($dsn, 'schedule://');
     }

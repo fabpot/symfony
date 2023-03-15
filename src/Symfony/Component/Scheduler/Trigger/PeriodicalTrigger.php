@@ -20,17 +20,17 @@ final class PeriodicalTrigger implements TriggerInterface
 {
     public function __construct(
         private readonly int $intervalInSeconds,
-        private readonly \DateTimeImmutable $firstRun,
-        private readonly \DateTimeImmutable $priorTo,
+        private readonly \DateTimeImmutable $firstRun = new \DateTimeImmutable(),
+        private readonly \DateTimeImmutable $priorTo = new \DateTimeImmutable('3000-01-01'),
     ) {
         if (0 >= $this->intervalInSeconds) {
-            throw new InvalidArgumentException('The `$intervalInSeconds` argument must be greater then zero.');
+            throw new InvalidArgumentException('The "$intervalInSeconds" argument must be greater then zero.');
         }
     }
 
     public static function create(
         string|int|\DateInterval $interval,
-        string|\DateTimeImmutable $firstRun,
+        string|\DateTimeImmutable $firstRun = new \DateTimeImmutable(),
         string|\DateTimeImmutable $priorTo = new \DateTimeImmutable('3000-01-01'),
     ): self {
         if (\is_string($firstRun)) {
@@ -109,7 +109,7 @@ final class PeriodicalTrigger implements TriggerInterface
     private static function ensureIntervalSize(string|float $interval): void
     {
         if ($interval > \PHP_INT_MAX) {
-            throw new InvalidArgumentException('The interval for a periodical message is too big. If you need to run it once, use `$priorTo` argument.');
+            throw new InvalidArgumentException('The interval for a periodical message is too big. If you need to run it once, use "$priorTo" argument.');
         }
     }
 }

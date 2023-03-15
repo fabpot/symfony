@@ -21,7 +21,7 @@ use Symfony\Component\Scheduler\Messenger\SchedulerTransport;
 use Symfony\Component\Scheduler\Messenger\SchedulerTransportFactory;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule;
-use Symfony\Component\Scheduler\ScheduleableInterface;
+use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Component\Scheduler\Trigger\TriggerInterface;
 use Symfony\Contracts\Service\ServiceLocatorTrait;
 
@@ -33,16 +33,16 @@ class SchedulerTransportFactoryTest extends TestCase
         $serializer = $this->createMock(SerializerInterface::class);
         $clock = $this->createMock(ClockInterface::class);
 
-        $defaultRecurringMessage = new RecurringMessage((object) ['id' => 'default'], $trigger);
-        $customRecurringMessage = new RecurringMessage((object) ['id' => 'custom'], $trigger);
+        $defaultRecurringMessage = RecurringMessage::trigger($trigger, (object) ['id' => 'default']);
+        $customRecurringMessage = RecurringMessage::trigger($trigger, (object) ['id' => 'custom']);
 
-        $default = new SchedulerTransport(new MessageGenerator('default', new SomeSchedule([$defaultRecurringMessage]), $clock));
-        $custom = new SchedulerTransport(new MessageGenerator('custom', new SomeSchedule([$customRecurringMessage]), $clock));
+        $default = new SchedulerTransport(new MessageGenerator((new SomeScheduleProvider([$defaultRecurringMessage]))->getSchedule(), 'default', $clock));
+        $custom = new SchedulerTransport(new MessageGenerator((new SomeScheduleProvider([$customRecurringMessage]))->getSchedule(), 'custom', $clock));
 
         $factory = new SchedulerTransportFactory(
             new Container([
-                'default' => fn () => new SomeSchedule([$defaultRecurringMessage]),
-                'custom' => fn () => new SomeSchedule([$customRecurringMessage]),
+                'default' => fn () => (new SomeScheduleProvider([$defaultRecurringMessage]))->getSchedule(),
+                'custom' => fn () => (new SomeScheduleProvider([$customRecurringMessage]))->getSchedule(),
             ]),
             $clock,
         );
@@ -95,14 +95,14 @@ class SchedulerTransportFactoryTest extends TestCase
     {
         return new SchedulerTransportFactory(
             new Container([
-                'default' => fn () => $this->createMock(ScheduleableInterface::class),
+                'default' => fn () => $this->createMock(ScheduleProviderInterface::class),
             ]),
             $this->createMock(ClockInterface::class),
         );
     }
 }
 
-class SomeSchedule implements ScheduleableInterface
+class SomeScheduleProvider implements ScheduleProviderInterface
 {
     public function __construct(
         private array $messages,

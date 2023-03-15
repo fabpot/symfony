@@ -12,7 +12,6 @@
 namespace Symfony\Component\Scheduler\Generator;
 
 use Symfony\Component\Lock\LockInterface;
-use Symfony\Component\Lock\NoLock;
 use Symfony\Contracts\Cache\CacheInterface;
 
 /**
@@ -26,15 +25,15 @@ final class Checkpoint implements CheckpointInterface
 
     public function __construct(
         private readonly string $name,
-        private readonly LockInterface $lock = new NoLock(),
+        private readonly ?LockInterface $lock = null,
         private readonly ?CacheInterface $cache = null,
     ) {
     }
 
     public function acquire(\DateTimeImmutable $now): bool
     {
-        if (!$this->lock->acquire()) {
-            // Reset local state if a `Lock` is acquired by another `Worker`.
+        if ($this->lock && !$this->lock->acquire()) {
+            // Reset local state if a Lock is acquired by another Worker.
             $this->reset = true;
 
             return false;
@@ -71,12 +70,16 @@ final class Checkpoint implements CheckpointInterface
     }
 
     /**
-     * Releases `State`, not `Lock`.
+     * Releases State, not Lock.
      *
-     * It tries to keep a `Lock` as long as a `Worker` is alive.
+     * It tries to keep a Lock as long as a Worker is alive.
      */
     public function release(\DateTimeImmutable $now, ?\DateTimeImmutable $nextTime): void
     {
+        if (!$this->lock) {
+            return;
+        }
+
         if (!$nextTime) {
             $this->lock->release();
         } elseif ($remaining = $this->lock->getRemainingLifetime()) {
