@@ -1,0 +1,11 @@
+
+services:
+  foo:
+    class: stdClass
+    arguments:
+      - !service
+        class: Symfony\Component\DependencyInjection\Tests\Compiler\D
+
+  autowired:
+    class: Symfony\Component\DependencyInjection\Tests\Compiler\E
+    autowire: true

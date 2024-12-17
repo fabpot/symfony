@@ -1,0 +1,47 @@
+_profiler_home:
+  path: /
+  controller: web_profiler.controller.profiler::homeAction
+
+_profiler_search:
+  path: /search
+  controller: web_profiler.controller.profiler::searchAction
+
+_profiler_search_bar:
+  path: /search_bar
+  controller: web_profiler.controller.profiler::searchBarAction
+
+_profiler_phpinfo:
+  path: /phpinfo
+  controller: web_profiler.controller.profiler::phpinfoAction
+
+_profiler_xdebug:
+  path: /xdebug
+  controller: web_profiler.controller.profiler::xdebugAction
+
+_profiler_font:
+  path: /font/{fontName}.woff2
+  controller: web_profiler.controller.profiler::fontAction
+
+_profiler_search_results:
+  path: /{token}/search/results
+  controller: web_profiler.controller.profiler::searchResultsAction
+
+_profiler_open_file:
+  path: /open
+  controller: web_profiler.controller.profiler::openAction
+
+_profiler:
+  path: /{token}
+  controller: web_profiler.controller.profiler::panelAction
+
+_profiler_router:
+  path: /{token}/router
+  controller: web_profiler.controller.router::panelAction
+
+_profiler_exception:
+  path: /{token}/exception
+  controller: web_profiler.controller.exception_panel::body
+
+_profiler_exception_css:
+  path: /{token}/exception.css
+  controller: web_profiler.controller.exception_panel::stylesheet

@@ -20,6 +20,8 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  * Loads validation metadata from an XML file.
  *
  * @author Bernhard Schussek <bschussek@gmail.com>
+ *
+ * @deprecated since Symfony 7.3
  */
 class XmlFileLoader extends FileLoader
 {
@@ -30,9 +32,15 @@ class XmlFileLoader extends FileLoader
      */
     protected array $classes;
 
-    public function __construct(string $file)
-    {
-        $this->file = $file;
+    public function __construct(
+        protected string $file,
+        bool $triggerDeprecation = true,
+    ) {
+        if ($triggerDeprecation) {
+            trigger_deprecation('symfony/validator', '7.3', \sprintf('The "%s" class is deprecated.', __CLASS__));
+        }
+
+        parent::__construct($file);
     }
 
     public function loadClassMetadata(ClassMetadata $metadata): bool

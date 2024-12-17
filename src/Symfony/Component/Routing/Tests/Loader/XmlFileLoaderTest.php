@@ -23,6 +23,9 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Tests\Fixtures\CustomXmlFileLoader;
 use Symfony\Component\Routing\Tests\Fixtures\Psr4Controllers\MyController;
 
+/**
+ * @group legacy
+ */
 class XmlFileLoaderTest extends TestCase
 {
     public function testSupports()

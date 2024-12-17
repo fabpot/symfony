@@ -264,7 +264,7 @@ class KernelTest extends TestCase
     public function testLocateResourceThrowsExceptionWhenBundleDoesNotExist()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->getKernel()->locateResource('@FooBundle/config/routing.xml');
+        $this->getKernel()->locateResource('@FooBundle/config/routing.yml');
     }
 
     public function testLocateResourceThrowsExceptionWhenResourceDoesNotExist()
@@ -277,7 +277,7 @@ class KernelTest extends TestCase
             ->willReturn($this->getBundle(__DIR__.'/Fixtures/Bundle1Bundle'))
         ;
 
-        $kernel->locateResource('@Bundle1Bundle/config/routing.xml');
+        $kernel->locateResource('@Bundle1Bundle/config/routing.yml');
     }
 
     public function testLocateResourceReturnsTheFirstThatMatches()

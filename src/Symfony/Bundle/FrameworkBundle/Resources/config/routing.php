@@ -54,6 +54,7 @@ return static function (ContainerConfigurator $container) {
             ->args([
                 service('file_locator'),
                 '%kernel.environment%',
+                false,
             ])
             ->tag('routing.loader')
 

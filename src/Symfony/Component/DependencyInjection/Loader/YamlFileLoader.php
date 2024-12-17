@@ -340,7 +340,7 @@ class YamlFileLoader extends FileLoader
     private function parseDefinition(string $id, array|string|null $service, string $file, array $defaults, bool $return = false, bool $trackBindings = true): Definition|Alias|null
     {
         if (preg_match('/^_[a-zA-Z0-9_]*$/', $id)) {
-            throw new InvalidArgumentException(\sprintf('Service names that start with an underscore are reserved. Rename the "%s" service or define it in XML instead.', $id));
+            throw new InvalidArgumentException(\sprintf('Service names that start with an underscore are reserved. Rename the "%s" service.', $id));
         }
 
         if (\is_string($service) && str_starts_with($service, '@')) {

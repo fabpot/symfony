@@ -18,11 +18,20 @@ namespace Symfony\Component\Validator\Mapping\Loader;
  * @author Bernhard Schussek <bschussek@gmail.com>
  *
  * @see FilesLoader
+ *
+ * @deprecated since Symfony 7.3
  */
 class XmlFilesLoader extends FilesLoader
 {
+    public function __construct(array $paths)
+    {
+        trigger_deprecation('symfony/validator', '7.3', \sprintf('The "%s" class is deprecated.', __CLASS__));
+
+        parent::__construct($paths);
+    }
+
     public function getFileLoaderInstance(string $file): LoaderInterface
     {
-        return new XmlFileLoader($file);
+        return new XmlFileLoader($file, false);
     }
 }

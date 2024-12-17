@@ -12,6 +12,7 @@ CHANGELOG
  * Accept multiple auto-configuration callbacks for the same attribute class
  * Leverage native lazy objects when possible for lazy services
  * Add `when` argument to `#[AsAlias]`
+ * Deprecate `XmlDumper` and `XmlFileLoader`
 
 7.2
 ---

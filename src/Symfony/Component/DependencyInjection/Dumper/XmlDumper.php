@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Argument\ServiceLocatorArgument;
 use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
@@ -33,6 +34,12 @@ use Symfony\Component\ExpressionLanguage\Expression;
 class XmlDumper extends Dumper
 {
     private \DOMDocument $document;
+
+    public function __construct(
+        protected ContainerBuilder $container,
+    ) {
+        parent::__construct($container);
+    }
 
     /**
      * Dumps the service container as an XML string.

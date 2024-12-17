@@ -8,6 +8,7 @@ CHANGELOG
  * Add support for info on `ArrayNodeDefinition::canBeEnabled()` and `ArrayNodeDefinition::canBeDisabled()`
  * Allow using an enum FQCN with `EnumNode`
  * Add `NodeDefinition::docUrl()`
+ * Deprecate `XmlUtils::parse()`, `XmlUtils::loadFile()`, `XmlUtils::convertDomElementToArray()`
 
 7.2
 ---

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Routing\Loader;
 
+use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Loader\FileLoader;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Config\Util\XmlUtils;
@@ -24,6 +25,8 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Tobias Schultze <http://tobion.de>
+ *
+ * @deprecated since Symfony 7.3
  */
 class XmlFileLoader extends FileLoader
 {
@@ -33,6 +36,18 @@ class XmlFileLoader extends FileLoader
 
     public const NAMESPACE_URI = 'http://symfony.com/schema/routing';
     public const SCHEME_PATH = '/schema/routing/routing-1.0.xsd';
+
+    public function __construct(
+        protected FileLocatorInterface $locator,
+        ?string $env = null,
+        bool $triggerDeprecation = true,
+    ) {
+        if ($triggerDeprecation) {
+            trigger_deprecation('symfony/routing', '7.3', \sprintf('The "%s" class is deprecated.', __CLASS__));
+        }
+
+        parent::__construct($locator, $env);
+    }
 
     /**
      * @throws \InvalidArgumentException when the file cannot be loaded or when the XML cannot be

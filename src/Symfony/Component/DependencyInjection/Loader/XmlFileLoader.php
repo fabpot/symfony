@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\DependencyInjection\Loader;
 
+use Symfony\Component\Config\FileLocatorInterface;
 use Symfony\Component\Config\Util\XmlUtils;
 use Symfony\Component\DependencyInjection\Alias;
 use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
@@ -34,12 +35,28 @@ use Symfony\Component\ExpressionLanguage\Expression;
  * XmlFileLoader loads XML files service definitions.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @deprecated since Symfony 7.3
  */
 class XmlFileLoader extends FileLoader
 {
     public const NS = 'http://symfony.com/schema/dic/services';
 
     protected bool $autoRegisterAliasesForSinglyImplementedInterfaces = false;
+
+    public function __construct(
+        protected ContainerBuilder $container,
+        FileLocatorInterface $locator,
+        ?string $env = null,
+        protected bool $prepend = false,
+        bool $triggerDeprecation = true,
+    ) {
+        if ($triggerDeprecation) {
+            trigger_deprecation('symfony/dependency-injection', '7.3', \sprintf('The "%s" class is deprecated.', __CLASS__));
+        }
+
+        parent::__construct($container, $locator, $env, $prepend);
+    }
 
     public function load(mixed $resource, ?string $type = null): mixed
     {

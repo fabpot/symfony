@@ -50,6 +50,9 @@ use Symfony\Component\DependencyInjection\Tests\Fixtures\RemoteCallerHttp;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\RemoteCallerSocket;
 use Symfony\Component\ExpressionLanguage\Expression;
 
+/**
+ * @group legacy
+ */
 class XmlFileLoaderTest extends TestCase
 {
     use ExpectUserDeprecationMessageTrait;

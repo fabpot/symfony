@@ -320,7 +320,7 @@ class ValidatorBuilder
         $loaders = [];
 
         foreach ($this->xmlMappings as $xmlMapping) {
-            $loaders[] = new XmlFileLoader($xmlMapping);
+            $loaders[] = new XmlFileLoader($xmlMapping, false);
         }
 
         foreach ($this->yamlMappings as $yamlMappings) {

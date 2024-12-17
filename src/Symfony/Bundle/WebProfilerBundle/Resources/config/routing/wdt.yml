@@ -1,0 +1,7 @@
+_wdt_stylesheet:
+  path: /styles
+  controller: web_profiler.controller.profiler::toolbarStylesheetAction
+
+_wdt:
+  path: /{token}
+  controller: web_profiler.controller.profiler::toolbarAction

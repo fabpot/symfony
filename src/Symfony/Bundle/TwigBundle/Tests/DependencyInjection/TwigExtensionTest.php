@@ -20,7 +20,6 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
@@ -41,7 +40,7 @@ class TwigExtensionTest extends TestCase
         $container->loadFromExtension('twig');
         $this->compileContainer($container);
 
-        $this->assertEquals(Environment::class, $container->getDefinition('twig')->getClass(), '->load() loads the twig.xml file');
+        $this->assertEquals(Environment::class, $container->getDefinition('twig')->getClass(), '->load() loads the twig.yml file');
 
         $this->assertContains('form_div_layout.html.twig', $container->getParameter('twig.form.resources'), '->load() includes default template for form resources');
 
@@ -66,7 +65,7 @@ class TwigExtensionTest extends TestCase
         $this->loadFromFile($container, 'full', $format);
         $this->compileContainer($container);
 
-        $this->assertEquals(Environment::class, $container->getDefinition('twig')->getClass(), '->load() loads the twig.xml file');
+        $this->assertEquals(Environment::class, $container->getDefinition('twig')->getClass(), \sprintf('->load() loads the twig.%s file', $format));
 
         // Form resources
         $resources = $container->getParameter('twig.form.resources');
@@ -234,7 +233,6 @@ class TwigExtensionTest extends TestCase
         return [
             ['php'],
             ['yml'],
-            ['xml'],
         ];
     }
 
@@ -347,7 +345,6 @@ class TwigExtensionTest extends TestCase
 
         $loader = match ($format) {
             'php' => new PhpFileLoader($container, $locator),
-            'xml' => new XmlFileLoader($container, $locator),
             'yml' => new YamlFileLoader($container, $locator),
         };
 

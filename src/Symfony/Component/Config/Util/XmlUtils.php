@@ -153,9 +153,13 @@ class XmlUtils
      *
      * @param \DOMElement $element     A \DOMElement instance
      * @param bool        $checkPrefix Check prefix in an element or an attribute name
+     *
+     * @deprecated since Symfony 7.3
      */
     public static function convertDomElementToArray(\DOMElement $element, bool $checkPrefix = true): mixed
     {
+        trigger_deprecation('symfony/config', '7.3', \sprintf('The "%s" method is deprecated.', __METHOD__));
+
         $prefix = $element->prefix;
         $empty = true;
         $config = [];

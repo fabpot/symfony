@@ -1,0 +1,5 @@
+_webhook_controller:
+  path: /{type}
+  controller: webhook.controller::handle
+  requirements:
+    type: .+

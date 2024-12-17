@@ -37,6 +37,9 @@ use Symfony\Component\Validator\Tests\Fixtures\NestedAttribute\GroupSequenceProv
 use Symfony\Component\Validator\Tests\Mapping\Loader\Fixtures\ConstraintWithNamedArguments;
 use Symfony\Component\Validator\Tests\Mapping\Loader\Fixtures\ConstraintWithoutValueWithNamedArguments;
 
+/**
+ * @group legacy
+ */
 class XmlFileLoaderTest extends TestCase
 {
     use ExpectUserDeprecationMessageTrait;

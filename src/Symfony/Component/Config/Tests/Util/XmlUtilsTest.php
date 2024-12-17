@@ -17,6 +17,9 @@ use Symfony\Component\Config\Util\XmlUtils;
 
 class XmlUtilsTest extends TestCase
 {
+    /**
+     * @group legacy
+     */
     public function testLoadFile()
     {
         $fixtures = __DIR__.'/../Fixtures/Util/';
@@ -90,6 +93,9 @@ class XmlUtilsTest extends TestCase
         $this->assertSame([], libxml_get_errors());
     }
 
+    /**
+     * @group legacy
+     */
     public function testParseWithInvalidValidatorCallable()
     {
         $fixtures = __DIR__.'/../Fixtures/Util/';
@@ -103,6 +109,9 @@ class XmlUtilsTest extends TestCase
         XmlUtils::parse(file_get_contents($fixtures.'valid.xml'), [$mock, 'validate']);
     }
 
+    /**
+     * @group legacy
+     */
     public function testLoadFileWithInternalErrorsEnabled()
     {
         $internalErrors = libxml_use_internal_errors(true);
@@ -117,6 +126,8 @@ class XmlUtilsTest extends TestCase
 
     /**
      * @dataProvider getDataForConvertDomToArray
+     *
+     * @group legacy
      */
     public function testConvertDomToArray($expected, string $xml, bool $root = false, bool $checkPrefix = true)
     {
@@ -191,6 +202,9 @@ class XmlUtilsTest extends TestCase
         ];
     }
 
+    /**
+     * @group legacy
+     */
     public function testLoadEmptyXmlFile()
     {
         $file = __DIR__.'/../Fixtures/foo.xml';
@@ -202,13 +216,16 @@ class XmlUtilsTest extends TestCase
     }
 
     // test for issue https://github.com/symfony/symfony/issues/9731
+    /**
+     * @group legacy
+     */
     public function testLoadWrongEmptyXMLWithErrorHandler()
     {
         $errorReporting = error_reporting(-1);
 
         set_error_handler(function ($errno, $errstr) {
             throw new \Exception($errstr, $errno);
-        });
+        }, \E_ERROR);
 
         $file = __DIR__.'/../Fixtures/foo.xml';
         try {

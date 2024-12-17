@@ -32,6 +32,10 @@ class CrossCheckTest extends TestCase
      */
     public function testCrossCheck($fixture, $type)
     {
+        if ('xml' === $type) {
+            $this->markTestSkipped('XmlFileLoader is deprecated.');
+        }
+
         $loaderClass = 'Symfony\\Component\\DependencyInjection\\Loader\\'.ucfirst($type).'FileLoader';
         $dumperClass = 'Symfony\\Component\\DependencyInjection\\Dumper\\'.ucfirst($type).'Dumper';
 

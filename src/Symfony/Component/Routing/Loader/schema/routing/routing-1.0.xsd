@@ -12,6 +12,8 @@
 
       This scheme defines the elements and attributes that can be used to define
       routes. A route maps an HTTP request to a set of configuration variables.
+
+      This schema is deprecated since Symfony 7.3.
     ]]></xsd:documentation>
   </xsd:annotation>
 

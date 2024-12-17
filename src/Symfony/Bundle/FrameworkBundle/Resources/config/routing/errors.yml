@@ -1,0 +1,7 @@
+_preview_error:
+  path: /{code}.{_format}
+  controller: error_controller::preview
+  defaults:
+    _format: html
+  requirements:
+    code: \d+

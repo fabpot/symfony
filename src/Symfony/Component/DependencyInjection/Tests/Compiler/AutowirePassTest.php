@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\AutowiringFailedException;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\BarInterface;
 use Symfony\Component\DependencyInjection\Tests\Fixtures\CaseSensitiveClass;
@@ -992,8 +992,8 @@ class AutowirePassTest extends TestCase
     public function testInlineServicesAreNotCandidates()
     {
         $container = new ContainerBuilder();
-        $loader = new XmlFileLoader($container, new FileLocator(realpath(__DIR__.'/../Fixtures/xml')));
-        $loader->load('services_inline_not_candidate.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(realpath(__DIR__.'/../Fixtures/yaml')));
+        $loader->load('services_inline_not_candidate.yml');
 
         $pass = new AutowirePass();
         $pass->process($container);

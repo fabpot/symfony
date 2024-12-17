@@ -55,7 +55,7 @@ trait ExtensionTrait
         $buildDir = $container->getParameter('kernel.build_dir');
         $locator = new FileLocator();
         $resolver = new LoaderResolver([
-            new XmlFileLoader($container, $locator, $env, $prepend),
+            new XmlFileLoader($container, $locator, $env, $prepend, false, false),
             new YamlFileLoader($container, $locator, $env, $prepend),
             new IniFileLoader($container, $locator, $env),
             new PhpFileLoader($container, $locator, $env, new ConfigBuilderGenerator($buildDir), $prepend),

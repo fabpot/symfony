@@ -8,6 +8,7 @@ CHANGELOG
  * Register `NormalizerInterface` and `DenormalizerInterface` aliases for named serializers
  * Add `NumberNormalizer` to normalize `BcMath\Number` and `GMP` as `string`
  * Add `defaultType` to `DiscriminatorMap`
+ * Deprecate `XmlFileLoader`
 
 7.2
 ---

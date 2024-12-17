@@ -31,6 +31,8 @@ use Symfony\Component\Serializer\Tests\Mapping\TestClassMetadataFactory;
 
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
+ *
+ * @group legacy
  */
 class XmlFileLoaderTest extends TestCase
 {
