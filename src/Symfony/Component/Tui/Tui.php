@@ -1,0 +1,586 @@
+<?php
+
+/*
+ * This file is part of the Symfony package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Symfony\Component\Tui;
+
+use Revolt\EventLoop;
+use Revolt\EventLoop\Suspension;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Tui\Event\AbstractEvent;
+use Symfony\Component\Tui\Event\TickEvent;
+use Symfony\Component\Tui\Exception\InvalidArgumentException;
+use Symfony\Component\Tui\Focus\FocusManager;
+use Symfony\Component\Tui\Input\Keybindings;
+use Symfony\Component\Tui\Loop\AdaptativeTicker;
+use Symfony\Component\Tui\Loop\TickRuntimeInterface;
+use Symfony\Component\Tui\Loop\TickScheduler;
+use Symfony\Component\Tui\Render\Renderer;
+use Symfony\Component\Tui\Render\RenderRequestorInterface;
+use Symfony\Component\Tui\Render\ScreenWriter;
+use Symfony\Component\Tui\Style\StyleSheet;
+use Symfony\Component\Tui\Terminal\Terminal;
+use Symfony\Component\Tui\Terminal\TerminalInterface;
+use Symfony\Component\Tui\Widget\AbstractWidget;
+use Symfony\Component\Tui\Widget\ContainerWidget;
+use Symfony\Component\Tui\Widget\Figlet\FontRegistry;
+use Symfony\Component\Tui\Widget\FocusableInterface;
+use Symfony\Component\Tui\Widget\WidgetTree;
+
+/**
+ * Main TUI class for managing terminal UI.
+ *
+ * This class orchestrates:
+ * - Terminal lifecycle (start/stop)
+ * - Event loop integration
+ * - Focus management
+ * - Input handling
+ *
+ * The root container is created internally with the style class "root".
+ * Use add(), remove(), and clear() to build the widget tree.
+ * Style the root via the stylesheet using the ".root" selector.
+ *
+ * Rendering is delegated to:
+ * - Renderer: widget tree → lines (content generation)
+ * - ScreenWriter: lines → terminal (differential output)
+ *
+ * @experimental
+ *
+ * @author Fabien Potencier <fabien@symfony.com>
+ */
+class Tui implements RenderRequestorInterface, TickRuntimeInterface
+{
+    private ContainerWidget $root;
+    private Keybindings $keybindings;
+    private Renderer $renderer;
+    private ScreenWriter $screenWriter;
+    private WidgetTree $widgetTree;
+    private FocusManager $focusManager;
+    private TickScheduler $tickScheduler;
+    private AdaptativeTicker $adaptativeTicker;
+    private EventDispatcherInterface $eventDispatcher;
+
+    /** @var string[] */
+    private array $quitKeys = [];
+
+    /** @var (callable(string): bool)|null */
+    private $onInput;
+
+    /** @var callable(): void */
+    private $onDebug;
+
+    /** @var callable(TickEvent): mixed */
+    private $onTick;
+
+    private bool $renderRequested = false;
+    private bool $running = false;
+    private bool $stopped = false;
+    private bool $ticking = false;
+    private ?float $lastTickAt = null;
+    private ?bool $lastTickBusyHint = null;
+
+    /** @var Suspension<mixed>|null */
+    private ?Suspension $runSuspension = null;
+
+    public function __construct(
+        ?StyleSheet $styleSheet = null,
+        private readonly TerminalInterface $terminal = new Terminal(),
+        ?Keybindings $keybindings = null,
+        ?FontRegistry $fontRegistry = null,
+        ?Renderer $renderer = null,
+        ?ScreenWriter $screenWriter = null,
+        ?EventDispatcherInterface $eventDispatcher = null,
+    ) {
+        $this->keybindings = $keybindings ?? new Keybindings();
+        $this->root = new ContainerWidget();
+        $this->root->expandVertically(true);
+        $this->root->addStyleClass('root');
+        $this->renderer = $renderer ?? new Renderer($styleSheet, $fontRegistry);
+        $this->screenWriter = $screenWriter ?? new ScreenWriter($terminal);
+        $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
+
+        // Share the KeyParser so Kitty protocol state is consistent
+        $this->focusManager = new FocusManager(
+            $this,
+            parser: $this->keybindings->getParser(),
+            eventDispatcher: $this->eventDispatcher,
+        );
+
+        $this->widgetTree = new WidgetTree($this, $this->keybindings, $this->focusManager, $this->renderer, $this->terminal, $this->eventDispatcher);
+        $this->widgetTree->setRoot($this->root);
+        $this->tickScheduler = new TickScheduler();
+        $this->adaptativeTicker = new AdaptativeTicker($this);
+    }
+
+    /**
+     * Add a child widget to the root container.
+     *
+     * @return $this
+     */
+    public function add(AbstractWidget $widget): self
+    {
+        $this->root->add($widget);
+
+        return $this;
+    }
+
+    /**
+     * Remove a child widget from the root container.
+     *
+     * @return $this
+     */
+    public function remove(AbstractWidget $widget): self
+    {
+        $this->root->remove($widget);
+
+        return $this;
+    }
+
+    /**
+     * Remove all child widgets from the root container.
+     *
+     * @return $this
+     */
+    public function clear(): self
+    {
+        $this->root->clear();
+
+        return $this;
+    }
+
+    /**
+     * Find a widget by ID in the widget tree.
+     */
+    public function getById(string $id): AbstractWidget
+    {
+        $widget = $this->root->findById($id);
+
+        if (null === $widget) {
+            throw new InvalidArgumentException(\sprintf('No widget found with id "%s".', $id));
+        }
+
+        return $widget;
+    }
+
+    /**
+     * Add a stylesheet on top of the existing ones.
+     *
+     * User stylesheets are merged on top of defaults (last wins for same selectors).
+     *
+     * @return $this
+     */
+    public function addStyleSheet(StyleSheet $styleSheet): self
+    {
+        $this->renderer->addStyleSheet($styleSheet);
+
+        return $this;
+    }
+
+    /**
+     * Run the main event loop using Revolt.
+     *
+     * This method runs the TUI using Revolt's event loop, allowing
+     * async operations (like HTTP streaming) to run concurrently.
+     *
+     * This blocks until stop() is called.
+     */
+    public function run(): void
+    {
+        $this->start();
+        $this->runSuspension = EventLoop::getSuspension();
+        $this->refreshLoopDriver();
+
+        try {
+            // Block until stop() is called
+            $this->runSuspension->suspend();
+        } finally {
+            $this->runSuspension = null;
+            // Ensure terminal is restored
+            $this->stop();
+        }
+    }
+
+    /**
+     * Start the TUI.
+     */
+    public function start(): void
+    {
+        $this->running = true;
+        $this->stopped = false;
+        $this->lastTickAt = null;
+        $this->lastTickBusyHint = null;
+        $this->terminal->start($this->handleInput(...), $this->requestRender(...), function (): void {
+            $this->keybindings->setKittyProtocolActive(true);
+        });
+        $this->terminal->hideCursor();
+        $this->requestRender();
+    }
+
+    /**
+     * Run one iteration of the TUI loop.
+     * Processes scheduled tasks, rendering, and tick callback.
+     */
+    public function tick(): void
+    {
+        // Guard against re-entrant ticks. When the onTick callback suspends
+        // a fiber (e.g., async file I/O via Amp), the Revolt event loop may
+        // fire another repeat-timer callback while the previous tick is still
+        // suspended. Without this guard, two fibers would concurrently mutate
+        // the agent state machine and render to the terminal, corrupting the
+        // display.
+        if ($this->ticking) {
+            return;
+        }
+
+        $this->ticking = true;
+        $now = microtime(true);
+        $deltaTime = null === $this->lastTickAt ? 0.0 : max(0.0, $now - $this->lastTickAt);
+        $this->lastTickAt = $now;
+        $revisionBeforeTick = $this->root->getRenderRevision();
+
+        try {
+            $this->tickScheduler->runDue();
+            $this->processRender();
+            $this->lastTickBusyHint = $this->invokeTickCallback($deltaTime);
+
+            if ($this->root->getRenderRevision() !== $revisionBeforeTick) {
+                $this->requestRender();
+            }
+        } finally {
+            $this->ticking = false;
+            $this->refreshLoopDriver();
+        }
+    }
+
+    /**
+     * Stop the TUI and restore terminal state.
+     */
+    public function stop(): void
+    {
+        $this->running = false;
+        $this->adaptativeTicker->stop();
+        $this->tickScheduler->clear();
+        $this->lastTickAt = null;
+        $this->lastTickBusyHint = null;
+        $this->resumeRunSuspension();
+
+        if ($this->stopped) {
+            return;
+        }
+        $this->stopped = true;
+
+        // Move cursor to end of content
+        $state = $this->screenWriter->getState();
+        if ($state['lineCount'] > 0) {
+            $lineDiff = $state['lineCount'] - $state['cursorRow'];
+
+            if ($lineDiff > 0) {
+                $this->terminal->write("\x1b[{$lineDiff}B");
+            } elseif ($lineDiff < 0) {
+                $this->terminal->write("\x1b[".(-$lineDiff).'A');
+            }
+
+            $this->terminal->write("\r\n");
+        }
+
+        // Restore default cursor shape (DECSCUSR 0) and show cursor
+        $this->terminal->write("\x1b[0 q");
+        $this->terminal->showCursor();
+        $this->terminal->stop();
+    }
+
+    /**
+     * Check if the TUI is running.
+     */
+    public function isRunning(): bool
+    {
+        return $this->running;
+    }
+
+    /**
+     * Register a global input interceptor.
+     *
+     * Called before focus navigation and before the focused widget receives input.
+     * Return true to consume the input.
+     *
+     * @param (callable(string): bool)|null $onInput
+     *
+     * @return $this
+     */
+    public function onInput(?callable $onInput): self
+    {
+        $this->onInput = $onInput;
+
+        return $this;
+    }
+
+    /**
+     * Register key patterns that stop the TUI.
+     *
+     * Quit keys are checked at the very start of input handling,
+     * before the onInput interceptor and focus manager.
+     *
+     * @param string ...$keys Key identifiers (e.g., 'ctrl+c', Key::ESCAPE)
+     *
+     * @return $this
+     */
+    public function quitOn(string ...$keys): self
+    {
+        $this->quitKeys = $keys;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function onDebug(?callable $onDebug): self
+    {
+        $this->onDebug = $onDebug;
+
+        return $this;
+    }
+
+    /**
+     * @param callable(TickEvent): mixed $onTick
+     *
+     * Return true while active work is in progress (fast 100Hz ticking),
+     * false when idle (no polling), or null/void to use fallback idle polling
+     *
+     * @return $this
+     */
+    public function onTick(?callable $onTick): self
+    {
+        $this->onTick = $onTick;
+        $this->lastTickAt = null;
+        $this->lastTickBusyHint = null;
+        $this->refreshLoopDriver();
+
+        return $this;
+    }
+
+    /**
+     * Register a listener for a widget event.
+     *
+     * This is the primary way to react to widget events (submit, cancel,
+     * change, select, etc.). All events dispatched by any widget in the
+     * tree are routed through this single dispatcher.
+     *
+     * Use {@see AbstractEvent::getTarget()} to filter by source widget when
+     * listening for a shared event type like CancelEvent.
+     *
+     * @template T of AbstractEvent
+     *
+     * @param class-string<T>   $eventClass The event class to listen for
+     * @param callable(T): void $listener   The listener to invoke
+     * @param int               $priority   Higher = called earlier (default 0)
+     *
+     * @return $this
+     */
+    public function on(string $eventClass, callable $listener, int $priority = 0): self
+    {
+        $this->eventDispatcher->addListener($eventClass, $listener, $priority);
+
+        return $this;
+    }
+
+    /**
+     * Get the event dispatcher.
+     */
+    public function getEventDispatcher(): EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * Get the terminal.
+     */
+    public function getTerminal(): TerminalInterface
+    {
+        return $this->terminal;
+    }
+
+    /**
+     * Set the focused component.
+     *
+     * @return $this
+     */
+    public function setFocus(?AbstractWidget $component): self
+    {
+        $this->focusManager->setFocus($component);
+
+        return $this;
+    }
+
+    /**
+     * Get the currently focused component.
+     */
+    public function getFocus(): ?AbstractWidget
+    {
+        return $this->focusManager->getFocus();
+    }
+
+    /**
+     * Get the focus manager.
+     */
+    public function getFocusManager(): FocusManager
+    {
+        return $this->focusManager;
+    }
+
+    /**
+     * Request a render on the next tick.
+     *
+     * @param bool $force If true, clear all cached state and do full re-render
+     */
+    public function requestRender(bool $force = false): void
+    {
+        if ($force) {
+            $this->screenWriter->reset();
+        }
+
+        $this->renderRequested = true;
+        $this->refreshLoopDriver();
+    }
+
+    /**
+     * Set the scroll offset (lines from bottom).
+     *
+     * When the content exceeds the viewport, the viewport normally shows
+     * the bottom portion. A positive scroll offset shifts the viewport
+     * up by that many lines.
+     */
+    public function setScrollOffset(int $offset): void
+    {
+        $this->screenWriter->setScrollOffset($offset);
+    }
+
+    /**
+     * Schedule a repeating callback in the internal TUI scheduler.
+     *
+     * @internal
+     *
+     * @param callable(): void $callback
+     */
+    public function scheduleInterval(callable $callback, float $intervalSeconds): string
+    {
+        $id = $this->tickScheduler->schedule($callback, $intervalSeconds);
+
+        $this->refreshLoopDriver();
+
+        return $id;
+    }
+
+    /**
+     * Cancel a callback previously registered with scheduleInterval().
+     *
+     * @internal
+     */
+    public function cancelInterval(string $id): void
+    {
+        $this->tickScheduler->cancel($id);
+        $this->refreshLoopDriver();
+    }
+
+    /**
+     * Process any pending renders.
+     *
+     * Called automatically by tick(). Only call this directly
+     * if you are driving the loop manually instead of using run().
+     */
+    public function processRender(): void
+    {
+        if ($this->renderRequested) {
+            $this->renderRequested = false;
+            $columns = $this->terminal->getColumns();
+            $rows = $this->terminal->getRows();
+            $this->screenWriter->writeLines($this->renderer->render($this->root, $columns, $rows));
+        }
+    }
+
+    /**
+     * Handle input from the terminal.
+     */
+    public function handleInput(string $data): void
+    {
+        // Check quit keys
+        if ([] !== $this->quitKeys) {
+            foreach ($this->quitKeys as $key) {
+                if ($this->keybindings->getParser()->matches($data, $key)) {
+                    $this->stop();
+
+                    return;
+                }
+            }
+        }
+
+        if (null !== $this->onInput && ($this->onInput)($data)) {
+            return;
+        }
+
+        // Global debug key handler (Shift+Ctrl+D)
+        if ("\x1b[68;6u" === $data && null !== $this->onDebug) {
+            ($this->onDebug)();
+
+            return;
+        }
+
+        if ($this->focusManager->handleInput($data)) {
+            return;
+        }
+
+        // Pass input to focused component
+        $focused = $this->focusManager->getFocus();
+        if ($focused instanceof FocusableInterface) {
+            $revisionBeforeInput = $this->root->getRenderRevision();
+            $focused->handleInput($data);
+            if ($this->root->getRenderRevision() !== $revisionBeforeInput) {
+                $this->requestRender();
+            }
+        }
+    }
+
+    private function invokeTickCallback(float $deltaTime): ?bool
+    {
+        if (null === $this->onTick) {
+            return null;
+        }
+
+        $event = new TickEvent($deltaTime);
+        $result = ($this->onTick)($event);
+
+        if (\is_bool($result)) {
+            return $result;
+        }
+
+        if ($event->hasBusyHint()) {
+            return $event->isBusy();
+        }
+
+        return null;
+    }
+
+    private function refreshLoopDriver(): void
+    {
+        $this->adaptativeTicker->refresh($this->running, $this->renderRequested, $this->tickScheduler->getNextDelay(), null !== $this->onTick, $this->lastTickBusyHint);
+    }
+
+    private function resumeRunSuspension(): void
+    {
+        if (null === $this->runSuspension) {
+            return;
+        }
+
+        $suspension = $this->runSuspension;
+        $this->runSuspension = null;
+        $suspension->resume(null);
+    }
+}
