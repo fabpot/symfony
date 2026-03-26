@@ -76,7 +76,7 @@ final class FontRegistry
         }
 
         if (!isset($this->paths[$name])) {
-            throw new InvalidArgumentException(\sprintf('Font "%s" is not registered. Available fonts: %s.', $name, implode(', ', array_keys($this->paths))));
+            throw new InvalidArgumentException(\sprintf('Font "%s" is not registered. Available fonts: "%s".', $name, implode('", "', array_keys($this->paths))));
         }
 
         return $this->fonts[$name] = FigletFont::load($this->paths[$name]);

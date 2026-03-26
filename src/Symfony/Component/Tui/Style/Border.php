@@ -99,7 +99,7 @@ final class Border
             2 => new self($border[0], $border[1], $border[0], $border[1], $pattern, $color),
             3 => new self($border[0], $border[1], $border[2], $border[1], $pattern, $color),
             4 => new self($border[0], $border[1], $border[2], $border[3], $pattern, $color),
-            default => throw new InvalidArgumentException('Border array must have 1, 2, 3, or 4 elements'),
+            default => throw new InvalidArgumentException('Border array must have 1, 2, 3, or 4 elements.'),
         };
     }
 
