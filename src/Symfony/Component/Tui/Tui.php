@@ -44,9 +44,9 @@ use Symfony\Component\Tui\Widget\WidgetTree;
  * - Focus management
  * - Input handling
  *
- * The root container is created internally with the style class "root".
+ * The root container is created internally.
  * Use add(), remove(), and clear() to build the widget tree.
- * Style the root via the stylesheet using the ".root" selector.
+ * Style the root via the stylesheet using the ":root" pseudo-class selector.
  *
  * Rendering is delegated to:
  * - Renderer: widget tree → lines (content generation)
@@ -102,7 +102,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
         $this->keybindings = $keybindings ?? new Keybindings();
         $this->root = new ContainerWidget();
         $this->root->expandVertically(true);
-        $this->root->addStyleClass('root');
         $this->renderer = $renderer ?? new Renderer($styleSheet, $fontRegistry);
         $this->screenWriter = $screenWriter ?? new ScreenWriter($terminal);
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
