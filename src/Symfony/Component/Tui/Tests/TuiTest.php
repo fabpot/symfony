@@ -204,10 +204,9 @@ class TuiTest extends TestCase
 
     public function testRenderAllLinesRespectWidth()
     {
-        $renderer = new Renderer(new StyleSheet(['.root' => new Style(gap: 1)]));
+        $renderer = new Renderer(new StyleSheet([':root' => new Style(gap: 1)]));
 
         $root = new ContainerWidget();
-        $root->addStyleClass('root');
         $root->add(new TextWidget('Short'));
         $root->add(new TextWidget('This is a longer text that should wrap properly.')->setStyle(Style::padding([0, 1])));
         $root->add(new TextWidget('End'));

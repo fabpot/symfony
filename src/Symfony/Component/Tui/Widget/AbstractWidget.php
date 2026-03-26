@@ -176,6 +176,10 @@ abstract class AbstractWidget
     {
         $flags = [];
 
+        if (null === $this->parent) {
+            $flags[] = 'root';
+        }
+
         if ($this instanceof FocusableInterface && $this->isFocused()) {
             $flags[] = 'focused';
         }

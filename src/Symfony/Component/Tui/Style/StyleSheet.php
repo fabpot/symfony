@@ -21,6 +21,7 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  * - FQCN with state: 'Symfony\Component\Tui\Widget\Input:focused'
  * - CSS class: '.sidebar'
  * - CSS class with state: '.sidebar:focused'
+ * - Standalone pseudo-class: ':root' (matches the root widget)
  * - Universal: '*' (matches all widgets)
  * - Sub-element (pseudo-element): SelectList::class.'::selected'
  * - Sub-element with state: SelectList::class.'::selected:focused'
@@ -33,7 +34,7 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  * 1. Universal selector ('*')
  * 2. Widget FQCN selector (e.g., Text::class)
  * 3. CSS class selectors (e.g., '.header')
- * 4. State selectors (e.g., Input::class.':focused')
+ * 4. State selectors (e.g., ':root', Input::class.':focused')
  * 5. Instance style (widget's own setStyle())
  *
  * All style properties use `null` to mean "inherit from earlier rules":
@@ -229,8 +230,13 @@ class StyleSheet
             }
         }
 
-        // 4. State selectors (applied to FQCN hierarchy and CSS classes)
+        // 4. State selectors (applied standalone, to FQCN hierarchy and CSS classes)
         foreach ($widget->getStateFlags() as $state) {
+            // :state (standalone pseudo-class, e.g. :root)
+            if (isset($this->rules[':'.$state])) {
+                $applicableStyles[] = $this->rules[':'.$state];
+            }
+
             // FQCN:state (walk class hierarchy, parent classes first)
             foreach ($classHierarchy as $class) {
                 $classStateSelector = $class.':'.$state;
@@ -401,6 +407,10 @@ class StyleSheet
             }
 
             foreach ($widget->getStateFlags() as $state) {
+                if (isset($rules[':'.$state])) {
+                    $applicableStyles[] = $rules[':'.$state];
+                }
+
                 foreach ($classHierarchy as $class) {
                     $classStateSelector = $class.':'.$state;
                     if (isset($rules[$classStateSelector])) {

@@ -246,6 +246,35 @@ class StyleSheetTest extends TestCase
         yield 'dim' => ['withDim', static fn (Style $s) => $s->getDim()];
     }
 
+    // --- Standalone pseudo-class selector tests ---
+
+    public function testRootPseudoClassMatchesRootWidget()
+    {
+        $stylesheet = new StyleSheet()
+            ->addRule(':root', new Style()->withBold());
+
+        // A widget without parent is the root
+        $widget = new TextWidget('Hello');
+
+        $resolved = $stylesheet->resolve($widget);
+
+        $this->assertTrue($resolved->getBold());
+    }
+
+    public function testRootPseudoClassDoesNotMatchChildWidget()
+    {
+        $stylesheet = new StyleSheet()
+            ->addRule(':root', new Style()->withBold());
+
+        $parent = new ContainerWidget();
+        $child = new TextWidget('Hello');
+        $parent->add($child);
+
+        $resolved = $stylesheet->resolve($child);
+
+        $this->assertNull($resolved->getBold());
+    }
+
     // --- Cascading Stylesheet Tests (via merge) ---
 
     public function testMergeSheetsRulesOverride()
