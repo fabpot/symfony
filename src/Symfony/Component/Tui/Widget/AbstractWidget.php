@@ -181,7 +181,7 @@ abstract class AbstractWidget
         }
 
         if ($this instanceof FocusableInterface && $this->isFocused()) {
-            $flags[] = 'focused';
+            $flags[] = 'focus';
         }
 
         return $flags;
@@ -408,7 +408,7 @@ abstract class AbstractWidget
      * Resolution order:
      * 1. FQCN::element
      * 2. .class::element
-     * 3. FQCN::element:state (e.g., :focused)
+     * 3. FQCN::element:state (e.g., :focus)
      * 4. .class::element:state
      *
      * @see StyleSheet::resolveElement()

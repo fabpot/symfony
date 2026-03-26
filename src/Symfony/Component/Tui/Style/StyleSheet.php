@@ -18,15 +18,15 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  *
  * Selectors can be:
  * - FQCN: 'Symfony\Component\Tui\Widget\Input' or Input::class
- * - FQCN with state: 'Symfony\Component\Tui\Widget\Input:focused'
+ * - FQCN with state: 'Symfony\Component\Tui\Widget\Input:focus'
  * - CSS class: '.sidebar'
- * - CSS class with state: '.sidebar:focused'
+ * - CSS class with state: '.sidebar:focus'
  * - Standalone pseudo-class: ':root' (matches the root widget)
  * - Universal: '*' (matches all widgets)
  * - Sub-element (pseudo-element): SelectList::class.'::selected'
- * - Sub-element with state: SelectList::class.'::selected:focused'
+ * - Sub-element with state: SelectList::class.'::selected:focus'
  * - Class sub-element: '.my-list::selected'
- * - Class sub-element with state: '.my-list::selected:focused'
+ * - Class sub-element with state: '.my-list::selected:focus'
  *
  * ## Style Inheritance
  *
@@ -34,7 +34,7 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  * 1. Universal selector ('*')
  * 2. Widget FQCN selector (e.g., Text::class)
  * 3. CSS class selectors (e.g., '.header')
- * 4. State selectors (e.g., ':root', Input::class.':focused')
+ * 4. State selectors (e.g., ':root', Input::class.':focus')
  * 5. Instance style (widget's own setStyle())
  *
  * All style properties use `null` to mean "inherit from earlier rules":
@@ -196,7 +196,7 @@ class StyleSheet
      * 1. Universal selector (*)
      * 2. FQCN selector (widget class and parent classes, parent first)
      * 3. CSS class selectors (.class): only classes from {@see getCssClasses()}
-     * 4. State selectors (:focused, :disabled, etc.)
+     * 4. State selectors (:focus, :disabled, etc.)
      * 5. Breakpoint rules (ascending min-columns order)
      * 6. Extra styles from subclasses (see {@see resolveExtraStyles()})
      * 7. Instance style (widget's own style)
@@ -280,13 +280,13 @@ class StyleSheet
      * Resolution order (later overrides earlier):
      * 1. FQCN::element (e.g., SelectListWidget::class.'::selected')
      * 2. .class::element (e.g., '.my-list::selected')
-     * 3. FQCN::element:state (e.g., SelectListWidget::class.'::selected:focused')
-     * 4. .class::element:state (e.g., '.my-list::selected:focused')
+     * 3. FQCN::element:state (e.g., SelectListWidget::class.'::selected:focus')
+     * 4. .class::element:state (e.g., '.my-list::selected:focus')
      *
      * Example stylesheet rules:
      *
      *     SelectListWidget::class.'::selected'         => new Style()->withBold(),
-     *     SelectListWidget::class.'::selected:focused'  => new Style()->withBold()->withColor('cyan'),
+     *     SelectListWidget::class.'::selected:focus'  => new Style()->withBold()->withColor('cyan'),
      *     '.my-list::selected'                          => new Style()->withColor('green'),
      */
     public function resolveElement(AbstractWidget $widget, string $element): Style

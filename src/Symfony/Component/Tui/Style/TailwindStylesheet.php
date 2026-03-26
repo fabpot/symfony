@@ -88,7 +88,7 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  * 1. Universal selector (*)
  * 2. FQCN selector
  * 3. CSS class selectors (.class): utility classes excluded
- * 4. State selectors (:focused)
+ * 4. State selectors (:focus)
  * 5. Breakpoint rules
  * 6. **Utility class styles** (immutable, override all above)
  * 7. Instance style (widget's own setStyle())

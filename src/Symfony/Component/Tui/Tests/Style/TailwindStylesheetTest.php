@@ -518,7 +518,7 @@ class TailwindStylesheetTest extends TestCase
     public function testUtilityOverridesStateSelectors()
     {
         $stylesheet = new TailwindStylesheet();
-        $stylesheet->addRule(InputWidget::class.':focused', new Style()->withBackground('blue'));
+        $stylesheet->addRule(InputWidget::class.':focus', new Style()->withBackground('blue'));
 
         $widget = new InputWidget();
         $widget->setFocused(true);
@@ -526,7 +526,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        // Utility bg-red-500 overrides :focused background
+        // Utility bg-red-500 overrides :focus background
         $this->assertSame(Color::hex('#ef4444')->toRgb(), $resolved->getBackground()->toRgb());
     }
 
@@ -566,7 +566,7 @@ class TailwindStylesheetTest extends TestCase
     {
         $stylesheet = new TailwindStylesheet();
         $stylesheet->addRule('.input-field', new Style()->withBackground('black'));
-        $stylesheet->addRule('.input-field:focused', new Style()->withBackground('blue'));
+        $stylesheet->addRule('.input-field:focus', new Style()->withBackground('blue'));
 
         $widget = new InputWidget();
         $widget->addStyleClass('input-field');
@@ -738,7 +738,7 @@ class TailwindStylesheetTest extends TestCase
     public function testResolveElementWithStateDoesNotMatchUtilityClassNames()
     {
         $stylesheet = new TailwindStylesheet();
-        $stylesheet->addRule('.bold::cursor:focused', new Style()->withColor('cyan'));
+        $stylesheet->addRule('.bold::cursor:focus', new Style()->withColor('cyan'));
 
         $widget = new InputWidget();
         $widget->addStyleClass('bold');
@@ -746,7 +746,7 @@ class TailwindStylesheetTest extends TestCase
 
         $style = $stylesheet->resolveElement($widget, 'cursor');
 
-        // "bold" is a utility class; ".bold::cursor:focused" must not match
+        // "bold" is a utility class; ".bold::cursor:focus" must not match
         $this->assertNull($style->getColor());
     }
 
