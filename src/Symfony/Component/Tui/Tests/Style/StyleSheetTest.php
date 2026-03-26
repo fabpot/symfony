@@ -376,11 +376,11 @@ class StyleSheetTest extends TestCase
     {
         // Default sheet
         $defaultSheet = new StyleSheet()
-            ->addRule(InputWidget::class.':focused', new Style()->withBold());
+            ->addRule(InputWidget::class.':focus', new Style()->withBold());
 
         // User sheet
         $userSheet = new StyleSheet()
-            ->addRule(InputWidget::class.':focused', new Style()->withColor('yellow'));
+            ->addRule(InputWidget::class.':focus', new Style()->withColor('yellow'));
 
         // Merge replaces the state selector rule
         $merged = $defaultSheet->merge($userSheet);
@@ -523,7 +523,7 @@ class StyleSheetTest extends TestCase
     {
         $stylesheet = new StyleSheet([
             InputWidget::class.'::cursor' => new Style()->withReverse(),
-            InputWidget::class.'::cursor:focused' => new Style()->withColor('cyan'),
+            InputWidget::class.'::cursor:focus' => new Style()->withColor('cyan'),
         ]);
 
         // Unfocused: only reverse
@@ -543,7 +543,7 @@ class StyleSheetTest extends TestCase
     {
         $stylesheet = new StyleSheet([
             '.my-input::cursor' => new Style()->withReverse(),
-            '.my-input::cursor:focused' => new Style()->withColor('yellow'),
+            '.my-input::cursor:focus' => new Style()->withColor('yellow'),
         ]);
 
         $widget = new InputWidget();
@@ -567,7 +567,7 @@ class StyleSheetTest extends TestCase
         $stylesheet = new StyleSheet([
             SelectListWidget::class.'::selected' => new Style()->withColor('red'),
             '.themed::selected' => new Style()->withColor('blue'),
-            '.themed::selected:focused' => new Style()->withColor('green'),
+            '.themed::selected:focus' => new Style()->withColor('green'),
         ]);
 
         $items = [['value' => 'a', 'label' => 'A']];
@@ -579,7 +579,7 @@ class StyleSheetTest extends TestCase
         // Blue from .themed overrides red from FQCN
         $this->assertSame(Color::named('blue')->toForegroundCode(), $style->getColor()->toForegroundCode());
 
-        // Focused: .themed::selected:focused on top
+        // Focused: .themed::selected:focus on top
         $widget->setFocused(true);
         $style = $stylesheet->resolveElement($widget, 'selected');
         $this->assertSame(Color::named('green')->toForegroundCode(), $style->getColor()->toForegroundCode());
@@ -730,7 +730,7 @@ class StyleSheetTest extends TestCase
     public function testBreakpointWithStateSelector()
     {
         $stylesheet = new StyleSheet();
-        $stylesheet->addBreakpoint(100, InputWidget::class.':focused', new Style()->withBold());
+        $stylesheet->addBreakpoint(100, InputWidget::class.':focus', new Style()->withBold());
 
         $widget = new InputWidget();
 

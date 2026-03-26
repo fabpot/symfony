@@ -50,7 +50,7 @@ final class DefaultStyleSheet
             '.column' => new Style(),
 
             // CancellableLoaderWidget
-            CancellableLoaderWidget::class.':focused' => new Style()->withBold(),
+            CancellableLoaderWidget::class.':focus' => new Style()->withBold(),
 
             // LoaderWidget
             LoaderWidget::class.'::spinner' => new Style()->withColor('cyan'),
@@ -65,17 +65,17 @@ final class DefaultStyleSheet
 
             // SelectListWidget
             SelectListWidget::class.'::selected' => new Style()->withBold(),
-            SelectListWidget::class.'::selected:focused' => new Style()->withBold(),
+            SelectListWidget::class.'::selected:focus' => new Style()->withBold(),
             SelectListWidget::class.'::description' => new Style()->withColor('gray'),
             SelectListWidget::class.'::scroll-info' => new Style()->withColor('gray'),
             SelectListWidget::class.'::no-match' => new Style()->withColor('yellow'),
 
             // SettingsListWidget
             SettingsListWidget::class.'::label-selected' => new Style()->withBold(),
-            SettingsListWidget::class.'::label-selected:focused' => new Style()->withBold(),
+            SettingsListWidget::class.'::label-selected:focus' => new Style()->withBold(),
             SettingsListWidget::class.'::value' => new Style()->withColor('gray'),
             SettingsListWidget::class.'::value-selected' => new Style()->withColor('cyan'),
-            SettingsListWidget::class.'::value-selected:focused' => new Style()->withColor('cyan'),
+            SettingsListWidget::class.'::value-selected:focus' => new Style()->withColor('cyan'),
             SettingsListWidget::class.'::description' => new Style()->withColor('gray'),
             SettingsListWidget::class.'::hint' => new Style()->withColor('gray'),
 
