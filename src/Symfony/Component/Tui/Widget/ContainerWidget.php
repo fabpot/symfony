@@ -163,6 +163,6 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
      */
     public function render(RenderContext $context): array
     {
-        throw new LogicException(\sprintf('%s rendering is handled by the Renderer via renderContainer(). This method should never be called directly.', static::class));
+        throw new LogicException(\sprintf('"%s" rendering is handled by the Renderer via "renderContainer()"; this method should never be called directly.', static::class));
     }
 }

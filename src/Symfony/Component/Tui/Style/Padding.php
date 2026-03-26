@@ -82,7 +82,7 @@ final class Padding
             2 => new self($padding[0], $padding[1], $padding[0], $padding[1]),
             3 => new self($padding[0], $padding[1], $padding[2], $padding[1]),
             4 => new self($padding[0], $padding[1], $padding[2], $padding[3]),
-            default => throw new InvalidArgumentException('Padding array must have 1, 2, 3, or 4 elements'),
+            default => throw new InvalidArgumentException('Padding array must have 1, 2, 3, or 4 elements.'),
         };
     }
 

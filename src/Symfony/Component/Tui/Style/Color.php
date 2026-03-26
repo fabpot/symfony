@@ -81,7 +81,7 @@ final class Color
     {
         $name = strtolower($name);
         if (!isset(self::BASIC_COLORS[$name])) {
-            throw new InvalidArgumentException(\sprintf('Unknown color name: %s', $name));
+            throw new InvalidArgumentException(\sprintf('Unknown color name: "%s".', $name));
         }
 
         return new self(ColorType::Named, $name);
@@ -114,7 +114,7 @@ final class Color
         }
 
         if (6 !== \strlen($hex) || !ctype_xdigit($hex)) {
-            throw new InvalidArgumentException(\sprintf('Invalid hex color: %s', $hex));
+            throw new InvalidArgumentException(\sprintf('Invalid hex color: "%s".', $hex));
         }
 
         return new self(ColorType::Hex, $hex);

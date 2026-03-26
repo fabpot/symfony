@@ -29,7 +29,7 @@ final class FixedStepAccumulator
         private int $maxStepsPerUpdate = 5,
     ) {
         if ($stepsPerSecond <= 0.0) {
-            throw new InvalidArgumentException(\sprintf('Steps per second must be greater than 0, got %s.', $stepsPerSecond));
+            throw new InvalidArgumentException(\sprintf('Steps per second must be greater than 0, got %d.', $stepsPerSecond));
         }
 
         if ($maxStepsPerUpdate < 1) {
@@ -60,7 +60,7 @@ final class FixedStepAccumulator
     public function setStepsPerSecond(float $stepsPerSecond): void
     {
         if ($stepsPerSecond <= 0.0) {
-            throw new InvalidArgumentException(\sprintf('Steps per second must be greater than 0, got %s.', $stepsPerSecond));
+            throw new InvalidArgumentException(\sprintf('Steps per second must be greater than 0, got %d.', $stepsPerSecond));
         }
 
         $this->stepsPerSecond = $stepsPerSecond;
