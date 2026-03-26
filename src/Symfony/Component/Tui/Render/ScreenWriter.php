@@ -383,7 +383,7 @@ final class ScreenWriter
                 $plainLine = preg_replace('/\x1b(?:\[[0-9;]*[a-zA-Z]|\][^\x07]*\x07)/', '', $line);
                 $preview = mb_substr($plainLine, 0, 100);
 
-                throw new RenderException(\sprintf("Rendered line %d exceeds terminal width (%d > %d).\nLine preview: %s%s", $i, $lineWidth, $width, $preview, mb_strlen($plainLine) > 100 ? '...' : ''), $i, $lineWidth, $width);
+                throw new RenderException(\sprintf("Rendered line %d exceeds terminal width (%d > %d).\nLine preview: %d%d.", $i, $lineWidth, $width, $preview, mb_strlen($plainLine) > 100 ? '...' : ''), $i, $lineWidth, $width);
             }
 
             $buffer .= $line;

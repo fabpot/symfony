@@ -82,7 +82,7 @@ class FontRegistryTest extends TestCase
         $registry = new FontRegistry();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('big, small, slant, standard, mini');
+        $this->expectExceptionMessage('"big", "small", "slant", "standard", "mini"');
 
         $registry->get('unknown');
     }

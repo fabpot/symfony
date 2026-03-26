@@ -32,7 +32,7 @@ trait ScheduledTickTrait
     protected function startScheduledTick(float $intervalSeconds): void
     {
         if ($intervalSeconds <= 0.0) {
-            throw new InvalidArgumentException(\sprintf('Interval must be greater than 0, got %s.', $intervalSeconds));
+            throw new InvalidArgumentException(\sprintf('Interval must be greater than 0, got %d.', $intervalSeconds));
         }
 
         if (null !== $this->scheduledTickId && null !== $this->scheduledTickInterval && abs($this->scheduledTickInterval - $intervalSeconds) < 0.000001) {

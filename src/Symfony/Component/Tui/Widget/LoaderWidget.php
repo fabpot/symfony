@@ -135,7 +135,7 @@ class LoaderWidget extends AbstractWidget
     public function setSpinner(string $name): self
     {
         if (!isset(self::$styles[$name])) {
-            throw new \InvalidArgumentException(\sprintf('Unknown loader style "%s". Available styles: %s.', $name, implode(', ', array_keys(self::$styles))));
+            throw new \InvalidArgumentException(\sprintf('Unknown loader style "%s". Available styles: "%s".', $name, implode('", "', array_keys(self::$styles))));
         }
 
         $this->frames = self::$styles[$name];
