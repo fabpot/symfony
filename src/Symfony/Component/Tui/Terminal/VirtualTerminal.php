@@ -178,6 +178,7 @@ final class VirtualTerminal implements TerminalInterface
     {
         if (null !== $this->stdinBuffer) {
             $this->stdinBuffer->process($data);
+            $this->stdinBuffer?->flush();
         }
     }
 

@@ -98,6 +98,7 @@ final class Terminal implements TerminalInterface
             $data = fread(\STDIN, 4096);
             if (false !== $data && '' !== $data && null !== $this->stdinBuffer) {
                 $this->stdinBuffer->process($data);
+                $this->stdinBuffer?->flush();
             }
         });
     }

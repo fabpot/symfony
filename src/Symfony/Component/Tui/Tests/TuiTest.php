@@ -412,6 +412,34 @@ class TuiTest extends TestCase
         $this->assertSame('', $input->getValue());
     }
 
+    public function testQuitOnEscapeStopsTuiWhenEscapeIsSimulated()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+        $tui->quitOn(Key::ESCAPE);
+
+        $tui->start();
+        $this->assertTrue($tui->isRunning());
+
+        $terminal->simulateInput("\x1b"); // raw Esc byte
+
+        $this->assertFalse($tui->isRunning());
+    }
+
+    public function testQuitOnMultiByteKeyStopsTui()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+        $tui->quitOn(Key::UP);
+
+        $tui->start();
+        $this->assertTrue($tui->isRunning());
+
+        $terminal->simulateInput("\x1b[A"); // raw Arrow Up sequence
+
+        $this->assertFalse($tui->isRunning());
+    }
+
     public function testQuitOnDoesNotConsumeNonMatchingKeys()
     {
         $terminal = new VirtualTerminal(40, 10);
