@@ -67,7 +67,7 @@ class SettingsListTest extends TestCase
 
         $changedId = null;
         $changedValue = null;
-        $tui->on(SettingChangeEvent::class, function (SettingChangeEvent $e) use (&$changedId, &$changedValue) {
+        $tui->on(SettingChangeEvent::class, static function (SettingChangeEvent $e) use (&$changedId, &$changedValue) {
             $changedId = $e->getId();
             $changedValue = $e->getValue();
         });
@@ -84,7 +84,7 @@ class SettingsListTest extends TestCase
         [$widget, $tui] = $this->createWithTui();
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, function (CancelEvent $e) use (&$cancelled) {
+        $tui->on(CancelEvent::class, static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 
@@ -116,7 +116,7 @@ class SettingsListTest extends TestCase
                 id: 'model',
                 label: 'Model',
                 currentValue: 'gpt-4',
-                submenu: function (string $currentValue, callable $onDone) use (&$submenuWidget) {
+                submenu: static function (string $currentValue, callable $onDone) use (&$submenuWidget) {
                     $list = new SelectListWidget([
                         ['value' => 'gpt-4', 'label' => 'GPT-4'],
                         ['value' => 'claude', 'label' => 'Claude'],
@@ -173,7 +173,7 @@ class SettingsListTest extends TestCase
                 id: 'model',
                 label: 'Model',
                 currentValue: 'gpt-4',
-                submenu: function (string $currentValue, callable $onDone) use (&$onDoneCallback) {
+                submenu: static function (string $currentValue, callable $onDone) use (&$onDoneCallback) {
                     $onDoneCallback = $onDone;
 
                     $list = new SelectListWidget([
@@ -206,7 +206,7 @@ class SettingsListTest extends TestCase
                 id: 'model',
                 label: 'Model',
                 currentValue: 'gpt-4',
-                submenu: function (string $currentValue, callable $onDone) {
+                submenu: static function (string $currentValue, callable $onDone) {
                     $list = new SelectListWidget([
                         ['value' => 'gpt-4', 'label' => 'GPT-4'],
                         ['value' => 'claude', 'label' => 'Claude'],
@@ -240,12 +240,10 @@ class SettingsListTest extends TestCase
                 id: 'model',
                 label: 'Model',
                 currentValue: 'gpt-4',
-                submenu: function (string $currentValue, callable $onDone) {
-                    return new SelectListWidget([
-                        ['value' => 'gpt-4', 'label' => 'GPT-4'],
-                        ['value' => 'claude', 'label' => 'Claude'],
-                    ], 5);
-                },
+                submenu: static fn (string $currentValue, callable $onDone) => new SelectListWidget([
+                    ['value' => 'gpt-4', 'label' => 'GPT-4'],
+                    ['value' => 'claude', 'label' => 'Claude'],
+                ], 5),
             ),
         ];
 

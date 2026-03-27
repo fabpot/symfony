@@ -236,7 +236,7 @@ final class BorderPattern
             self::WIDE_MEDIUM => self::wideMedium(),
             self::TALL_LARGE => self::tallLarge(),
             self::WIDE_LARGE => self::wideLarge(),
-            default => throw new InvalidArgumentException(sprintf('Unknown border pattern "%s".', $style)),
+            default => throw new InvalidArgumentException(\sprintf('Unknown border pattern "%s".', $style)),
         };
     }
 

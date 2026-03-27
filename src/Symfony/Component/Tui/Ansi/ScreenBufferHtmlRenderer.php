@@ -55,7 +55,7 @@ final class ScreenBufferHtmlRenderer
 
         // Only include lines up to the last non-empty line
         if ($lastNonEmpty >= 0) {
-            $result = array_slice($result, 0, $lastNonEmpty + 1);
+            $result = \array_slice($result, 0, $lastNonEmpty + 1);
         } else {
             $result = [];
         }
@@ -106,7 +106,7 @@ final class ScreenBufferHtmlRenderer
                 $lastStyle = $style;
             }
 
-            $html .= htmlspecialchars($char, ENT_QUOTES | ENT_HTML5);
+            $html .= htmlspecialchars($char, \ENT_QUOTES | \ENT_HTML5);
         }
 
         if ($inSpan) {

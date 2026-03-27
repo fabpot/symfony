@@ -58,7 +58,7 @@ final class DarkTerminalTheme implements TerminalTheme
         }
 
         // Use 24-bit RGB escape sequence
-        return sprintf("\x1b[38;2;%d;%d;%dm", $rgb[0], $rgb[1], $rgb[2]);
+        return \sprintf("\x1b[38;2;%d;%d;%dm", $rgb[0], $rgb[1], $rgb[2]);
     }
 
     public function after(TokenType $tokenType): string

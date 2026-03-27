@@ -104,7 +104,7 @@ final class ScreenBuffer
     public function write(string $data): void
     {
         $i = 0;
-        $len = strlen($data);
+        $len = \strlen($data);
 
         while ($i < $len) {
             $char = $data[$i];
@@ -165,7 +165,7 @@ final class ScreenBuffer
             }
 
             // Skip other control characters
-            if (ord($char) < 32 && "\x1b" !== $char) {
+            if (\ord($char) < 32 && "\x1b" !== $char) {
                 ++$i;
                 continue;
             }
@@ -200,7 +200,7 @@ final class ScreenBuffer
 
         // Only include lines up to the last non-empty line
         if ($lastNonEmpty >= 0) {
-            $result = array_slice($result, 0, $lastNonEmpty + 1);
+            $result = \array_slice($result, 0, $lastNonEmpty + 1);
         } else {
             $result = [];
         }
@@ -231,7 +231,7 @@ final class ScreenBuffer
 
         // Only include lines up to the last non-empty line
         if ($lastNonEmpty >= 0) {
-            $result = array_slice($result, 0, $lastNonEmpty + 1);
+            $result = \array_slice($result, 0, $lastNonEmpty + 1);
         } else {
             $result = [];
         }
@@ -353,7 +353,7 @@ final class ScreenBuffer
         }
 
         // Fill any gaps with spaces
-        for ($col = count($this->cells[$this->cursorRow]); $col < $this->cursorCol; ++$col) {
+        for ($col = \count($this->cells[$this->cursorRow]); $col < $this->cursorCol; ++$col) {
             $this->cells[$this->cursorRow][$col] = ['char' => ' ', 'style' => ''];
         }
 
@@ -460,13 +460,13 @@ final class ScreenBuffer
      */
     private function parseEscapeSequence(string $data, int $start): int
     {
-        $len = strlen($data);
+        $len = \strlen($data);
         if ($start + 1 >= $len) {
             return 1;
         }
 
         $next = $data[$start + 1];
-        $nextOrd = ord($next);
+        $nextOrd = \ord($next);
 
         // CSI sequence: ESC [
         if ('[' === $next) {
@@ -482,10 +482,10 @@ final class ScreenBuffer
         // nF announced sequences: ESC + intermediate bytes (0x20-0x2F)+ + final byte (0x30-0x7E)
         if ($nextOrd >= 0x20 && $nextOrd <= 0x2F) {
             $j = $start + 2;
-            while ($j < $len && ord($data[$j]) >= 0x20 && ord($data[$j]) <= 0x2F) {
+            while ($j < $len && \ord($data[$j]) >= 0x20 && \ord($data[$j]) <= 0x2F) {
                 ++$j;
             }
-            if ($j < $len && ord($data[$j]) >= 0x30 && ord($data[$j]) <= 0x7E) {
+            if ($j < $len && \ord($data[$j]) >= 0x30 && \ord($data[$j]) <= 0x7E) {
                 return $j + 1 - $start;
             }
 
@@ -507,7 +507,7 @@ final class ScreenBuffer
      */
     private function parseStringSequence(string $data, int $start): int
     {
-        $len = strlen($data);
+        $len = \strlen($data);
         $i = $start + 2; // Skip ESC + introducer byte
 
         // Find terminator: ST (ESC \) or BEL (\x07)
@@ -532,18 +532,18 @@ final class ScreenBuffer
      */
     private function parseCsiSequence(string $data, int $start): int
     {
-        $len = strlen($data);
+        $len = \strlen($data);
         $i = $start + 2; // Skip ESC [
 
         // Collect parameter bytes (0x30-0x3F)
         $params = '';
-        while ($i < $len && ord($data[$i]) >= 0x30 && ord($data[$i]) <= 0x3F) {
+        while ($i < $len && \ord($data[$i]) >= 0x30 && \ord($data[$i]) <= 0x3F) {
             $params .= $data[$i];
             ++$i;
         }
 
         // Collect intermediate bytes (0x20-0x2F)
-        while ($i < $len && ord($data[$i]) >= 0x20 && ord($data[$i]) <= 0x2F) {
+        while ($i < $len && \ord($data[$i]) >= 0x20 && \ord($data[$i]) <= 0x2F) {
             ++$i;
         }
 

@@ -248,7 +248,7 @@ class ProgressBarTest extends TestCase
     {
         $bar = new ProgressBarWidget(100);
         $bar->setFormat('%custom%');
-        $bar->setPlaceholderFormatter('custom', fn (ProgressBarWidget $b) => 'step-'.$b->getProgress());
+        $bar->setPlaceholderFormatter('custom', static fn (ProgressBarWidget $b) => 'step-'.$b->getProgress());
 
         $bar->setProgress(7);
 
@@ -260,7 +260,7 @@ class ProgressBarTest extends TestCase
 
     public function testDefaultPlaceholderFormatter()
     {
-        ProgressBarWidget::setDefaultPlaceholderFormatter('global_test', fn (ProgressBarWidget $b) => 'G'.$b->getProgress());
+        ProgressBarWidget::setDefaultPlaceholderFormatter('global_test', static fn (ProgressBarWidget $b) => 'G'.$b->getProgress());
 
         $bar = new ProgressBarWidget(100);
         $bar->setFormat('%global_test%');
@@ -274,11 +274,11 @@ class ProgressBarTest extends TestCase
 
     public function testInstanceFormatterOverridesDefault()
     {
-        ProgressBarWidget::setDefaultPlaceholderFormatter('override_test', fn (ProgressBarWidget $b) => 'DEFAULT');
+        ProgressBarWidget::setDefaultPlaceholderFormatter('override_test', static fn (ProgressBarWidget $b) => 'DEFAULT');
 
         $bar = new ProgressBarWidget(100);
         $bar->setFormat('%override_test%');
-        $bar->setPlaceholderFormatter('override_test', fn (ProgressBarWidget $b) => 'INSTANCE');
+        $bar->setPlaceholderFormatter('override_test', static fn (ProgressBarWidget $b) => 'INSTANCE');
 
         $lines = $bar->render(new RenderContext(80, 24));
         $content = $lines[0];

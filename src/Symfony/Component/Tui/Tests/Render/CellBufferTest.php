@@ -142,7 +142,7 @@ class CellBufferTest extends TestCase
         ], 1, 5);
 
         $lines = $buf->toLines();
-        $plain = array_map(fn ($l) => preg_replace('/\x1b\[[0-9;]*m/', '', $l), $lines);
+        $plain = array_map(static fn ($l) => preg_replace('/\x1b\[[0-9;]*m/', '', $l), $lines);
 
         $this->assertSame('Background content  ', $plain[0]);
         $this->assertSame('Line OVERLAYse      ', $plain[1]); // Overlay overwrites cols 5-11
@@ -273,7 +273,7 @@ class CellBufferTest extends TestCase
         $buf->writeAnsiLines(['Hello', 'World', '!']);
 
         $lines = $buf->toLines();
-        $plain = array_map(fn ($l) => preg_replace('/\x1b\[[0-9;]*m/', '', $l), $lines);
+        $plain = array_map(static fn ($l) => preg_replace('/\x1b\[[0-9;]*m/', '', $l), $lines);
 
         $this->assertSame('Hello     ', $plain[0]);
         $this->assertSame('World     ', $plain[1]);

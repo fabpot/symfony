@@ -55,7 +55,7 @@ class ContainerTest extends TestCase
 
         $lines = $this->renderContainer($container);
 
-        $stripped = array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
+        $stripped = array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
         // Should have at least a top and bottom border line
         $this->assertGreaterThanOrEqual(2, \count($stripped));
         $this->assertStringContainsString('┌', $stripped[0]);
@@ -81,7 +81,7 @@ class ContainerTest extends TestCase
 
         $lines = $this->renderContainer($container);
 
-        $stripped = array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
+        $stripped = array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
         $this->assertStringContainsString('┌', $stripped[0]);
         $this->assertStringContainsString('└', $stripped[\count($stripped) - 1]);
     }
@@ -344,7 +344,7 @@ class ContainerTest extends TestCase
         $renderer = new Renderer($stylesheet);
         $lines = $renderer->render($root, 40, 24);
 
-        $text = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $text = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('Visible', $text);
         $this->assertStringNotContainsString('Hidden', $text);
         $this->assertStringContainsString('Also Visible', $text);
@@ -416,13 +416,13 @@ class ContainerTest extends TestCase
 
         // Narrow: both visible
         $lines = $renderer->render($root, 60, 24);
-        $text = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $text = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('Always', $text);
         $this->assertStringContainsString('Mobile Only', $text);
 
         // Wide: hint hidden
         $lines = $renderer->render($root, 120, 24);
-        $text = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $text = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('Always', $text);
         $this->assertStringNotContainsString('Mobile Only', $text);
     }
@@ -442,7 +442,7 @@ class ContainerTest extends TestCase
         $renderer = new Renderer($stylesheet);
         $lines = $renderer->render($root, 40, 24);
 
-        $text = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $text = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('Visible', $text);
     }
 
@@ -465,7 +465,7 @@ class ContainerTest extends TestCase
         $renderer = new Renderer();
         $lines = $renderer->render($root, 40, 24);
 
-        $text = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $text = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('Before', $text);
         $this->assertStringNotContainsString('Child A', $text);
         $this->assertStringNotContainsString('Child B', $text);
@@ -499,7 +499,7 @@ class ContainerTest extends TestCase
         $lines = $this->renderContainer($container);
 
         // The text should be indented by 4 characters (left padding)
-        $content = implode("\n", array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
+        $content = implode("\n", array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines));
         $this->assertStringContainsString('    Padded', $content);
     }
 
@@ -555,7 +555,7 @@ class ContainerTest extends TestCase
 
         $lines = $this->renderContainer($container, 40);
 
-        $stripped = array_map(fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
+        $stripped = array_map(static fn ($l) => AnsiUtils::stripAnsiCodes($l), $lines);
 
         // First and "updated" text should both be present with a gap between them
         $firstIdx = null;

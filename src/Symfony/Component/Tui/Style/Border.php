@@ -183,7 +183,7 @@ final class Border
         $chars = $pattern->getChars();
         $strategies = $pattern->getStrategies();
 
-        $outerStyle = $outerStyle ?? new Style();
+        $outerStyle ??= new Style();
         $borderColor = $this->color ?? $innerStyle->getColor();
 
         $lines = [];

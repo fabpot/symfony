@@ -109,7 +109,7 @@ abstract class AbstractWidget
         return null;
     }
 
-    final public function getParent(): ?AbstractWidget
+    final public function getParent(): ?self
     {
         return $this->parent;
     }
@@ -158,7 +158,7 @@ abstract class AbstractWidget
     {
         $newClasses = array_values(array_filter(
             $this->styleClasses,
-            fn (string $c) => $c !== $class,
+            static fn (string $c) => $c !== $class,
         ));
 
         if ($newClasses !== $this->styleClasses) {
@@ -200,7 +200,7 @@ abstract class AbstractWidget
     /**
      * @internal
      */
-    final public function attach(?AbstractWidget $parent, WidgetContext $context): void
+    final public function attach(?self $parent, WidgetContext $context): void
     {
         $this->parent = $parent;
         $this->context = $context;
@@ -384,7 +384,7 @@ abstract class AbstractWidget
     /**
      * @internal
      */
-    final protected function setParent(?AbstractWidget $parent): void
+    final protected function setParent(?self $parent): void
     {
         $this->parent = $parent;
         $this->invalidate();

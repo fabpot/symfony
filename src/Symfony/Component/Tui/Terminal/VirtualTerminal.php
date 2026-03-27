@@ -53,7 +53,7 @@ final class VirtualTerminal implements TerminalInterface
         $this->stdinBuffer->onData($onInput);
 
         // Re-wrap paste content with bracketed paste markers (matches real Terminal behavior)
-        $this->stdinBuffer->onPaste(function (string $content) use ($onInput): void {
+        $this->stdinBuffer->onPaste(static function (string $content) use ($onInput): void {
             $onInput("\x1b[200~".$content."\x1b[201~");
         });
     }

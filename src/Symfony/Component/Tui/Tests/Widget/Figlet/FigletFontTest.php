@@ -43,7 +43,7 @@ class FigletFontTest extends TestCase
         for ($code = 32; $code <= 126; ++$code) {
             $this->assertTrue(
                 $font->hasCharacter($code),
-                \sprintf('Font "%s" is missing character %d (%s)', $name, $code, chr($code)),
+                \sprintf('Font "%s" is missing character %d (%s)', $name, $code, \chr($code)),
             );
         }
     }
