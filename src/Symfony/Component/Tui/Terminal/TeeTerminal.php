@@ -44,9 +44,9 @@ final class TeeTerminal implements TerminalInterface
         $this->primary->start($onInput, $onResize, $onKittyProtocolActivated);
 
         // Start secondary with no-op callbacks (they just record)
-        $noopInput = function (string $data): void {};
-        $noopResize = function (): void {};
-        $noopKitty = function (): void {};
+        $noopInput = static function (string $data): void {};
+        $noopResize = static function (): void {};
+        $noopKitty = static function (): void {};
 
         $this->secondary->start($noopInput, $noopResize, $noopKitty);
     }

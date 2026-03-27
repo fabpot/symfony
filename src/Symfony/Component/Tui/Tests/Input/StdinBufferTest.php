@@ -26,7 +26,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -145,7 +145,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -185,11 +185,11 @@ class StdinBufferTest extends TestCase
         $sequences = [];
         $pastedContent = null;
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
 
-        $buffer->onPaste(function (string $content) use (&$pastedContent) {
+        $buffer->onPaste(static function (string $content) use (&$pastedContent) {
             $pastedContent = $content;
         });
 
@@ -204,7 +204,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -222,7 +222,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -243,7 +243,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -260,7 +260,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
 
@@ -275,7 +275,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
 
@@ -296,7 +296,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 
@@ -325,7 +325,7 @@ class StdinBufferTest extends TestCase
         $pasteCount = 0;
         $pastedContent = null;
 
-        $buffer->onPaste(function (string $content) use (&$pastedContent, &$pasteCount) {
+        $buffer->onPaste(static function (string $content) use (&$pastedContent, &$pasteCount) {
             $pastedContent = $content;
             ++$pasteCount;
         });
@@ -350,10 +350,10 @@ class StdinBufferTest extends TestCase
         $sequences = [];
         $pastedContent = null;
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
-        $buffer->onPaste(function (string $content) use (&$pastedContent) {
+        $buffer->onPaste(static function (string $content) use (&$pastedContent) {
             $pastedContent = $content;
         });
 
@@ -369,7 +369,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
 
@@ -384,7 +384,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = $data;
         });
 
@@ -404,7 +404,7 @@ class StdinBufferTest extends TestCase
         $buffer = new StdinBuffer();
         $sequences = [];
 
-        $buffer->onData(function (string $data) use (&$sequences) {
+        $buffer->onData(static function (string $data) use (&$sequences) {
             $sequences[] = bin2hex($data);
         });
 

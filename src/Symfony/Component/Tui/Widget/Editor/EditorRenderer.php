@@ -182,10 +182,10 @@ final class EditorRenderer
                 $cursorCharIndex = \count($graphemes);
             }
 
-            $beforeCursor = implode('', array_slice($graphemes, 0, $cursorCharIndex));
+            $beforeCursor = implode('', \array_slice($graphemes, 0, $cursorCharIndex));
             if (isset($graphemes[$cursorCharIndex])) {
                 $atCursor = $graphemes[$cursorCharIndex];
-                $afterCursor = implode('', array_slice($graphemes, $cursorCharIndex + 1));
+                $afterCursor = implode('', \array_slice($graphemes, $cursorCharIndex + 1));
             }
         }
         if (false === $graphemes) {

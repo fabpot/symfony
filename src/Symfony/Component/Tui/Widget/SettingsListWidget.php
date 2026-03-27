@@ -378,12 +378,12 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
                 // Wire submenu events: when the inner widget dispatches
                 // SelectEvent or CancelEvent, route to the onDone callback
                 $dispatcher = $context->getEventDispatcher();
-                $selectListener = function (SelectEvent $e) use ($submenu, $onDone): void {
+                $selectListener = static function (SelectEvent $e) use ($submenu, $onDone): void {
                     if ($e->getTarget() === $submenu) {
                         $onDone($e->getValue());
                     }
                 };
-                $cancelListener = function (CancelEvent $e) use ($submenu, $onDone): void {
+                $cancelListener = static function (CancelEvent $e) use ($submenu, $onDone): void {
                     if ($e->getTarget() === $submenu) {
                         $onDone(null);
                     }

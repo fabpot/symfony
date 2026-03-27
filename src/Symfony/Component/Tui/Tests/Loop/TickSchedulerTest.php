@@ -31,7 +31,7 @@ class TickSchedulerTest extends TestCase
         $calls = 0;
         $start = microtime(true);
 
-        $scheduler->schedule(function () use (&$calls): void {
+        $scheduler->schedule(static function () use (&$calls): void {
             ++$calls;
         }, 0.5);
 
@@ -54,7 +54,7 @@ class TickSchedulerTest extends TestCase
         $calls = 0;
         $start = microtime(true);
 
-        $id = $scheduler->schedule(function () use (&$calls): void {
+        $id = $scheduler->schedule(static function () use (&$calls): void {
             ++$calls;
         }, 0.01);
 

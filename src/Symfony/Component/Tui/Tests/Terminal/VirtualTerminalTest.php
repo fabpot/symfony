@@ -23,9 +23,9 @@ class VirtualTerminalTest extends TestCase
         $received = [];
 
         $terminal->start(
-            function (string $data) use (&$received) { $received[] = $data; },
-            function () {},
-            function () {},
+            static function (string $data) use (&$received) { $received[] = $data; },
+            static function () {},
+            static function () {},
         );
 
         $terminal->simulateInput('abc');
@@ -41,9 +41,9 @@ class VirtualTerminalTest extends TestCase
         $received = [];
 
         $terminal->start(
-            function (string $data) use (&$received) { $received[] = $data; },
-            function () {},
-            function () {},
+            static function (string $data) use (&$received) { $received[] = $data; },
+            static function () {},
+            static function () {},
         );
 
         $terminal->simulateInput("\x1b[200~Hello World\x1b[201~");
@@ -59,9 +59,9 @@ class VirtualTerminalTest extends TestCase
         $received = [];
 
         $terminal->start(
-            function (string $data) use (&$received) { $received[] = $data; },
-            function () {},
-            function () {},
+            static function (string $data) use (&$received) { $received[] = $data; },
+            static function () {},
+            static function () {},
         );
 
         $terminal->simulateInput("a\x1b[200~pasted\x1b[201~b");
@@ -112,9 +112,9 @@ class VirtualTerminalTest extends TestCase
         $received = [];
 
         $terminal->start(
-            function (string $data) use (&$received) { $received[] = $data; },
-            function () {},
-            function () {},
+            static function (string $data) use (&$received) { $received[] = $data; },
+            static function () {},
+            static function () {},
         );
 
         $terminal->simulateInput("\x1b[200~line1\nline2\nline3\x1b[201~");

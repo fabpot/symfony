@@ -20,7 +20,7 @@ namespace Symfony\Component\Tui\Render;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-final readonly class WidgetRect
+final class WidgetRect
 {
     public function __construct(
         private int $row,
