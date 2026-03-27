@@ -28,6 +28,8 @@ use Symfony\Component\Tui\Widget\SettingsListWidget;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class DefaultStyleSheet

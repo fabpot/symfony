@@ -18,6 +18,8 @@ namespace Symfony\Component\Tui\Render;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class WidgetRect

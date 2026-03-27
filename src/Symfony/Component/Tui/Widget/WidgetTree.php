@@ -23,6 +23,8 @@ use Symfony\Component\Tui\Tui;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class WidgetTree

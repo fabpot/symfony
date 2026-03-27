@@ -21,6 +21,8 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class PositionTracker

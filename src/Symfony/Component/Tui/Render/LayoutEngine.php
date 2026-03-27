@@ -28,6 +28,8 @@ use Symfony\Component\Tui\Widget\VerticallyExpandableInterface;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class LayoutEngine

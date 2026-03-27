@@ -32,6 +32,8 @@ use Tempest\Highlight\Tokens\TokenTypeEnum;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class DarkTerminalTheme implements TerminalTheme
