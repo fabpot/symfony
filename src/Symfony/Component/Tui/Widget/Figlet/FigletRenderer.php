@@ -28,6 +28,8 @@ use Symfony\Component\Tui\Style\Color;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class FigletRenderer

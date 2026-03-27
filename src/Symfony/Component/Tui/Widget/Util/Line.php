@@ -23,6 +23,8 @@ namespace Symfony\Component\Tui\Widget\Util;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class Line

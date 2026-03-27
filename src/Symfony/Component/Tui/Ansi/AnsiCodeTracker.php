@@ -16,6 +16,8 @@ namespace Symfony\Component\Tui\Ansi;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class AnsiCodeTracker

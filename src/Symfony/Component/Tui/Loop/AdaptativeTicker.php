@@ -18,6 +18,8 @@ use Revolt\EventLoop;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class AdaptativeTicker

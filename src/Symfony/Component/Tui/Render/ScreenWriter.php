@@ -29,6 +29,8 @@ use Symfony\Component\Tui\Terminal\TerminalInterface;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class ScreenWriter

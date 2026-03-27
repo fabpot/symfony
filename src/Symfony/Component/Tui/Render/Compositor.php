@@ -33,6 +33,8 @@ use Symfony\Component\Tui\Ansi\AnsiUtils;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class Compositor

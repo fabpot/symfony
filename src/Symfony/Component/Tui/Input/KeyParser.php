@@ -18,6 +18,8 @@ namespace Symfony\Component\Tui\Input;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class KeyParser

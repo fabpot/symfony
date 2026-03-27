@@ -16,6 +16,8 @@ namespace Symfony\Component\Tui\Widget;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 trait DirtyWidgetTrait

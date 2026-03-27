@@ -30,6 +30,8 @@ use Symfony\Component\Tui\Exception\InvalidArgumentException;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class FontRegistry

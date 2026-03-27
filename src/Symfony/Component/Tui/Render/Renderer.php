@@ -37,6 +37,8 @@ use Symfony\Component\Tui\Widget\ParentInterface;
  *
  * @experimental
  *
+ * @internal
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class Renderer implements WidgetRendererInterface
