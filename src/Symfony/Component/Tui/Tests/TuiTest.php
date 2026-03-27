@@ -161,7 +161,7 @@ class TuiTest extends TestCase
         $ticks = 0;
 
         $tui->add($text);
-        $tui->onTick(function () use ($text, &$ticks): void {
+        $tui->onTick(static function () use ($text, &$ticks): void {
             if (0 === $ticks) {
                 $text->setText('1');
             }
@@ -187,7 +187,7 @@ class TuiTest extends TestCase
         $tui = new Tui(terminal: $terminal);
         $deltas = [];
 
-        $tui->onTick(function (TickEvent $event) use (&$deltas): void {
+        $tui->onTick(static function (TickEvent $event) use (&$deltas): void {
             $deltas[] = $event->getDeltaTime();
         });
 
@@ -289,7 +289,7 @@ class TuiTest extends TestCase
 
         $output = $terminal->getOutput();
         $lines = explode("\r\n", $output);
-        $stripped = array_map(fn (string $l) => AnsiUtils::stripAnsiCodes($l), $lines);
+        $stripped = array_map(static fn (string $l) => AnsiUtils::stripAnsiCodes($l), $lines);
 
         // Content should start at the first line, not be pushed to the bottom
         $headerLineIndex = null;
@@ -434,7 +434,7 @@ class TuiTest extends TestCase
         $tui->quitOn('ctrl+c');
 
         $onInputCalled = false;
-        $tui->onInput(function () use (&$onInputCalled): bool {
+        $tui->onInput(static function () use (&$onInputCalled): bool {
             $onInputCalled = true;
 
             return true;

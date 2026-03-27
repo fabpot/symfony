@@ -483,7 +483,7 @@ class EditorDocumentTest extends TestCase
     public function testLargePasteCreatesMarker()
     {
         $doc = new EditorDocument();
-        $content = implode("\n", array_map(fn ($i) => "line $i", range(1, 15)));
+        $content = implode("\n", array_map(static fn ($i) => "line $i", range(1, 15)));
         $doc->handlePaste($content);
 
         $markers = $doc->getPasteMarkers();
@@ -497,7 +497,7 @@ class EditorDocumentTest extends TestCase
     public function testSetTextClearsPasteMarkers()
     {
         $doc = new EditorDocument();
-        $content = implode("\n", array_map(fn ($i) => "line $i", range(1, 15)));
+        $content = implode("\n", array_map(static fn ($i) => "line $i", range(1, 15)));
         $doc->handlePaste($content);
         $this->assertNotSame([], $doc->getPasteMarkers());
 

@@ -114,7 +114,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $submitted = null;
-        $tui->on(SubmitEvent::class, function (SubmitEvent $e) use (&$submitted) {
+        $tui->on(SubmitEvent::class, static function (SubmitEvent $e) use (&$submitted) {
             $submitted = $e->getValue();
         });
 
@@ -129,7 +129,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, function (CancelEvent $e) use (&$cancelled) {
+        $tui->on(CancelEvent::class, static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 
@@ -143,7 +143,7 @@ class InputTest extends TestCase
         $input = new InputWidget();
 
         $intercepted = false;
-        $input->onInput(function (string $data) use (&$intercepted): bool {
+        $input->onInput(static function (string $data) use (&$intercepted): bool {
             if ('x' === $data) {
                 $intercepted = true;
 
@@ -162,9 +162,7 @@ class InputTest extends TestCase
     {
         $input = new InputWidget();
 
-        $input->onInput(function (string $data): bool {
-            return 'x' === $data;
-        });
+        $input->onInput(static fn (string $data): bool => 'x' === $data);
 
         $input->handleInput('y');
         $this->assertSame('y', $input->getValue(), 'Non-consumed input should be typed');
@@ -253,7 +251,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $changedValue = null;
-        $tui->on(ChangeEvent::class, function (ChangeEvent $e) use (&$changedValue) {
+        $tui->on(ChangeEvent::class, static function (ChangeEvent $e) use (&$changedValue) {
             $changedValue = $e->getValue();
         });
 

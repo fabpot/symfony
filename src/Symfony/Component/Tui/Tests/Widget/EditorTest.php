@@ -96,7 +96,7 @@ class EditorTest extends TestCase
         [$editor, $tui] = $this->createEditorWithTui();
 
         $changedText = null;
-        $tui->on(ChangeEvent::class, function (ChangeEvent $e) use (&$changedText) {
+        $tui->on(ChangeEvent::class, static function (ChangeEvent $e) use (&$changedText) {
             $changedText = $e->getValue();
         });
 

@@ -458,7 +458,7 @@ class MarkdownWidget extends AbstractWidget
         $lines = [];
 
         // Top border
-        $topBorderCells = array_map(fn (int $w) => str_repeat('─', $w), $columnWidths);
+        $topBorderCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
         $lines[] = '┌─'.implode('─┬─', $topBorderCells).'─┐';
 
         // Header row
@@ -482,7 +482,7 @@ class MarkdownWidget extends AbstractWidget
             }
 
             // Separator
-            $separatorCells = array_map(fn (int $w) => str_repeat('─', $w), $columnWidths);
+            $separatorCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
             $lines[] = '├─'.implode('─┼─', $separatorCells).'─┤';
         }
 
@@ -506,7 +506,7 @@ class MarkdownWidget extends AbstractWidget
         }
 
         // Bottom border
-        $bottomBorderCells = array_map(fn (int $w) => str_repeat('─', $w), $columnWidths);
+        $bottomBorderCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
         $lines[] = '└─'.implode('─┴─', $bottomBorderCells).'─┘';
 
         return $lines;

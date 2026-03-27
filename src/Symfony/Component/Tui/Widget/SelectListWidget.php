@@ -75,7 +75,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
 
         $filteredItems = array_values(array_filter(
             $this->items,
-            fn ($item) => str_starts_with(strtolower($item['value']), $filter),
+            static fn ($item) => str_starts_with(strtolower($item['value']), $filter),
         ));
 
         if ($filteredItems !== $this->filteredItems) {

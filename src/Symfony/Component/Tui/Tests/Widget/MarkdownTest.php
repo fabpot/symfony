@@ -71,7 +71,7 @@ class MarkdownTest extends TestCase
         $lines = $this->renderThroughRenderer($md, 40, 24);
 
         // Should have top + content + bottom = 3 lines
-        $this->assertSame(3, \count($lines));
+        $this->assertCount(3, $lines);
     }
 
     public function testAllLinesRespectWidth()

@@ -248,7 +248,7 @@ class RendererTest extends TestCase
         // Only 2 visible children should produce lines
         $this->assertCount(2, $result);
 
-        $visible = implode("\n", array_map(fn (string $line) => AnsiUtils::stripAnsiCodes($line), $result));
+        $visible = implode("\n", array_map(static fn (string $line) => AnsiUtils::stripAnsiCodes($line), $result));
         $this->assertStringContainsString('Visible', $visible);
         $this->assertStringContainsString('Also visible', $visible);
         $this->assertStringNotContainsString('Hidden', $visible);

@@ -41,7 +41,7 @@ class CancellableLoaderWidgetTest extends TestCase
         [$loader, $tui] = $this->createLoaderWithTui();
 
         $cancelCalled = false;
-        $tui->on(CancelEvent::class, function () use (&$cancelCalled): void {
+        $tui->on(CancelEvent::class, static function () use (&$cancelCalled): void {
             $cancelCalled = true;
         });
 
@@ -102,11 +102,11 @@ class CancellableLoaderWidgetTest extends TestCase
         $firstCalled = false;
         $secondCalled = false;
 
-        $tui->on(CancelEvent::class, function () use (&$firstCalled): void {
+        $tui->on(CancelEvent::class, static function () use (&$firstCalled): void {
             $firstCalled = true;
         });
 
-        $tui->on(CancelEvent::class, function () use (&$secondCalled): void {
+        $tui->on(CancelEvent::class, static function () use (&$secondCalled): void {
             $secondCalled = true;
         });
 
@@ -121,7 +121,7 @@ class CancellableLoaderWidgetTest extends TestCase
         [$loader, $tui] = $this->createLoaderWithTui();
         $callCount = 0;
 
-        $tui->on(CancelEvent::class, function () use (&$callCount): void {
+        $tui->on(CancelEvent::class, static function () use (&$callCount): void {
             ++$callCount;
         });
 
@@ -137,7 +137,7 @@ class CancellableLoaderWidgetTest extends TestCase
         [$loader, $tui] = $this->createLoaderWithTui();
         $callCount = 0;
 
-        $loader->onCancel(function () use (&$callCount): void {
+        $loader->onCancel(static function () use (&$callCount): void {
             ++$callCount;
         });
 
