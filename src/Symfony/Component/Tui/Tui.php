@@ -74,9 +74,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     /** @var (callable(string): bool)|null */
     private $onInput;
 
-    /** @var callable(): void */
-    private $onDebug;
-
     /** @var callable(TickEvent): mixed */
     private $onTick;
 
@@ -339,16 +336,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     }
 
     /**
-     * @return $this
-     */
-    public function onDebug(?callable $onDebug): self
-    {
-        $this->onDebug = $onDebug;
-
-        return $this;
-    }
-
-    /**
      * @param callable(TickEvent): mixed $onTick
      *
      * Return true while active work is in progress (fast 100Hz ticking),
@@ -522,13 +509,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
         }
 
         if (null !== $this->onInput && ($this->onInput)($data)) {
-            return;
-        }
-
-        // Global debug key handler (Shift+Ctrl+D)
-        if ("\x1b[68;6u" === $data && null !== $this->onDebug) {
-            ($this->onDebug)();
-
             return;
         }
 
