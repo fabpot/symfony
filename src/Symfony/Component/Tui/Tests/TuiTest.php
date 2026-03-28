@@ -13,6 +13,7 @@ namespace Symfony\Component\Tui\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Tui\Ansi\AnsiUtils;
+use Symfony\Component\Tui\Event\InputEvent;
 use Symfony\Component\Tui\Event\TickEvent;
 use Symfony\Component\Tui\Exception\InvalidArgumentException;
 use Symfony\Component\Tui\Input\Key;
@@ -322,7 +323,7 @@ class TuiTest extends TestCase
         $this->assertStringContainsString('Hello', $terminal->getOutput());
     }
 
-    public function testOnInputCanConsumeGlobalInputBeforeFocusedWidget()
+    public function testInputEventCanConsumeGlobalInputBeforeFocusedWidget()
     {
         $terminal = new VirtualTerminal(40, 10);
         $tui = new Tui(terminal: $terminal);
@@ -333,14 +334,11 @@ class TuiTest extends TestCase
 
         $called = false;
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->onInput(static function (string $data) use (&$called, $globalKeys): bool {
-            if (!$globalKeys->matches($data, 'quit')) {
-                return false;
+        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$called, $globalKeys): void {
+            if ($globalKeys->matches($event->getData(), 'quit')) {
+                $called = true;
+                $event->stopPropagation();
             }
-
-            $called = true;
-
-            return true;
         });
 
         $tui->handleInput("\x03");
@@ -349,7 +347,7 @@ class TuiTest extends TestCase
         $this->assertSame('', $input->getValue());
     }
 
-    public function testOnInputCanPassThroughToFocusedWidget()
+    public function testInputEventCanPassThroughToFocusedWidget()
     {
         $terminal = new VirtualTerminal(40, 10);
         $tui = new Tui(terminal: $terminal);
@@ -359,14 +357,18 @@ class TuiTest extends TestCase
         $tui->setFocus($input);
 
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->onInput(static fn (string $data): bool => $globalKeys->matches($data, 'quit'));
+        $tui->on(InputEvent::class, static function (InputEvent $event) use ($globalKeys): void {
+            if ($globalKeys->matches($event->getData(), 'quit')) {
+                $event->stopPropagation();
+            }
+        });
 
         $tui->handleInput('a');
 
         $this->assertSame('a', $input->getValue());
     }
 
-    public function testOnInputCanConsumeKittyCtrlCSequence()
+    public function testInputEventCanConsumeKittyCtrlCSequence()
     {
         $terminal = new VirtualTerminal(40, 10);
         $tui = new Tui(terminal: $terminal);
@@ -377,14 +379,11 @@ class TuiTest extends TestCase
 
         $called = false;
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->onInput(static function (string $data) use (&$called, $globalKeys): bool {
-            if (!$globalKeys->matches($data, 'quit')) {
-                return false;
+        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$called, $globalKeys): void {
+            if ($globalKeys->matches($event->getData(), 'quit')) {
+                $called = true;
+                $event->stopPropagation();
             }
-
-            $called = true;
-
-            return true;
         });
 
         $tui->handleInput("\x1b[99;5u");
