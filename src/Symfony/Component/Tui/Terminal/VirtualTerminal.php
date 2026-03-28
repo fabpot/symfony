@@ -31,7 +31,6 @@ use Symfony\Component\Tui\Input\StdinBuffer;
 final class VirtualTerminal implements TerminalInterface
 {
     private string $output = '';
-    private bool $cursorVisible = true;
     private ?StdinBuffer $stdinBuffer = null;
 
     /** @var callable(): void|null */
@@ -95,13 +94,11 @@ final class VirtualTerminal implements TerminalInterface
 
     public function hideCursor(): void
     {
-        $this->cursorVisible = false;
         $this->write("\x1b[?25l");
     }
 
     public function showCursor(): void
     {
-        $this->cursorVisible = true;
         $this->write("\x1b[?25h");
     }
 
@@ -196,34 +193,10 @@ final class VirtualTerminal implements TerminalInterface
     }
 
     /**
-     * Check if cursor is visible.
-     */
-    public function isCursorVisible(): bool
-    {
-        return $this->cursorVisible;
-    }
-
-    /**
      * Set Kitty protocol state.
      */
     public function setKittyProtocolActive(bool $active): void
     {
         $this->kittyProtocolActive = $active;
-    }
-
-    /**
-     * Get output split into lines (stripping ANSI codes for comparison).
-     *
-     * @return string[]
-     */
-    public function getOutputLines(): array
-    {
-        $output = $this->output;
-
-        // Remove synchronized output markers
-        $output = str_replace(["\x1b[?2026h", "\x1b[?2026l"], '', $output);
-
-        // Split by newlines
-        return explode("\n", $output);
     }
 }
