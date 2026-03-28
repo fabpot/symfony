@@ -16,6 +16,7 @@ use Revolt\EventLoop\Suspension;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Tui\Event\AbstractEvent;
+use Symfony\Component\Tui\Event\InputEvent;
 use Symfony\Component\Tui\Event\TickEvent;
 use Symfony\Component\Tui\Exception\InvalidArgumentException;
 use Symfony\Component\Tui\Focus\FocusManager;
@@ -67,9 +68,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     private TickScheduler $tickScheduler;
     private AdaptativeTicker $adaptativeTicker;
     private EventDispatcherInterface $eventDispatcher;
-
-    /** @var (callable(string): bool)|null */
-    private $onInput;
 
     /** @var callable(TickEvent): mixed */
     private $onTick;
@@ -299,23 +297,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     }
 
     /**
-     * Register a global input interceptor.
-     *
-     * Called before focus navigation and before the focused widget receives input.
-     * Return true to consume the input.
-     *
-     * @param (callable(string): bool)|null $onInput
-     *
-     * @return $this
-     */
-    public function onInput(?callable $onInput): self
-    {
-        $this->onInput = $onInput;
-
-        return $this;
-    }
-
-    /**
      * @param callable(TickEvent): mixed $onTick
      *
      * Return true while active work is in progress (fast 100Hz ticking),
@@ -477,7 +458,8 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      */
     public function handleInput(string $data): void
     {
-        if (null !== $this->onInput && ($this->onInput)($data)) {
+        $event = $this->eventDispatcher->dispatch(new InputEvent($data));
+        if ($event->isPropagationStopped()) {
             return;
         }
 
