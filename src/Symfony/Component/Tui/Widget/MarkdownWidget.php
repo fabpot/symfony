@@ -38,6 +38,7 @@ use League\CommonMark\Node\Node;
 use League\CommonMark\Parser\MarkdownParser;
 use Symfony\Component\Tui\Ansi\AnsiUtils;
 use Symfony\Component\Tui\Ansi\TextWrapper;
+use Symfony\Component\Tui\Exception\LogicException;
 use Symfony\Component\Tui\Render\RenderContext;
 use Symfony\Component\Tui\Widget\Markdown\DarkTerminalTheme;
 use Symfony\Component\Tui\Widget\Util\StringUtils;
@@ -72,6 +73,10 @@ class MarkdownWidget extends AbstractWidget
         ?MarkdownParser $parser = null,
         ?Highlighter $highlighter = null,
     ) {
+        if (!class_exists(MarkdownParser::class)) {
+            throw new LogicException(\sprintf('You cannot use "%s" as the CommonMark package is not installed. Try running "composer require league/commonmark".', __CLASS__));
+        }
+
         $this->text = StringUtils::sanitizeUtf8($text);
         if (null === $parser) {
             $environment = new Environment();
@@ -80,6 +85,10 @@ class MarkdownWidget extends AbstractWidget
             $parser = new MarkdownParser($environment);
         }
         $this->parser = $parser;
+
+        if (null === $highlighter && !class_exists(Highlighter::class)) {
+            throw new LogicException(\sprintf('You cannot use "%s" as the Tempest Highlight package is not installed. Try running "composer require tempest/highlight".', __CLASS__));
+        }
         $this->highlighter = $highlighter ?? new Highlighter(new DarkTerminalTheme());
     }
 
