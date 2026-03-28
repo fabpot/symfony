@@ -18,15 +18,11 @@
     "require": {
         "php": ">=8.4",
         "revolt/event-loop": "^1.0",
-        "symfony/console": "^8.0",
         "symfony/event-dispatcher": "^8.0",
-        "symfony/mime": "^8.0",
-        "symfony/string": "^8.0",
-        "twig/twig": "^3.0"
+        "symfony/string": "^8.0"
     },
     "require-dev": {
         "league/commonmark": "^2.9",
-        "symfony/process": "^8.0",
         "tempest/highlight": "^2.16"
     },
     "autoload": {
