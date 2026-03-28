@@ -393,60 +393,6 @@ class TuiTest extends TestCase
         $this->assertSame('', $input->getValue());
     }
 
-    public function testQuitOnStopsTuiWhenMatchingKeyIsPressed()
-    {
-        $terminal = new VirtualTerminal(40, 10);
-        $tui = new Tui(terminal: $terminal);
-
-        $input = new InputWidget();
-        $tui->add($input);
-        $tui->setFocus($input);
-        $tui->quitOn('ctrl+c');
-
-        $tui->start();
-        $this->assertTrue($tui->isRunning());
-
-        $tui->handleInput("\x03");
-
-        $this->assertFalse($tui->isRunning());
-        $this->assertSame('', $input->getValue());
-    }
-
-    public function testQuitOnDoesNotConsumeNonMatchingKeys()
-    {
-        $terminal = new VirtualTerminal(40, 10);
-        $tui = new Tui(terminal: $terminal);
-
-        $input = new InputWidget();
-        $tui->add($input);
-        $tui->setFocus($input);
-        $tui->quitOn('ctrl+c');
-
-        $tui->handleInput('a');
-
-        $this->assertSame('a', $input->getValue());
-    }
-
-    public function testQuitOnRunsBeforeOnInput()
-    {
-        $terminal = new VirtualTerminal(40, 10);
-        $tui = new Tui(terminal: $terminal);
-        $tui->quitOn('ctrl+c');
-
-        $onInputCalled = false;
-        $tui->onInput(static function () use (&$onInputCalled): bool {
-            $onInputCalled = true;
-
-            return true;
-        });
-
-        $tui->start();
-        $tui->handleInput("\x03");
-
-        $this->assertFalse($tui->isRunning());
-        $this->assertFalse($onInputCalled);
-    }
-
     public function testGetById()
     {
         $terminal = new VirtualTerminal(40, 10);

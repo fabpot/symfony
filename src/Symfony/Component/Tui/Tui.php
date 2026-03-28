@@ -68,9 +68,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     private AdaptativeTicker $adaptativeTicker;
     private EventDispatcherInterface $eventDispatcher;
 
-    /** @var string[] */
-    private array $quitKeys = [];
-
     /** @var (callable(string): bool)|null */
     private $onInput;
 
@@ -319,23 +316,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     }
 
     /**
-     * Register key patterns that stop the TUI.
-     *
-     * Quit keys are checked at the very start of input handling,
-     * before the onInput interceptor and focus manager.
-     *
-     * @param string ...$keys Key identifiers (e.g., 'ctrl+c', Key::ESCAPE)
-     *
-     * @return $this
-     */
-    public function quitOn(string ...$keys): self
-    {
-        $this->quitKeys = $keys;
-
-        return $this;
-    }
-
-    /**
      * @param callable(TickEvent): mixed $onTick
      *
      * Return true while active work is in progress (fast 100Hz ticking),
@@ -497,17 +477,6 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      */
     public function handleInput(string $data): void
     {
-        // Check quit keys
-        if ([] !== $this->quitKeys) {
-            foreach ($this->quitKeys as $key) {
-                if ($this->keybindings->getParser()->matches($data, $key)) {
-                    $this->stop();
-
-                    return;
-                }
-            }
-        }
-
         if (null !== $this->onInput && ($this->onInput)($data)) {
             return;
         }
