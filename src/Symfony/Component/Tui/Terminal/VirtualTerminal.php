@@ -178,19 +178,7 @@ final class VirtualTerminal implements TerminalInterface
     {
         if (null !== $this->stdinBuffer) {
             $this->stdinBuffer->process($data);
-        }
-    }
-
-    /**
-     * Flush any pending input in the buffer.
-     *
-     * This should be called when no more input is expected (e.g., end of test input)
-     * to ensure any pending Escape key is emitted.
-     */
-    public function flushInput(): void
-    {
-        if (null !== $this->stdinBuffer) {
-            $this->stdinBuffer->flush();
+            $this->stdinBuffer?->flush();
         }
     }
 

@@ -392,6 +392,45 @@ class TuiTest extends TestCase
         $this->assertSame('', $input->getValue());
     }
 
+    public function testEscapeKeyIsDispatchedViaSimulateInput()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $received = null;
+        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$received): void {
+            $received = $event->getData();
+        });
+
+        $tui->start();
+        $terminal->simulateInput("\x1b");
+
+        $this->assertSame("\x1b", $received);
+        $tui->stop();
+    }
+
+    public function testStopFromInputEventListenerDoesNotCrash()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $keys = new Keybindings(['quit' => [Key::UP]]);
+        $tui->on(InputEvent::class, static function (InputEvent $event) use ($tui, $keys): void {
+            if ($keys->matches($event->getData(), 'quit')) {
+                $tui->stop();
+            }
+        });
+
+        $tui->start();
+        $this->assertTrue($tui->isRunning());
+
+        // Arrow Up is a multi-byte sequence dispatched during process().
+        // stop() sets stdinBuffer to null; the nullsafe flush() must not crash.
+        $terminal->simulateInput("\x1b[A");
+
+        $this->assertFalse($tui->isRunning());
+    }
+
     public function testGetById()
     {
         $terminal = new VirtualTerminal(40, 10);

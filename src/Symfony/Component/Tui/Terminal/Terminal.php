@@ -98,6 +98,12 @@ final class Terminal implements TerminalInterface
             $data = fread(\STDIN, 4096);
             if (false !== $data && '' !== $data && null !== $this->stdinBuffer) {
                 $this->stdinBuffer->process($data);
+                // Flush any pending lone ESC byte. OS terminals deliver
+                // complete escape sequences atomically, so a lone \x1b
+                // remaining after process() can only mean the Escape key.
+                // Use nullsafe because an InputEvent listener may call
+                // stop(), which sets stdinBuffer to null during process().
+                $this->stdinBuffer?->flush();
             }
         });
     }
