@@ -19,17 +19,6 @@ use Tempest\Highlight\Tokens\TokenTypeEnum;
 /**
  * Dark terminal theme for syntax highlighting.
  *
- * Colors:
- * - syntaxComment: #6a6a7a
- * - syntaxKeyword: #ff7ab2
- * - syntaxFunction: #4eb0ff
- * - syntaxVariable: #78c7ff
- * - syntaxString: #d9c97c
- * - syntaxNumber: #d9c97c
- * - syntaxType: #acf2e4
- * - syntaxOperator: #b281eb
- * - syntaxPunctuation: #e5e5e7
- *
  * @experimental
  *
  * @internal
