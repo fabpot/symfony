@@ -32,8 +32,8 @@ final class Key
     public const INSERT = 'insert';
     public const HOME = 'home';
     public const END = 'end';
-    public const PAGE_UP = 'pageUp';
-    public const PAGE_DOWN = 'pageDown';
+    public const PAGE_UP = 'page_up';
+    public const PAGE_DOWN = 'page_down';
 
     // Arrow keys
     public const UP = 'up';

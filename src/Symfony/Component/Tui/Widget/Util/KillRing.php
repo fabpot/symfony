@@ -30,7 +30,7 @@ class KillRing
     private ?string $lastAction = null;
 
     /**
-     * @var array{startLine: int, startCol: int, endLine: int, endCol: int}|null
+     * @var array{start_line: int, start_col: int, end_line: int, end_col: int}|null
      */
     private ?array $lastYank = null;
 
@@ -106,7 +106,7 @@ class KillRing
     /**
      * Record that a yank happened (for yank-pop tracking).
      *
-     * @param array{startLine: int, startCol: int, endLine: int, endCol: int} $range
+     * @param array{start_line: int, start_col: int, end_line: int, end_col: int} $range
      */
     public function recordYank(array $range): void
     {
@@ -117,7 +117,7 @@ class KillRing
     /**
      * Get the range of the last yank (for deletion before yank-pop).
      *
-     * @return array{startLine: int, startCol: int, endLine: int, endCol: int}|null
+     * @return array{start_line: int, start_col: int, end_line: int, end_col: int}|null
      */
     public function getLastYankRange(): ?array
     {

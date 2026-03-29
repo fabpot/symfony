@@ -33,16 +33,16 @@ final class EditorRenderer
     /**
      * Render the full editor output: borders + content lines + padding.
      *
-     * @param string[]                                                                          $lines              Document lines
-     * @param array{scrollOffset: int, visibleLineCount: int, linesAbove: int, linesBelow: int} $viewport           Viewport parameters
-     * @param int                                                                               $cursorLine         Current cursor line
-     * @param int                                                                               $cursorCol          Current cursor column
-     * @param int                                                                               $columns            Terminal columns
-     * @param int                                                                               $maxDisplayRows     Maximum display rows
-     * @param bool                                                                              $verticallyExpanded Whether to fill all rows
-     * @param bool                                                                              $focused            Whether the editor has focus
-     * @param CursorShape                                                                       $cursorShape        Cursor shape
-     * @param Style                                                                             $frameStyle         Style for borders
+     * @param string[]                                                                               $lines              Document lines
+     * @param array{scroll_offset: int, visible_line_count: int, lines_above: int, lines_below: int} $viewport           Viewport parameters
+     * @param int                                                                                    $cursorLine         Current cursor line
+     * @param int                                                                                    $cursorCol          Current cursor column
+     * @param int                                                                                    $columns            Terminal columns
+     * @param int                                                                                    $maxDisplayRows     Maximum display rows
+     * @param bool                                                                                   $verticallyExpanded Whether to fill all rows
+     * @param bool                                                                                   $focused            Whether the editor has focus
+     * @param CursorShape                                                                            $cursorShape        Cursor shape
+     * @param Style                                                                                  $frameStyle         Style for borders
      *
      * @return string[]
      */
@@ -61,8 +61,8 @@ final class EditorRenderer
         $result = [];
 
         // Top border (with scroll indicator if scrolled down)
-        if ($viewport['linesAbove'] > 0) {
-            $indicator = "─── ↑ {$viewport['linesAbove']} more ";
+        if ($viewport['lines_above'] > 0) {
+            $indicator = "─── ↑ {$viewport['lines_above']} more ";
             $remaining = $columns - AnsiUtils::visibleWidth($indicator);
             $result[] = $frameStyle->apply($indicator.str_repeat('─', max(0, $remaining)));
         } else {
@@ -71,8 +71,8 @@ final class EditorRenderer
 
         // Render visible lines
         $displayRowsRendered = 0;
-        for ($i = 0; $i < $viewport['visibleLineCount']; ++$i) {
-            $lineIndex = $viewport['scrollOffset'] + $i;
+        for ($i = 0; $i < $viewport['visible_line_count']; ++$i) {
+            $lineIndex = $viewport['scroll_offset'] + $i;
             $line = $lines[$lineIndex] ?? '';
             $isCursorLine = $lineIndex === $cursorLine;
 
@@ -92,8 +92,8 @@ final class EditorRenderer
         }
 
         // Bottom border (with scroll indicator if more content below)
-        if ($viewport['linesBelow'] > 0) {
-            $indicator = "─── ↓ {$viewport['linesBelow']} more ";
+        if ($viewport['lines_below'] > 0) {
+            $indicator = "─── ↓ {$viewport['lines_below']} more ";
             $remaining = $columns - AnsiUtils::visibleWidth($indicator);
             $result[] = $frameStyle->apply($indicator.str_repeat('─', max(0, $remaining)));
         } else {
@@ -126,13 +126,13 @@ final class EditorRenderer
 
             if ($isCursorLine) {
                 if ($isLastChunk) {
-                    if ($cursorCol >= $chunk['startIndex']) {
+                    if ($cursorCol >= $chunk['start_index']) {
                         $hasCursor = true;
-                        $cursorPosInChunk = $cursorCol - $chunk['startIndex'];
+                        $cursorPosInChunk = $cursorCol - $chunk['start_index'];
                     }
-                } elseif ($cursorCol >= $chunk['startIndex'] && $cursorCol < $chunk['endIndex']) {
+                } elseif ($cursorCol >= $chunk['start_index'] && $cursorCol < $chunk['end_index']) {
                     $hasCursor = true;
-                    $cursorPosInChunk = $cursorCol - $chunk['startIndex'];
+                    $cursorPosInChunk = $cursorCol - $chunk['start_index'];
                 }
             }
 

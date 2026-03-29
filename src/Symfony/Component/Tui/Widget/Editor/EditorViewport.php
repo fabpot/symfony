@@ -49,7 +49,7 @@ final class EditorViewport
      * @param int      $cursorLine Current cursor line
      * @param int      $cursorCol  Current cursor column
      *
-     * @return array{cursorLine: int, cursorCol: int}|null New cursor state, or null if unchanged
+     * @return array{cursor_line: int, cursor_col: int}|null New cursor state, or null if unchanged
      */
     public function pageScroll(array $lines, int $direction, int $pageSize, int $cursorLine, int $cursorCol): ?array
     {
@@ -57,8 +57,8 @@ final class EditorViewport
 
         if ($targetLine !== $cursorLine) {
             return [
-                'cursorLine' => $targetLine,
-                'cursorCol' => min($cursorCol, \strlen($lines[$targetLine])),
+                'cursor_line' => $targetLine,
+                'cursor_col' => min($cursorCol, \strlen($lines[$targetLine])),
             ];
         }
 
@@ -75,7 +75,7 @@ final class EditorViewport
      * @param bool     $verticallyExpanded Whether to fill all available rows
      * @param int      $minVisibleLines    Minimum visible lines
      *
-     * @return array{scrollOffset: int, visibleLineCount: int, linesAbove: int, linesBelow: int}
+     * @return array{scroll_offset: int, visible_line_count: int, lines_above: int, lines_below: int}
      */
     public function computeViewport(array $lines, int $cursorLine, int $maxDisplayRows, int $columns, bool $verticallyExpanded, int $minVisibleLines): array
     {
@@ -105,10 +105,10 @@ final class EditorViewport
         }
 
         return [
-            'scrollOffset' => $this->scrollOffset,
-            'visibleLineCount' => $visibleLineCount,
-            'linesAbove' => $this->scrollOffset,
-            'linesBelow' => max(0, $totalLines - $this->scrollOffset - $visibleLineCount),
+            'scroll_offset' => $this->scrollOffset,
+            'visible_line_count' => $visibleLineCount,
+            'lines_above' => $this->scrollOffset,
+            'lines_below' => max(0, $totalLines - $this->scrollOffset - $visibleLineCount),
         ];
     }
 

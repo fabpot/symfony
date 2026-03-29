@@ -362,8 +362,8 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
         if ($kb->matches($data, 'page_up')) {
             $result = $this->viewport->pageScroll($this->document->getLines(), -1, $this->getPageSize(), $this->document->getCursorLine(), $this->document->getCursorCol());
             if (null !== $result) {
-                $this->document->setCursorLine($result['cursorLine']);
-                $this->document->setCursorCol($result['cursorCol']);
+                $this->document->setCursorLine($result['cursor_line']);
+                $this->document->setCursorCol($result['cursor_col']);
                 $this->invalidate();
             }
 
@@ -373,8 +373,8 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
         if ($kb->matches($data, 'page_down')) {
             $result = $this->viewport->pageScroll($this->document->getLines(), 1, $this->getPageSize(), $this->document->getCursorLine(), $this->document->getCursorCol());
             if (null !== $result) {
-                $this->document->setCursorLine($result['cursorLine']);
-                $this->document->setCursorCol($result['cursorCol']);
+                $this->document->setCursorLine($result['cursor_line']);
+                $this->document->setCursorCol($result['cursor_col']);
                 $this->invalidate();
             }
 

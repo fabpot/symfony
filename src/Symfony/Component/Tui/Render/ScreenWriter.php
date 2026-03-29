@@ -121,7 +121,7 @@ final class ScreenWriter
         }
 
         $rawLines = $lines;
-        ['lines' => $lines, 'cursorPos' => $cursorPos, 'firstChanged' => $firstChanged, 'lastChanged' => $lastChanged] = $this->prepareLines($lines);
+        ['lines' => $lines, 'cursor_pos' => $cursorPos, 'first_changed' => $firstChanged, 'last_changed' => $lastChanged] = $this->prepareLines($lines);
 
         $this->writeInternal($lines, $cursorPos, $firstChanged, $lastChanged);
         $this->previousRawLines = $rawLines;
@@ -148,13 +148,13 @@ final class ScreenWriter
     /**
      * Get the final cursor position for cleanup when stopping.
      *
-     * @return array{lineCount: int, cursorRow: int}
+     * @return array{line_count: int, cursor_row: int}
      */
     public function getState(): array
     {
         return [
-            'lineCount' => \count($this->previousLines),
-            'cursorRow' => $this->hardwareCursorRow,
+            'line_count' => \count($this->previousLines),
+            'cursor_row' => $this->hardwareCursorRow,
         ];
     }
 
@@ -436,7 +436,7 @@ final class ScreenWriter
      *
      * @param string[] $lines
      *
-     * @return array{lines: string[], cursorPos: array{row: int, col: int, shape: int}|null, firstChanged: int, lastChanged: int}
+     * @return array{lines: string[], cursor_pos: array{row: int, col: int, shape: int}|null, first_changed: int, last_changed: int}
      */
     private function prepareLines(array $lines): array
     {
@@ -498,9 +498,9 @@ final class ScreenWriter
 
         return [
             'lines' => $lines,
-            'cursorPos' => $cursorPos,
-            'firstChanged' => $firstChanged,
-            'lastChanged' => $lastChanged,
+            'cursor_pos' => $cursorPos,
+            'first_changed' => $firstChanged,
+            'last_changed' => $lastChanged,
         ];
     }
 

@@ -30,7 +30,7 @@ final class TickScheduler
      * @var array<string, array{
      *     callback: callable(): void,
      *     interval: float,
-     *     nextRunAt: float
+     *     next_run_at: float
      * }>
      */
     private array $intervals = [];
@@ -48,7 +48,7 @@ final class TickScheduler
         $this->intervals[$id] = [
             'callback' => $callback,
             'interval' => $intervalSeconds,
-            'nextRunAt' => microtime(true) + $intervalSeconds,
+            'next_run_at' => microtime(true) + $intervalSeconds,
         ];
 
         return $id;
@@ -78,11 +78,11 @@ final class TickScheduler
                 continue;
             }
 
-            if ($interval['nextRunAt'] > $now) {
+            if ($interval['next_run_at'] > $now) {
                 continue;
             }
 
-            $this->intervals[$id]['nextRunAt'] = $now + $interval['interval'];
+            $this->intervals[$id]['next_run_at'] = $now + $interval['interval'];
             ($interval['callback'])();
         }
     }
@@ -97,7 +97,7 @@ final class TickScheduler
         $nextAt = null;
 
         foreach ($this->intervals as $interval) {
-            $nextAt = null === $nextAt ? $interval['nextRunAt'] : min($nextAt, $interval['nextRunAt']);
+            $nextAt = null === $nextAt ? $interval['next_run_at'] : min($nextAt, $interval['next_run_at']);
         }
 
         return max(0.001, $nextAt - $now);

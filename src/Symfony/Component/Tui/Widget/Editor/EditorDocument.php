@@ -37,9 +37,9 @@ final class EditorDocument
     private KillRing $killRing;
 
     // Undo/Redo
-    /** @var array<int, array{lines: string[], cursorLine: int, cursorCol: int}> */
+    /** @var array<int, array{lines: string[], cursor_line: int, cursor_col: int}> */
     private array $undoStack = [];
-    /** @var array<int, array{lines: string[], cursorLine: int, cursorCol: int}> */
+    /** @var array<int, array{lines: string[], cursor_line: int, cursor_col: int}> */
     private array $redoStack = [];
 
     // Character jump mode
@@ -548,10 +548,10 @@ final class EditorDocument
         $this->insertTextAtCursor($text);
 
         $this->killRing->recordYank([
-            'startLine' => $startLine,
-            'startCol' => $startCol,
-            'endLine' => $this->cursorLine,
-            'endCol' => $this->cursorCol,
+            'start_line' => $startLine,
+            'start_col' => $startCol,
+            'end_line' => $this->cursorLine,
+            'end_col' => $this->cursorCol,
         ]);
 
         return true;
@@ -577,10 +577,10 @@ final class EditorDocument
         $this->insertTextAtCursor($text);
 
         $this->killRing->recordYank([
-            'startLine' => $startLine,
-            'startCol' => $startCol,
-            'endLine' => $this->cursorLine,
-            'endCol' => $this->cursorCol,
+            'start_line' => $startLine,
+            'start_col' => $startCol,
+            'end_line' => $this->cursorLine,
+            'end_col' => $this->cursorCol,
         ]);
 
         return true;
@@ -680,25 +680,25 @@ final class EditorDocument
     }
 
     /**
-     * @return array{lines: string[], cursorLine: int, cursorCol: int}
+     * @return array{lines: string[], cursor_line: int, cursor_col: int}
      */
     private function createSnapshot(): array
     {
         return [
             'lines' => $this->lines,
-            'cursorLine' => $this->cursorLine,
-            'cursorCol' => $this->cursorCol,
+            'cursor_line' => $this->cursorLine,
+            'cursor_col' => $this->cursorCol,
         ];
     }
 
     /**
-     * @param array{lines: string[], cursorLine: int, cursorCol: int} $snapshot
+     * @param array{lines: string[], cursor_line: int, cursor_col: int} $snapshot
      */
     private function restoreSnapshot(array $snapshot): void
     {
         $this->lines = $snapshot['lines'];
-        $this->cursorLine = $snapshot['cursorLine'];
-        $this->cursorCol = $snapshot['cursorCol'];
+        $this->cursorLine = $snapshot['cursor_line'];
+        $this->cursorCol = $snapshot['cursor_col'];
     }
 
     private function deleteYankedText(): void
@@ -708,10 +708,10 @@ final class EditorDocument
             return;
         }
 
-        $startLine = $range['startLine'];
-        $startCol = $range['startCol'];
-        $endLine = $range['endLine'];
-        $endCol = $range['endCol'];
+        $startLine = $range['start_line'];
+        $startCol = $range['start_col'];
+        $endLine = $range['end_line'];
+        $endCol = $range['end_col'];
 
         if ($startLine === $endLine) {
             $line = $this->lines[$startLine];
