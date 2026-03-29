@@ -44,10 +44,6 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
     private array $children = [];
     private bool $verticallyExpanded = false;
 
-    public function __construct()
-    {
-    }
-
     /**
      * @return $this
      */
