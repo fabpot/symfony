@@ -12,6 +12,7 @@
 namespace Symfony\Component\Tui\Widget;
 
 use Symfony\Component\Tui\Ansi\AnsiUtils;
+use Symfony\Component\Tui\Exception\InvalidArgumentException;
 use Symfony\Component\Tui\Loop\PeriodicStepper;
 use Symfony\Component\Tui\Render\RenderContext;
 
@@ -104,7 +105,7 @@ class LoaderWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setMessage(string $message): self
+    public function setMessage(string $message): static
     {
         if ($this->message !== $message) {
             $this->message = $message;
@@ -123,7 +124,7 @@ class LoaderWidget extends AbstractWidget
         $frames = array_values($frames);
 
         if (\count($frames) < 2) {
-            throw new \InvalidArgumentException('Must have at least 2 indicator frame characters.');
+            throw new InvalidArgumentException('Must have at least 2 indicator frame characters.');
         }
 
         self::$styles[$name] = $frames;
@@ -132,10 +133,10 @@ class LoaderWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setSpinner(string $name): self
+    public function setSpinner(string $name): static
     {
         if (!isset(self::$styles[$name])) {
-            throw new \InvalidArgumentException(\sprintf('Unknown loader style "%s". Available styles: "%s".', $name, implode('", "', array_keys(self::$styles))));
+            throw new InvalidArgumentException(\sprintf('Unknown loader style "%s". Available styles: "%s".', $name, implode('", "', array_keys(self::$styles))));
         }
 
         $this->frames = self::$styles[$name];
@@ -148,7 +149,7 @@ class LoaderWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setIntervalMs(int $intervalMs): self
+    public function setIntervalMs(int $intervalMs): static
     {
         $this->frameStepper->setIntervalMs($intervalMs);
 
@@ -162,7 +163,7 @@ class LoaderWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setFinishedIndicator(string $finishedIndicator): self
+    public function setFinishedIndicator(string $finishedIndicator): static
     {
         $this->finishedIndicator = $finishedIndicator;
         $this->invalidate();
