@@ -369,22 +369,12 @@ final class StdinBuffer
      */
     private function getUtf8CharLength(int $ord): int
     {
-        if ($ord < 0x80) {
-            return 1;
-        }
-        if ($ord < 0xC0) {
-            return 1;
-        } // Invalid, treat as single byte
-        if ($ord < 0xE0) {
-            return 2;
-        }
-        if ($ord < 0xF0) {
-            return 3;
-        }
-        if ($ord < 0xF8) {
-            return 4;
-        }
-
-        return 1; // Invalid, treat as single byte
+        return match (true) {
+            $ord < 0xC0 => 1, // ASCII or invalid continuation byte
+            $ord < 0xE0 => 2,
+            $ord < 0xF0 => 3,
+            $ord < 0xF8 => 4,
+            default => 1, // Invalid, treat as single byte
+        };
     }
 }
