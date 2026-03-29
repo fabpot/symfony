@@ -39,7 +39,7 @@ final class KeyParser
         'enter' => 13,
         'space' => 32,
         'backspace' => 127,
-        'kpEnter' => 57414,
+        'kp_enter' => 57414,
     ];
 
     private const ARROW_CODEPOINTS = [
@@ -52,8 +52,8 @@ final class KeyParser
     private const FUNCTIONAL_CODEPOINTS = [
         'delete' => -10,
         'insert' => -11,
-        'pageUp' => -12,
-        'pageDown' => -13,
+        'page_up' => -12,
+        'page_down' => -13,
         'home' => -14,
         'end' => -15,
     ];
@@ -67,8 +67,8 @@ final class KeyParser
         'end' => ["\x1b[F", "\x1bOF", "\x1b[4~", "\x1b[8~"],
         'insert' => ["\x1b[2~"],
         'delete' => ["\x1b[3~"],
-        'pageUp' => ["\x1b[5~", "\x1b[[5~"],
-        'pageDown' => ["\x1b[6~", "\x1b[[6~"],
+        'page_up' => ["\x1b[5~", "\x1b[[5~"],
+        'page_down' => ["\x1b[6~", "\x1b[[6~"],
         'clear' => ["\x1b[E", "\x1bOE"],
         'f1' => ["\x1bOP", "\x1b[11~", "\x1b[[A"],
         'f2' => ["\x1bOQ", "\x1b[12~", "\x1b[[B"],
@@ -114,8 +114,8 @@ final class KeyParser
         'clear' => ["\x1b[e"],
         'insert' => ["\x1b[2$"],
         'delete' => ["\x1b[3$"],
-        'pageUp' => ["\x1b[5$"],
-        'pageDown' => ["\x1b[6$"],
+        'page_up' => ["\x1b[5$"],
+        'page_down' => ["\x1b[6$"],
         'home' => ["\x1b[7$"],
         'end' => ["\x1b[8$"],
     ];
@@ -128,8 +128,8 @@ final class KeyParser
         'clear' => ["\x1bOe"],
         'insert' => ["\x1b[2^"],
         'delete' => ["\x1b[3^"],
-        'pageUp' => ["\x1b[5^"],
-        'pageDown' => ["\x1b[6^"],
+        'page_up' => ["\x1b[5^"],
+        'page_down' => ["\x1b[6^"],
         'home' => ["\x1b[7^"],
         'end' => ["\x1b[8^"],
     ];
@@ -150,8 +150,8 @@ final class KeyParser
         "\x1b[2^" => 'ctrl+insert',
         "\x1b[3$" => 'shift+delete',
         "\x1b[3^" => 'ctrl+delete',
-        "\x1b[[5~" => 'pageUp',
-        "\x1b[[6~" => 'pageDown',
+        "\x1b[[5~" => 'page_up',
+        "\x1b[[6~" => 'page_down',
         "\x1b[a" => 'shift+up',
         "\x1b[b" => 'shift+down',
         "\x1b[c" => 'shift+right',
@@ -160,12 +160,12 @@ final class KeyParser
         "\x1bOb" => 'ctrl+down',
         "\x1bOc" => 'ctrl+right',
         "\x1bOd" => 'ctrl+left',
-        "\x1b[5$" => 'shift+pageUp',
-        "\x1b[6$" => 'shift+pageDown',
+        "\x1b[5$" => 'shift+page_up',
+        "\x1b[6$" => 'shift+page_down',
         "\x1b[7$" => 'shift+home',
         "\x1b[8$" => 'shift+end',
-        "\x1b[5^" => 'ctrl+pageUp',
-        "\x1b[6^" => 'ctrl+pageDown',
+        "\x1b[5^" => 'ctrl+page_up',
+        "\x1b[6^" => 'ctrl+page_down',
         "\x1b[7^" => 'ctrl+home',
         "\x1b[8^" => 'ctrl+end',
         "\x1bOP" => 'f1',
@@ -216,7 +216,7 @@ final class KeyParser
     /**
      * Parse raw input and return the key identifier.
      *
-     * @return array{key: string, modifiers: array<string>, eventType: int}|null
+     * @return array{key: string, modifiers: array<string>, event_type: int}|null
      */
     public function parse(string $data): ?array
     {
@@ -238,7 +238,7 @@ final class KeyParser
         return [
             'key' => $key,
             'modifiers' => $modifiers,
-            'eventType' => $parsed['eventType'],
+            'event_type' => $parsed['event_type'],
         ];
     }
 
@@ -275,7 +275,7 @@ final class KeyParser
     /**
      * Parse input data into a key identifier and event type.
      *
-     * @return array{key: string, eventType: int}|null
+     * @return array{key: string, event_type: int}|null
      */
     private function parseKey(string $data): ?array
     {
@@ -294,22 +294,22 @@ final class KeyParser
                     $mods = $this->modsFromFlags($kitty['modifier']);
                     $key = [] !== $mods ? implode('+', $mods).'+'.$keyName : $keyName;
 
-                    return ['key' => $key, 'eventType' => $kitty['eventType']];
+                    return ['key' => $key, 'event_type' => $kitty['event_type']];
                 }
             }
         }
 
         if ($this->kittyProtocolActive) {
             if ("\x1b\r" === $data || "\n" === $data) {
-                return ['key' => 'shift+enter', 'eventType' => self::EVENT_PRESS];
+                return ['key' => 'shift+enter', 'event_type' => self::EVENT_PRESS];
             }
         }
 
         if (isset(self::LEGACY_SEQUENCE_KEY_IDS[$data])) {
-            return ['key' => self::LEGACY_SEQUENCE_KEY_IDS[$data], 'eventType' => self::EVENT_PRESS];
+            return ['key' => self::LEGACY_SEQUENCE_KEY_IDS[$data], 'event_type' => self::EVENT_PRESS];
         }
 
-        $press = static fn (string $key): array => ['key' => $key, 'eventType' => self::EVENT_PRESS];
+        $press = static fn (string $key): array => ['key' => $key, 'event_type' => self::EVENT_PRESS];
 
         $matched = match ($data) {
             "\x1b" => $press('escape'),
@@ -334,8 +334,8 @@ final class KeyParser
             "\x1b[H" => $press('home'),
             "\x1b[F" => $press('end'),
             "\x1b[3~" => $press('delete'),
-            "\x1b[5~" => $press('pageUp'),
-            "\x1b[6~" => $press('pageDown'),
+            "\x1b[5~" => $press('page_up'),
+            "\x1b[6~" => $press('page_down'),
             default => null,
         };
         if (null !== $matched) {
@@ -386,7 +386,7 @@ final class KeyParser
     }
 
     /**
-     * @return array{codepoint: int, modifier: int, eventType: int}|null
+     * @return array{codepoint: int, modifier: int, event_type: int}|null
      */
     private function parseKittySequence(string $data): ?array
     {
@@ -403,7 +403,7 @@ final class KeyParser
             return [
                 'codepoint' => $codepoint,
                 'modifier' => $modifierValue - 1,
-                'eventType' => $eventType,
+                'event_type' => $eventType,
             ];
         }
 
@@ -420,7 +420,7 @@ final class KeyParser
             return [
                 'codepoint' => $arrowCodes[$match[3]],
                 'modifier' => $modifierValue - 1,
-                'eventType' => $eventType,
+                'event_type' => $eventType,
             ];
         }
 
@@ -431,8 +431,8 @@ final class KeyParser
             $funcCodes = [
                 2 => self::FUNCTIONAL_CODEPOINTS['insert'],
                 3 => self::FUNCTIONAL_CODEPOINTS['delete'],
-                5 => self::FUNCTIONAL_CODEPOINTS['pageUp'],
-                6 => self::FUNCTIONAL_CODEPOINTS['pageDown'],
+                5 => self::FUNCTIONAL_CODEPOINTS['page_up'],
+                6 => self::FUNCTIONAL_CODEPOINTS['page_down'],
                 7 => self::FUNCTIONAL_CODEPOINTS['home'],
                 8 => self::FUNCTIONAL_CODEPOINTS['end'],
             ];
@@ -441,7 +441,7 @@ final class KeyParser
                 return [
                     'codepoint' => $funcCodes[$keyNum],
                     'modifier' => $modifierValue - 1,
-                    'eventType' => $eventType,
+                    'event_type' => $eventType,
                 ];
             }
         }
@@ -456,7 +456,7 @@ final class KeyParser
             return [
                 'codepoint' => $codepoint,
                 'modifier' => $modifierValue - 1,
-                'eventType' => $eventType,
+                'event_type' => $eventType,
             ];
         }
 
@@ -481,15 +481,15 @@ final class KeyParser
         return match ($codepoint) {
             self::CODEPOINTS['escape'] => 'escape',
             self::CODEPOINTS['tab'] => 'tab',
-            self::CODEPOINTS['enter'], self::CODEPOINTS['kpEnter'] => 'enter',
+            self::CODEPOINTS['enter'], self::CODEPOINTS['kp_enter'] => 'enter',
             self::CODEPOINTS['space'] => 'space',
             self::CODEPOINTS['backspace'] => 'backspace',
             self::FUNCTIONAL_CODEPOINTS['delete'] => 'delete',
             self::FUNCTIONAL_CODEPOINTS['insert'] => 'insert',
             self::FUNCTIONAL_CODEPOINTS['home'] => 'home',
             self::FUNCTIONAL_CODEPOINTS['end'] => 'end',
-            self::FUNCTIONAL_CODEPOINTS['pageUp'] => 'pageUp',
-            self::FUNCTIONAL_CODEPOINTS['pageDown'] => 'pageDown',
+            self::FUNCTIONAL_CODEPOINTS['page_up'] => 'page_up',
+            self::FUNCTIONAL_CODEPOINTS['page_down'] => 'page_down',
             self::ARROW_CODEPOINTS['up'] => 'up',
             self::ARROW_CODEPOINTS['down'] => 'down',
             self::ARROW_CODEPOINTS['left'] => 'left',
@@ -595,7 +595,7 @@ final class KeyParser
                 if ($shift && !$ctrl && !$alt) {
                     if (
                         $this->matchesKittySequence($data, self::CODEPOINTS['enter'], self::MOD_SHIFT)
-                        || $this->matchesKittySequence($data, self::CODEPOINTS['kpEnter'], self::MOD_SHIFT)
+                        || $this->matchesKittySequence($data, self::CODEPOINTS['kp_enter'], self::MOD_SHIFT)
                     ) {
                         return true;
                     }
@@ -611,7 +611,7 @@ final class KeyParser
                 if ($alt && !$ctrl && !$shift) {
                     if (
                         $this->matchesKittySequence($data, self::CODEPOINTS['enter'], self::MOD_ALT)
-                        || $this->matchesKittySequence($data, self::CODEPOINTS['kpEnter'], self::MOD_ALT)
+                        || $this->matchesKittySequence($data, self::CODEPOINTS['kp_enter'], self::MOD_ALT)
                     ) {
                         return true;
                     }
@@ -629,11 +629,11 @@ final class KeyParser
                         || (!$this->kittyProtocolActive && "\n" === $data)
                         || "\x1bOM" === $data
                         || $this->matchesKittySequence($data, self::CODEPOINTS['enter'], 0)
-                        || $this->matchesKittySequence($data, self::CODEPOINTS['kpEnter'], 0);
+                        || $this->matchesKittySequence($data, self::CODEPOINTS['kp_enter'], 0);
                 }
 
                 return $this->matchesKittySequence($data, self::CODEPOINTS['enter'], $modifier)
-                    || $this->matchesKittySequence($data, self::CODEPOINTS['kpEnter'], $modifier);
+                    || $this->matchesKittySequence($data, self::CODEPOINTS['kp_enter'], $modifier);
 
             case 'backspace':
                 if ($alt && !$ctrl && !$shift) {
@@ -700,27 +700,27 @@ final class KeyParser
 
                 return $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['end'], $modifier);
 
-            case 'pageup':
+            case 'page_up':
                 if (0 === $modifier) {
-                    return $this->matchesLegacySequence($data, self::LEGACY_KEY_SEQUENCES['pageUp'])
-                        || $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['pageUp'], 0);
+                    return $this->matchesLegacySequence($data, self::LEGACY_KEY_SEQUENCES['page_up'])
+                        || $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['page_up'], 0);
                 }
-                if ($this->matchesLegacyModifierSequence($data, 'pageUp', $modifier)) {
+                if ($this->matchesLegacyModifierSequence($data, 'page_up', $modifier)) {
                     return true;
                 }
 
-                return $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['pageUp'], $modifier);
+                return $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['page_up'], $modifier);
 
-            case 'pagedown':
+            case 'page_down':
                 if (0 === $modifier) {
-                    return $this->matchesLegacySequence($data, self::LEGACY_KEY_SEQUENCES['pageDown'])
-                        || $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['pageDown'], 0);
+                    return $this->matchesLegacySequence($data, self::LEGACY_KEY_SEQUENCES['page_down'])
+                        || $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['page_down'], 0);
                 }
-                if ($this->matchesLegacyModifierSequence($data, 'pageDown', $modifier)) {
+                if ($this->matchesLegacyModifierSequence($data, 'page_down', $modifier)) {
                     return true;
                 }
 
-                return $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['pageDown'], $modifier);
+                return $this->matchesKittySequence($data, self::FUNCTIONAL_CODEPOINTS['page_down'], $modifier);
 
             case 'up':
                 if ($alt && !$ctrl && !$shift) {

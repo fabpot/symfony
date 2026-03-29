@@ -312,7 +312,7 @@ class TailwindStylesheet extends StyleSheet
             default => null,
         };
         if (null !== $textAlign) {
-            return ['textAlign' => $textAlign];
+            return ['text_align' => $textAlign];
         }
 
         // === TEXT COLOR ===
@@ -357,7 +357,7 @@ class TailwindStylesheet extends StyleSheet
             default => null,
         };
         if (null !== $verticalAlign) {
-            return ['verticalAlign' => $verticalAlign];
+            return ['vertical_align' => $verticalAlign];
         }
 
         // === SIMPLE KEYWORDS ===
@@ -459,10 +459,10 @@ class TailwindStylesheet extends StyleSheet
             direction: $slots['direction'] ?? null,
             gap: $slots['gap'] ?? null,
             hidden: $slots['hidden'] ?? null,
-            textAlign: $slots['textAlign'] ?? null,
+            textAlign: $slots['text_align'] ?? null,
             font: $slots['font'] ?? null,
             align: $slots['align'] ?? null,
-            verticalAlign: $slots['verticalAlign'] ?? null,
+            verticalAlign: $slots['vertical_align'] ?? null,
             flex: $slots['flex'] ?? null,
         );
     }

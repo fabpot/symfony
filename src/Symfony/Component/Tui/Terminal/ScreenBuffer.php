@@ -36,7 +36,7 @@ final class ScreenBuffer
      *     strikethrough: bool,
      *     fg: string|null,
      *     bg: string|null,
-     *     underlineColor: string|null
+     *     underline_color: string|null
      * }
      */
     private const DEFAULT_STYLE_STATE = [
@@ -49,7 +49,7 @@ final class ScreenBuffer
         'strikethrough' => false,
         'fg' => null,
         'bg' => null,
-        'underlineColor' => null,
+        'underline_color' => null,
     ];
 
     /** @var array<int, array<int, array{char: string, style: string}>> */
@@ -72,7 +72,7 @@ final class ScreenBuffer
      *     strikethrough: bool,
      *     fg: string|null,
      *     bg: string|null,
-     *     underlineColor: string|null
+     *     underline_color: string|null
      * }
      */
     private array $styleState = self::DEFAULT_STYLE_STATE;
@@ -435,8 +435,8 @@ final class ScreenBuffer
         if (null !== $this->styleState['bg']) {
             $codes[] = $this->styleState['bg'];
         }
-        if (null !== $this->styleState['underlineColor']) {
-            $codes[] = $this->styleState['underlineColor'];
+        if (null !== $this->styleState['underline_color']) {
+            $codes[] = $this->styleState['underline_color'];
         }
 
         if ([] === $codes) {
@@ -744,11 +744,11 @@ final class ScreenBuffer
                     if (isset($codes[$i + 1])) {
                         if (5 === $codes[$i + 1] && isset($codes[$i + 2])) {
                             // 256-color mode
-                            $this->styleState['underlineColor'] = '58;5;'.$codes[$i + 2];
+                            $this->styleState['underline_color'] = '58;5;'.$codes[$i + 2];
                             $i += 2;
                         } elseif (2 === $codes[$i + 1] && isset($codes[$i + 2], $codes[$i + 3], $codes[$i + 4])) {
                             // True-color mode
-                            $this->styleState['underlineColor'] = '58;2;'.$codes[$i + 2].';'.$codes[$i + 3].';'.$codes[$i + 4];
+                            $this->styleState['underline_color'] = '58;2;'.$codes[$i + 2].';'.$codes[$i + 3].';'.$codes[$i + 4];
                             $i += 4;
                         }
                     }
@@ -756,7 +756,7 @@ final class ScreenBuffer
 
                     // Default underline color
                 case 59:
-                    $this->styleState['underlineColor'] = null;
+                    $this->styleState['underline_color'] = null;
                     break;
             }
 

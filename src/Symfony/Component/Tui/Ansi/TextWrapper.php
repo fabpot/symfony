@@ -33,27 +33,27 @@ final class TextWrapper
      * @param string $line  A single line of text (no newlines)
      * @param int    $width Maximum visible width per chunk
      *
-     * @return list<array{text: string, startIndex: int, endIndex: int}>
+     * @return list<array{text: string, start_index: int, end_index: int}>
      */
     public static function wrapLineIntoChunks(string $line, int $width): array
     {
         if ('' === $line) {
-            return [['text' => '', 'startIndex' => 0, 'endIndex' => 0]];
+            return [['text' => '', 'start_index' => 0, 'end_index' => 0]];
         }
 
         if ($width <= 0) {
-            return [['text' => $line, 'startIndex' => 0, 'endIndex' => \strlen($line)]];
+            return [['text' => $line, 'start_index' => 0, 'end_index' => \strlen($line)]];
         }
 
         $lineWidth = AnsiUtils::visibleWidth($line);
         if ($lineWidth <= $width) {
-            return [['text' => $line, 'startIndex' => 0, 'endIndex' => \strlen($line)]];
+            return [['text' => $line, 'start_index' => 0, 'end_index' => \strlen($line)]];
         }
 
         $chunks = [];
         $graphemes = grapheme_str_split($line);
         if (false === $graphemes) {
-            return [['text' => $line, 'startIndex' => 0, 'endIndex' => \strlen($line)]];
+            return [['text' => $line, 'start_index' => 0, 'end_index' => \strlen($line)]];
         }
 
         $currentWidth = 0;
@@ -79,8 +79,8 @@ final class TextWrapper
                     // Backtrack to last wrap opportunity (word boundary).
                     $chunks[] = [
                         'text' => substr($line, $chunkStart, $wrapOppIndex - $chunkStart),
-                        'startIndex' => $chunkStart,
-                        'endIndex' => $wrapOppIndex,
+                        'start_index' => $chunkStart,
+                        'end_index' => $wrapOppIndex,
                     ];
                     $chunkStart = $wrapOppIndex;
                     $currentWidth -= $wrapOppWidth;
@@ -88,8 +88,8 @@ final class TextWrapper
                     // No word boundary available: force-break at current position.
                     $chunks[] = [
                         'text' => substr($line, $chunkStart, $byteOffset - $chunkStart),
-                        'startIndex' => $chunkStart,
-                        'endIndex' => $byteOffset,
+                        'start_index' => $chunkStart,
+                        'end_index' => $byteOffset,
                     ];
                     $chunkStart = $byteOffset;
                     $currentWidth = 0;
@@ -113,8 +113,8 @@ final class TextWrapper
         // Push the final chunk.
         $chunks[] = [
             'text' => substr($line, $chunkStart),
-            'startIndex' => $chunkStart,
-            'endIndex' => \strlen($line),
+            'start_index' => $chunkStart,
+            'end_index' => \strlen($line),
         ];
 
         return $chunks;
@@ -196,7 +196,7 @@ final class TextWrapper
         foreach ($tokens as $token) {
             $tokenText = $token['text'];
             $tokenVisibleLength = $token['width'];
-            $isWhitespace = $token['isWhitespace'];
+            $isWhitespace = $token['is_whitespace'];
 
             // Token itself is too long - break it character by character
             if ($tokenVisibleLength > $width && !$isWhitespace) {
@@ -218,7 +218,7 @@ final class TextWrapper
                     $wrapped[] = $brokenLines[$i];
                 }
                 $currentLine = $brokenLines[$lastIndex] ?? '';
-                $currentVisibleLength = $broken['lastWidth'];
+                $currentVisibleLength = $broken['last_width'];
                 continue;
             }
 
@@ -248,7 +248,7 @@ final class TextWrapper
                 $currentVisibleLength += $tokenVisibleLength;
             }
 
-            if ($token['hasAnsi']) {
+            if ($token['has_ansi']) {
                 $tracker->processText($tokenText);
             }
         }
@@ -264,7 +264,7 @@ final class TextWrapper
     /**
      * Split text into tokens (words and whitespace runs) while keeping ANSI codes attached.
      *
-     * @return array<int, array{text: string, width: int, isWhitespace: bool, hasAnsi: bool}>
+     * @return array<int, array{text: string, width: int, is_whitespace: bool, has_ansi: bool}>
      */
     private static function splitIntoTokensWithAnsi(string $text): array
     {
@@ -308,8 +308,8 @@ final class TextWrapper
                 $tokens[] = [
                     'text' => $current,
                     'width' => $needsUnicodeWidth ? AnsiUtils::visibleWidth($current) : $currentWidth,
-                    'isWhitespace' => $inWhitespace,
-                    'hasAnsi' => $currentHasAnsi,
+                    'is_whitespace' => $inWhitespace,
+                    'has_ansi' => $currentHasAnsi,
                 ];
                 $current = '';
                 $currentWidth = 0;
@@ -364,8 +364,8 @@ final class TextWrapper
             $tokens[] = [
                 'text' => $current,
                 'width' => $needsUnicodeWidth ? AnsiUtils::visibleWidth($current) : $currentWidth,
-                'isWhitespace' => $inWhitespace,
-                'hasAnsi' => $currentHasAnsi,
+                'is_whitespace' => $inWhitespace,
+                'has_ansi' => $currentHasAnsi,
             ];
         }
 
@@ -375,7 +375,7 @@ final class TextWrapper
     /**
      * Break a long word into multiple lines.
      *
-     * @return array{lines: string[], lastWidth: int}
+     * @return array{lines: string[], last_width: int}
      */
     private static function breakLongWord(string $word, int $width, AnsiCodeTracker $tracker): array
     {
@@ -453,9 +453,9 @@ final class TextWrapper
         }
 
         if ([] === $lines) {
-            return ['lines' => [''], 'lastWidth' => 0];
+            return ['lines' => [''], 'last_width' => 0];
         }
 
-        return ['lines' => $lines, 'lastWidth' => $currentWidth];
+        return ['lines' => $lines, 'last_width' => $currentWidth];
     }
 }

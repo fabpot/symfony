@@ -102,8 +102,8 @@ class TextWrapperTest extends TestCase
         $this->assertCount(\count($expected), $chunks);
         foreach ($expected as $i => $exp) {
             $this->assertSame($exp['text'], $chunks[$i]['text'], "Chunk $i text");
-            $this->assertSame($exp['startIndex'], $chunks[$i]['startIndex'], "Chunk $i startIndex");
-            $this->assertSame($exp['endIndex'], $chunks[$i]['endIndex'], "Chunk $i endIndex");
+            $this->assertSame($exp['start_index'], $chunks[$i]['start_index'], "Chunk $i startIndex");
+            $this->assertSame($exp['end_index'], $chunks[$i]['end_index'], "Chunk $i endIndex");
         }
     }
 
@@ -112,8 +112,8 @@ class TextWrapperTest extends TestCase
      */
     public static function chunksBasicProvider(): iterable
     {
-        yield 'empty string' => ['', 20, [['text' => '', 'startIndex' => 0, 'endIndex' => 0]]];
-        yield 'short line' => ['Hello', 20, [['text' => 'Hello', 'startIndex' => 0, 'endIndex' => 5]]];
+        yield 'empty string' => ['', 20, [['text' => '', 'start_index' => 0, 'end_index' => 0]]];
+        yield 'short line' => ['Hello', 20, [['text' => 'Hello', 'start_index' => 0, 'end_index' => 5]]];
     }
 
     public function testChunksWordWrap()
@@ -124,14 +124,14 @@ class TextWrapperTest extends TestCase
         $this->assertCount(2, $chunks);
 
         // First chunk: "hello " (includes trailing space) at [0, 6)
-        $this->assertSame(0, $chunks[0]['startIndex']);
-        $this->assertSame(6, $chunks[0]['endIndex']);
+        $this->assertSame(0, $chunks[0]['start_index']);
+        $this->assertSame(6, $chunks[0]['end_index']);
         $this->assertStringContainsString('hello', $chunks[0]['text']);
 
         // Second chunk: "world" at [6, 11)
         $this->assertSame('world', $chunks[1]['text']);
-        $this->assertSame(6, $chunks[1]['startIndex']);
-        $this->assertSame(11, $chunks[1]['endIndex']);
+        $this->assertSame(6, $chunks[1]['start_index']);
+        $this->assertSame(11, $chunks[1]['end_index']);
     }
 
     public function testChunksMultipleWraps()
@@ -143,10 +143,10 @@ class TextWrapperTest extends TestCase
 
         // Each chunk's startIndex should match the start of its word
         // (the space between words is consumed by wrapping)
-        $this->assertSame(0, $chunks[0]['startIndex']);
-        $this->assertSame(3, $chunks[1]['startIndex']);
-        $this->assertSame(6, $chunks[2]['startIndex']);
-        $this->assertSame(9, $chunks[3]['startIndex']);
+        $this->assertSame(0, $chunks[0]['start_index']);
+        $this->assertSame(3, $chunks[1]['start_index']);
+        $this->assertSame(6, $chunks[2]['start_index']);
+        $this->assertSame(9, $chunks[3]['start_index']);
 
         // Verify text content
         $this->assertStringContainsString('aa', $chunks[0]['text']);
@@ -163,12 +163,12 @@ class TextWrapperTest extends TestCase
         $this->assertGreaterThan(1, \count($chunks));
 
         // Chunks should cover the entire string
-        $this->assertSame(0, $chunks[0]['startIndex']);
-        $this->assertSame(\strlen('abcdefghij'), $chunks[\count($chunks) - 1]['endIndex']);
+        $this->assertSame(0, $chunks[0]['start_index']);
+        $this->assertSame(\strlen('abcdefghij'), $chunks[\count($chunks) - 1]['end_index']);
 
         // No gaps between chunks
         for ($i = 1; $i < \count($chunks); ++$i) {
-            $this->assertSame($chunks[$i - 1]['endIndex'], $chunks[$i]['startIndex'],
+            $this->assertSame($chunks[$i - 1]['end_index'], $chunks[$i]['start_index'],
                 'Chunks should be contiguous for force-broken words');
         }
     }
@@ -181,8 +181,8 @@ class TextWrapperTest extends TestCase
         // "def" should be in the last chunk starting at byte 6
         $lastChunk = $chunks[\count($chunks) - 1];
         $this->assertSame('def', $lastChunk['text']);
-        $this->assertSame(6, $lastChunk['startIndex']);
-        $this->assertSame(9, $lastChunk['endIndex']);
+        $this->assertSame(6, $lastChunk['start_index']);
+        $this->assertSame(9, $lastChunk['end_index']);
     }
 
     public function testChunksAllRespectWidth()
@@ -201,8 +201,8 @@ class TextWrapperTest extends TestCase
         }
 
         // First chunk starts at 0, last chunk ends at string length
-        $this->assertSame(0, $chunks[0]['startIndex']);
-        $this->assertSame(\strlen($text), $chunks[\count($chunks) - 1]['endIndex']);
+        $this->assertSame(0, $chunks[0]['start_index']);
+        $this->assertSame(\strlen($text), $chunks[\count($chunks) - 1]['end_index']);
     }
 
     public function testChunksUtf8()
@@ -213,7 +213,7 @@ class TextWrapperTest extends TestCase
         $this->assertCount(2, $chunks);
         $this->assertStringContainsString('café', $chunks[0]['text']);
         // "café " is 6 bytes (c=1, a=1, f=1, é=2, space=1)
-        $this->assertSame(6, $chunks[1]['startIndex']);
+        $this->assertSame(6, $chunks[1]['start_index']);
         $this->assertSame('world', $chunks[1]['text']);
     }
 

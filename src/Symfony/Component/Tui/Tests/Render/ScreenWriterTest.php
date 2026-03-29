@@ -528,13 +528,13 @@ class ScreenWriterTest extends TestCase
         $writer->writeLines(['A', 'B', 'C']);
 
         $state = $writer->getState();
-        $this->assertSame(3, $state['lineCount']);
+        $this->assertSame(3, $state['line_count']);
 
         $writer->reset();
 
         $state = $writer->getState();
-        $this->assertSame(0, $state['lineCount']);
-        $this->assertSame(0, $state['cursorRow']);
+        $this->assertSame(0, $state['line_count']);
+        $this->assertSame(0, $state['cursor_row']);
     }
 
     // --- RenderException tests (pre-existing) ---

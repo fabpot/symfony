@@ -76,7 +76,7 @@ class KillRingTest extends TestCase
 
         // Rotate through: should only have b, c, d
         $ring->resetAction();
-        $ring->recordYank(['startLine' => 0, 'startCol' => 0, 'endLine' => 0, 'endCol' => 1]);
+        $ring->recordYank(['start_line' => 0, 'start_col' => 0, 'end_line' => 0, 'end_col' => 1]);
         $this->assertTrue($ring->canYankPop());
         $text = $ring->rotate();
         $this->assertSame('c', $text);
@@ -96,7 +96,7 @@ class KillRingTest extends TestCase
     {
         $ring = new KillRing();
         $ring->add('only', false);
-        $ring->recordYank(['startLine' => 0, 'startCol' => 0, 'endLine' => 0, 'endCol' => 4]);
+        $ring->recordYank(['start_line' => 0, 'start_col' => 0, 'end_line' => 0, 'end_col' => 4]);
 
         $this->assertFalse($ring->canYankPop());
     }
@@ -124,7 +124,7 @@ class KillRingTest extends TestCase
 
         // Yank gets 'third'
         $this->assertSame('third', $ring->peek());
-        $ring->recordYank(['startLine' => 0, 'startCol' => 0, 'endLine' => 0, 'endCol' => 5]);
+        $ring->recordYank(['start_line' => 0, 'start_col' => 0, 'end_line' => 0, 'end_col' => 5]);
 
         // Yank-pop rotates: third goes to front, 'second' is now on top
         $this->assertTrue($ring->canYankPop());
@@ -157,7 +157,7 @@ class KillRingTest extends TestCase
         $ring->add('a', false);
         $ring->resetAction();
         $ring->add('b', false);
-        $ring->recordYank(['startLine' => 0, 'startCol' => 0, 'endLine' => 0, 'endCol' => 1]);
+        $ring->recordYank(['start_line' => 0, 'start_col' => 0, 'end_line' => 0, 'end_col' => 1]);
 
         $ring->resetAll();
 
@@ -170,7 +170,7 @@ class KillRingTest extends TestCase
         $ring = new KillRing();
         $this->assertNull($ring->getLastYankRange());
 
-        $range = ['startLine' => 1, 'startCol' => 5, 'endLine' => 2, 'endCol' => 3];
+        $range = ['start_line' => 1, 'start_col' => 5, 'end_line' => 2, 'end_col' => 3];
         $ring->recordYank($range);
 
         $this->assertSame($range, $ring->getLastYankRange());

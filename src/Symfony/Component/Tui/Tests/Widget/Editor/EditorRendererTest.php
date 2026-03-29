@@ -61,7 +61,7 @@ class EditorRendererTest extends TestCase
     {
         $lines = $this->renderWithViewport(
             ['Line 0', 'Line 1', 'Line 2'],
-            ['scrollOffset' => 1, 'visibleLineCount' => 2, 'linesAbove' => 1, 'linesBelow' => 0],
+            ['scroll_offset' => 1, 'visible_line_count' => 2, 'lines_above' => 1, 'lines_below' => 0],
             1, 0, 40, 10,
         );
 
@@ -74,7 +74,7 @@ class EditorRendererTest extends TestCase
     {
         $lines = $this->renderWithViewport(
             ['Line 0', 'Line 1', 'Line 2'],
-            ['scrollOffset' => 0, 'visibleLineCount' => 2, 'linesAbove' => 0, 'linesBelow' => 1],
+            ['scroll_offset' => 0, 'visible_line_count' => 2, 'lines_above' => 0, 'lines_below' => 1],
             0, 0, 40, 10,
         );
 
@@ -134,10 +134,10 @@ class EditorRendererTest extends TestCase
     private function renderSimple(array $docLines, int $cursorLine, int $cursorCol, int $columns, int $maxDisplayRows, bool $verticallyExpanded = false, bool $focused = false): array
     {
         $viewport = [
-            'scrollOffset' => 0,
-            'visibleLineCount' => \count($docLines),
-            'linesAbove' => 0,
-            'linesBelow' => 0,
+            'scroll_offset' => 0,
+            'visible_line_count' => \count($docLines),
+            'lines_above' => 0,
+            'lines_below' => 0,
         ];
 
         return $this->renderWithViewport($docLines, $viewport, $cursorLine, $cursorCol, $columns, $maxDisplayRows, $verticallyExpanded, $focused);

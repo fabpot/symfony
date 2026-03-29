@@ -27,8 +27,8 @@ class EditorViewportTest extends TestCase
         // Cursor at line 20, viewport shows 10 rows
         $result = $viewport->computeViewport($lines, 20, 10, 80, false, 1);
 
-        $this->assertGreaterThanOrEqual($result['scrollOffset'], 20);
-        $this->assertLessThan($result['scrollOffset'] + $result['visibleLineCount'], 20);
+        $this->assertGreaterThanOrEqual($result['scroll_offset'], 20);
+        $this->assertLessThan($result['scroll_offset'] + $result['visible_line_count'], 20);
     }
 
     public function testComputeViewportScrollsUpWhenCursorAbove()
@@ -45,7 +45,7 @@ class EditorViewportTest extends TestCase
         // Now cursor goes back to line 0
         $result = $viewport->computeViewport($lines, 0, 10, 80, false, 1);
 
-        $this->assertSame(0, $result['scrollOffset']);
+        $this->assertSame(0, $result['scroll_offset']);
     }
 
     public function testComputeViewportExpandedMode()
@@ -56,7 +56,7 @@ class EditorViewportTest extends TestCase
         $result = $viewport->computeViewport($lines, 0, 20, 80, true, 1);
 
         // In expanded mode, visibleLineCount should fill available space
-        $this->assertSame(2, $result['visibleLineCount']);
+        $this->assertSame(2, $result['visible_line_count']);
     }
 
     public function testComputeViewportReportsLinesAboveAndBelow()
@@ -69,8 +69,8 @@ class EditorViewportTest extends TestCase
 
         $result = $viewport->computeViewport($lines, 15, 10, 80, false, 1);
 
-        $this->assertGreaterThan(0, $result['linesAbove']);
-        $this->assertGreaterThan(0, $result['linesBelow']);
+        $this->assertGreaterThan(0, $result['lines_above']);
+        $this->assertGreaterThan(0, $result['lines_below']);
     }
 
     public function testPageScrollDown()
@@ -84,7 +84,7 @@ class EditorViewportTest extends TestCase
         $result = $viewport->pageScroll($lines, 1, 10, 0, 0);
 
         $this->assertNotNull($result);
-        $this->assertSame(10, $result['cursorLine']);
+        $this->assertSame(10, $result['cursor_line']);
     }
 
     public function testPageScrollUp()
@@ -98,7 +98,7 @@ class EditorViewportTest extends TestCase
         $result = $viewport->pageScroll($lines, -1, 10, 20, 0);
 
         $this->assertNotNull($result);
-        $this->assertSame(10, $result['cursorLine']);
+        $this->assertSame(10, $result['cursor_line']);
     }
 
     public function testPageScrollClampsToEnd()
@@ -109,7 +109,7 @@ class EditorViewportTest extends TestCase
         $result = $viewport->pageScroll($lines, 1, 100, 0, 0);
 
         $this->assertNotNull($result);
-        $this->assertSame(2, $result['cursorLine']);
+        $this->assertSame(2, $result['cursor_line']);
     }
 
     public function testPageScrollReturnsNullWhenNoChange()
