@@ -116,7 +116,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function add(AbstractWidget $widget): self
+    public function add(AbstractWidget $widget): static
     {
         $this->root->add($widget);
 
@@ -128,7 +128,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function remove(AbstractWidget $widget): self
+    public function remove(AbstractWidget $widget): static
     {
         $this->root->remove($widget);
 
@@ -140,7 +140,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function clear(): self
+    public function clear(): static
     {
         $this->root->clear();
 
@@ -168,7 +168,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function addStyleSheet(StyleSheet $styleSheet): self
+    public function addStyleSheet(StyleSheet $styleSheet): static
     {
         $this->renderer->addStyleSheet($styleSheet);
 
@@ -304,7 +304,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function onTick(?callable $onTick): self
+    public function onTick(?callable $onTick): static
     {
         $this->onTick = $onTick;
         $this->lastTickAt = null;
@@ -332,7 +332,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function on(string $eventClass, callable $listener, int $priority = 0): self
+    public function on(string $eventClass, callable $listener, int $priority = 0): static
     {
         $this->eventDispatcher->addListener($eventClass, $listener, $priority);
 
@@ -360,7 +360,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      *
      * @return $this
      */
-    public function setFocus(?AbstractWidget $component): self
+    public function setFocus(?AbstractWidget $component): static
     {
         $this->focusManager->setFocus($component);
 

@@ -41,7 +41,7 @@ interface FocusableInterface
      *
      * @return $this
      */
-    public function setFocused(bool $focused): self;
+    public function setFocused(bool $focused): static;
 
     /**
      * Register a callback invoked before handleInput().

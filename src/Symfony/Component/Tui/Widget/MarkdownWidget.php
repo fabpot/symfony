@@ -95,7 +95,7 @@ class MarkdownWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setText(string $text): self
+    public function setText(string $text): static
     {
         $this->text = StringUtils::sanitizeUtf8($text);
         $this->invalidate();

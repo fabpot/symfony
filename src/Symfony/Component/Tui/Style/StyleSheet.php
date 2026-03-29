@@ -105,7 +105,7 @@ class StyleSheet
      *
      * @return $this
      */
-    public function addRule(string $selector, Style $style): self
+    public function addRule(string $selector, Style $style): static
     {
         $this->rules[$selector] = $style;
 
@@ -120,7 +120,7 @@ class StyleSheet
      *
      * @return $this
      */
-    public function addBreakpoint(int $minColumns, string $selector, Style $style): self
+    public function addBreakpoint(int $minColumns, string $selector, Style $style): static
     {
         $this->breakpoints[$minColumns][$selector] = $style;
 
@@ -136,7 +136,7 @@ class StyleSheet
      *
      * @return $this
      */
-    public function merge(self $other): self
+    public function merge(self $other): static
     {
         foreach ($other->rules as $selector => $style) {
             $this->rules[$selector] = $style;
@@ -160,7 +160,7 @@ class StyleSheet
      *
      * @return $this
      */
-    public function mergeDefaults(self $defaults): self
+    public function mergeDefaults(self $defaults): static
     {
         foreach ($defaults->rules as $selector => $style) {
             if (!isset($this->rules[$selector])) {

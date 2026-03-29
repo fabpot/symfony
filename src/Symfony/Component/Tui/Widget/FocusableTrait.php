@@ -33,7 +33,7 @@ trait FocusableTrait
     /**
      * @return $this
      */
-    public function setFocused(bool $focused): self
+    public function setFocused(bool $focused): static
     {
         if ($this->focused !== $focused) {
             $this->focused = $focused;

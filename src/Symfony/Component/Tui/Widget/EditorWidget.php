@@ -90,7 +90,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
     /**
      * @return $this
      */
-    public function setText(string $text): self
+    public function setText(string $text): static
     {
         if ($this->document->setText($text)) {
             $this->viewport->reset();
@@ -103,7 +103,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
     /**
      * @return $this
      */
-    public function setMinVisibleLines(int $minVisibleLines): self
+    public function setMinVisibleLines(int $minVisibleLines): static
     {
         $minVisibleLines = max(0, $minVisibleLines);
         if ($this->minVisibleLines !== $minVisibleLines) {
@@ -117,7 +117,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
     /**
      * @return $this
      */
-    public function setMaxVisibleLines(?int $maxVisibleLines): self
+    public function setMaxVisibleLines(?int $maxVisibleLines): static
     {
         if (null !== $maxVisibleLines) {
             $maxVisibleLines = max(1, $maxVisibleLines);
@@ -134,7 +134,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
     /**
      * @return $this
      */
-    public function expandVertically(bool $fill): self
+    public function expandVertically(bool $fill): static
     {
         if ($this->verticallyExpanded !== $fill) {
             $this->verticallyExpanded = $fill;
@@ -149,7 +149,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
         return $this->verticallyExpanded;
     }
 
-    public function setFocused(bool $focused): self
+    public function setFocused(bool $focused): static
     {
         if ($this->focused !== $focused) {
             $this->focused = $focused;
@@ -165,7 +165,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
      *
      * @return $this
      */
-    public function onSubmit(callable $callback): self
+    public function onSubmit(callable $callback): static
     {
         return $this->on(SubmitEvent::class, $callback);
     }
@@ -175,7 +175,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
      *
      * @return $this
      */
-    public function onCancel(callable $callback): self
+    public function onCancel(callable $callback): static
     {
         return $this->on(CancelEvent::class, $callback);
     }
@@ -185,7 +185,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
      *
      * @return $this
      */
-    public function onChange(callable $callback): self
+    public function onChange(callable $callback): static
     {
         return $this->on(ChangeEvent::class, $callback);
     }

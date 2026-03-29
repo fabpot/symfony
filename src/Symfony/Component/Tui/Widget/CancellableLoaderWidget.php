@@ -61,7 +61,7 @@ class CancellableLoaderWidget extends LoaderWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onCancel(callable $callback): self
+    public function onCancel(callable $callback): static
     {
         return $this->on(CancelEvent::class, $callback);
     }

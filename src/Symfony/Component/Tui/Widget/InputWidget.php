@@ -53,7 +53,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onSubmit(callable $callback): self
+    public function onSubmit(callable $callback): static
     {
         return $this->on(SubmitEvent::class, $callback);
     }
@@ -63,7 +63,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onCancel(callable $callback): self
+    public function onCancel(callable $callback): static
     {
         return $this->on(CancelEvent::class, $callback);
     }
@@ -73,7 +73,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onChange(callable $callback): self
+    public function onChange(callable $callback): static
     {
         return $this->on(ChangeEvent::class, $callback);
     }
@@ -94,7 +94,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
     /**
      * @return $this
      */
-    public function setPrompt(string $prompt): self
+    public function setPrompt(string $prompt): static
     {
         if ($this->prompt !== $prompt) {
             $this->prompt = $prompt;
@@ -107,7 +107,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
     /**
      * @return $this
      */
-    public function setValue(string $value): self
+    public function setValue(string $value): static
     {
         // When setting a new value, move cursor to the end of the string
         $newCursor = \strlen($value);
@@ -120,7 +120,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
         return $this;
     }
 
-    public function setFocused(bool $focused): self
+    public function setFocused(bool $focused): static
     {
         if ($this->focused !== $focused) {
             $this->focused = $focused;

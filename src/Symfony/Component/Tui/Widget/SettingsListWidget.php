@@ -87,7 +87,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
      *
      * @return $this
      */
-    public function onChange(callable $callback): self
+    public function onChange(callable $callback): static
     {
         return $this->on(SettingChangeEvent::class, $callback);
     }
@@ -97,7 +97,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
      *
      * @return $this
      */
-    public function onCancel(callable $callback): self
+    public function onCancel(callable $callback): static
     {
         return $this->on(CancelEvent::class, $callback);
     }
