@@ -91,7 +91,7 @@ class FocusManager
     /**
      * @return $this
      */
-    public function add(FocusableInterface&AbstractWidget $widget): self
+    public function add(FocusableInterface&AbstractWidget $widget): static
     {
         if (!\in_array($widget, $this->focusables, true)) {
             $this->focusables[] = $widget;
@@ -107,7 +107,7 @@ class FocusManager
     /**
      * @return $this
      */
-    public function remove(FocusableInterface&AbstractWidget $widget): self
+    public function remove(FocusableInterface&AbstractWidget $widget): static
     {
         $index = array_search($widget, $this->focusables, true);
         if (false !== $index) {
@@ -125,7 +125,7 @@ class FocusManager
     /**
      * @return $this
      */
-    public function clear(): self
+    public function clear(): static
     {
         $this->focusables = [];
 
@@ -147,7 +147,7 @@ class FocusManager
      *
      * @return $this
      */
-    public function onFocusChanged(callable $callback): self
+    public function onFocusChanged(callable $callback): static
     {
         $this->eventDispatcher?->addListener(FocusEvent::class, $callback);
 

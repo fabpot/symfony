@@ -56,7 +56,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function setItems(array $items): self
+    public function setItems(array $items): static
     {
         $this->items = $items;
         $this->filteredItems = $items;
@@ -69,7 +69,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
     /**
      * @return $this
      */
-    public function setFilter(string $filter): self
+    public function setFilter(string $filter): static
     {
         $filter = strtolower($filter);
 
@@ -90,7 +90,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
     /**
      * @return $this
      */
-    public function setSelectedIndex(int $index): self
+    public function setSelectedIndex(int $index): static
     {
         $index = max(0, min($index, \count($this->filteredItems) - 1));
         if ($this->selectedIndex !== $index) {
@@ -124,7 +124,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onSelect(callable $callback): self
+    public function onSelect(callable $callback): static
     {
         return $this->on(SelectEvent::class, $callback);
     }
@@ -134,7 +134,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onCancel(callable $callback): self
+    public function onCancel(callable $callback): static
     {
         return $this->on(CancelEvent::class, $callback);
     }
@@ -144,7 +144,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
      *
      * @return $this
      */
-    public function onSelectionChange(callable $callback): self
+    public function onSelectionChange(callable $callback): static
     {
         return $this->on(SelectionChangeEvent::class, $callback);
     }

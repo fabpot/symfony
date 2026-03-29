@@ -265,7 +265,7 @@ class ProgressBarWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setFormat(string $format): self
+    public function setFormat(string $format): static
     {
         $this->format = $format;
         $this->invalidate();
@@ -284,7 +284,7 @@ class ProgressBarWidget extends AbstractWidget
     /**
      * @return $this
      */
-    public function setBarWidth(int $width): self
+    public function setBarWidth(int $width): static
     {
         $this->barWidth = max(1, $width);
         $this->invalidate();
@@ -305,7 +305,7 @@ class ProgressBarWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setBarCharacter(string $char): self
+    public function setBarCharacter(string $char): static
     {
         $this->barChar = $char;
         $this->invalidate();
@@ -326,7 +326,7 @@ class ProgressBarWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setEmptyBarCharacter(string $char): self
+    public function setEmptyBarCharacter(string $char): static
     {
         $this->emptyBarChar = $char;
         $this->invalidate();
@@ -347,7 +347,7 @@ class ProgressBarWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setProgressCharacter(string $char): self
+    public function setProgressCharacter(string $char): static
     {
         $this->progressChar = $char;
         $this->invalidate();
@@ -384,7 +384,7 @@ class ProgressBarWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setMessage(string $message, string $name = 'message'): self
+    public function setMessage(string $message, string $name = 'message'): static
     {
         $this->messages[$name] = $message;
         $this->invalidate();
@@ -408,7 +408,7 @@ class ProgressBarWidget extends AbstractWidget
      *
      * @return $this
      */
-    public function setPlaceholderFormatter(string $name, \Closure $formatter): self
+    public function setPlaceholderFormatter(string $name, \Closure $formatter): static
     {
         $this->placeholderFormatters[$name] = $formatter;
         $this->invalidate();

@@ -115,7 +115,7 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
      *
      * @return $this
      */
-    public function expandVertically(bool $expand): self
+    public function expandVertically(bool $expand): static
     {
         if ($this->verticallyExpanded !== $expand) {
             $this->verticallyExpanded = $expand;

@@ -30,7 +30,7 @@ interface VerticallyExpandableInterface
      *
      * @return $this
      */
-    public function expandVertically(bool $expand): self;
+    public function expandVertically(bool $expand): static;
 
     /**
      * Check if the widget should expand to fill available height.

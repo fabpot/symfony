@@ -141,7 +141,7 @@ abstract class AbstractWidget
     /**
      * @return $this
      */
-    final public function addStyleClass(string $class): self
+    final public function addStyleClass(string $class): static
     {
         if (!\in_array($class, $this->styleClasses, true)) {
             $this->styleClasses[] = $class;
@@ -154,7 +154,7 @@ abstract class AbstractWidget
     /**
      * @return $this
      */
-    final public function removeStyleClass(string $class): self
+    final public function removeStyleClass(string $class): static
     {
         $newClasses = array_values(array_filter(
             $this->styleClasses,
@@ -233,7 +233,7 @@ abstract class AbstractWidget
     /**
      * @return $this
      */
-    final public function setStyle(?Style $style): self
+    final public function setStyle(?Style $style): static
     {
         if ($this->internalStyle !== $style) {
             $this->internalStyle = $style;
