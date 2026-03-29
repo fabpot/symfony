@@ -36,10 +36,6 @@ final class StdinBuffer
     private bool $inPaste = false;
     private string $pasteBuffer = '';
 
-    public function __construct()
-    {
-    }
-
     /**
      * Set callback for individual key sequences.
      *
