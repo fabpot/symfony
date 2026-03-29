@@ -223,7 +223,7 @@ final class StdinBuffer
             'O' => $this->extractSs3Sequence(),
             ']' => $this->extractOscSequence(),
             'P' => $this->extractDcsSequence(),
-            '_' => $this->extractApcSequence(),
+            '_' => $this->extractOscSequence(), // APC uses the same terminator rules
             default => $this->extractAltKey($second),
         };
     }
@@ -354,14 +354,6 @@ final class StdinBuffer
         }
 
         return null;
-    }
-
-    /**
-     * Extract APC sequence (ESC _ ... BEL or ESC _ ... ST).
-     */
-    private function extractApcSequence(): ?string
-    {
-        return $this->extractOscSequence(); // Same terminator rules
     }
 
     /**
