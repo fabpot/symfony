@@ -208,7 +208,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
         $this->stopped = false;
         $this->lastTickAt = null;
         $this->lastTickBusyHint = null;
-        $this->terminal->start($this->handleInput(...), $this->requestRender(...), function (): void {
+        $this->terminal->start($this->handleInput(...), fn () => $this->requestRender(force: true), function (): void {
             $this->keybindings->setKittyProtocolActive(true);
         });
         $this->terminal->hideCursor();
