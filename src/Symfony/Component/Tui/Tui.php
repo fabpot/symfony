@@ -16,7 +16,10 @@ use Revolt\EventLoop\Suspension;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Tui\Event\AbstractEvent;
+use Symfony\Component\Tui\Event\CancelEvent;
 use Symfony\Component\Tui\Event\InputEvent;
+use Symfony\Component\Tui\Event\ModalResolveEvent;
+use Symfony\Component\Tui\Event\SubmitEvent;
 use Symfony\Component\Tui\Event\TickEvent;
 use Symfony\Component\Tui\Exception\InvalidArgumentException;
 use Symfony\Component\Tui\Focus\FocusManager;
@@ -81,6 +84,8 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
 
     /** @var Suspension<mixed>|null */
     private ?Suspension $runSuspension = null;
+
+    private ?ContainerWidget $overlayContainer = null;
 
     public function __construct(
         ?StyleSheet $styleSheet = null,
@@ -411,6 +416,111 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     }
 
     /**
+     * Show a widget as a blocking modal dialog.
+     *
+     * The widget is added to an overlay container (rendered after the main content).
+     * Focus is automatically captured and restored. The method blocks via Revolt
+     * Suspension until the widget dispatches one of:
+     * - ModalResolveEvent: returns getResult() (any type)
+     * - SubmitEvent: returns getValue() (string)
+     * - CancelEvent: returns null
+     *
+     * @experimental
+     */
+    public function modal(AbstractWidget $widget): mixed
+    {
+        $previousFocus = $this->getFocus();
+        $overlay = $this->getOrCreateOverlay();
+        $overlay->add($widget);
+
+        if ($widget instanceof FocusableInterface) {
+            $this->setFocus($widget);
+        }
+
+        $this->processRender();
+
+        $suspension = EventLoop::getSuspension();
+        $resolved = false;
+
+        $widget->on(ModalResolveEvent::class, function (ModalResolveEvent $event) use ($suspension, &$resolved) {
+            if (!$resolved) {
+                $resolved = true;
+                $suspension->resume($event->getResult());
+            }
+        });
+
+        $widget->on(SubmitEvent::class, function (SubmitEvent $event) use ($suspension, &$resolved) {
+            if (!$resolved) {
+                $resolved = true;
+                $suspension->resume($event->getValue());
+            }
+        });
+
+        $widget->on(CancelEvent::class, function () use ($suspension, &$resolved) {
+            if (!$resolved) {
+                $resolved = true;
+                $suspension->resume(null);
+            }
+        });
+
+        $result = $suspension->suspend();
+
+        // Cleanup
+        $overlay->remove($widget);
+        $this->setFocus($previousFocus);
+
+        if ([] === $overlay->all()) {
+            $this->root->remove($overlay);
+            $this->overlayContainer = null;
+        }
+
+        $this->requestRender(true);
+        $this->processRender();
+
+        return $result;
+    }
+
+    /**
+     * Add a widget as a non-blocking overlay.
+     *
+     * The widget is rendered after the main content. Use removeOverlay() to dismiss.
+     *
+     * @experimental
+     */
+    public function addOverlay(AbstractWidget $widget): void
+    {
+        $this->getOrCreateOverlay()->add($widget);
+
+        if ($widget instanceof FocusableInterface) {
+            $this->setFocus($widget);
+        }
+
+        $this->requestRender();
+    }
+
+    /**
+     * Remove a non-blocking overlay widget.
+     *
+     * @experimental
+     */
+    public function removeOverlay(AbstractWidget $widget): void
+    {
+        $overlay = $this->overlayContainer;
+        if (null === $overlay) {
+            return;
+        }
+
+        $overlay->remove($widget);
+
+        if ([] === $overlay->all()) {
+            $this->root->remove($overlay);
+            $this->overlayContainer = null;
+        }
+
+        $this->requestRender(true);
+    }
+
+    /**
      * Schedule a repeating callback in the internal TUI scheduler.
      *
      * @internal
@@ -512,5 +622,16 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
         $suspension = $this->runSuspension;
         $this->runSuspension = null;
         $suspension->resume(null);
+    }
+
+    private function getOrCreateOverlay(): ContainerWidget
+    {
+        if (null === $this->overlayContainer) {
+            $this->overlayContainer = new ContainerWidget();
+            $this->overlayContainer->setId('__tui_overlay');
+            $this->root->add($this->overlayContainer);
+        }
+
+        return $this->overlayContainer;
     }
 }
