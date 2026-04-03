@@ -67,6 +67,11 @@ class MarkdownWidget extends AbstractWidget
      * re-applies the context's formatting after each inline style.
      */
     private string $restoreContext = '';
+    private bool $streamingMode = false;
+    private string $streamBuffer = '';
+    private string $committedText = '';
+    private ?Document $cachedDocument = null;
+    private string $cachedDocumentText = '';
 
     public function __construct(
         private string $text = '',
@@ -112,6 +117,64 @@ class MarkdownWidget extends AbstractWidget
     }
 
     /**
+     * Enable or disable streaming mode.
+     *
+     * In streaming mode, appendText() uses newline-gated parsing: only complete
+     * lines are parsed as markdown, while the partial last line is rendered as
+     * plain text. This avoids re-parsing the entire document on every chunk.
+     *
+     * @experimental
+     */
+    public function setStreamingMode(bool $streaming): static
+    {
+        $this->streamingMode = $streaming;
+
+        if (!$streaming) {
+            // Clear streaming state; next render will do a full re-parse
+            $this->streamBuffer = '';
+            $this->committedText = '';
+            $this->cachedDocument = null;
+            $this->cachedDocumentText = '';
+        }
+
+        return $this;
+    }
+
+    /**
+     * Append a chunk of text to the current content.
+     *
+     * In streaming mode, only re-parses when a new complete line arrives.
+     * In non-streaming mode, delegates to setText() with the concatenated text.
+     *
+     * @experimental
+     */
+    public function appendText(string $chunk): static
+    {
+        if (!$this->streamingMode) {
+            return $this->setText($this->text.$chunk);
+        }
+
+        $this->streamBuffer .= $chunk;
+
+        // Find last newline — everything before it is a complete line
+        $lastNewline = strrpos($this->streamBuffer, "\n");
+        if (false !== $lastNewline) {
+            $complete = substr($this->streamBuffer, 0, $lastNewline + 1);
+            $this->committedText .= $complete;
+            $this->streamBuffer = substr($this->streamBuffer, $lastNewline + 1);
+            // Invalidate the cached AST since committed text changed
+            $this->cachedDocument = null;
+        }
+
+        // Keep $this->text in sync
+        $this->text = $this->committedText.$this->streamBuffer;
+        $this->invalidate();
+        $this->getContext()?->requestRender();
+
+        return $this;
+    }
+
+    /**
      * @return string[]
      */
     public function render(RenderContext $context): array
@@ -137,6 +200,10 @@ class MarkdownWidget extends AbstractWidget
         // that cancel the context's attributes. This restore sequence re-applies them.
         $this->restoreContext = $context->getStyle()->getAnsiRestore();
 
+        if ($this->streamingMode) {
+            return $this->renderStreamingMarkdown($contentColumns);
+        }
+
         // Parse markdown to AST
         $document = $this->parser->parse($this->text);
 
@@ -144,6 +211,48 @@ class MarkdownWidget extends AbstractWidget
         $renderedLines = $this->renderDocument($document, $contentColumns);
 
         // Wrap all lines to ensure they fit within width
+        $wrappedLines = [];
+        foreach ($renderedLines as $line) {
+            array_push($wrappedLines, ...TextWrapper::wrapTextWithAnsi($line, $contentColumns));
+        }
+
+        return $wrappedLines;
+    }
+
+    /**
+     * Render markdown in streaming mode with newline-gated AST caching.
+     *
+     * Only re-parses the committed text (complete lines) when it changes.
+     * The partial buffer (incomplete last line) is appended as plain text.
+     *
+     * @return string[]
+     */
+    private function renderStreamingMarkdown(int $contentColumns): array
+    {
+        // Re-parse only when committed text changed
+        if (null === $this->cachedDocument || $this->cachedDocumentText !== $this->committedText) {
+            if ('' !== $this->committedText) {
+                $this->cachedDocument = $this->parser->parse($this->committedText);
+            } else {
+                $this->cachedDocument = null;
+            }
+            $this->cachedDocumentText = $this->committedText;
+        }
+
+        $renderedLines = [];
+
+        // Render cached AST
+        if (null !== $this->cachedDocument) {
+            $renderedLines = $this->renderDocument($this->cachedDocument, $contentColumns);
+        }
+
+        // Append raw buffer (partial line) as plain text
+        if ('' !== $this->streamBuffer) {
+            $bufferLines = TextWrapper::wrapTextWithAnsi($this->streamBuffer, $contentColumns);
+            array_push($renderedLines, ...$bufferLines);
+        }
+
+        // Final wrapping pass
         $wrappedLines = [];
         foreach ($renderedLines as $line) {
             array_push($wrappedLines, ...TextWrapper::wrapTextWithAnsi($line, $contentColumns));
@@ -186,7 +295,7 @@ class MarkdownWidget extends AbstractWidget
             $node instanceof IndentedCode => $this->renderIndentedCode($node, $columns),
             $node instanceof BlockQuote => $this->renderBlockQuote($node, $columns),
             $node instanceof ListBlock => $this->renderList($node, $columns),
-            $node instanceof ThematicBreak => [$this->resolveElement('hr')->apply(str_repeat('─', $columns))],
+            $node instanceof ThematicBreak => [$this->resolveElement('hr')->apply(str_repeat("\xe2\x94\x80", $columns))],
             $node instanceof Table => $this->renderTable($node, $columns),
             default => $this->renderGenericBlock($node, $columns),
         };
@@ -247,7 +356,7 @@ class MarkdownWidget extends AbstractWidget
         $codeBlockBorderStyle = $this->resolveElement('code-block-border');
 
         // Top border
-        $lines[] = $codeBlockBorderStyle->apply(str_repeat('─', $columns));
+        $lines[] = $codeBlockBorderStyle->apply(str_repeat("\xe2\x94\x80", $columns));
 
         $indent = '  '; // Code block indent
         $availableColumns = max(1, $columns - \strlen($indent));
@@ -275,7 +384,7 @@ class MarkdownWidget extends AbstractWidget
         }
 
         // Bottom border
-        $lines[] = $codeBlockBorderStyle->apply(str_repeat('─', $columns));
+        $lines[] = $codeBlockBorderStyle->apply(str_repeat("\xe2\x94\x80", $columns));
 
         return $lines;
     }
@@ -294,7 +403,7 @@ class MarkdownWidget extends AbstractWidget
             $childLines = $this->renderNode($child, $quoteColumns);
             foreach ($childLines as $line) {
                 $styledLine = $quoteStyle->apply($line);
-                $border = $quoteBorderStyle->apply('│ ').$this->restoreContext;
+                $border = $quoteBorderStyle->apply("\xe2\x94\x82 ").$this->restoreContext;
                 $lines[] = $border.$styledLine;
             }
         }
@@ -320,7 +429,7 @@ class MarkdownWidget extends AbstractWidget
 
             $bullet = $isOrdered
                 ? $listBulletStyle->apply($index.'. ').$this->restoreContext
-                : $listBulletStyle->apply('• ').$this->restoreContext;
+                : $listBulletStyle->apply("\xe2\x80\xa2 ").$this->restoreContext;
 
             $content = $this->renderListItemContent($item, $itemColumns);
             foreach ($content as $i => $line) {
@@ -467,8 +576,8 @@ class MarkdownWidget extends AbstractWidget
         $lines = [];
 
         // Top border
-        $topBorderCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
-        $lines[] = '┌─'.implode('─┬─', $topBorderCells).'─┐';
+        $topBorderCells = array_map(static fn (int $w) => str_repeat("\xe2\x94\x80", $w), $columnWidths);
+        $lines[] = "\xe2\x94\x8c\xe2\x94\x80".implode("\xe2\x94\x80\xe2\x94\xac\xe2\x94\x80", $topBorderCells)."\xe2\x94\x80\xe2\x94\x90";
 
         // Header row
         if ([] !== $headers) {
@@ -487,12 +596,12 @@ class MarkdownWidget extends AbstractWidget
                     $padded = $text.str_repeat(' ', max(0, $columnWidths[$colIdx] - AnsiUtils::visibleWidth($text)));
                     $rowParts[] = $this->resolveElement('bold')->apply($padded);
                 }
-                $lines[] = '│ '.implode(' │ ', $rowParts).' │';
+                $lines[] = "\xe2\x94\x82 ".implode(" \xe2\x94\x82 ", $rowParts)." \xe2\x94\x82";
             }
 
             // Separator
-            $separatorCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
-            $lines[] = '├─'.implode('─┼─', $separatorCells).'─┤';
+            $separatorCells = array_map(static fn (int $w) => str_repeat("\xe2\x94\x80", $w), $columnWidths);
+            $lines[] = "\xe2\x94\x9c\xe2\x94\x80".implode("\xe2\x94\x80\xe2\x94\xbc\xe2\x94\x80", $separatorCells)."\xe2\x94\x80\xe2\x94\xa4";
         }
 
         // Data rows
@@ -510,13 +619,13 @@ class MarkdownWidget extends AbstractWidget
                     $text = $rowCellLines[$colIdx][$lineIdx] ?? '';
                     $rowParts[] = $text.str_repeat(' ', max(0, $columnWidths[$colIdx] - AnsiUtils::visibleWidth($text)));
                 }
-                $lines[] = '│ '.implode(' │ ', $rowParts).' │';
+                $lines[] = "\xe2\x94\x82 ".implode(" \xe2\x94\x82 ", $rowParts)." \xe2\x94\x82";
             }
         }
 
         // Bottom border
-        $bottomBorderCells = array_map(static fn (int $w) => str_repeat('─', $w), $columnWidths);
-        $lines[] = '└─'.implode('─┴─', $bottomBorderCells).'─┘';
+        $bottomBorderCells = array_map(static fn (int $w) => str_repeat("\xe2\x94\x80", $w), $columnWidths);
+        $lines[] = "\xe2\x94\x94\xe2\x94\x80".implode("\xe2\x94\x80\xe2\x94\xb4\xe2\x94\x80", $bottomBorderCells)."\xe2\x94\x80\xe2\x94\x98";
 
         return $lines;
     }
