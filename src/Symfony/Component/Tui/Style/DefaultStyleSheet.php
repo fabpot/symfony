@@ -12,6 +12,7 @@
 namespace Symfony\Component\Tui\Style;
 
 use Symfony\Component\Tui\Widget\CancellableLoaderWidget;
+use Symfony\Component\Tui\Widget\CollapsibleWidget;
 use Symfony\Component\Tui\Widget\EditorWidget;
 use Symfony\Component\Tui\Widget\InputWidget;
 use Symfony\Component\Tui\Widget\LoaderWidget;
@@ -50,6 +51,10 @@ final class DefaultStyleSheet
             // Layout aliases (used by <columns>/<column> tag aliases)
             '.columns' => new Style(direction: Direction::Horizontal, gap: 2),
             '.column' => new Style(),
+
+            // CollapsibleWidget
+            CollapsibleWidget::class.'::header' => new Style()->withBold(),
+            CollapsibleWidget::class.'::hint' => new Style()->withDim(),
 
             // CancellableLoaderWidget
             CancellableLoaderWidget::class.':focus' => new Style()->withBold(),
