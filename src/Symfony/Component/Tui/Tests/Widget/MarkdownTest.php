@@ -12,6 +12,7 @@
 namespace Symfony\Component\Tui\Tests\Widget;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Tui\Ansi\AnsiUtils;
 use Symfony\Component\Tui\Render\RenderContext;
@@ -21,6 +22,7 @@ use Symfony\Component\Tui\Terminal\VirtualTerminal;
 use Symfony\Component\Tui\Tui;
 use Symfony\Component\Tui\Widget\MarkdownWidget;
 
+#[IgnoreDeprecations('League\\\\CommonMark\\\\Util\\\\ArrayCollection')]
 class MarkdownTest extends TestCase
 {
     public function testRenderEmpty()
