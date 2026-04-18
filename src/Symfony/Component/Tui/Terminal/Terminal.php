@@ -242,27 +242,26 @@ final class Terminal implements TerminalInterface
     /**
      * Start a command in the background (fire-and-forget).
      *
-     * Does not wait for the process to complete or collect output.
+     * The command is backgrounded via the shell so that proc_close()
+     * returns immediately without waiting for it to finish, and without
+     * leaking process resources or accumulating zombies.
      *
      * @param list<string> $command
      */
-    public function fireAndForget(array $command): void
+    private function fireAndForget(array $command): void
     {
-        $process = proc_open(
-            $command,
-            [
-                0 => ['pipe', 'r'],
-                1 => ['pipe', 'w'],
-                2 => ['pipe', 'w'],
-            ],
-            $pipes,
-        );
+        $cmd = implode(' ', array_map('escapeshellarg', $command)).' >/dev/null 2>&1 &';
+        $process = proc_open($cmd, [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ], $pipes);
 
         if (\is_resource($process)) {
             fclose($pipes[0]);
             fclose($pipes[1]);
             fclose($pipes[2]);
-            // Do not call proc_close(), let the process run detached.
+            proc_close($process);
         }
     }
 

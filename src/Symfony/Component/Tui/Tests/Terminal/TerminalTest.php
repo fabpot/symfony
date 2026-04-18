@@ -19,9 +19,10 @@ class TerminalTest extends TestCase
     public function testFireAndForgetDoesNotBlock()
     {
         $terminal = new Terminal();
+        $method = new \ReflectionMethod($terminal, 'fireAndForget');
 
         $start = microtime(true);
-        $terminal->fireAndForget(['sleep', '10']);
+        $method->invoke($terminal, ['sleep', '10']);
         $elapsed = microtime(true) - $start;
 
         // Should return nearly instantly, not wait 10 seconds
@@ -34,9 +35,10 @@ class TerminalTest extends TestCase
         unlink($marker);
 
         $terminal = new Terminal();
+        $method = new \ReflectionMethod($terminal, 'fireAndForget');
 
         // Start a background command that creates a marker file after a short delay
-        $terminal->fireAndForget(['sh', '-c', \sprintf('sleep 1 && touch %s', escapeshellarg($marker))]);
+        $method->invoke($terminal, ['sh', '-c', \sprintf('sleep 1 && touch %s', escapeshellarg($marker))]);
 
         // The process must still be running after fireAndForget returns
         $this->assertFileDoesNotExist($marker);
