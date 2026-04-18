@@ -41,7 +41,7 @@ final class TickScheduler
     public function schedule(callable $callback, float $intervalSeconds): string
     {
         if ($intervalSeconds <= 0) {
-            throw new InvalidArgumentException(\sprintf('Interval must be greater than 0, got %d.', $intervalSeconds));
+            throw new InvalidArgumentException(\sprintf('Interval must be greater than 0, got %f.', $intervalSeconds));
         }
 
         $id = 'interval-'.(++$this->counter);
