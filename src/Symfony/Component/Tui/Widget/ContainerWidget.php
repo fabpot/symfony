@@ -43,6 +43,8 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
     /** @var AbstractWidget[] */
     private array $children = [];
     private bool $verticallyExpanded = false;
+    private ?bool $isVerticallyExpandedCache = null;
+    private int $isVerticallyExpandedRevision = -1;
 
     /**
      * @return $this
@@ -133,18 +135,24 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
      */
     public function isVerticallyExpanded(): bool
     {
-        if ($this->verticallyExpanded) {
-            return true;
+        $revision = $this->getRenderRevision();
+        if ($this->isVerticallyExpandedRevision === $revision) {
+            return $this->isVerticallyExpandedCache;
         }
 
-        // Check if any child needs fill height
+        $this->isVerticallyExpandedRevision = $revision;
+
+        if ($this->verticallyExpanded) {
+            return $this->isVerticallyExpandedCache = true;
+        }
+
         foreach ($this->all() as $child) {
             if ($child instanceof VerticallyExpandableInterface && $child->isVerticallyExpanded()) {
-                return true;
+                return $this->isVerticallyExpandedCache = true;
             }
         }
 
-        return false;
+        return $this->isVerticallyExpandedCache = false;
     }
 
     /**
