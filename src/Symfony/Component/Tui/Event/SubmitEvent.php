@@ -40,7 +40,7 @@ class SubmitEvent extends AbstractEvent
     /**
      * Check if the submitted value is empty or contains only whitespace.
      */
-    public function isEmpty(): bool
+    public function isBlank(): bool
     {
         return '' === trim($this->value);
     }

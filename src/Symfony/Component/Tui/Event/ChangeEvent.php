@@ -40,7 +40,7 @@ class ChangeEvent extends AbstractEvent
     /**
      * Check if the current value is empty or contains only whitespace.
      */
-    public function isEmpty(): bool
+    public function isBlank(): bool
     {
         return '' === trim($this->value);
     }
