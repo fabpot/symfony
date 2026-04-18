@@ -185,11 +185,11 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      */
     public function run(): void
     {
-        $this->start();
-        $this->runSuspension = EventLoop::getSuspension();
-        $this->refreshLoopDriver();
-
         try {
+            $this->start();
+            $this->runSuspension = EventLoop::getSuspension();
+            $this->refreshLoopDriver();
+
             // Block until stop() is called
             $this->runSuspension->suspend();
         } finally {
