@@ -101,7 +101,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
         // Share the KeyParser so Kitty protocol state is consistent
         $this->focusManager = new FocusManager(
             $this,
-            parser: $this->keybindings->getParser(),
+            keybindings: $this->keybindings,
             eventDispatcher: $this->eventDispatcher,
         );
 

@@ -15,7 +15,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Tui\Event\FocusEvent;
 use Symfony\Component\Tui\Input\Key;
 use Symfony\Component\Tui\Input\Keybindings;
-use Symfony\Component\Tui\Input\KeyParser;
 use Symfony\Component\Tui\Render\RenderRequestorInterface;
 use Symfony\Component\Tui\Widget\AbstractWidget;
 use Symfony\Component\Tui\Widget\FocusableInterface;
@@ -46,10 +45,10 @@ class FocusManager
     public function __construct(
         private readonly RenderRequestorInterface $renderRequestor,
         ?Keybindings $keybindings = null,
-        ?KeyParser $parser = null,
         private ?EventDispatcherInterface $eventDispatcher = null,
     ) {
-        $this->keybindings = $keybindings ?? new Keybindings(self::DEFAULT_BINDINGS, $parser);
+        $bindings = array_merge(self::DEFAULT_BINDINGS, $keybindings?->all() ?? []);
+        $this->keybindings = new Keybindings($bindings, $keybindings?->getParser());
     }
 
     /**
