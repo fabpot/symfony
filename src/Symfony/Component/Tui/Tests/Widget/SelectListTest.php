@@ -93,7 +93,7 @@ class SelectListTest extends TestCase
         [$list, $tui] = $this->createTestListWithTui();
 
         $selectedItem = null;
-        $tui->on(SelectEvent::class, static function (SelectEvent $e) use (&$selectedItem) {
+        $tui->addListener(static function (SelectEvent $e) use (&$selectedItem) {
             $selectedItem = $e->getItem();
         });
 
@@ -108,7 +108,7 @@ class SelectListTest extends TestCase
         [$list, $tui] = $this->createTestListWithTui();
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, static function (CancelEvent $e) use (&$cancelled) {
+        $tui->addListener(static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 
@@ -176,7 +176,7 @@ class SelectListTest extends TestCase
         [$list, $tui] = $this->createTestListWithTui();
 
         $changedItem = null;
-        $tui->on(SelectionChangeEvent::class, static function (SelectionChangeEvent $e) use (&$changedItem) {
+        $tui->addListener(static function (SelectionChangeEvent $e) use (&$changedItem) {
             $changedItem = $e->getItem();
         });
 
@@ -193,7 +193,7 @@ class SelectListTest extends TestCase
         $list->setFilter('nonexistent');
 
         $selectionChanged = false;
-        $tui->on(SelectionChangeEvent::class, static function () use (&$selectionChanged) {
+        $tui->addListener(static function (SelectionChangeEvent $e) use (&$selectionChanged) {
             $selectionChanged = true;
         });
 
@@ -221,7 +221,7 @@ class SelectListTest extends TestCase
         $list->setFilter('nonexistent');
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, static function () use (&$cancelled) {
+        $tui->addListener(static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 

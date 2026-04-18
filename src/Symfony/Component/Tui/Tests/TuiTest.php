@@ -334,7 +334,7 @@ class TuiTest extends TestCase
 
         $called = false;
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$called, $globalKeys): void {
+        $tui->addListener(static function (InputEvent $event) use (&$called, $globalKeys): void {
             if ($globalKeys->matches($event->getData(), 'quit')) {
                 $called = true;
                 $event->stopPropagation();
@@ -357,7 +357,7 @@ class TuiTest extends TestCase
         $tui->setFocus($input);
 
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->on(InputEvent::class, static function (InputEvent $event) use ($globalKeys): void {
+        $tui->addListener(static function (InputEvent $event) use ($globalKeys): void {
             if ($globalKeys->matches($event->getData(), 'quit')) {
                 $event->stopPropagation();
             }
@@ -379,7 +379,7 @@ class TuiTest extends TestCase
 
         $called = false;
         $globalKeys = new Keybindings(['quit' => [Key::ctrl('c')]]);
-        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$called, $globalKeys): void {
+        $tui->addListener(static function (InputEvent $event) use (&$called, $globalKeys): void {
             if ($globalKeys->matches($event->getData(), 'quit')) {
                 $called = true;
                 $event->stopPropagation();
@@ -398,7 +398,7 @@ class TuiTest extends TestCase
         $tui = new Tui(terminal: $terminal);
 
         $received = null;
-        $tui->on(InputEvent::class, static function (InputEvent $event) use (&$received): void {
+        $tui->addListener(static function (InputEvent $event) use (&$received): void {
             $received = $event->getData();
         });
 
@@ -415,7 +415,7 @@ class TuiTest extends TestCase
         $tui = new Tui(terminal: $terminal);
 
         $keys = new Keybindings(['quit' => [Key::UP]]);
-        $tui->on(InputEvent::class, static function (InputEvent $event) use ($tui, $keys): void {
+        $tui->addListener(static function (InputEvent $event) use ($tui, $keys): void {
             if ($keys->matches($event->getData(), 'quit')) {
                 $tui->stop();
             }
@@ -468,5 +468,88 @@ class TuiTest extends TestCase
 
         $found = $tui->getById('deep');
         $this->assertSame($inner, $found);
+    }
+
+    public function testOnInfersEventClassFromClosureTypeHint()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $received = null;
+        $tui->addListener(static function (InputEvent $event) use (&$received): void {
+            $received = $event->getData();
+        });
+
+        $tui->start();
+        $terminal->simulateInput('x');
+
+        $this->assertSame('x', $received);
+        $tui->stop();
+    }
+
+    public function testOnInfersEventClassWithPriority()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $order = [];
+        $tui->addListener(static function (InputEvent $event) use (&$order): void {
+            $order[] = 'low';
+        });
+        $tui->addListener(static function (InputEvent $event) use (&$order): void {
+            $order[] = 'high';
+        }, 10);
+
+        $tui->start();
+        $terminal->simulateInput('a');
+
+        $this->assertSame(['high', 'low'], $order);
+        $tui->stop();
+    }
+
+    public function testOnThrowsWhenEventClassCannotBeInferred()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot infer the event class');
+
+        $tui->addListener(static function ($event): void {});
+    }
+
+    public function testOnThrowsWhenTypeHintIsNotAClass()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot infer the event class');
+
+        $tui->addListener(static function (int $event): void {});
+    }
+
+    public function testOnWorksWithInvokableObject()
+    {
+        $terminal = new VirtualTerminal(40, 10);
+        $tui = new Tui(terminal: $terminal);
+
+        $received = null;
+        $listener = new class($received) {
+            public function __construct(private mixed &$received) {}
+
+            public function __invoke(InputEvent $event): void
+            {
+                $this->received = $event->getData();
+            }
+        };
+
+        $tui->addListener($listener);
+
+        $tui->start();
+        $terminal->simulateInput('z');
+
+        $this->assertSame('z', $received);
+        $tui->stop();
     }
 }

@@ -114,7 +114,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $submitted = null;
-        $tui->on(SubmitEvent::class, static function (SubmitEvent $e) use (&$submitted) {
+        $tui->addListener(static function (SubmitEvent $e) use (&$submitted) {
             $submitted = $e->getValue();
         });
 
@@ -129,7 +129,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, static function (CancelEvent $e) use (&$cancelled) {
+        $tui->addListener(static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 
@@ -251,7 +251,7 @@ class InputTest extends TestCase
         [$input, $tui] = $this->createInputWithTui();
 
         $changedValue = null;
-        $tui->on(ChangeEvent::class, static function (ChangeEvent $e) use (&$changedValue) {
+        $tui->addListener(static function (ChangeEvent $e) use (&$changedValue) {
             $changedValue = $e->getValue();
         });
 

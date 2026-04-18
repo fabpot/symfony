@@ -317,6 +317,10 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     /**
      * Register a listener for a widget event.
      *
+     * The event class is inferred from the listener's first parameter type hint:
+     *
+     *     $tui->addListener(function (InputEvent $event) { ... });
+     *
      * This is the primary way to react to widget events (submit, cancel,
      * change, select, etc.). All events dispatched by any widget in the
      * tree are routed through this single dispatcher.
@@ -324,19 +328,33 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      * Use {@see AbstractEvent::getTarget()} to filter by source widget when
      * listening for a shared event type like CancelEvent.
      *
-     * @template T of AbstractEvent
-     *
-     * @param class-string<T>   $eventClass The event class to listen for
-     * @param callable(T): void $listener   The listener to invoke
-     * @param int               $priority   Higher = called earlier (default 0)
+     * @param callable $listener The listener to invoke; its first parameter's type hint determines the event class
+     * @param int      $priority Higher = called earlier (default 0)
      *
      * @return $this
      */
-    public function on(string $eventClass, callable $listener, int $priority = 0): static
+    public function addListener(callable $listener, int $priority = 0): static
     {
-        $this->eventDispatcher->addListener($eventClass, $listener, $priority);
+        $this->eventDispatcher->addListener($this->resolveEventClass($listener), $listener, $priority);
 
         return $this;
+    }
+
+    /**
+     * @return class-string
+     */
+    private function resolveEventClass(callable $listener): string
+    {
+        $params = (new \ReflectionFunction($listener(...)))->getParameters();
+        if (!$params || !($type = $params[0]->getType()) instanceof \ReflectionNamedType || $type->isBuiltin()) {
+            throw new InvalidArgumentException('Cannot infer the event class: the listener\'s first parameter must have an event class type hint.');
+        }
+
+        if (!class_exists($class = $type->getName())) {
+            throw new InvalidArgumentException(\sprintf('Cannot use "%s" as an event class as the class does not exist.', $class));
+        }
+
+        return $class;
     }
 
     /**

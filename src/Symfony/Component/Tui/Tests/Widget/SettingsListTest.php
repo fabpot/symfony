@@ -67,7 +67,7 @@ class SettingsListTest extends TestCase
 
         $changedId = null;
         $changedValue = null;
-        $tui->on(SettingChangeEvent::class, static function (SettingChangeEvent $e) use (&$changedId, &$changedValue) {
+        $tui->addListener(static function (SettingChangeEvent $e) use (&$changedId, &$changedValue) {
             $changedId = $e->getId();
             $changedValue = $e->getValue();
         });
@@ -84,7 +84,7 @@ class SettingsListTest extends TestCase
         [$widget, $tui] = $this->createWithTui();
 
         $cancelled = false;
-        $tui->on(CancelEvent::class, static function (CancelEvent $e) use (&$cancelled) {
+        $tui->addListener(static function (CancelEvent $e) use (&$cancelled) {
             $cancelled = true;
         });
 

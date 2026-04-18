@@ -69,7 +69,7 @@ class FocusManagerTest extends TestCase
         $focusManager->add($first)->add($second);
 
         $received = null;
-        $tui->on(FocusEvent::class, static function (FocusEvent $event) use (&$received): void {
+        $tui->addListener(static function (FocusEvent $event) use (&$received): void {
             $received = $event;
         });
 
