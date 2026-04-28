@@ -198,8 +198,7 @@ class LoaderWidget extends AbstractWidget
             return false;
         }
 
-        $steps = $this->frameStepper->advance($deltaTime);
-        if (0 === $steps) {
+        if (0 === $steps = $this->frameStepper->advance($deltaTime)) {
             return false;
         }
 

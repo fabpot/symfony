@@ -14,7 +14,7 @@ namespace Symfony\Component\Tui\Widget;
 /**
  * Interface for widgets that have child widgets.
  *
- * This is a read-only interface for tree traversal. Use ContainerInterface
+ * This is a read-only interface for tree traversal. Use WidgetContainerInterface
  * when you need to add or remove children.
  *
  * @experimental

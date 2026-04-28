@@ -59,8 +59,7 @@ trait BracketedPasteTrait
             return null;
         }
 
-        $endIndex = strpos($data, "\x1b[201~");
-        if (false !== $endIndex) {
+        if (false !== $endIndex = strpos($data, "\x1b[201~")) {
             $this->pasteBuffer .= substr($data, 0, $endIndex);
             $pastedText = $this->pasteBuffer;
             $this->inPaste = false;

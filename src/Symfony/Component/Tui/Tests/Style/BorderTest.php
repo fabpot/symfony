@@ -25,10 +25,10 @@ class BorderTest extends TestCase
     {
         $border = new Border(-5, -3, -1, -2);
 
-        $this->assertSame(0, $border->getTop());
-        $this->assertSame(0, $border->getRight());
-        $this->assertSame(0, $border->getBottom());
-        $this->assertSame(0, $border->getLeft());
+        $this->assertSame(0, $border->top);
+        $this->assertSame(0, $border->right);
+        $this->assertSame(0, $border->bottom);
+        $this->assertSame(0, $border->left);
     }
 
     /**
@@ -39,10 +39,10 @@ class BorderTest extends TestCase
     {
         $border = Border::from($input);
 
-        $this->assertSame($top, $border->getTop());
-        $this->assertSame($right, $border->getRight());
-        $this->assertSame($bottom, $border->getBottom());
-        $this->assertSame($left, $border->getLeft());
+        $this->assertSame($top, $border->top);
+        $this->assertSame($right, $border->right);
+        $this->assertSame($bottom, $border->bottom);
+        $this->assertSame($left, $border->left);
     }
 
     /**
@@ -70,13 +70,13 @@ class BorderTest extends TestCase
         $result = Border::from($original, BorderPattern::ROUNDED);
 
         $this->assertNotSame($original, $result);
-        $this->assertSame(1, $result->getTop());
-        $this->assertSame(2, $result->getRight());
-        $this->assertSame(3, $result->getBottom());
-        $this->assertSame(4, $result->getLeft());
+        $this->assertSame(1, $result->top);
+        $this->assertSame(2, $result->right);
+        $this->assertSame(3, $result->bottom);
+        $this->assertSame(4, $result->left);
         $this->assertSame(
             BorderPattern::rounded()->getChars(),
-            $result->getPattern()->getChars(),
+            $result->pattern->getChars(),
         );
     }
 
@@ -86,11 +86,11 @@ class BorderTest extends TestCase
         $result = Border::from($original, color: '#ff0000');
 
         $this->assertNotSame($original, $result);
-        $this->assertSame(1, $result->getTop());
-        $this->assertSame(2, $result->getRight());
-        $this->assertSame(3, $result->getBottom());
-        $this->assertSame(4, $result->getLeft());
-        $this->assertSame(Color::from('#ff0000')->toRgb(), $result->getColor()->toRgb());
+        $this->assertSame(1, $result->top);
+        $this->assertSame(2, $result->right);
+        $this->assertSame(3, $result->bottom);
+        $this->assertSame(4, $result->left);
+        $this->assertSame(Color::from('#ff0000')->toRgb(), $result->color->toRgb());
     }
 
     /**
@@ -115,10 +115,10 @@ class BorderTest extends TestCase
     #[DataProvider('factoryMethodProvider')]
     public function testFactoryMethods(Border $border, int $top, int $right, int $bottom, int $left)
     {
-        $this->assertSame($top, $border->getTop());
-        $this->assertSame($right, $border->getRight());
-        $this->assertSame($bottom, $border->getBottom());
-        $this->assertSame($left, $border->getLeft());
+        $this->assertSame($top, $border->top);
+        $this->assertSame($right, $border->right);
+        $this->assertSame($bottom, $border->bottom);
+        $this->assertSame($left, $border->left);
     }
 
     /**
@@ -138,12 +138,12 @@ class BorderTest extends TestCase
     #[DataProvider('factoryWithPatternAndColorProvider')]
     public function testFactoryWithPatternAndColor(Border $border, int $top, int $right, int $bottom, int $left, array $expectedChars, array $expectedRgb)
     {
-        $this->assertSame($top, $border->getTop());
-        $this->assertSame($right, $border->getRight());
-        $this->assertSame($bottom, $border->getBottom());
-        $this->assertSame($left, $border->getLeft());
-        $this->assertSame($expectedChars, $border->getPattern()->getChars());
-        $this->assertSame($expectedRgb, $border->getColor()->toRgb());
+        $this->assertSame($top, $border->top);
+        $this->assertSame($right, $border->right);
+        $this->assertSame($bottom, $border->bottom);
+        $this->assertSame($left, $border->left);
+        $this->assertSame($expectedChars, $border->pattern->getChars());
+        $this->assertSame($expectedRgb, $border->color->toRgb());
     }
 
     /**
@@ -296,7 +296,7 @@ class BorderTest extends TestCase
     {
         $border = Border::all(0, BorderPattern::ROUNDED, '#ff0000');
 
-        $this->assertSame(BorderPattern::rounded()->getChars(), $border->getPattern()->getChars());
-        $this->assertSame(Color::from('#ff0000')->toRgb(), $border->getColor()->toRgb());
+        $this->assertSame(BorderPattern::rounded()->getChars(), $border->pattern->getChars());
+        $this->assertSame(Color::from('#ff0000')->toRgb(), $border->color->toRgb());
     }
 }

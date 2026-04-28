@@ -30,13 +30,13 @@ final class Border
 {
     private const DEFAULT_PATTERN = BorderPattern::NORMAL;
 
-    private readonly int $top;
-    private readonly int $right;
-    private readonly int $bottom;
-    private readonly int $left;
+    public readonly int $top;
+    public readonly int $right;
+    public readonly int $bottom;
+    public readonly int $left;
 
-    private readonly BorderPattern $pattern;
-    private readonly ?Color $color;
+    public readonly BorderPattern $pattern;
+    public readonly ?Color $color;
 
     public function __construct(
         int $top,
@@ -52,26 +52,6 @@ final class Border
         $this->left = max(0, $left);
         $this->pattern = self::normalizePattern($pattern);
         $this->color = null !== $color ? Color::from($color) : null;
-    }
-
-    public function getTop(): int
-    {
-        return $this->top;
-    }
-
-    public function getRight(): int
-    {
-        return $this->right;
-    }
-
-    public function getBottom(): int
-    {
-        return $this->bottom;
-    }
-
-    public function getLeft(): int
-    {
-        return $this->left;
     }
 
     /**
@@ -136,22 +116,6 @@ final class Border
     public function getVertical(): int
     {
         return $this->top + $this->bottom;
-    }
-
-    /**
-     * Get the border pattern.
-     */
-    public function getPattern(): BorderPattern
-    {
-        return $this->pattern;
-    }
-
-    /**
-     * Get the border color.
-     */
-    public function getColor(): ?Color
-    {
-        return $this->color;
     }
 
     /**

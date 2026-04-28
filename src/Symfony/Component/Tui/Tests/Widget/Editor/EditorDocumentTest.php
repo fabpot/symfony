@@ -480,6 +480,29 @@ class EditorDocumentTest extends TestCase
         $this->assertSame([], $doc->getPasteMarkers());
     }
 
+    public function testPasteStripsControlBytesToPreventTerminalInjection()
+    {
+        $doc = new EditorDocument();
+        // Simulated hostile clipboard content: tries to set terminal title
+        // (OSC 0), inject color (CSI), and emit BEL/DEL. The introducer ESC
+        // (\x1b), BEL (\x07) and DEL (\x7f) are stripped so the terminal
+        // can't interpret the sequences; remaining payload bytes appear as
+        // visible literal text. TAB and LF must be preserved.
+        $doc->handlePaste("hello\x1b]0;evil\x07\x1b[31mred\x1b[0m\tworld\x7f\nline2");
+
+        $this->assertSame("hello]0;evil[31mred[0m\tworld\nline2", $doc->getText());
+    }
+
+    public function testPasteStripsUtf8EncodedC1Controls()
+    {
+        $doc = new EditorDocument();
+        // U+009B (CSI in C1) encoded as UTF-8 is 0xc2 0x9b. Followed by [31m
+        // it would be a CSI sequence on terminals that honour 8-bit C1.
+        $doc->handlePaste("hello\xc2\x9b[31mworld");
+
+        $this->assertSame('hello[31mworld', $doc->getText());
+    }
+
     public function testLargePasteCreatesMarker()
     {
         $doc = new EditorDocument();

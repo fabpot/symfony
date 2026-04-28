@@ -23,13 +23,6 @@ class FixedStepAccumulatorTest extends TestCase
         new FixedStepAccumulator(0.0);
     }
 
-    public function testComputeStepsReturnsOneWhenDeltaIsNull()
-    {
-        $accumulator = new FixedStepAccumulator(60.0, 5);
-
-        $this->assertSame(1, $accumulator->computeSteps(null));
-    }
-
     public function testComputeStepsAccumulatesFractionalDelta()
     {
         $accumulator = new FixedStepAccumulator(60.0, 5);

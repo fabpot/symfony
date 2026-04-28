@@ -37,6 +37,23 @@ use Symfony\Component\Tui\Widget\Figlet\FigletRenderer;
  *     // Template
  *     <text class="font-big">Hello</text>
  *
+ * ## Raw ANSI passthrough
+ *
+ * The text content is rendered to the terminal as-is, including any ANSI
+ * escape sequences (e.g. SGR color codes). This is intentional: it lets
+ * developers compose pre-styled output. Width tracking handles ANSI
+ * sequences correctly so wrap/truncate still produce the requested visible
+ * width.
+ *
+ * Because the content is not sanitized, **never pass untrusted input
+ * directly to setText() or the constructor** — a hostile string can inject
+ * OSC sequences (terminal title, hyperlinks), CSI sequences that hide or
+ * reposition surrounding output, or other escape-driven misbehavior. Sanitize
+ * upstream (e.g. via {@see \Symfony\Component\Tui\Widget\Util\StringUtils::stripControlBytes()})
+ * before passing user-supplied data here. Other text-bearing widgets
+ * (InputWidget, EditorWidget, MarkdownWidget, SettingItem, ProgressBarWidget::setMessage())
+ * sanitize on input and do not have this caveat.
+ *
  * @experimental
  *
  * @author Fabien Potencier <fabien@symfony.com>
@@ -113,7 +130,7 @@ class TextWidget extends AbstractWidget
             $processedLines = TextWrapper::wrapTextWithAnsi($normalizedText, $contentColumns);
         }
 
-        return [] !== $processedLines ? $processedLines : [''];
+        return $processedLines ?: [''];
     }
 
     /**

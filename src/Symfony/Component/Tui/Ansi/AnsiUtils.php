@@ -81,7 +81,7 @@ final class AnsiUtils
         $len = \strlen($str);
 
         // Ultra-fast path: pure printable ASCII (0x20-0x7E) with no ESC, no tabs, no non-ASCII
-        if (!str_contains($str, "\x1b") && !str_contains($str, "\t") && 1 === preg_match('/^[\x20-\x7E]*$/', $str)) {
+        if (!str_contains($str, "\x1b") && !str_contains($str, "\t") && preg_match('/^[\x20-\x7E]*$/', $str)) {
             return $len;
         }
 
@@ -100,7 +100,7 @@ final class AnsiUtils
             if ($segEnd > $i) {
                 $segLen = $segEnd - $i;
                 $segment = substr($str, $i, $segLen);
-                if (1 === preg_match('/^[\x20-\x7E]*$/', $segment)) {
+                if (preg_match('/^[\x20-\x7E]*$/', $segment)) {
                     // Pure printable ASCII (no tabs, no non-ASCII)
                     $fastWidth += $segLen;
                 } elseif (str_contains($segment, "\t")) {
@@ -108,7 +108,7 @@ final class AnsiUtils
                     $tabCount = substr_count($segment, "\t");
                     $fastWidth += $segLen - $tabCount + ($tabCount * 3);
                     $withoutTabs = str_replace("\t", '', $segment);
-                    if ('' !== $withoutTabs && 1 !== preg_match('/^[\x20-\x7E]*$/', $withoutTabs)) {
+                    if ('' !== $withoutTabs && !preg_match('/^[\x20-\x7E]*$/', $withoutTabs)) {
                         $fastPath = false;
                         break;
                     }
@@ -130,8 +130,7 @@ final class AnsiUtils
                     continue;
                 }
             }
-            $ansi = self::extractAnsiCode($str, $escPos);
-            if (null === $ansi) {
+            if (null === $ansi = self::extractAnsiCode($str, $escPos)) {
                 $fastPath = false;
                 break;
             }
@@ -225,7 +224,7 @@ final class AnsiUtils
 
         // String sequences: OSC (ESC ]), DCS (ESC P), APC (ESC _), PM (ESC ^), SOS (ESC X)
         // All terminated by BEL (0x07) or ST (ESC \)
-        if (']' === $next || 'P' === $next || '_' === $next || '^' === $next || 'X' === $next) {
+        if (\in_array($next, [']', 'P', '_', '^', 'X'], true)) {
             $j = $pos + 2;
             while ($j < $len) {
                 // Skip ahead to next BEL or ESC using strcspn (C-level scan)
@@ -285,7 +284,7 @@ final class AnsiUtils
         }
 
         // Fast path: pure ASCII ellipsis width = strlen (avoids visibleWidth overhead)
-        $ellipsisWidth = '' !== $ellipsis && !str_contains($ellipsis, "\x1b") && 1 === preg_match('/^[\x20-\x7E]*$/', $ellipsis)
+        $ellipsisWidth = '' !== $ellipsis && !str_contains($ellipsis, "\x1b") && preg_match('/^[\x20-\x7E]*$/', $ellipsis)
             ? \strlen($ellipsis)
             : self::visibleWidth($ellipsis);
         $targetWidth = $maxWidth - $ellipsisWidth;
@@ -295,7 +294,7 @@ final class AnsiUtils
         }
 
         // Fast path: pure printable ASCII, direct substr avoids sliceByColumn overhead
-        if ($textVisibleWidth === \strlen($text) && 1 === preg_match('/^[\x20-\x7E]*$/', $text)) {
+        if ($textVisibleWidth === \strlen($text) && preg_match('/^[\x20-\x7E]*$/', $text)) {
             $truncated = substr($text, 0, $targetWidth).$ellipsis;
 
             if ($pad) {
@@ -394,7 +393,7 @@ final class AnsiUtils
             $segLen = $textEnd - $i;
             $segment = substr($line, $i, $segLen);
 
-            if ('' === $segment || 1 === preg_match('/^[\x20-\x7E]*$/', $segment)) {
+            if ('' === $segment || preg_match('/^[\x20-\x7E]*$/', $segment)) {
                 // ASCII fast path: each byte is exactly 1 column wide
                 // Use substr for bulk extraction when possible
                 $segEndCol = $currentCol + $segLen;
@@ -501,7 +500,7 @@ final class AnsiUtils
      */
     public static function isWhitespace(string $char): bool
     {
-        return 1 === preg_match('/\s/', $char);
+        return preg_match('/\s/', $char);
     }
 
     /**
@@ -509,7 +508,7 @@ final class AnsiUtils
      */
     public static function isPunctuation(string $char): bool
     {
-        return 1 === preg_match('/[(){}[\]<>.,;:\'"!?+\-=*\/\\\\|&%^$#@~`]/', $char);
+        return preg_match('/[(){}[\]<>.,;:\'"!?+\-=*\/\\\\|&%^$#@~`]/', $char);
     }
 
     /**
@@ -576,8 +575,7 @@ final class AnsiUtils
                         continue;
                     }
                 }
-                $ansi = self::extractAnsiCode($line, $i);
-                if (null !== $ansi) {
+                if (null !== $ansi = self::extractAnsiCode($line, $i)) {
                     $result .= $ansi['code'];
                     $i += $ansi['length'];
                     continue;
@@ -585,15 +583,14 @@ final class AnsiUtils
             }
 
             // Find next ESC or end of string
-            $textEnd = strpos($line, "\x1b", $i + 1);
-            if (false === $textEnd) {
+            if (false === $textEnd = strpos($line, "\x1b", $i + 1)) {
                 $textEnd = $lineLen;
             }
 
             $segLen = $textEnd - $i;
             $segment = substr($line, $i, $segLen);
 
-            if ('' === $segment || 1 === preg_match('/^[\x20-\x7E]*$/', $segment)) {
+            if ('' === $segment || preg_match('/^[\x20-\x7E]*$/', $segment)) {
                 // ASCII: take up to remaining columns
                 $take = min($segLen, $length - $currentCol);
                 if ($take === $segLen) {

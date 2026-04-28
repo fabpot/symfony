@@ -69,8 +69,8 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     private AdaptativeTicker $adaptativeTicker;
     private EventDispatcherInterface $eventDispatcher;
 
-    /** @var callable(TickEvent): mixed */
-    private $onTick;
+    /** @var (\Closure(TickEvent): mixed)|null */
+    private ?\Closure $onTick = null;
 
     private bool $renderRequested = false;
     private bool $running = false;
@@ -82,20 +82,22 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
     /** @var Suspension<mixed>|null */
     private ?Suspension $runSuspension = null;
 
+    /**
+     * @param Renderer|null $renderer @internal Override the default renderer; framework-internal use only.
+     */
     public function __construct(
         ?StyleSheet $styleSheet = null,
         private readonly TerminalInterface $terminal = new Terminal(),
         ?Keybindings $keybindings = null,
         ?FontRegistry $fontRegistry = null,
         ?Renderer $renderer = null,
-        ?ScreenWriter $screenWriter = null,
         ?EventDispatcherInterface $eventDispatcher = null,
     ) {
         $this->keybindings = $keybindings ?? new Keybindings();
         $this->root = new ContainerWidget();
         $this->root->expandVertically(true);
         $this->renderer = $renderer ?? new Renderer($styleSheet, $fontRegistry);
-        $this->screenWriter = $screenWriter ?? new ScreenWriter($terminal);
+        $this->screenWriter = new ScreenWriter($terminal);
         $this->eventDispatcher = $eventDispatcher ?? new EventDispatcher();
 
         // Share the KeyParser so Kitty protocol state is consistent
@@ -306,7 +308,7 @@ class Tui implements RenderRequestorInterface, TickRuntimeInterface
      */
     public function onTick(?callable $onTick): static
     {
-        $this->onTick = $onTick;
+        $this->onTick = $onTick ? $onTick(...) : null;
         $this->lastTickAt = null;
         $this->lastTickBusyHint = null;
         $this->refreshLoopDriver();

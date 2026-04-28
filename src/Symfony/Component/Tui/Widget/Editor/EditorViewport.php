@@ -53,16 +53,14 @@ final class EditorViewport
      */
     public function pageScroll(array $lines, int $direction, int $pageSize, int $cursorLine, int $cursorCol): ?array
     {
-        $targetLine = max(0, min(\count($lines) - 1, $cursorLine + $direction * $pageSize));
-
-        if ($targetLine !== $cursorLine) {
-            return [
-                'cursor_line' => $targetLine,
-                'cursor_col' => min($cursorCol, \strlen($lines[$targetLine])),
-            ];
+        if ($cursorLine === $targetLine = max(0, min(\count($lines) - 1, $cursorLine + $direction * $pageSize))) {
+            return null;
         }
 
-        return null;
+        return [
+            'cursor_line' => $targetLine,
+            'cursor_col' => min($cursorCol, \strlen($lines[$targetLine])),
+        ];
     }
 
     /**
@@ -98,11 +96,7 @@ final class EditorViewport
         $logicalLinesFitting = self::logicalLinesFitting($lines, $this->scrollOffset, $maxDisplayRows, $columns);
 
         // Calculate visible line count
-        if ($verticallyExpanded) {
-            $visibleLineCount = $logicalLinesFitting;
-        } else {
-            $visibleLineCount = min(max($minVisibleLines, $totalLines), $logicalLinesFitting);
-        }
+        $visibleLineCount = $verticallyExpanded ? $logicalLinesFitting : min(max($minVisibleLines, $totalLines), $logicalLinesFitting);
 
         return [
             'scroll_offset' => $this->scrollOffset,

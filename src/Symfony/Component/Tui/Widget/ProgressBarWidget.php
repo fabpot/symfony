@@ -13,6 +13,7 @@ namespace Symfony\Component\Tui\Widget;
 
 use Symfony\Component\Tui\Ansi\AnsiUtils;
 use Symfony\Component\Tui\Render\RenderContext;
+use Symfony\Component\Tui\Widget\Util\StringUtils;
 
 /**
  * Animated progress bar widget.
@@ -386,7 +387,7 @@ class ProgressBarWidget extends AbstractWidget
      */
     public function setMessage(string $message, string $name = 'message'): static
     {
-        $this->messages[$name] = $message;
+        $this->messages[$name] = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($message));
         $this->invalidate();
         $this->getContext()?->requestRender();
 

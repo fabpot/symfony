@@ -51,8 +51,7 @@ final class TextWrapper
         }
 
         $chunks = [];
-        $graphemes = grapheme_str_split($line);
-        if (false === $graphemes) {
+        if (false === $graphemes = grapheme_str_split($line)) {
             return [['text' => $line, 'start_index' => 0, 'end_index' => \strlen($line)]];
         }
 
@@ -156,7 +155,7 @@ final class TextWrapper
 
         foreach ($inputLines as $inputLine) {
             // Prepend active ANSI codes from previous lines (except for first line)
-            $prefix = [] !== $result ? $tracker->getActiveCodes() : '';
+            $prefix = $result ? $tracker->getActiveCodes() : '';
             $wrapped = self::wrapSingleLine($prefix.$inputLine, $width);
             array_push($result, ...$wrapped);
 
@@ -167,7 +166,7 @@ final class TextWrapper
             }
         }
 
-        return [] !== $result ? $result : [''];
+        return $result ?: [''];
     }
 
     /**
@@ -201,11 +200,10 @@ final class TextWrapper
             // Token itself is too long - break it character by character
             if ($tokenVisibleLength > $width && !$isWhitespace) {
                 if ('' !== $currentLine) {
-                    $lineEndReset = $tracker->getLineEndReset();
-                    if ('' !== $lineEndReset) {
+                    if ('' !== $lineEndReset = $tracker->getLineEndReset()) {
                         $currentLine .= $lineEndReset;
                     }
-                    $wrapped[] = $currentLine;
+                    $wrapped[] = rtrim($currentLine);
                     $currentLine = '';
                     $currentVisibleLength = 0;
                 }
@@ -215,7 +213,7 @@ final class TextWrapper
                 $brokenLines = $broken['lines'];
                 $lastIndex = \count($brokenLines) - 1;
                 for ($i = 0; $i < $lastIndex; ++$i) {
-                    $wrapped[] = $brokenLines[$i];
+                    $wrapped[] = rtrim($brokenLines[$i]);
                 }
                 $currentLine = $brokenLines[$lastIndex] ?? '';
                 $currentVisibleLength = $broken['last_width'];
@@ -228,8 +226,7 @@ final class TextWrapper
             if ($totalNeeded > $width && $currentVisibleLength > 0) {
                 // Trim trailing whitespace, then add underline reset
                 $lineToWrap = rtrim($currentLine);
-                $lineEndReset = $tracker->getLineEndReset();
-                if ('' !== $lineEndReset) {
+                if ('' !== $lineEndReset = $tracker->getLineEndReset()) {
                     $lineToWrap .= $lineEndReset;
                 }
                 $wrapped[] = $lineToWrap;
@@ -254,11 +251,10 @@ final class TextWrapper
         }
 
         if ('' !== $currentLine) {
-            $wrapped[] = $currentLine;
+            $wrapped[] = rtrim($currentLine);
         }
 
-        // Trailing whitespace can cause lines to exceed the requested width
-        return [] !== $wrapped ? array_map('rtrim', $wrapped) : [''];
+        return $wrapped ?: [''];
     }
 
     /**
@@ -392,28 +388,22 @@ final class TextWrapper
             $byte = $word[$i];
 
             // Only check for ANSI when we see an ESC byte
-            if ("\x1b" === $byte) {
-                $ansi = AnsiUtils::extractAnsiCode($word, $i);
-                if (null !== $ansi) {
-                    $segments[] = ['type' => 'ansi', 'value' => $ansi['code']];
-                    $i += $ansi['length'];
-                    continue;
-                }
+            if ("\x1b" === $byte && null !== $ansi = AnsiUtils::extractAnsiCode($word, $i)) {
+                $segments[] = ['type' => 'ansi', 'value' => $ansi['code']];
+                $i += $ansi['length'];
+                continue;
             }
 
             // Find the next ESC byte or end of string for the text portion
-            $end = strpos($word, "\x1b", $i + 1);
-            if (false === $end) {
+            if (false === $end = strpos($word, "\x1b", $i + 1)) {
                 $end = $wordLen;
             }
 
             // Segment this non-ANSI portion into graphemes
             $textPortion = substr($word, $i, $end - $i);
             $graphemes = grapheme_str_split($textPortion);
-            if (false !== $graphemes) {
-                foreach ($graphemes as $grapheme) {
-                    $segments[] = ['type' => 'grapheme', 'value' => $grapheme];
-                }
+            foreach ($graphemes ?: [] as $grapheme) {
+                $segments[] = ['type' => 'grapheme', 'value' => $grapheme];
             }
             $i = $end;
         }
@@ -426,8 +416,7 @@ final class TextWrapper
                 continue;
             }
 
-            $grapheme = $seg['value'];
-            if ('' === $grapheme) {
+            if ('' === $grapheme = $seg['value']) {
                 continue;
             }
 
@@ -435,8 +424,7 @@ final class TextWrapper
 
             if ($currentWidth + $graphemeWidth > $width) {
                 // Add specific reset for underline only (preserves background)
-                $lineEndReset = $tracker->getLineEndReset();
-                if ('' !== $lineEndReset) {
+                if ('' !== $lineEndReset = $tracker->getLineEndReset()) {
                     $currentLine .= $lineEndReset;
                 }
                 $lines[] = $currentLine;
@@ -452,7 +440,7 @@ final class TextWrapper
             $lines[] = $currentLine;
         }
 
-        if ([] === $lines) {
+        if (!$lines) {
             return ['lines' => [''], 'last_width' => 0];
         }
 

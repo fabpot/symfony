@@ -41,26 +41,20 @@ final class ScreenBufferHtmlRenderer
     {
         $cells = $screen->getCells();
         $height = $screen->getHeight();
-        $result = [];
-        $lastNonEmpty = -1;
+        $result = '';
+        $lastNonEmptyEnd = 0;
 
         for ($row = 0; $row < $height; ++$row) {
-            $line = $this->convertLine($cells[$row] ?? []);
-            $textOnly = $this->getLineText($cells[$row] ?? []);
-            if ('' !== rtrim($textOnly)) {
-                $lastNonEmpty = $row;
+            if ($row > 0) {
+                $result .= "\n";
             }
-            $result[] = $line;
+            $result .= $this->convertLine($cells[$row] ?? []);
+            if ('' !== rtrim($this->getLineText($cells[$row] ?? []))) {
+                $lastNonEmptyEnd = \strlen($result);
+            }
         }
 
-        // Only include lines up to the last non-empty line
-        if ($lastNonEmpty >= 0) {
-            $result = \array_slice($result, 0, $lastNonEmpty + 1);
-        } else {
-            $result = [];
-        }
-
-        return implode("\n", $result);
+        return substr($result, 0, $lastNonEmptyEnd);
     }
 
     /**
@@ -70,7 +64,7 @@ final class ScreenBufferHtmlRenderer
      */
     private function convertLine(array $cells): string
     {
-        if ([] === $cells) {
+        if (!$cells) {
             return '';
         }
 
@@ -96,12 +90,9 @@ final class ScreenBufferHtmlRenderer
                     $html .= '</span>';
                     $inSpan = false;
                 }
-                if ('' !== $style) {
-                    $css = $this->ansiToCss($style);
-                    if ('' !== $css) {
-                        $html .= '<span style="'.$css.'">';
-                        $inSpan = true;
-                    }
+                if ('' !== $style && '' !== $css = $this->ansiToCss($style)) {
+                    $html .= '<span style="'.$css.'">';
+                    $inSpan = true;
                 }
                 $lastStyle = $style;
             }
@@ -123,7 +114,7 @@ final class ScreenBufferHtmlRenderer
      */
     private function getLineText(array $cells): string
     {
-        if ([] === $cells) {
+        if (!$cells) {
             return '';
         }
 
@@ -156,76 +147,46 @@ final class ScreenBufferHtmlRenderer
         $params = '' !== $matches[1] ? array_map('intval', explode(';', $matches[1])) : [0];
         $css = [];
 
-        $i = 0;
+        $i = -1;
         $paramCount = \count($params);
-        while ($i < $paramCount) {
-            $code = $params[$i];
-
-            switch ($code) {
-                case 0: // Reset
-                    $css = [];
-                    break;
-                case 1: // Bold
-                    $css['font-weight'] = 'bold';
-                    break;
-                case 2: // Dim
-                    $css['opacity'] = '0.7';
-                    break;
-                case 3: // Italic
-                    $css['font-style'] = 'italic';
-                    break;
-                case 4: // Underline
-                    $css['--underline'] = true;
-                    break;
-                case 7: // Reverse video - mark for fg/bg swap
-                    $css['--reverse'] = true;
-                    break;
-                case 27: // Reverse off
-                    unset($css['--reverse']);
-                    break;
-                case 9: // Strikethrough
-                    $css['--strikethrough'] = true;
-                    break;
-
-                default:
-                    // Foreground colors (30-37, 90-97)
-                    if ($color = Color::fromSgrForeground($code)) {
-                        $css['color'] = $color->toHex();
-                        break;
-                    }
-
-                    // Background colors (40-47, 100-107)
-                    if ($color = Color::fromSgrBackground($code)) {
-                        $css['background-color'] = $color->toHex();
-                        break;
-                    }
-
-                    // 256-color mode (38;5;N / 48;5;N) and RGB truecolor (38;2;R;G;B / 48;2;R;G;B)
-                    if (38 === $code || 48 === $code || 58 === $code) {
-                        $cssProp = match ($code) {
-                            38 => 'color',
-                            48 => 'background-color',
-                            58 => 'text-decoration-color',
-                        };
-                        if (isset($params[$i + 1]) && 5 === $params[$i + 1] && isset($params[$i + 2])) {
-                            $css[$cssProp] = Color::palette($params[$i + 2])->toHex();
-                            $i += 2;
-                        } elseif (isset($params[$i + 1]) && 2 === $params[$i + 1] && isset($params[$i + 4])) {
-                            $css[$cssProp] = Color::rgb($params[$i + 2], $params[$i + 3], $params[$i + 4])->toHex();
-                            $i += 4;
-                        }
-                        break;
-                    }
-
-                    // Default underline color
-                    if (59 === $code) {
-                        unset($css['text-decoration-color']);
-                    }
-
-                    break;
+        while (++$i < $paramCount) {
+            if (0 === $code = $params[$i]) {
+                $css = []; // Reset
+            } elseif (1 === $code) {
+                $css['font-weight'] = 'bold';
+            } elseif (2 === $code) {
+                $css['opacity'] = '0.7'; // Dim
+            } elseif (3 === $code) {
+                $css['font-style'] = 'italic';
+            } elseif (4 === $code) {
+                $css['--underline'] = true;
+            } elseif (7 === $code) {
+                $css['--reverse'] = true; // Mark for fg/bg swap
+            } elseif (27 === $code) {
+                unset($css['--reverse']); // Reverse off
+            } elseif (9 === $code) {
+                $css['--strikethrough'] = true;
+            } elseif ($color = Color::fromSgrForeground($code)) {
+                $css['color'] = $color->toHex(); // Foreground colors (30-37, 90-97)
+            } elseif ($color = Color::fromSgrBackground($code)) {
+                $css['background-color'] = $color->toHex(); // Background colors (40-47, 100-107)
+            } elseif (38 === $code || 48 === $code || 58 === $code) {
+                // 256-color mode (38;5;N / 48;5;N) and RGB truecolor (38;2;R;G;B / 48;2;R;G;B)
+                $cssProp = match ($code) {
+                    38 => 'color',
+                    48 => 'background-color',
+                    58 => 'text-decoration-color',
+                };
+                if (isset($params[$i + 1]) && 5 === $params[$i + 1] && isset($params[$i + 2])) {
+                    $css[$cssProp] = Color::palette($params[$i + 2])->toHex();
+                    $i += 2;
+                } elseif (isset($params[$i + 1]) && 2 === $params[$i + 1] && isset($params[$i + 4])) {
+                    $css[$cssProp] = Color::rgb($params[$i + 2], $params[$i + 3], $params[$i + 4])->toHex();
+                    $i += 4;
+                }
+            } elseif (59 === $code) {
+                unset($css['text-decoration-color']);
             }
-
-            ++$i;
         }
 
         // Combine text-decoration from underline and strikethrough markers

@@ -71,7 +71,7 @@ final class FigletRenderer
         $outputLines = array_map('rtrim', $outputLines);
 
         // Remove blank trailing lines
-        while ([] !== $outputLines && '' === end($outputLines)) {
+        while ($outputLines && '' === end($outputLines)) {
             array_pop($outputLines);
         }
 

@@ -31,15 +31,15 @@ class StyleTest extends TestCase
         $style = Style::border([2], BorderPattern::DOUBLE, 'red');
         $border = $style->getBorder();
 
-        $this->assertSame(2, $border->getTop());
-        $this->assertSame(2, $border->getRight());
-        $this->assertSame(2, $border->getBottom());
-        $this->assertSame(2, $border->getLeft());
-        $this->assertSame(BorderPattern::double()->getChars(), $border->getPattern()->getChars());
-        $this->assertSame(BorderPattern::double()->getStrategies(), $border->getPattern()->getStrategies());
+        $this->assertSame(2, $border->top);
+        $this->assertSame(2, $border->right);
+        $this->assertSame(2, $border->bottom);
+        $this->assertSame(2, $border->left);
+        $this->assertSame(BorderPattern::double()->getChars(), $border->pattern->getChars());
+        $this->assertSame(BorderPattern::double()->getStrategies(), $border->pattern->getStrategies());
         $this->assertSame(
             Color::from('red')->toForegroundCode(),
-            $border->getColor()?->toForegroundCode(),
+            $border->color?->toForegroundCode(),
         );
     }
 
@@ -49,10 +49,10 @@ class StyleTest extends TestCase
             ->withBorderPattern(BorderPattern::WIDE)
             ->withBorderColor('yellow');
 
-        $this->assertSame(BorderPattern::wide()->getChars(), $style->getBorder()->getPattern()->getChars());
+        $this->assertSame(BorderPattern::wide()->getChars(), $style->getBorder()->pattern->getChars());
         $this->assertSame(
             Color::from('yellow')->toForegroundCode(),
-            $style->getBorder()->getColor()?->toForegroundCode(),
+            $style->getBorder()->color?->toForegroundCode(),
         );
     }
 

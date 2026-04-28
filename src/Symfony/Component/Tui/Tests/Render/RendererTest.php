@@ -616,10 +616,10 @@ class RendererTest extends TestCase
         $result = $renderer->render($root, 40, 10);
         $rect = $renderer->getWidgetRect($root);
 
-        $this->assertSame(0, $rect->getRow());
-        $this->assertSame(0, $rect->getCol());
-        $this->assertSame(40, $rect->getColumns());
-        $this->assertSame(\count($result), $rect->getRows());
+        $this->assertSame(0, $rect->row);
+        $this->assertSame(0, $rect->col);
+        $this->assertSame(40, $rect->columns);
+        $this->assertSame(\count($result), $rect->rows);
     }
 
     public function testWidgetPositionTrackingForVerticalChildren()
@@ -640,14 +640,14 @@ class RendererTest extends TestCase
         $rect3 = $renderer->getWidgetRect($child3);
 
         // Each child takes 1 row, no gap
-        $this->assertSame(0, $rect1->getRow());
-        $this->assertSame(1, $rect2->getRow());
-        $this->assertSame(2, $rect3->getRow());
+        $this->assertSame(0, $rect1->row);
+        $this->assertSame(1, $rect2->row);
+        $this->assertSame(2, $rect3->row);
 
         // All children span the full width
-        $this->assertSame(40, $rect1->getColumns());
-        $this->assertSame(40, $rect2->getColumns());
-        $this->assertSame(40, $rect3->getColumns());
+        $this->assertSame(40, $rect1->columns);
+        $this->assertSame(40, $rect2->columns);
+        $this->assertSame(40, $rect3->columns);
     }
 
     public function testWidgetPositionTrackingWithGap()
@@ -666,8 +666,8 @@ class RendererTest extends TestCase
         $rect2 = $renderer->getWidgetRect($child2);
 
         // First child at row 0, second at row 3 (1 row content + 2 gap)
-        $this->assertSame(0, $rect1->getRow());
-        $this->assertSame(3, $rect2->getRow());
+        $this->assertSame(0, $rect1->row);
+        $this->assertSame(3, $rect2->row);
     }
 
     public function testWidgetPositionTrackingWithPaddingAndBorder()
@@ -686,9 +686,9 @@ class RendererTest extends TestCase
         $rect = $renderer->getWidgetRect($child);
 
         // Chrome offset: border top (1) + padding top (2) = 3
-        $this->assertSame(3, $rect->getRow());
+        $this->assertSame(3, $rect->row);
         // Chrome offset: border left (1) + padding left (1) = 2
-        $this->assertSame(2, $rect->getCol());
+        $this->assertSame(2, $rect->col);
     }
 
     public function testWidgetPositionTrackingForHorizontalChildren()
@@ -707,16 +707,16 @@ class RendererTest extends TestCase
         $rect2 = $renderer->getWidgetRect($child2);
 
         // Both at row 0
-        $this->assertSame(0, $rect1->getRow());
-        $this->assertSame(0, $rect2->getRow());
+        $this->assertSame(0, $rect1->row);
+        $this->assertSame(0, $rect2->row);
 
         // First child starts at col 0, second at col 20 (40 / 2 children)
-        $this->assertSame(0, $rect1->getCol());
-        $this->assertSame(20, $rect2->getCol());
+        $this->assertSame(0, $rect1->col);
+        $this->assertSame(20, $rect2->col);
 
         // Each gets half the width
-        $this->assertSame(20, $rect1->getColumns());
-        $this->assertSame(20, $rect2->getColumns());
+        $this->assertSame(20, $rect1->columns);
+        $this->assertSame(20, $rect2->columns);
     }
 
     public function testWidgetPositionTrackingForNestedContainers()
@@ -737,12 +737,12 @@ class RendererTest extends TestCase
         $leafRect = $renderer->getWidgetRect($leaf);
 
         // Inner container: root padding-top=1, padding-left=2
-        $this->assertSame(1, $innerRect->getRow());
-        $this->assertSame(2, $innerRect->getCol());
+        $this->assertSame(1, $innerRect->row);
+        $this->assertSame(2, $innerRect->col);
 
         // Leaf: root padding(1,2) + inner padding(1,3) = row 2, col 5
-        $this->assertSame(2, $leafRect->getRow());
-        $this->assertSame(5, $leafRect->getCol());
+        $this->assertSame(2, $leafRect->row);
+        $this->assertSame(5, $leafRect->col);
     }
 
     public function testWidgetPositionTrackingReturnsNullForUnrenderedWidget()
@@ -785,14 +785,14 @@ class RendererTest extends TestCase
         $footerLeafRect = $renderer->getWidgetRect($footerLeaf);
 
         // Fill child starts at row 0
-        $this->assertSame(0, $fillRect->getRow());
+        $this->assertSame(0, $fillRect->row);
 
         // Footer starts after fill child (20 rows - 1 row footer = 19 rows fill)
-        $this->assertSame(19, $footerRect->getRow());
+        $this->assertSame(19, $footerRect->row);
 
         // Footer leaf accounts for footer's padding-left=1
-        $this->assertSame(19, $footerLeafRect->getRow());
-        $this->assertSame(1, $footerLeafRect->getCol());
+        $this->assertSame(19, $footerLeafRect->row);
+        $this->assertSame(1, $footerLeafRect->col);
     }
 
     public function testWidgetPositionTrackingForDescendantsInHorizontalLayout()
@@ -822,12 +822,12 @@ class RendererTest extends TestCase
         $rightLeafRect = $renderer->getWidgetRect($rightLeaf);
 
         // Left leaf: pane padding top=1, left=2
-        $this->assertSame(1, $leftLeafRect->getRow());
-        $this->assertSame(2, $leftLeafRect->getCol());
+        $this->assertSame(1, $leftLeafRect->row);
+        $this->assertSame(2, $leftLeafRect->col);
 
         // Right leaf: pane starts at col 20 (40/2), padding top=1, left=2
-        $this->assertSame(1, $rightLeafRect->getRow());
-        $this->assertSame(22, $rightLeafRect->getCol());
+        $this->assertSame(1, $rightLeafRect->row);
+        $this->assertSame(22, $rightLeafRect->col);
     }
 
     public function testVerticalLayoutDoesNotReRenderLeafChildrenInSecondPass()
@@ -963,15 +963,15 @@ class RendererTest extends TestCase
         $renderer->render($root, 40, 20);
         $leafRect = $renderer->getWidgetRect($leaf);
         $this->assertNotNull($leafRect);
-        $this->assertSame(1, $leafRect->getRow());
-        $this->assertSame(2, $leafRect->getCol());
+        $this->assertSame(1, $leafRect->row);
+        $this->assertSame(2, $leafRect->col);
 
         // Second render: inner + leaf unchanged, positions still tracked
         $renderer->render($root, 40, 20);
         $leafRect2 = $renderer->getWidgetRect($leaf);
         $this->assertNotNull($leafRect2);
-        $this->assertSame(1, $leafRect2->getRow());
-        $this->assertSame(2, $leafRect2->getCol());
+        $this->assertSame(1, $leafRect2->row);
+        $this->assertSame(2, $leafRect2->col);
     }
 
     // ---------------------------------------------------------------

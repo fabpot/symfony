@@ -255,7 +255,7 @@ class StyleSheet
         }
 
         // 5. Breakpoint rules (ascending min-columns order)
-        if (null !== $columns && [] !== $this->breakpoints) {
+        if (null !== $columns && $this->breakpoints) {
             $applicableStyles = $this->resolveBreakpoints($widget, $columns, $applicableStyles, $cssClasses);
         }
 
@@ -461,7 +461,7 @@ class StyleSheet
      */
     protected static function mergeStyles(array $styles): Style
     {
-        if ([] === $styles) {
+        if (!$styles) {
             return new Style();
         }
 

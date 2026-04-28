@@ -174,7 +174,7 @@ class TailwindStylesheet extends StyleSheet
     {
         $utilityClasses = $this->partitionClasses($widget)['utility'];
 
-        if ([] === $utilityClasses) {
+        if (!$utilityClasses) {
             return $applicableStyles;
         }
 
@@ -223,7 +223,7 @@ class TailwindStylesheet extends StyleSheet
             }
         }
 
-        if ([] === $slots) {
+        if (!$slots) {
             return null;
         }
 

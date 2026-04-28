@@ -46,9 +46,7 @@ final class FigletFont
             throw new InvalidArgumentException(\sprintf('FIGlet font file "%s" does not exist.', $path));
         }
 
-        $content = file_get_contents($path);
-
-        if (false === $content) {
+        if (false === $content = file_get_contents($path)) {
             throw new InvalidArgumentException(\sprintf('Cannot read FIGlet font file "%s".', $path));
         }
 

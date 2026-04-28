@@ -82,7 +82,7 @@ class FigletRendererTest extends TestCase
         $lines = $renderer->render('A');
 
         // Last line should not be blank
-        if ([] !== $lines) {
+        if ($lines) {
             $this->assertNotSame('', end($lines), 'Trailing blank lines should be removed');
         }
     }
@@ -189,6 +189,6 @@ class FigletRendererTest extends TestCase
     {
         $lengths = array_map('strlen', $lines);
 
-        return [] !== $lengths ? max($lengths) : 0;
+        return $lengths ? max($lengths) : 0;
     }
 }

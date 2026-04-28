@@ -34,17 +34,11 @@ use Symfony\Component\Tui\Widget\VerticallyExpandableInterface;
  */
 final class LayoutEngine
 {
-    private WidgetRendererInterface $widgetRenderer;
-
     public function __construct(
+        private readonly WidgetRendererInterface $widgetRenderer,
         private readonly PositionTracker $positionTracker,
         private readonly FontRegistry $fontRegistry,
     ) {
-    }
-
-    public function setWidgetRenderer(WidgetRendererInterface $widgetRenderer): void
-    {
-        $this->widgetRenderer = $widgetRenderer;
     }
 
     /**
@@ -54,14 +48,8 @@ final class LayoutEngine
      *
      * @return string[]
      */
-    public function layout(
-        array $children,
-        int $columns,
-        int $rows,
-        int $gap,
-        Direction $direction,
-        ?string $gapLine = null,
-    ): array {
+    public function layout(array $children, int $columns, int $rows, int $gap, Direction $direction, ?string $gapLine = null): array
+    {
         if (Direction::Horizontal === $direction) {
             return $this->layoutHorizontal($children, $columns, $rows, $gap);
         }
@@ -76,7 +64,7 @@ final class LayoutEngine
      */
     public function computeAlignOffset(array $lines, int $columns, Align $align): int
     {
-        if ([] === $lines) {
+        if (!$lines) {
             return 0;
         }
 
@@ -135,7 +123,7 @@ final class LayoutEngine
      */
     private function layoutVertical(array $children, int $columns, int $rows, int $gap, ?string $gapLine = null): array
     {
-        if ([] === $children) {
+        if (!$children) {
             return [];
         }
 
@@ -214,7 +202,7 @@ final class LayoutEngine
                 $childLines = $nonFillRenders[$index] ?? $this->widgetRenderer->renderWidget($child, new RenderContext($columns, $rows, null, $this->fontRegistry));
 
                 // Skip gap for children that render nothing
-                if ([] === $childLines) {
+                if (!$childLines) {
                     continue;
                 }
 
@@ -270,8 +258,7 @@ final class LayoutEngine
      */
     private function layoutHorizontal(array $children, int $columns, int $rows, int $gap): array
     {
-        $count = \count($children);
-        if (0 === $count) {
+        if (!$count = \count($children)) {
             return [];
         }
 
@@ -394,13 +381,8 @@ final class LayoutEngine
      *
      * @return array<int, int>
      */
-    private function computeFlexColumnWidths(
-        array $children,
-        array $flexValues,
-        bool $anyFlexSet,
-        int $availableColumns,
-        int $rows,
-    ): array {
+    private function computeFlexColumnWidths(array $children, array $flexValues, bool $anyFlexSet, int $availableColumns, int $rows): array
+    {
         $count = \count($children);
 
         // No flex set: equal distribution (backward compatible)
@@ -424,9 +406,7 @@ final class LayoutEngine
         $savedStack = $this->positionTracker->suppressStack();
 
         foreach ($children as $index => $child) {
-            $flex = $flexValues[$index];
-
-            if (0 === $flex) {
+            if (0 === $flex = $flexValues[$index]) {
                 // Intrinsic width: measure the child's natural content width
                 // plus chrome (border/padding). This uses measureIntrinsicWidth()
                 // instead of renderWidget() because renderWidget() pads lines

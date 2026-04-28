@@ -125,7 +125,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
             return;
         }
 
-        if ([] === $this->items) {
+        if (!$this->items) {
             return;
         }
 
@@ -289,8 +289,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
 
         $values = $item->getValues();
         $valueCount = \count($values);
-        $currentIndex = array_search($item->getCurrentValue(), $values, true);
-        $currentIndex = false === $currentIndex ? 0 : (int) $currentIndex;
+        $currentIndex = array_search($item->getCurrentValue(), $values, true) ?: 0;
 
         // Calculate next index with wrapping
         $nextIndex = ($currentIndex + $direction + $valueCount) % $valueCount;
@@ -333,7 +332,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
         if ($item->hasValues()) {
             $values = $item->getValues();
             $currentIndex = array_search($item->getCurrentValue(), $values, true);
-            $nextIndex = (false === $currentIndex ? 0 : (int) $currentIndex + 1) % \count($values);
+            $nextIndex = (false === $currentIndex ? 0 : $currentIndex + 1) % \count($values);
             $newValue = $values[$nextIndex];
 
             $item->setCurrentValue($newValue);
@@ -349,10 +348,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
                 $this->removeSubmenuListeners();
 
                 if (null !== $this->activeSubmenu) {
-                    $context = $this->getContext();
-                    if (null !== $context) {
-                        $context->detachChild($this->activeSubmenu);
-                    }
+                    $this->getContext()?->detachChild($this->activeSubmenu);
                 }
                 $this->activeSubmenu = null;
 
@@ -401,7 +397,7 @@ class SettingsListWidget extends AbstractWidget implements FocusableInterface, P
 
     private function removeSubmenuListeners(): void
     {
-        if ([] === $this->submenuListeners) {
+        if (!$this->submenuListeners) {
             return;
         }
 

@@ -46,18 +46,8 @@ final class EditorRenderer
      *
      * @return string[]
      */
-    public function render(
-        array $lines,
-        array $viewport,
-        int $cursorLine,
-        int $cursorCol,
-        int $columns,
-        int $maxDisplayRows,
-        bool $verticallyExpanded,
-        bool $focused,
-        CursorShape $cursorShape,
-        Style $frameStyle,
-    ): array {
+    public function render(array $lines, array $viewport, int $cursorLine, int $cursorCol, int $columns, int $maxDisplayRows, bool $verticallyExpanded, bool $focused, CursorShape $cursorShape, Style $frameStyle, ): array
+    {
         $result = [];
 
         // Top border (with scroll indicator if scrolled down)
@@ -160,8 +150,7 @@ final class EditorRenderer
         $beforeCursor = '';
         $cursorCharIndex = 0;
 
-        $graphemes = grapheme_str_split($chunkText);
-        if (false !== $graphemes) {
+        if (false !== $graphemes = grapheme_str_split($chunkText)) {
             $bytePos = 0;
             $found = false;
             foreach ($graphemes as $index => $grapheme) {
@@ -187,8 +176,7 @@ final class EditorRenderer
                 $atCursor = $graphemes[$cursorCharIndex];
                 $afterCursor = implode('', \array_slice($graphemes, $cursorCharIndex + 1));
             }
-        }
-        if (false === $graphemes) {
+        } else {
             $beforeCursor = substr($chunkText, 0, $cursorPosInChunk);
             $afterCursor = $cursorPosInChunk < \strlen($chunkText) ? substr($chunkText, $cursorPosInChunk + 1) : '';
             $atCursor = $chunkText[$cursorPosInChunk] ?? '';
@@ -202,15 +190,13 @@ final class EditorRenderer
         }
 
         // Cursor is at the end of the line
-        $beforeCursorWidth = AnsiUtils::visibleWidth($beforeCursor);
-        if ($beforeCursorWidth < $columns) {
+        if ($columns > AnsiUtils::visibleWidth($beforeCursor)) {
             // Room for cursor after the text
             return $beforeCursor.$marker.' ';
         }
 
         // Full width, place cursor on the last grapheme
-        $graphemesFallback = grapheme_str_split($beforeCursor);
-        if (false !== $graphemesFallback && [] !== $graphemesFallback) {
+        if ($graphemesFallback = grapheme_str_split($beforeCursor)) {
             /** @var string $lastGrapheme */
             $lastGrapheme = array_pop($graphemesFallback);
 

@@ -39,10 +39,10 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame($top, $resolved->getPadding()->getTop());
-        $this->assertSame($right, $resolved->getPadding()->getRight());
-        $this->assertSame($bottom, $resolved->getPadding()->getBottom());
-        $this->assertSame($left, $resolved->getPadding()->getLeft());
+        $this->assertSame($top, $resolved->getPadding()->top);
+        $this->assertSame($right, $resolved->getPadding()->right);
+        $this->assertSame($bottom, $resolved->getPadding()->bottom);
+        $this->assertSame($left, $resolved->getPadding()->left);
     }
 
     /**
@@ -67,10 +67,10 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getPadding()->getTop());
-        $this->assertSame(2, $resolved->getPadding()->getRight());
-        $this->assertSame(3, $resolved->getPadding()->getBottom());
-        $this->assertSame(4, $resolved->getPadding()->getLeft());
+        $this->assertSame(1, $resolved->getPadding()->top);
+        $this->assertSame(2, $resolved->getPadding()->right);
+        $this->assertSame(3, $resolved->getPadding()->bottom);
+        $this->assertSame(4, $resolved->getPadding()->left);
     }
 
     public function testPaddingLastWins()
@@ -82,8 +82,8 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(4, $resolved->getPadding()->getTop());
-        $this->assertSame(4, $resolved->getPadding()->getRight());
+        $this->assertSame(4, $resolved->getPadding()->top);
+        $this->assertSame(4, $resolved->getPadding()->right);
     }
 
     public function testPaddingPartialOverride()
@@ -95,10 +95,10 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(2, $resolved->getPadding()->getTop());
-        $this->assertSame(2, $resolved->getPadding()->getRight());
-        $this->assertSame(2, $resolved->getPadding()->getBottom());
-        $this->assertSame(5, $resolved->getPadding()->getLeft());
+        $this->assertSame(2, $resolved->getPadding()->top);
+        $this->assertSame(2, $resolved->getPadding()->right);
+        $this->assertSame(2, $resolved->getPadding()->bottom);
+        $this->assertSame(5, $resolved->getPadding()->left);
     }
 
     // --- Border ---
@@ -112,10 +112,10 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame($top, $resolved->getBorder()->getTop());
-        $this->assertSame($right, $resolved->getBorder()->getRight());
-        $this->assertSame($bottom, $resolved->getBorder()->getBottom());
-        $this->assertSame($left, $resolved->getBorder()->getLeft());
+        $this->assertSame($top, $resolved->getBorder()->top);
+        $this->assertSame($right, $resolved->getBorder()->right);
+        $this->assertSame($bottom, $resolved->getBorder()->bottom);
+        $this->assertSame($left, $resolved->getBorder()->left);
     }
 
     /**
@@ -137,11 +137,11 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(0, $resolved->getBorder()->getTop());
-        $this->assertSame(0, $resolved->getBorder()->getRight());
-        $this->assertSame(0, $resolved->getBorder()->getBottom());
-        $this->assertSame(0, $resolved->getBorder()->getLeft());
-        $this->assertTrue($resolved->getBorder()->getPattern()->isNone());
+        $this->assertSame(0, $resolved->getBorder()->top);
+        $this->assertSame(0, $resolved->getBorder()->right);
+        $this->assertSame(0, $resolved->getBorder()->bottom);
+        $this->assertSame(0, $resolved->getBorder()->left);
+        $this->assertTrue($resolved->getBorder()->pattern->isNone());
     }
 
     public function testBorderPattern()
@@ -153,8 +153,8 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getBorder()->getTop());
-        $this->assertFalse($resolved->getBorder()->getPattern()->isNone());
+        $this->assertSame(1, $resolved->getBorder()->top);
+        $this->assertFalse($resolved->getBorder()->pattern->isNone());
     }
 
     public function testBorderColor()
@@ -166,8 +166,8 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getBorder()->getTop());
-        $this->assertSame(Color::hex('#ef4444')->toRgb(), $resolved->getBorder()->getColor()->toRgb());
+        $this->assertSame(1, $resolved->getBorder()->top);
+        $this->assertSame(Color::hex('#ef4444')->toRgb(), $resolved->getBorder()->color->toRgb());
     }
 
     public function testBorderComposition()
@@ -180,12 +180,12 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(2, $resolved->getBorder()->getTop());
-        $this->assertSame(2, $resolved->getBorder()->getRight());
-        $this->assertSame(2, $resolved->getBorder()->getBottom());
-        $this->assertSame(2, $resolved->getBorder()->getLeft());
-        $this->assertSame(Color::hex('#06b6d4')->tint(20)->toRgb(), $resolved->getBorder()->getColor()->toRgb());
-        $this->assertFalse($resolved->getBorder()->getPattern()->isNone());
+        $this->assertSame(2, $resolved->getBorder()->top);
+        $this->assertSame(2, $resolved->getBorder()->right);
+        $this->assertSame(2, $resolved->getBorder()->bottom);
+        $this->assertSame(2, $resolved->getBorder()->left);
+        $this->assertSame(Color::hex('#06b6d4')->tint(20)->toRgb(), $resolved->getBorder()->color->toRgb());
+        $this->assertFalse($resolved->getBorder()->pattern->isNone());
     }
 
     public function testBorderHexColor()
@@ -197,7 +197,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(Color::hex('#ff5500')->toRgb(), $resolved->getBorder()->getColor()->toRgb());
+        $this->assertSame(Color::hex('#ff5500')->toRgb(), $resolved->getBorder()->color->toRgb());
     }
 
     public function testBorderPaletteColor()
@@ -212,7 +212,7 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // border-42 matches border-{n} → width 42
-        $this->assertSame(42, $resolved->getBorder()->getTop());
+        $this->assertSame(42, $resolved->getBorder()->top);
     }
 
     // --- Background color ---
@@ -439,7 +439,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         $this->assertSame(Color::hex('#3b82f6')->toRgb(), $resolved->getBackground()->toRgb());
         $this->assertSame(Color::hex('#737373')->tint(95)->toRgb(), $resolved->getColor()->toRgb());
         $this->assertTrue($resolved->getBold());
@@ -463,7 +463,7 @@ class TailwindStylesheetTest extends TestCase
         // Background from .card rule
         $this->assertSame(Color::named('blue')->toForegroundCode(), $resolved->getBackground()->toForegroundCode());
         // Padding from utility class
-        $this->assertSame(2, $resolved->getPadding()->getTop());
+        $this->assertSame(2, $resolved->getPadding()->top);
         // Bold from utility class
         $this->assertTrue($resolved->getBold());
     }
@@ -481,7 +481,7 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Utility p-1 overrides .card's padding 5 (utilities are immutable)
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         // Utility not-bold overrides .card's bold
         $this->assertFalse($resolved->getBold());
     }
@@ -511,7 +511,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(0, $resolved->getPadding()->getTop());
+        $this->assertSame(0, $resolved->getPadding()->top);
         $this->assertFalse($resolved->getBold());
     }
 
@@ -541,7 +541,7 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Instance style overrides utility classes
-        $this->assertSame(5, $resolved->getPadding()->getTop());
+        $this->assertSame(5, $resolved->getPadding()->top);
         $this->assertFalse($resolved->getBold());
     }
 
@@ -622,7 +622,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getBorder()->getTop());
+        $this->assertSame(1, $resolved->getBorder()->top);
     }
 
     /**
@@ -815,7 +815,7 @@ class TailwindStylesheetTest extends TestCase
         // bold utility should still work
         $this->assertTrue($resolved->getBold());
         // padding from .card base rule
-        $this->assertSame(3, $resolved->getPadding()->getTop());
+        $this->assertSame(3, $resolved->getPadding()->top);
     }
 
     // --- Merge with other stylesheets ---
@@ -833,7 +833,7 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // .card provides padding and background
-        $this->assertSame(3, $resolved->getPadding()->getTop());
+        $this->assertSame(3, $resolved->getPadding()->top);
         $this->assertSame(Color::named('blue')->toForegroundCode(), $resolved->getBackground()->toForegroundCode());
         // Utility provides bold and text color
         $this->assertTrue($resolved->getBold());
@@ -861,8 +861,8 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getBorder()->getTop());
-        $this->assertSame(Color::hex('#22c55e')->toRgb(), $resolved->getBorder()->getColor()->toRgb());
+        $this->assertSame(1, $resolved->getBorder()->top);
+        $this->assertSame(Color::hex('#22c55e')->toRgb(), $resolved->getBorder()->color->toRgb());
     }
 
     public function testOnlyBorderColorWithoutWidth()
@@ -874,8 +874,8 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Border is created but with zero width (not visible, like Tailwind)
-        $this->assertSame(0, $resolved->getBorder()->getTop());
-        $this->assertSame(Color::hex('#ef4444')->toRgb(), $resolved->getBorder()->getColor()->toRgb());
+        $this->assertSame(0, $resolved->getBorder()->top);
+        $this->assertSame(Color::hex('#ef4444')->toRgb(), $resolved->getBorder()->color->toRgb());
     }
 
     public function testInvalidColorIsNotUtility()
@@ -910,7 +910,7 @@ class TailwindStylesheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // p-1 overrides .card's padding 3
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         // text-cyan-500 overrides * color gray
         $this->assertSame(Color::hex('#06b6d4')->toRgb(), $resolved->getColor()->toRgb());
         // bold from utility
@@ -928,10 +928,10 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getBorder()->getTop());
-        $this->assertSame(0, $resolved->getBorder()->getRight());
-        $this->assertSame(2, $resolved->getBorder()->getBottom());
-        $this->assertSame(0, $resolved->getBorder()->getLeft());
+        $this->assertSame(1, $resolved->getBorder()->top);
+        $this->assertSame(0, $resolved->getBorder()->right);
+        $this->assertSame(2, $resolved->getBorder()->bottom);
+        $this->assertSame(0, $resolved->getBorder()->left);
     }
 
     // --- Color shades ---
@@ -973,7 +973,7 @@ class TailwindStylesheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $rgb = $resolved->getBorder()->getColor()->toRgb();
+        $rgb = $resolved->getBorder()->color->toRgb();
         $expected = Color::hex('#22c55e')->shade(20)->toRgb();
         $this->assertSame($expected, $rgb);
     }
@@ -1094,6 +1094,6 @@ class TailwindStylesheetTest extends TestCase
 
         $this->assertTrue($resolved->getBold());
         $this->assertSame(Color::hex('#06b6d4')->toRgb(), $resolved->getColor()->toRgb());
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
     }
 }

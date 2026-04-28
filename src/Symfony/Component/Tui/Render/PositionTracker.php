@@ -76,7 +76,7 @@ final class PositionTracker
      */
     public function isActive(): bool
     {
-        return [] !== $this->positionStack;
+        return (bool) $this->positionStack;
     }
 
     /**
@@ -135,14 +135,13 @@ final class PositionTracker
     /**
      * Snapshot the set of widgets currently tracked.
      *
-     * @return \SplObjectStorage<AbstractWidget, true>
+     * @return array<int, true>
      */
-    public function snapshotKeys(): \SplObjectStorage
+    public function snapshotKeys(): array
     {
-        /** @var \SplObjectStorage<AbstractWidget, true> $snapshot */
-        $snapshot = new \SplObjectStorage();
+        $snapshot = [];
         foreach ($this->widgetPositions as $widget => $_) {
-            $snapshot[$widget] = true;
+            $snapshot[spl_object_id($widget)] = true;
         }
 
         return $snapshot;
@@ -151,23 +150,24 @@ final class PositionTracker
     /**
      * Shift positions for all widgets added since the snapshot.
      *
-     * @param \SplObjectStorage<AbstractWidget, true>|null $before
+     * @param array<int, true>|null $before
      */
-    public function shiftDescendantPositions(?\SplObjectStorage $before, int $colOffset, int $rowOffset = 0): void
+    public function shiftDescendantPositions(?array $before, int $colOffset, int $rowOffset = 0): void
     {
         if (null === $before) {
             return;
         }
 
         foreach ($this->widgetPositions as $widget => $rect) {
-            if (!$before->offsetExists($widget)) {
-                $this->widgetPositions[$widget] = new WidgetRect(
-                    $rect->getRow() + $rowOffset,
-                    $rect->getCol() + $colOffset,
-                    $rect->getColumns(),
-                    $rect->getRows(),
-                );
+            if (isset($before[spl_object_id($widget)])) {
+                continue;
             }
+            $this->widgetPositions[$widget] = new WidgetRect(
+                $rect->row + $rowOffset,
+                $rect->col + $colOffset,
+                $rect->columns,
+                $rect->rows,
+            );
         }
     }
 }

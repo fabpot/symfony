@@ -27,11 +27,11 @@ final class StdinBuffer
 {
     private string $buffer = '';
 
-    /** @var callable(string): void|null */
-    private $onData;
+    /** @var (\Closure(string): void)|null */
+    private ?\Closure $onData = null;
 
-    /** @var callable(string): void|null */
-    private $onPaste;
+    /** @var (\Closure(string): void)|null */
+    private ?\Closure $onPaste = null;
 
     private bool $inPaste = false;
     private string $pasteBuffer = '';
@@ -43,7 +43,7 @@ final class StdinBuffer
      */
     public function onData(callable $callback): void
     {
-        $this->onData = $callback;
+        $this->onData = $callback(...);
     }
 
     /**
@@ -53,7 +53,7 @@ final class StdinBuffer
      */
     public function onPaste(callable $callback): void
     {
-        $this->onPaste = $callback;
+        $this->onPaste = $callback(...);
     }
 
     /**
@@ -83,8 +83,7 @@ final class StdinBuffer
 
             // If in paste mode, accumulate until end marker
             if ($this->inPaste) {
-                $endPos = strpos($this->buffer, "\x1b[201~");
-                if (false !== $endPos) {
+                if (false !== $endPos = strpos($this->buffer, "\x1b[201~")) {
                     $this->pasteBuffer .= substr($this->buffer, 0, $endPos);
                     $this->buffer = substr($this->buffer, $endPos + 6);
                     $this->inPaste = false;

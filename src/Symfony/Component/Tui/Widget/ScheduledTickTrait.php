@@ -29,7 +29,7 @@ trait ScheduledTickTrait
 
     abstract protected function onScheduledTick(): void;
 
-    protected function startScheduledTick(float $intervalSeconds): void
+    private function startScheduledTick(float $intervalSeconds): void
     {
         if ($intervalSeconds <= 0.0) {
             throw new InvalidArgumentException(\sprintf('Interval must be greater than 0, got %d.', $intervalSeconds));
@@ -55,7 +55,7 @@ trait ScheduledTickTrait
         );
     }
 
-    protected function resumeScheduledTick(): void
+    private function resumeScheduledTick(): void
     {
         if (null === $this->scheduledTickInterval) {
             return;
@@ -64,7 +64,7 @@ trait ScheduledTickTrait
         $this->startScheduledTick($this->scheduledTickInterval);
     }
 
-    protected function stopScheduledTick(): void
+    private function stopScheduledTick(): void
     {
         if (null === $this->scheduledTickId) {
             return;
@@ -74,7 +74,7 @@ trait ScheduledTickTrait
         $this->scheduledTickId = null;
     }
 
-    protected function clearScheduledTick(): void
+    private function clearScheduledTick(): void
     {
         $this->stopScheduledTick();
         $this->scheduledTickInterval = null;

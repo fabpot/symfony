@@ -12,6 +12,7 @@
 namespace Symfony\Component\Tui\Widget;
 
 use Symfony\Component\Tui\Exception\LogicException;
+use Symfony\Component\Tui\Widget\Util\StringUtils;
 
 /**
  * Represents a single item in a SettingsListWidget.
@@ -40,7 +41,7 @@ final class SettingItem
         /** @var SubmenuFactory|null */
         private $submenu = null,
     ) {
-        $this->currentValue = $currentValue;
+        $this->currentValue = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($currentValue));
     }
 
     public function getId(): string
@@ -73,12 +74,12 @@ final class SettingItem
 
     public function setCurrentValue(string $value): void
     {
-        $this->currentValue = $value;
+        $this->currentValue = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($value));
     }
 
     public function hasValues(): bool
     {
-        return [] !== $this->values;
+        return (bool) $this->values;
     }
 
     public function hasSubmenu(): bool
@@ -91,10 +92,6 @@ final class SettingItem
      */
     public function getSubmenu(): callable
     {
-        if (null === $this->submenu) {
-            throw new LogicException('This setting item does not have a submenu.');
-        }
-
-        return $this->submenu;
+        return $this->submenu ?? throw new LogicException('This setting item does not have a submenu.');
     }
 }

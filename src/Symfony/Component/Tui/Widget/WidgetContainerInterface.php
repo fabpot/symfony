@@ -21,7 +21,7 @@ namespace Symfony\Component\Tui\Widget;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-interface ContainerInterface extends ParentInterface
+interface WidgetContainerInterface extends ParentInterface
 {
     /**
      * @return $this

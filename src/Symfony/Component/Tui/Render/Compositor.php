@@ -48,22 +48,22 @@ final class Compositor
      */
     public static function composite(Layer ...$layers): array
     {
-        if ([] === $layers) {
+        if (!$layers) {
             return [];
         }
 
         $base = $layers[0];
-        $height = $base->getHeight() ?? \count($base->getLines());
-        $width = $base->getWidth() ?? ([] === $base->getLines() ? 0 : AnsiUtils::visibleWidth($base->getLines()[0]));
+        $height = $base->height ?? \count($base->lines);
+        $width = $base->width ?? (!$base->lines ? 0 : AnsiUtils::visibleWidth($base->lines[0]));
 
         $buffer = new CellBuffer($width, $height);
 
         foreach ($layers as $layer) {
             $buffer->writeAnsiLines(
-                $layer->getLines(),
-                $layer->getRow(),
-                $layer->getCol(),
-                $layer->isTransparent(),
+                $layer->lines,
+                $layer->row,
+                $layer->col,
+                $layer->transparent,
             );
         }
 

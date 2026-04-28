@@ -157,7 +157,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
 
         $kb = $this->getKeybindings();
 
-        if ([] !== $this->filteredItems) {
+        if ($this->filteredItems) {
             // Up - wrap to bottom when at top
             if ($kb->matches($data, 'select_up')) {
                 $this->selectedIndex = 0 === $this->selectedIndex ? \count($this->filteredItems) - 1 : $this->selectedIndex - 1;
@@ -212,7 +212,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
         $lines = [];
 
         // No items match filter
-        if ([] === $this->filteredItems) {
+        if (!$this->filteredItems) {
             $line = $this->applyElement('no-match', '  No matching items');
             $lines[] = $line;
 
@@ -338,8 +338,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
     private function confirmSelection(): void
     {
         $this->selected = true;
-        $selectedItem = $this->filteredItems[$this->selectedIndex] ?? null;
-        if (null !== $selectedItem) {
+        if (null !== $selectedItem = $this->filteredItems[$this->selectedIndex] ?? null) {
             $this->dispatch(new SelectEvent($this, $selectedItem));
         }
     }
@@ -347,8 +346,7 @@ class SelectListWidget extends AbstractWidget implements FocusableInterface
     private function notifySelectionChange(): void
     {
         $this->invalidate();
-        $selectedItem = $this->filteredItems[$this->selectedIndex] ?? null;
-        if (null !== $selectedItem) {
+        if (null !== $selectedItem = $this->filteredItems[$this->selectedIndex] ?? null) {
             $this->dispatch(new SelectionChangeEvent($this, $selectedItem));
         }
     }

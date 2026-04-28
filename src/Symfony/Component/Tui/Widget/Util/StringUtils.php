@@ -55,4 +55,17 @@ final class StringUtils
 
         return false === $sanitized ? '' : $sanitized;
     }
+
+    /**
+     * Strip terminal-escape introducer bytes from untrusted text.
+     *
+     * Removes C0 controls (except TAB and LF), DEL, and the UTF-8 encoding
+     * of C1 controls (`\xc2[\x80-\x9f]`). Prevents terminal-escape injection
+     * by removing the introducer bytes (ESC, BEL, 8-bit CSI); any payload
+     * bytes that followed survive as visible literal text.
+     */
+    public static function stripControlBytes(string $value): string
+    {
+        return preg_replace("/[\x00-\x08\x0b-\x1f\x7f]|\xc2[\x80-\x9f]/", '', $value) ?? '';
+    }
 }

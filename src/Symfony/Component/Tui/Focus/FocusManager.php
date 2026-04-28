@@ -42,6 +42,9 @@ class FocusManager
 
     private Keybindings $keybindings;
 
+    /**
+     * @internal Constructed by the framework; access via {@see WidgetContext::getFocusManager()}.
+     */
     public function __construct(
         private readonly RenderRequestorInterface $renderRequestor,
         ?Keybindings $keybindings = null,
@@ -108,9 +111,8 @@ class FocusManager
      */
     public function remove(FocusableInterface&AbstractWidget $widget): static
     {
-        $index = array_search($widget, $this->focusables, true);
-        if (false !== $index) {
-            array_splice($this->focusables, (int) $index, 1);
+        if (false !== $index = array_search($widget, $this->focusables, true)) {
+            array_splice($this->focusables, $index, 1);
         }
 
         if ($this->focused === $widget) {
@@ -177,13 +179,11 @@ class FocusManager
 
     public function focusNext(): ?FocusableInterface
     {
-        $count = \count($this->focusables);
-        if (0 === $count) {
+        if (!$count = \count($this->focusables)) {
             return null;
         }
 
-        $index = array_search($this->focused, $this->focusables, true);
-        if (false === $index) {
+        if (false === $index = array_search($this->focused, $this->focusables, true)) {
             $index = -1;
         } else {
             $index = (int) $index;
@@ -198,13 +198,11 @@ class FocusManager
 
     public function focusPrevious(): ?FocusableInterface
     {
-        $count = \count($this->focusables);
-        if (0 === $count) {
+        if (!$count = \count($this->focusables)) {
             return null;
         }
 
-        $index = array_search($this->focused, $this->focusables, true);
-        if (false === $index) {
+        if (false === $index = array_search($this->focused, $this->focusables, true)) {
             $index = 0;
         } else {
             $index = (int) $index;

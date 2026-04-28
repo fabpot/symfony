@@ -32,9 +32,7 @@ final class VirtualTerminal implements TerminalInterface
 {
     private string $output = '';
     private ?StdinBuffer $stdinBuffer = null;
-
-    /** @var callable(): void|null */
-    private $onResize;
+    private ?\Closure $onResize = null;
 
     public function __construct(
         private int $columns = 80,
@@ -45,7 +43,7 @@ final class VirtualTerminal implements TerminalInterface
 
     public function start(callable $onInput, callable $onResize, callable $onKittyProtocolActivated): void
     {
-        $this->onResize = $onResize;
+        $this->onResize = $onResize(...);
 
         // Set up StdinBuffer for input parsing (matches real Terminal behavior)
         $this->stdinBuffer = new StdinBuffer();
@@ -135,17 +133,11 @@ final class VirtualTerminal implements TerminalInterface
 
     // Testing helpers
 
-    /**
-     * Get all output written to the terminal.
-     */
     public function getOutput(): string
     {
         return $this->output;
     }
 
-    /**
-     * Clear the output buffer.
-     */
     public function clearOutput(): void
     {
         $this->output = '';
@@ -179,9 +171,6 @@ final class VirtualTerminal implements TerminalInterface
         }
     }
 
-    /**
-     * Simulate terminal resize.
-     */
     public function simulateResize(int $columns, int $rows): void
     {
         $this->columns = $columns;
@@ -192,9 +181,6 @@ final class VirtualTerminal implements TerminalInterface
         }
     }
 
-    /**
-     * Set Kitty protocol state.
-     */
     public function setKittyProtocolActive(bool $active): void
     {
         $this->kittyProtocolActive = $active;

@@ -19,8 +19,6 @@ namespace Symfony\Component\Tui\Widget\Util;
  *
  * @experimental
  *
- * @internal
- *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 class KillRing
@@ -51,7 +49,7 @@ class KillRing
             return;
         }
 
-        if ('kill' === $this->lastAction && [] !== $this->entries) {
+        if ('kill' === $this->lastAction && $this->entries) {
             $lastIndex = \count($this->entries) - 1;
             $current = $this->entries[$lastIndex];
             $this->entries[$lastIndex] = $prepend ? $text.$current : $current.$text;
@@ -71,7 +69,7 @@ class KillRing
      */
     public function peek(): ?string
     {
-        if ([] === $this->entries) {
+        if (!$this->entries) {
             return null;
         }
 

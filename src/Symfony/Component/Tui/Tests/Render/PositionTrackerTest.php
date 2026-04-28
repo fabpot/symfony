@@ -133,13 +133,13 @@ final class PositionTrackerTest extends TestCase
 
         // Old widget should be unchanged
         $oldRect = $tracker->getWidgetRect($widgetOld);
-        $this->assertSame(0, $oldRect->getRow());
-        $this->assertSame(0, $oldRect->getCol());
+        $this->assertSame(0, $oldRect->row);
+        $this->assertSame(0, $oldRect->col);
 
         // New widget should be shifted
         $newRect = $tracker->getWidgetRect($widgetNew);
-        $this->assertSame(12, $newRect->getRow());  // 2 + 10
-        $this->assertSame(8, $newRect->getCol());    // 3 + 5
+        $this->assertSame(12, $newRect->row);  // 2 + 10
+        $this->assertSame(8, $newRect->col);    // 3 + 5
     }
 
     public function testShiftDescendantPositionsWithNullSnapshotIsNoop()
@@ -151,7 +151,7 @@ final class PositionTrackerTest extends TestCase
         $tracker->shiftDescendantPositions(null, 5, 10);
 
         $rect = $tracker->getWidgetRect($widget);
-        $this->assertSame(2, $rect->getRow());
-        $this->assertSame(3, $rect->getCol());
+        $this->assertSame(2, $rect->row);
+        $this->assertSame(3, $rect->col);
     }
 }

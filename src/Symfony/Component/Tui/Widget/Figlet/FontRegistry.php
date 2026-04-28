@@ -30,14 +30,11 @@ use Symfony\Component\Tui\Exception\InvalidArgumentException;
  *
  * @experimental
  *
- * @internal
- *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class FontRegistry
 {
     private const string BUNDLED_FONTS_DIR = __DIR__.'/fonts';
-
     private const array BUNDLED_FONTS = ['big', 'small', 'slant', 'standard', 'mini'];
 
     /** @var array<string, string> name → file path */
@@ -58,7 +55,7 @@ final class FontRegistry
      *
      * @return $this
      */
-    public function register(string $name, string $path): self
+    public function register(string $name, string $path): static
     {
         $this->paths[$name] = $path;
         unset($this->fonts[$name]); // invalidate cache if re-registering

@@ -74,13 +74,8 @@ final class BorderPattern
         return $this->strategies;
     }
 
-    public function applyBorderSegment(
-        string $segment,
-        int $strategy,
-        Style $outerStyle,
-        Style $innerStyle,
-        ?Color $borderColor = null,
-    ): string {
+    public function applyBorderSegment(string $segment, int $strategy, Style $outerStyle, Style $innerStyle, ?Color $borderColor = null): string
+    {
         $segment = '' !== $segment ? $segment : ' ';
 
         $outerForeground = $outerStyle->getColor();
@@ -421,13 +416,8 @@ final class BorderPattern
         );
     }
 
-    private function applyColors(
-        string $segment,
-        ?Color $foreground,
-        ?Color $background,
-        ?Color $outerForeground,
-        ?Color $outerBackground,
-    ): string {
+    private function applyColors(string $segment, ?Color $foreground, ?Color $background, ?Color $outerForeground, ?Color $outerBackground): string
+    {
         return $this->foregroundCode($foreground)
             .$this->backgroundCode($background)
             .$segment

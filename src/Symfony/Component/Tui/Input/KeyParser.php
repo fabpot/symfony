@@ -18,8 +18,6 @@ namespace Symfony\Component\Tui\Input;
  *
  * @experimental
  *
- * @internal
- *
  * @author Fabien Potencier <fabien@symfony.com>
  */
 final class KeyParser
@@ -260,7 +258,7 @@ final class KeyParser
             return false;
         }
 
-        return (bool) preg_match('/:3[u~ABCDHF]$/', $data);
+        return preg_match('/:3[u~ABCDHF]$/', $data);
     }
 
     public function isKeyRepeat(string $data): bool
@@ -269,7 +267,7 @@ final class KeyParser
             return false;
         }
 
-        return (bool) preg_match('/:2[u~ABCDHF]$/', $data);
+        return preg_match('/:2[u~ABCDHF]$/', $data);
     }
 
     /**
@@ -288,28 +286,23 @@ final class KeyParser
             || (str_starts_with($data, "\x1b[") && (str_ends_with($data, 'u') || str_contains($data, ':')))
         ) {
             $kitty = $this->parseKittySequence($data);
-            if (null !== $kitty) {
-                $keyName = $this->keyNameFromCodepoint($kitty['codepoint']);
-                if (null !== $keyName) {
-                    $mods = $this->modsFromFlags($kitty['modifier']);
-                    $key = [] !== $mods ? implode('+', $mods).'+'.$keyName : $keyName;
+            if (null !== $kitty && null !== $keyName = $this->keyNameFromCodepoint($kitty['codepoint'])) {
+                $mods = $this->modsFromFlags($kitty['modifier']);
+                $key = $mods ? implode('+', $mods).'+'.$keyName : $keyName;
 
-                    return ['key' => $key, 'event_type' => $kitty['event_type']];
-                }
+                return ['key' => $key, 'event_type' => $kitty['event_type']];
             }
         }
 
-        if ($this->kittyProtocolActive) {
-            if ("\x1b\r" === $data || "\n" === $data) {
-                return ['key' => 'shift+enter', 'event_type' => self::EVENT_PRESS];
-            }
+        if ($this->kittyProtocolActive && ("\x1b\r" === $data || "\n" === $data)) {
+            return ['key' => 'shift+enter', 'event_type' => self::EVENT_PRESS];
         }
 
         if (isset(self::LEGACY_SEQUENCE_KEY_IDS[$data])) {
             return ['key' => self::LEGACY_SEQUENCE_KEY_IDS[$data], 'event_type' => self::EVENT_PRESS];
         }
 
-        $press = static fn (string $key): array => ['key' => $key, 'event_type' => self::EVENT_PRESS];
+        $press = static fn ($key) => ['key' => $key, 'event_type' => self::EVENT_PRESS];
 
         $matched = match ($data) {
             "\x1b" => $press('escape'),
@@ -446,21 +439,18 @@ final class KeyParser
             }
         }
 
-        if (preg_match('/^\x1b\[1;(\d+)(?::(\d+))?([HF])$/', $data, $match)) {
-            $modifierValue = (int) $match[1];
-            $eventType = $this->parseEventType('' !== $match[2] ? $match[2] : null);
-            $codepoint = 'H' === $match[3]
-                ? self::FUNCTIONAL_CODEPOINTS['home']
-                : self::FUNCTIONAL_CODEPOINTS['end'];
-
-            return [
-                'codepoint' => $codepoint,
-                'modifier' => $modifierValue - 1,
-                'event_type' => $eventType,
-            ];
+        if (!preg_match('/^\x1b\[1;(\d+)(?::(\d+))?([HF])$/', $data, $match)) {
+            return null;
         }
+        $modifierValue = (int) $match[1];
+        $eventType = $this->parseEventType('' !== $match[2] ? $match[2] : null);
+        $codepoint = self::FUNCTIONAL_CODEPOINTS['H' === $match[3] ? 'home' : 'end'];
 
-        return null;
+        return [
+            'codepoint' => $codepoint,
+            'modifier' => $modifierValue - 1,
+            'event_type' => $eventType,
+        ];
     }
 
     private function parseEventType(?string $eventTypeStr): int

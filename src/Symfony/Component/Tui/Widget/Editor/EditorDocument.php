@@ -104,7 +104,7 @@ final class EditorDocument
     {
         $text = implode("\n", $this->lines);
 
-        if ([] === $this->pasteMarkers) {
+        if (!$this->pasteMarkers) {
             return $text;
         }
 
@@ -134,6 +134,7 @@ final class EditorDocument
     {
         $text = StringUtils::sanitizeUtf8($text);
         $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = StringUtils::stripControlBytes($text);
         $lines = '' === $text ? [''] : explode("\n", $text);
         $needsReset = $lines !== $this->lines || 0 !== $this->cursorLine || 0 !== $this->cursorCol;
 
@@ -150,7 +151,7 @@ final class EditorDocument
 
     public function insertText(string $text): void
     {
-        $text = StringUtils::sanitizeUtf8($text);
+        $text = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($text));
         if ('' === $text) {
             return;
         }
@@ -256,8 +257,7 @@ final class EditorDocument
     public function deleteToLineEnd(): bool
     {
         $line = $this->currentLine();
-        $deletedText = $line->deleteToEnd();
-        if ('' === $deletedText) {
+        if ('' === $deletedText = $line->deleteToEnd()) {
             return false;
         }
 
@@ -271,8 +271,7 @@ final class EditorDocument
     public function deleteToLineStart(): bool
     {
         $line = $this->currentLine();
-        $deletedText = $line->deleteToStart();
-        if ('' === $deletedText) {
+        if ('' === $deletedText = $line->deleteToStart()) {
             return false;
         }
 
@@ -342,8 +341,7 @@ final class EditorDocument
 
     public function moveToLineEnd(): bool
     {
-        $lineLength = \strlen($this->lines[$this->cursorLine]);
-        if ($this->cursorCol !== $lineLength) {
+        if ($this->cursorCol !== $lineLength = \strlen($this->lines[$this->cursorLine])) {
             $this->cursorCol = $lineLength;
 
             return true;
@@ -503,7 +501,7 @@ final class EditorDocument
 
     public function undo(): bool
     {
-        if ([] === $this->undoStack) {
+        if (!$this->undoStack) {
             return false;
         }
 
@@ -518,7 +516,7 @@ final class EditorDocument
 
     public function redo(): bool
     {
-        if ([] === $this->redoStack) {
+        if (!$this->redoStack) {
             return false;
         }
 
@@ -535,8 +533,7 @@ final class EditorDocument
 
     public function yank(): bool
     {
-        $text = $this->killRing->peek();
-        if (null === $text) {
+        if (null === $text = $this->killRing->peek()) {
             return false;
         }
 
@@ -596,6 +593,8 @@ final class EditorDocument
     public function handlePaste(string $content): void
     {
         $content = str_replace(["\r\n", "\r"], "\n", StringUtils::sanitizeUtf8($content));
+        $content = StringUtils::stripControlBytes($content);
+
         if ('' === $content) {
             return;
         }
@@ -703,8 +702,7 @@ final class EditorDocument
 
     private function deleteYankedText(): void
     {
-        $range = $this->killRing->getLastYankRange();
-        if (null === $range) {
+        if (null === $range = $this->killRing->getLastYankRange()) {
             return;
         }
 

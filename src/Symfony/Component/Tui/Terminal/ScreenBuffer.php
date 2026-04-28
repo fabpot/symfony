@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Tui\Terminal;
 
+use Symfony\Component\Tui\Ansi\AnsiCodeTracker;
 use Symfony\Component\Tui\Ansi\AnsiUtils;
 
 /**
@@ -25,62 +26,19 @@ use Symfony\Component\Tui\Ansi\AnsiUtils;
  */
 final class ScreenBuffer
 {
-    /**
-     * @var array{
-     *     bold: bool,
-     *     dim: bool,
-     *     italic: bool,
-     *     underline: bool,
-     *     blink: bool,
-     *     reverse: bool,
-     *     strikethrough: bool,
-     *     fg: string|null,
-     *     bg: string|null,
-     *     underline_color: string|null
-     * }
-     */
-    private const DEFAULT_STYLE_STATE = [
-        'bold' => false,
-        'dim' => false,
-        'italic' => false,
-        'underline' => false,
-        'blink' => false,
-        'reverse' => false,
-        'strikethrough' => false,
-        'fg' => null,
-        'bg' => null,
-        'underline_color' => null,
-    ];
-
     /** @var array<int, array<int, array{char: string, style: string}>> */
     private array $cells = [];
     private int $cursorRow = 0;
     private int $cursorCol = 0;
     private int $width;
     private int $height;
-
-    /**
-     * Current style state - tracks individual attributes.
-     *
-     * @var array{
-     *     bold: bool,
-     *     dim: bool,
-     *     italic: bool,
-     *     underline: bool,
-     *     blink: bool,
-     *     reverse: bool,
-     *     strikethrough: bool,
-     *     fg: string|null,
-     *     bg: string|null,
-     *     underline_color: string|null
-     * }
-     */
-    private array $styleState = self::DEFAULT_STYLE_STATE;
+    private AnsiCodeTracker $styleTracker;
 
     public function __construct(int $width = 80, int $height = 24)
     {
         $this->width = $width;
         $this->height = $height;
+        $this->styleTracker = new AnsiCodeTracker();
         $this->clear();
     }
 
@@ -95,7 +53,7 @@ final class ScreenBuffer
         }
         $this->cursorRow = 0;
         $this->cursorCol = 0;
-        $this->styleState = self::DEFAULT_STYLE_STATE;
+        $this->styleTracker->reset();
     }
 
     /**
@@ -111,8 +69,7 @@ final class ScreenBuffer
 
             // Handle escape sequences
             if ("\x1b" === $char) {
-                $consumed = $this->parseEscapeSequence($data, $i);
-                $i += $consumed;
+                $i += $this->parseEscapeSequence($data, $i);
                 continue;
             }
 
@@ -190,9 +147,7 @@ final class ScreenBuffer
         $lastNonEmpty = -1;
 
         for ($row = 0; $row < $this->height; ++$row) {
-            $line = $this->getLineText($row);
-            $trimmed = rtrim($line);
-            if ('' !== $trimmed) {
+            if ('' !== $trimmed = rtrim($this->getLineText($row))) {
                 $lastNonEmpty = $row;
             }
             $result[] = $trimmed;
@@ -277,7 +232,7 @@ final class ScreenBuffer
      */
     private function getLineText(int $row): string
     {
-        if (!isset($this->cells[$row]) || [] === $this->cells[$row]) {
+        if (!isset($this->cells[$row]) || !$this->cells[$row]) {
             return '';
         }
 
@@ -301,7 +256,7 @@ final class ScreenBuffer
      */
     private function getLineStyled(int $row): string
     {
-        if (!isset($this->cells[$row]) || [] === $this->cells[$row]) {
+        if (!isset($this->cells[$row]) || !$this->cells[$row]) {
             return '';
         }
 
@@ -357,7 +312,7 @@ final class ScreenBuffer
             $this->cells[$this->cursorRow][$col] = ['char' => ' ', 'style' => ''];
         }
 
-        $style = $this->buildStyleString();
+        $style = $this->styleTracker->getActiveCodes();
         $charWidth = AnsiUtils::graphemeWidth($char);
 
         // If the wide character doesn't fit at the right edge, skip it
@@ -370,17 +325,18 @@ final class ScreenBuffer
         // Clean up wide character fragments in cells being overwritten
         for ($w = 0; $w < $charWidth; ++$w) {
             $col = $this->cursorCol + $w;
-            if (isset($row[$col])) {
-                if ('' === $row[$col]['char']) {
-                    // This is a continuation cell, clear the wide char to its left
-                    if ($col > 0 && isset($row[$col - 1]) && '' !== $row[$col - 1]['char'] && ' ' !== $row[$col - 1]['char']) {
-                        $row[$col - 1] = ['char' => ' ', 'style' => ''];
-                    }
-                } elseif (' ' !== $row[$col]['char']) {
-                    // This cell may be a wide char, clear its continuation cell to the right
-                    if (isset($row[$col + 1]) && '' === $row[$col + 1]['char']) {
-                        $row[$col + 1] = ['char' => ' ', 'style' => ''];
-                    }
+            if (!isset($row[$col])) {
+                continue;
+            }
+            if ('' === $row[$col]['char']) {
+                // This is a continuation cell, clear the wide char to its left
+                if ($col > 0 && isset($row[$col - 1]) && '' !== $row[$col - 1]['char'] && ' ' !== $row[$col - 1]['char']) {
+                    $row[$col - 1] = ['char' => ' ', 'style' => ''];
+                }
+            } elseif (' ' !== $row[$col]['char']) {
+                // This cell may be a wide char, clear its continuation cell to the right
+                if (isset($row[$col + 1]) && '' === $row[$col + 1]['char']) {
+                    $row[$col + 1] = ['char' => ' ', 'style' => ''];
                 }
             }
         }
@@ -401,50 +357,6 @@ final class ScreenBuffer
         $this->cursorCol += $charWidth;
     }
 
-    /**
-     * Build an ANSI style string from the current style state.
-     */
-    private function buildStyleString(): string
-    {
-        $codes = [];
-
-        if ($this->styleState['bold']) {
-            $codes[] = '1';
-        }
-        if ($this->styleState['dim']) {
-            $codes[] = '2';
-        }
-        if ($this->styleState['italic']) {
-            $codes[] = '3';
-        }
-        if ($this->styleState['underline']) {
-            $codes[] = '4';
-        }
-        if ($this->styleState['blink']) {
-            $codes[] = '5';
-        }
-        if ($this->styleState['reverse']) {
-            $codes[] = '7';
-        }
-        if ($this->styleState['strikethrough']) {
-            $codes[] = '9';
-        }
-        if (null !== $this->styleState['fg']) {
-            $codes[] = $this->styleState['fg'];
-        }
-        if (null !== $this->styleState['bg']) {
-            $codes[] = $this->styleState['bg'];
-        }
-        if (null !== $this->styleState['underline_color']) {
-            $codes[] = $this->styleState['underline_color'];
-        }
-
-        if ([] === $codes) {
-            return '';
-        }
-
-        return "\x1b[".implode(';', $codes).'m';
-    }
 
     /**
      * Scroll the screen up by one line.
@@ -620,148 +532,7 @@ final class ScreenBuffer
      */
     private function handleSgr(string $params): void
     {
-        if ('' === $params) {
-            $params = '0';
-        }
-
-        $codes = array_map('intval', explode(';', $params));
-        $i = 0;
-        $codeCount = \count($codes);
-
-        while ($i < $codeCount) {
-            $code = $codes[$i];
-
-            switch ($code) {
-                case 0: // Reset all
-                    $this->styleState = self::DEFAULT_STYLE_STATE;
-                    break;
-
-                case 1: // Bold
-                    $this->styleState['bold'] = true;
-                    break;
-                case 2: // Dim
-                    $this->styleState['dim'] = true;
-                    break;
-                case 3: // Italic
-                    $this->styleState['italic'] = true;
-                    break;
-                case 4: // Underline
-                    $this->styleState['underline'] = true;
-                    break;
-                case 5: // Blink
-                    $this->styleState['blink'] = true;
-                    break;
-                case 7: // Reverse
-                    $this->styleState['reverse'] = true;
-                    break;
-                case 9: // Strikethrough
-                    $this->styleState['strikethrough'] = true;
-                    break;
-
-                    // Reset individual attributes
-                case 22: // Reset bold and dim
-                    $this->styleState['bold'] = false;
-                    $this->styleState['dim'] = false;
-                    break;
-                case 23: // Reset italic
-                    $this->styleState['italic'] = false;
-                    break;
-                case 24: // Reset underline
-                    $this->styleState['underline'] = false;
-                    break;
-                case 25: // Reset blink
-                    $this->styleState['blink'] = false;
-                    break;
-                case 27: // Reset reverse
-                    $this->styleState['reverse'] = false;
-                    break;
-                case 29: // Reset strikethrough
-                    $this->styleState['strikethrough'] = false;
-                    break;
-
-                    // Standard foreground colors (30-37)
-                case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37:
-                    $this->styleState['fg'] = (string) $code;
-                    break;
-
-                    // Default foreground color
-                case 39:
-                    $this->styleState['fg'] = null;
-                    break;
-
-                    // Standard background colors (40-47)
-                case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
-                    $this->styleState['bg'] = (string) $code;
-                    break;
-
-                    // Default background color
-                case 49:
-                    $this->styleState['bg'] = null;
-                    break;
-
-                    // Bright foreground colors (90-97)
-                case 90: case 91: case 92: case 93: case 94: case 95: case 96: case 97:
-                    $this->styleState['fg'] = (string) $code;
-                    break;
-
-                    // Bright background colors (100-107)
-                case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107:
-                    $this->styleState['bg'] = (string) $code;
-                    break;
-
-                    // 256-color and true-color foreground: 38;5;N or 38;2;R;G;B
-                case 38:
-                    if (isset($codes[$i + 1])) {
-                        if (5 === $codes[$i + 1] && isset($codes[$i + 2])) {
-                            // 256-color mode
-                            $this->styleState['fg'] = '38;5;'.$codes[$i + 2];
-                            $i += 2;
-                        } elseif (2 === $codes[$i + 1] && isset($codes[$i + 2], $codes[$i + 3], $codes[$i + 4])) {
-                            // True-color mode
-                            $this->styleState['fg'] = '38;2;'.$codes[$i + 2].';'.$codes[$i + 3].';'.$codes[$i + 4];
-                            $i += 4;
-                        }
-                    }
-                    break;
-
-                    // 256-color and true-color background: 48;5;N or 48;2;R;G;B
-                case 48:
-                    if (isset($codes[$i + 1])) {
-                        if (5 === $codes[$i + 1] && isset($codes[$i + 2])) {
-                            // 256-color mode
-                            $this->styleState['bg'] = '48;5;'.$codes[$i + 2];
-                            $i += 2;
-                        } elseif (2 === $codes[$i + 1] && isset($codes[$i + 2], $codes[$i + 3], $codes[$i + 4])) {
-                            // True-color mode
-                            $this->styleState['bg'] = '48;2;'.$codes[$i + 2].';'.$codes[$i + 3].';'.$codes[$i + 4];
-                            $i += 4;
-                        }
-                    }
-                    break;
-
-                    // 256-color and true-color underline color: 58;5;N or 58;2;R;G;B
-                case 58:
-                    if (isset($codes[$i + 1])) {
-                        if (5 === $codes[$i + 1] && isset($codes[$i + 2])) {
-                            // 256-color mode
-                            $this->styleState['underline_color'] = '58;5;'.$codes[$i + 2];
-                            $i += 2;
-                        } elseif (2 === $codes[$i + 1] && isset($codes[$i + 2], $codes[$i + 3], $codes[$i + 4])) {
-                            // True-color mode
-                            $this->styleState['underline_color'] = '58;2;'.$codes[$i + 2].';'.$codes[$i + 3].';'.$codes[$i + 4];
-                            $i += 4;
-                        }
-                    }
-                    break;
-
-                    // Default underline color
-                case 59:
-                    $this->styleState['underline_color'] = null;
-                    break;
-            }
-
-            ++$i;
-        }
+        $this->styleTracker->process("\x1b[".$params.'m');
     }
 
     /**

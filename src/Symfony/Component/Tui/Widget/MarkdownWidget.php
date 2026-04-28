@@ -77,7 +77,7 @@ class MarkdownWidget extends AbstractWidget
             throw new LogicException(\sprintf('You cannot use "%s" as the CommonMark package is not installed. Try running "composer require league/commonmark".', __CLASS__));
         }
 
-        $this->text = StringUtils::sanitizeUtf8($text);
+        $this->text = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($text));
         if (null === $parser) {
             $environment = new Environment();
             $environment->addExtension(new CommonMarkCoreExtension());
@@ -97,7 +97,7 @@ class MarkdownWidget extends AbstractWidget
      */
     public function setText(string $text): static
     {
-        $this->text = StringUtils::sanitizeUtf8($text);
+        $this->text = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($text));
         $this->invalidate();
 
         return $this;
@@ -318,17 +318,11 @@ class MarkdownWidget extends AbstractWidget
                 continue;
             }
 
-            $bullet = $isOrdered
-                ? $listBulletStyle->apply($index.'. ').$this->restoreContext
-                : $listBulletStyle->apply('• ').$this->restoreContext;
+            $bullet = $listBulletStyle->apply($isOrdered ? $index.'. ' : '• ').$this->restoreContext;
 
             $content = $this->renderListItemContent($item, $itemColumns);
             foreach ($content as $i => $line) {
-                if (0 === $i) {
-                    $lines[] = $bullet.$line;
-                } else {
-                    $lines[] = '  '.$line;
-                }
+                $lines[] = (0 === $i ? $bullet : '  ').$line;
             }
 
             ++$index;
@@ -347,12 +341,11 @@ class MarkdownWidget extends AbstractWidget
         foreach ($item->children() as $child) {
             if ($child instanceof Paragraph) {
                 $text = $this->renderInlineNodes($child);
-                $wrapped = TextWrapper::wrapTextWithAnsi($text, $columns);
-                array_push($parts, ...$wrapped);
+                $childLines = TextWrapper::wrapTextWithAnsi($text, $columns);
             } else {
                 $childLines = $this->renderNode($child, $columns);
-                array_push($parts, ...$childLines);
             }
+            array_push($parts, ...$childLines);
         }
 
         return $parts;
@@ -391,7 +384,7 @@ class MarkdownWidget extends AbstractWidget
             }
         }
 
-        if ([] === $headers && [] === $rows) {
+        if (!$headers && !$rows) {
             return [];
         }
 
@@ -408,9 +401,8 @@ class MarkdownWidget extends AbstractWidget
     {
         $columnCounts = array_map('count', $rows);
         $columnCounts[] = \count($headers);
-        $numCols = max($columnCounts);
 
-        if (0 === $numCols) {
+        if (0 === $numCols = max($columnCounts)) {
             return [];
         }
 
@@ -420,7 +412,7 @@ class MarkdownWidget extends AbstractWidget
         if ($availableColumns < $minTableWidth) {
             // Fall back to simple text rendering
             $lines = [];
-            if ([] !== $headers) {
+            if ($headers) {
                 $lines[] = implode(' | ', $headers);
             }
             foreach ($rows as $row) {
@@ -471,7 +463,7 @@ class MarkdownWidget extends AbstractWidget
         $lines[] = '┌─'.implode('─┬─', $topBorderCells).'─┐';
 
         // Header row
-        if ([] !== $headers) {
+        if ($headers) {
             $headerCellLines = [];
             for ($i = 0; $i < $numCols; ++$i) {
                 $text = $headers[$i] ?? '';

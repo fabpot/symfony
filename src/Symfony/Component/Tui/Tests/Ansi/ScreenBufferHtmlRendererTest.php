@@ -208,6 +208,17 @@ class ScreenBufferHtmlRendererTest extends TestCase
         $this->assertSame('', $html);
     }
 
+    public function testTrailingWhitespaceOnlyLinesAreStripped()
+    {
+        $screen = new ScreenBuffer(40, 10);
+        $screen->write("Hello\n     ");
+
+        $converter = new ScreenBufferHtmlRenderer();
+        $html = $converter->convert($screen);
+
+        $this->assertSame('Hello', $html);
+    }
+
     public function testHtmlEntitiesEscaped()
     {
         $html = $this->convert('<script>alert("xss")</script>');

@@ -26,10 +26,10 @@ class PaddingTest extends TestCase
     {
         $padding = Padding::from($input);
 
-        $this->assertSame($top, $padding->getTop());
-        $this->assertSame($right, $padding->getRight());
-        $this->assertSame($bottom, $padding->getBottom());
-        $this->assertSame($left, $padding->getLeft());
+        $this->assertSame($top, $padding->top);
+        $this->assertSame($right, $padding->right);
+        $this->assertSame($bottom, $padding->bottom);
+        $this->assertSame($left, $padding->left);
     }
 
     /**
@@ -47,40 +47,40 @@ class PaddingTest extends TestCase
     {
         $padding = Padding::all(7);
 
-        $this->assertSame(7, $padding->getTop());
-        $this->assertSame(7, $padding->getRight());
-        $this->assertSame(7, $padding->getBottom());
-        $this->assertSame(7, $padding->getLeft());
+        $this->assertSame(7, $padding->top);
+        $this->assertSame(7, $padding->right);
+        $this->assertSame(7, $padding->bottom);
+        $this->assertSame(7, $padding->left);
     }
 
     public function testXy()
     {
         $padding = Padding::xy(3, 1);
 
-        $this->assertSame(1, $padding->getTop());
-        $this->assertSame(3, $padding->getRight());
-        $this->assertSame(1, $padding->getBottom());
-        $this->assertSame(3, $padding->getLeft());
+        $this->assertSame(1, $padding->top);
+        $this->assertSame(3, $padding->right);
+        $this->assertSame(1, $padding->bottom);
+        $this->assertSame(3, $padding->left);
     }
 
     public function testXyDefaultY()
     {
         $padding = Padding::xy(5);
 
-        $this->assertSame(0, $padding->getTop());
-        $this->assertSame(5, $padding->getRight());
-        $this->assertSame(0, $padding->getBottom());
-        $this->assertSame(5, $padding->getLeft());
+        $this->assertSame(0, $padding->top);
+        $this->assertSame(5, $padding->right);
+        $this->assertSame(0, $padding->bottom);
+        $this->assertSame(5, $padding->left);
     }
 
     public function testNegativeValuesClampedToZero()
     {
         $padding = new Padding(-5, -3, -1, -2);
 
-        $this->assertSame(0, $padding->getTop());
-        $this->assertSame(0, $padding->getRight());
-        $this->assertSame(0, $padding->getBottom());
-        $this->assertSame(0, $padding->getLeft());
+        $this->assertSame(0, $padding->top);
+        $this->assertSame(0, $padding->right);
+        $this->assertSame(0, $padding->bottom);
+        $this->assertSame(0, $padding->left);
     }
 
     /**

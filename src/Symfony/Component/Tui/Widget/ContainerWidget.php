@@ -38,7 +38,7 @@ use Symfony\Component\Tui\Render\RenderContext;
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class ContainerWidget extends AbstractWidget implements ContainerInterface, VerticallyExpandableInterface
+class ContainerWidget extends AbstractWidget implements WidgetContainerInterface, VerticallyExpandableInterface
 {
     /** @var AbstractWidget[] */
     private array $children = [];
@@ -67,14 +67,13 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
      */
     public function remove(AbstractWidget $widget): static
     {
-        $index = array_search($widget, $this->children, true);
-        if (false !== $index) {
-            $child = $this->children[(int) $index];
+        if (false !== $index = array_search($widget, $this->children, true)) {
+            $child = $this->children[$index];
             $child->setParent(null);
             if (null !== $this->getContext()) {
                 $this->getContext()->detachChild($child);
             }
-            array_splice($this->children, (int) $index, 1);
+            array_splice($this->children, $index, 1);
             $this->invalidate();
         }
 
@@ -94,7 +93,7 @@ class ContainerWidget extends AbstractWidget implements ContainerInterface, Vert
                 $this->getContext()->detachChild($child);
             }
         }
-        if ([] !== $this->children) {
+        if ($this->children) {
             $this->children = [];
             $this->invalidate();
         }

@@ -33,6 +33,9 @@ final class WidgetContext
     /** @var array<string, string> */
     private array $tickIds = [];
 
+    /**
+     * @internal Constructed by the framework; user code receives the context via {@see AbstractWidget::onAttach()}.
+     */
     public function __construct(
         private readonly Tui $tui,
         private readonly Keybindings $keybindings,

@@ -31,14 +31,14 @@ final class Terminal implements TerminalInterface
     private ?string $stdinCallbackId = null;
     private ?string $signalCallbackId = null;
 
-    /** @var callable(string): void|null */
-    private $onInput;
+    /** @var (\Closure(string): void)|null */
+    private ?\Closure $onInput = null;
 
-    /** @var callable(): void|null */
-    private $onResize;
+    /** @var (\Closure(): void)|null */
+    private ?\Closure $onResize = null;
 
-    /** @var callable(): void|null */
-    private $onKittyProtocolActivated;
+    /** @var (\Closure(): void)|null */
+    private ?\Closure $onKittyProtocolActivated = null;
 
     // Cached terminal dimensions (refreshed on SIGWINCH)
     private ?int $cachedColumns = null;
@@ -50,9 +50,9 @@ final class Terminal implements TerminalInterface
             return;
         }
 
-        $this->onInput = $onInput;
-        $this->onResize = $onResize;
-        $this->onKittyProtocolActivated = $onKittyProtocolActivated;
+        $this->onInput = $onInput(...);
+        $this->onResize = $onResize(...);
+        $this->onKittyProtocolActivated = $onKittyProtocolActivated(...);
         $this->started = true;
 
         // Save initial terminal state and enable raw mode
@@ -217,7 +217,7 @@ final class Terminal implements TerminalInterface
 
     public function setTitle(string $title): void
     {
-        $safe = preg_replace("/[\x00-\x1f\x7f]/", '', $title);
+        $safe = preg_replace("/[\x00-\x1f\x7f]|\xc2[\x80-\x9f]/", '', $title);
         $this->write("\x1b]0;{$safe}\x07");
     }
 

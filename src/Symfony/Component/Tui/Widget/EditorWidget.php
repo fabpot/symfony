@@ -197,8 +197,7 @@ class EditorWidget extends AbstractWidget implements FocusableInterface, Vertica
         }
 
         // Handle bracketed paste
-        $pastedText = $this->processBracketedPaste($data);
-        if (null !== $pastedText) {
+        if (null !== $pastedText = $this->processBracketedPaste($data)) {
             $this->document->handlePaste($pastedText);
             $this->notifyChange();
             if ('' === $data) {

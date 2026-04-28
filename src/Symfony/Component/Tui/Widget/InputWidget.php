@@ -109,6 +109,7 @@ class InputWidget extends AbstractWidget implements FocusableInterface
      */
     public function setValue(string $value): static
     {
+        $value = StringUtils::stripControlBytes(StringUtils::sanitizeUtf8($value));
         // When setting a new value, move cursor to the end of the string
         $newCursor = \strlen($value);
         if ($this->line->getText() !== $value || $this->line->getCursor() !== $newCursor) {

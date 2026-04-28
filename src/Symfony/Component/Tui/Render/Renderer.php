@@ -56,10 +56,8 @@ final class Renderer implements WidgetRendererInterface
     {
         $this->fontRegistry = $fontRegistry ?? new FontRegistry();
         $this->positionTracker = new PositionTracker();
-        $this->layoutEngine = new LayoutEngine($this->positionTracker, $this->fontRegistry);
-        $this->layoutEngine->setWidgetRenderer($this);
-        $this->chromeApplier = new ChromeApplier();
-        $this->chromeApplier->setWidgetRenderer($this);
+        $this->layoutEngine = new LayoutEngine($this, $this->positionTracker, $this->fontRegistry);
+        $this->chromeApplier = new ChromeApplier($this);
 
         if (null !== $styleSheet) {
             // Clone the user stylesheet to preserve its runtime type
@@ -264,7 +262,7 @@ final class Renderer implements WidgetRendererInterface
         $columns = $context->getColumns();
         $rows = $context->getRows();
 
-        if ([] === $children) {
+        if (!$children) {
             return $this->chromeApplier->apply([], $columns, $resolvedStyle, $widget);
         }
 
@@ -312,8 +310,7 @@ final class Renderer implements WidgetRendererInterface
 
         // Apply vertical alignment for child widgets and adjust tracked positions
         if ($hasVerticalAlign && \count($childLines) < $innerRows) {
-            $verticalOffset = $this->layoutEngine->computeVerticalAlignOffset(\count($childLines), $innerRows, $verticalAlign);
-            if ($verticalOffset > 0) {
+            if (0 < $verticalOffset = $this->layoutEngine->computeVerticalAlignOffset(\count($childLines), $innerRows, $verticalAlign)) {
                 $topPad = array_fill(0, $verticalOffset, '');
                 array_unshift($childLines, ...$topPad);
                 $this->positionTracker->shiftDescendantPositions($positionsBeforeLayout, 0, $verticalOffset);
@@ -325,12 +322,9 @@ final class Renderer implements WidgetRendererInterface
         }
 
         // Apply horizontal alignment for child widgets and adjust tracked positions
-        if ($hasAlign) {
-            $alignOffset = $this->layoutEngine->computeAlignOffset($childLines, $innerColumns, $align);
-            if ($alignOffset > 0) {
-                $childLines = $this->layoutEngine->shiftLines($childLines, $alignOffset);
-                $this->positionTracker->shiftDescendantPositions($positionsBeforeLayout, $alignOffset);
-            }
+        if ($hasAlign && 0 < $alignOffset = $this->layoutEngine->computeAlignOffset($childLines, $innerColumns, $align)) {
+            $childLines = $this->layoutEngine->shiftLines($childLines, $alignOffset);
+            $this->positionTracker->shiftDescendantPositions($positionsBeforeLayout, $alignOffset);
         }
 
         // Apply chrome (padding, border, background)

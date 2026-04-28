@@ -31,11 +31,9 @@ use Symfony\Component\Tui\Widget\AbstractWidget;
  */
 final class ChromeApplier
 {
-    private WidgetRendererInterface $widgetRenderer;
-
-    public function setWidgetRenderer(WidgetRendererInterface $widgetRenderer): void
-    {
-        $this->widgetRenderer = $widgetRenderer;
+    public function __construct(
+        private readonly WidgetRendererInterface $widgetRenderer,
+    ) {
     }
 
     /**
@@ -50,24 +48,24 @@ final class ChromeApplier
         $border = $style->getBorder();
         $padding = $style->getPadding();
 
-        $borderLeft = null !== $border ? $border->getLeft() : 0;
-        $borderRight = null !== $border ? $border->getRight() : 0;
-        $borderTop = null !== $border ? $border->getTop() : 0;
-        $borderBottom = null !== $border ? $border->getBottom() : 0;
-        $paddingLeft = null !== $padding ? $padding->getLeft() : 0;
-        $paddingRight = null !== $padding ? $padding->getRight() : 0;
-        $paddingTop = null !== $padding ? $padding->getTop() : 0;
-        $paddingBottom = null !== $padding ? $padding->getBottom() : 0;
+        $borderLeft = $border?->left ?? 0;
+        $borderRight = $border?->right ?? 0;
+        $borderTop = $border?->top ?? 0;
+        $borderBottom = $border?->bottom ?? 0;
+        $paddingLeft = $padding?->left ?? 0;
+        $paddingRight = $padding?->right ?? 0;
+        $paddingTop = $padding?->top ?? 0;
+        $paddingBottom = $padding?->bottom ?? 0;
 
-        $hasVerticalPadding = 0 !== $paddingTop || 0 !== $paddingBottom;
-        $hasHorizontalPadding = 0 !== $paddingLeft || 0 !== $paddingRight;
-        $hasBorder = 0 !== $borderTop || 0 !== $borderBottom || 0 !== $borderLeft || 0 !== $borderRight;
+        $hasVerticalPadding = $paddingTop || $paddingBottom;
+        $hasHorizontalPadding = $paddingLeft || $paddingRight;
+        $hasBorder = $borderTop || $borderBottom || $borderLeft || $borderRight;
 
         if (!$hasBorder && !$hasHorizontalPadding && !$hasVerticalPadding && $style->isPlain() && null === $style->getTextAlign()) {
             return $lines;
         }
 
-        if ([] === $lines && !$hasVerticalPadding && 0 === $borderTop && 0 === $borderBottom) {
+        if (!$lines && !$hasVerticalPadding && !$borderTop && !$borderBottom) {
             return [];
         }
 
@@ -92,8 +90,8 @@ final class ChromeApplier
         }
 
         // If no content and no padding/border, return empty
-        if ([] === $processedLines && 0 === $paddingTop && 0 === $paddingBottom
-            && 0 === $borderTop && 0 === $borderBottom) {
+        if (!$processedLines && !$paddingTop && !$paddingBottom
+            && !$borderTop && !$borderBottom) {
             return [];
         }
 
@@ -128,16 +126,12 @@ final class ChromeApplier
 
         $innerLines = [...$topPadding, ...$contentLines, ...$bottomPadding];
 
-        if (null !== $border) {
-            $innerLines = $border->wrapLines(
-                $innerLines,
-                $innerWidth,
-                $style,
-                $outerStyle,
-            );
-        }
-
-        return $innerLines;
+        return $border?->wrapLines(
+            $innerLines,
+            $innerWidth,
+            $style,
+            $outerStyle,
+        ) ?? $innerLines;
     }
 
     /**
@@ -150,10 +144,10 @@ final class ChromeApplier
         $border = $style->getBorder();
         $padding = $style->getPadding();
 
-        $hChrome = (null !== $border ? $border->getLeft() + $border->getRight() : 0)
-            + (null !== $padding ? $padding->getLeft() + $padding->getRight() : 0);
-        $vChrome = (null !== $border ? $border->getTop() + $border->getBottom() : 0)
-            + (null !== $padding ? $padding->getTop() + $padding->getBottom() : 0);
+        $hChrome = ($border?->left ?? 0) + ($border?->right ?? 0)
+            + ($padding?->left ?? 0) + ($padding?->right ?? 0);
+        $vChrome = ($border?->top ?? 0) + ($border?->bottom ?? 0)
+            + ($padding?->top ?? 0) + ($padding?->bottom ?? 0);
 
         return [
             max(1, $columns - $hChrome),
@@ -171,8 +165,8 @@ final class ChromeApplier
         $border = $style->getBorder();
         $padding = $style->getPadding();
 
-        $top = (null !== $border ? $border->getTop() : 0) + (null !== $padding ? $padding->getTop() : 0);
-        $left = (null !== $border ? $border->getLeft() : 0) + (null !== $padding ? $padding->getLeft() : 0);
+        $top = ($border?->top ?? 0) + ($padding?->top ?? 0);
+        $left = ($border?->left ?? 0) + ($padding?->left ?? 0);
 
         return [$top, $left];
     }
@@ -205,13 +199,12 @@ final class ChromeApplier
     {
         // Collect ancestors from immediate parent to root
         $ancestors = [];
-        $parent = $widget->getParent();
-        while (null !== $parent) {
+        $parent = $widget;
+        while (null !== $parent = $parent->getParent()) {
             $ancestors[] = $parent;
-            $parent = $parent->getParent();
         }
 
-        if ([] === $ancestors) {
+        if (!$ancestors) {
             return null;
         }
 

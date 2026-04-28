@@ -79,8 +79,7 @@ final class ScreenWriter
      */
     public function setScrollOffset(int $offset): void
     {
-        $offset = max(0, $offset);
-        if ($this->scrollOffset !== $offset) {
+        if ($this->scrollOffset !== $offset = max(0, $offset)) {
             $this->scrollOffset = $offset;
             $this->reset();
         }
@@ -114,7 +113,7 @@ final class ScreenWriter
             }
         }
 
-        if ([] !== $this->previousLines && $this->previousWidth === $this->terminal->getColumns() && $lines === $this->previousRawLines) {
+        if ($this->previousLines && $this->previousWidth === $this->terminal->getColumns() && $lines === $this->previousRawLines) {
             $this->positionHardwareCursor($this->previousCursorPos, \count($this->previousLines));
 
             return;
@@ -173,7 +172,7 @@ final class ScreenWriter
         $widthChanged = 0 !== $this->previousWidth && $this->previousWidth !== $columns;
 
         // First render or width changed
-        if ([] === $this->previousLines || $widthChanged) {
+        if (!$this->previousLines || $widthChanged) {
             $this->fullRender($lines, $cursorPos, $widthChanged);
 
             return;
@@ -194,9 +193,7 @@ final class ScreenWriter
         }
 
         // Check if firstChanged is outside the viewport
-        $viewportTop = $this->terminal->isVirtual()
-            ? 0
-            : max(0, $this->maxLinesRendered - $rows);
+        $viewportTop = $this->terminal->isVirtual() ? 0 : max(0, $this->maxLinesRendered - $rows);
 
         if ($firstChanged < $viewportTop) {
             $this->fullRender($lines, $cursorPos, true);
@@ -243,7 +240,7 @@ final class ScreenWriter
             $buffer .= "\x1b[2J\x1b[3J\x1b[H"; // Clear screen, clear scrollback, and home
         }
 
-        if ([] !== $newLines) {
+        if ($newLines) {
             $buffer .= implode("\r\n", $newLines);
         }
 
@@ -406,15 +403,13 @@ final class ScreenWriter
             $buffer .= str_repeat("\r\n\x1b[2K", $extraLines);
 
             $buffer .= "\x1b[{$extraLines}A";
-        } elseif (\count($newLines) > \count($this->previousLines)) {
+        } elseif (\count($newLines) > \count($this->previousLines) && $renderEnd < \count($newLines) - 1) {
             // Content grew - output any additional lines not already rendered
             // Only needed if renderEnd < newLines.length - 1 (i.e., we didn't render to the end)
-            if ($renderEnd < \count($newLines) - 1) {
-                for ($i = $renderEnd + 1; $i < \count($newLines); ++$i) {
-                    $buffer .= "\r\n\x1b[2K";
-                    $buffer .= $newLines[$i];
-                    $finalCursorRow = $i;
-                }
+            for ($i = $renderEnd + 1; $i < \count($newLines); ++$i) {
+                $buffer .= "\r\n\x1b[2K";
+                $buffer .= $newLines[$i];
+                $finalCursorRow = $i;
             }
         }
 
@@ -447,8 +442,7 @@ final class ScreenWriter
         $previousLineCount = \count($this->previousLines);
 
         foreach ($lines as $row => $line) {
-            $oldLine = $row < $previousLineCount ? $this->previousLines[$row] : '';
-            if ($oldLine === $line) {
+            if ($line === $oldLine = $row < $previousLineCount ? $this->previousLines[$row] : '') {
                 continue;
             }
 
@@ -460,15 +454,12 @@ final class ScreenWriter
 
                 if (null === $cursorPos) {
                     $markerIndex = strpos($line, AnsiUtils::CURSOR_MARKER_PREFIX);
-                    if (false !== $markerIndex) {
-                        $endIndex = strpos($line, "\x07", $markerIndex);
-                        if (false !== $endIndex) {
-                            $markerLen = $endIndex - $markerIndex + 1;
-                            $shapeStr = substr($line, $markerIndex + \strlen(AnsiUtils::CURSOR_MARKER_PREFIX), $endIndex - $markerIndex - \strlen(AnsiUtils::CURSOR_MARKER_PREFIX));
-                            $beforeMarker = substr($line, 0, $markerIndex);
-                            $cursorPos = ['row' => $row, 'col' => AnsiUtils::visibleWidth($beforeMarker), 'shape' => (int) $shapeStr];
-                            $line = substr($line, 0, $markerIndex).substr($line, $markerIndex + $markerLen);
-                        }
+                    if (false !== $markerIndex && false !== $endIndex = strpos($line, "\x07", $markerIndex)) {
+                        $markerLen = $endIndex - $markerIndex + 1;
+                        $shapeStr = substr($line, $markerIndex + \strlen(AnsiUtils::CURSOR_MARKER_PREFIX), $endIndex - $markerIndex - \strlen(AnsiUtils::CURSOR_MARKER_PREFIX));
+                        $beforeMarker = substr($line, 0, $markerIndex);
+                        $cursorPos = ['row' => $row, 'col' => AnsiUtils::visibleWidth($beforeMarker), 'shape' => (int) $shapeStr];
+                        $line = substr($line, 0, $markerIndex).substr($line, $markerIndex + $markerLen);
                     }
                 }
 

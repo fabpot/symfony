@@ -35,45 +35,12 @@ final class Layer
      * @param int|null $height      Explicit canvas height (used by the base layer to define the canvas size)
      */
     public function __construct(
-        private readonly array $lines,
-        private readonly int $row = 0,
-        private readonly int $col = 0,
-        private readonly bool $transparent = false,
-        private readonly ?int $width = null,
-        private readonly ?int $height = null,
+        public readonly array $lines,
+        public readonly int $row = 0,
+        public readonly int $col = 0,
+        public readonly bool $transparent = false,
+        public readonly ?int $width = null,
+        public readonly ?int $height = null,
     ) {
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getLines(): array
-    {
-        return $this->lines;
-    }
-
-    public function getRow(): int
-    {
-        return $this->row;
-    }
-
-    public function getCol(): int
-    {
-        return $this->col;
-    }
-
-    public function isTransparent(): bool
-    {
-        return $this->transparent;
-    }
-
-    public function getWidth(): ?int
-    {
-        return $this->width;
-    }
-
-    public function getHeight(): ?int
-    {
-        return $this->height;
     }
 }

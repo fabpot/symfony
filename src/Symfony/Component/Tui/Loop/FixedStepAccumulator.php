@@ -42,17 +42,11 @@ final class FixedStepAccumulator
     /**
      * @return int Number of fixed logic steps to execute for this update
      */
-    public function computeSteps(?float $deltaTime): int
+    public function computeSteps(float $deltaTime): int
     {
-        // Preserve legacy "one update call = one logic step" behavior.
-        if (null === $deltaTime) {
-            return 1;
-        }
-
         $this->accumulator += max(0.0, $deltaTime) * $this->stepsPerSecond;
-        $steps = min($this->maxStepsPerUpdate, (int) floor($this->accumulator));
 
-        if ($steps > 0) {
+        if (0 < $steps = min($this->maxStepsPerUpdate, (int) floor($this->accumulator))) {
             $this->accumulator -= $steps;
         }
 

@@ -27,8 +27,7 @@ use Symfony\Component\Tui\Tui;
  */
 abstract class AbstractWidget
 {
-    use DirtyWidgetTrait { invalidate as private invalidateSelf; }
-
+    private int $renderRevision = 0;
     private ?string $id = null;
     private ?string $label = null;
     private ?AbstractWidget $parent = null;
@@ -189,12 +188,17 @@ abstract class AbstractWidget
 
     final public function invalidate(): void
     {
-        $this->invalidateSelf();
+        ++$this->renderRevision;
         $this->renderCacheLines = null;
 
         if (null !== $this->parent) {
             $this->parent->invalidate();
         }
+    }
+
+    final public function getRenderRevision(): int
+    {
+        return $this->renderRevision;
     }
 
     /**
@@ -273,7 +277,7 @@ abstract class AbstractWidget
      */
     final public function hasListeners(string $eventClass): bool
     {
-        return isset($this->listeners[$eventClass]) && [] !== $this->listeners[$eventClass];
+        return isset($this->listeners[$eventClass]) && $this->listeners[$eventClass];
     }
 
     /**

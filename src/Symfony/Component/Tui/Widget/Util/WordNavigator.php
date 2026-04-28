@@ -41,29 +41,28 @@ final class WordNavigator
             return 0;
         }
 
-        $graphemes = grapheme_str_split(substr($text, 0, $cursor));
-        if (false === $graphemes) {
+        if (false === $graphemes = grapheme_str_split(substr($text, 0, $cursor))) {
             return $cursor;
         }
 
         $newCursor = $cursor;
 
         // Skip trailing whitespace
-        while ([] !== $graphemes && AnsiUtils::isWhitespace(end($graphemes))) {
+        while ($graphemes && AnsiUtils::isWhitespace(end($graphemes))) {
             $newCursor -= \strlen(array_pop($graphemes));
         }
 
-        if ([] !== $graphemes) {
+        if ($graphemes) {
             /** @var string $lastGrapheme */
             $lastGrapheme = end($graphemes);
             if (AnsiUtils::isPunctuation($lastGrapheme)) {
                 // Skip punctuation run
-                while ([] !== $graphemes && AnsiUtils::isPunctuation(end($graphemes))) {
+                while ($graphemes && AnsiUtils::isPunctuation(end($graphemes))) {
                     $newCursor -= \strlen(array_pop($graphemes));
                 }
             } else {
                 // Skip word run
-                while ([] !== $graphemes
+                while ($graphemes
                     && !AnsiUtils::isWhitespace(end($graphemes))
                     && !AnsiUtils::isPunctuation(end($graphemes))) {
                     $newCursor -= \strlen(array_pop($graphemes));
@@ -88,8 +87,7 @@ final class WordNavigator
             return $cursor;
         }
 
-        $graphemes = grapheme_str_split(substr($text, $cursor));
-        if (false === $graphemes) {
+        if (false === $graphemes = grapheme_str_split(substr($text, $cursor))) {
             return $cursor;
         }
 

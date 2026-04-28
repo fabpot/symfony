@@ -38,7 +38,7 @@ final class ChromeApplierTest extends TestCase
     #[DataProvider('innerDimensionsProvider')]
     public function testComputeInnerDimensions(int $columns, int $rows, Style $style, array $expected)
     {
-        $applier = new ChromeApplier();
+        $applier = $this->createApplier();
 
         $this->assertSame($expected, $applier->computeInnerDimensions($columns, $rows, $style));
     }
@@ -66,7 +66,7 @@ final class ChromeApplierTest extends TestCase
     #[DataProvider('chromeOffsetProvider')]
     public function testComputeChromeOffset(Style $style, array $expected)
     {
-        $applier = new ChromeApplier();
+        $applier = $this->createApplier();
 
         $this->assertSame($expected, $applier->computeChromeOffset($style));
     }
@@ -88,7 +88,7 @@ final class ChromeApplierTest extends TestCase
 
     public function testComputeInnerContextReducesDimensions()
     {
-        $applier = new ChromeApplier();
+        $applier = $this->createApplier();
         $context = new RenderContext(40, 10);
         $style = new Style(padding: Padding::all(1), border: Border::all(1, 'none'));
 
@@ -100,7 +100,7 @@ final class ChromeApplierTest extends TestCase
 
     public function testComputeInnerContextStripsLayoutProperties()
     {
-        $applier = new ChromeApplier();
+        $applier = $this->createApplier();
         $style = new Style(
             padding: Padding::all(1),
             border: Border::all(1, 'none'),
@@ -357,11 +357,9 @@ final class ChromeApplierTest extends TestCase
 
     private function createApplier(): ChromeApplier
     {
-        $applier = new ChromeApplier();
         $renderer = $this->createStub(WidgetRendererInterface::class);
         $renderer->method('resolveStyle')->willReturn(new Style());
-        $applier->setWidgetRenderer($renderer);
 
-        return $applier;
+        return new ChromeApplier($renderer);
     }
 }

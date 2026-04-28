@@ -78,9 +78,8 @@ final class Line
         }
 
         $beforeCursor = substr($this->text, 0, $this->cursor);
-        $graphemes = grapheme_str_split($beforeCursor);
 
-        if (false === $graphemes || [] === $graphemes) {
+        if (!$graphemes = grapheme_str_split($beforeCursor)) {
             return false;
         }
 
@@ -101,9 +100,8 @@ final class Line
         }
 
         $afterCursor = substr($this->text, $this->cursor);
-        $graphemes = grapheme_str_split($afterCursor);
 
-        if (false === $graphemes || [] === $graphemes) {
+        if (!$graphemes = grapheme_str_split($afterCursor)) {
             return false;
         }
 
@@ -124,7 +122,7 @@ final class Line
         $beforeCursor = substr($this->text, 0, $this->cursor);
         $graphemes = grapheme_str_split($beforeCursor);
 
-        if (false === $graphemes || [] === $graphemes) {
+        if (!$graphemes) {
             return false;
         }
 
@@ -147,7 +145,7 @@ final class Line
         $afterCursor = substr($this->text, $this->cursor);
         $graphemes = grapheme_str_split($afterCursor);
 
-        if (false === $graphemes || [] === $graphemes) {
+        if (!$graphemes) {
             return false;
         }
 
@@ -175,8 +173,7 @@ final class Line
      */
     public function moveCursorToEnd(): bool
     {
-        $end = \strlen($this->text);
-        if ($this->cursor === $end) {
+        if ($this->cursor === $end = \strlen($this->text)) {
             return false;
         }
 
@@ -194,8 +191,7 @@ final class Line
             return false;
         }
 
-        $newCursor = WordNavigator::skipWordBackward($this->text, $this->cursor);
-        if ($newCursor === $this->cursor) {
+        if ($this->cursor === $newCursor = WordNavigator::skipWordBackward($this->text, $this->cursor)) {
             return false;
         }
 
@@ -213,8 +209,7 @@ final class Line
             return false;
         }
 
-        $newCursor = WordNavigator::skipWordForward($this->text, $this->cursor);
-        if ($newCursor === $this->cursor) {
+        if ($this->cursor === $newCursor = WordNavigator::skipWordForward($this->text, $this->cursor)) {
             return false;
         }
 
@@ -263,8 +258,7 @@ final class Line
      */
     public function deleteToEnd(): string
     {
-        $deletedText = substr($this->text, $this->cursor);
-        if ('' === $deletedText) {
+        if ('' === $deletedText = substr($this->text, $this->cursor)) {
             return '';
         }
 
@@ -278,8 +272,7 @@ final class Line
      */
     public function deleteToStart(): string
     {
-        $deletedText = substr($this->text, 0, $this->cursor);
-        if ('' === $deletedText) {
+        if ('' === $deletedText = substr($this->text, 0, $this->cursor)) {
             return '';
         }
 

@@ -27,7 +27,7 @@ final class LoopClock
     public function __construct(
         ?float $time = null,
     ) {
-        $this->time = $time ?? microtime(true);
+        $this->time = $time ?? hrtime(true) / 1e9;
     }
 
     /**
@@ -36,7 +36,7 @@ final class LoopClock
     public function advance(?float $deltaTime = null): float
     {
         if (null === $deltaTime) {
-            $now = microtime(true);
+            $now = hrtime(true) / 1e9;
             $elapsed = max(0.0, $now - $this->time);
             $this->time = $now;
 
@@ -56,6 +56,6 @@ final class LoopClock
 
     public function reset(?float $time = null): void
     {
-        $this->time = $time ?? microtime(true);
+        $this->time = $time ?? hrtime(true) / 1e9;
     }
 }

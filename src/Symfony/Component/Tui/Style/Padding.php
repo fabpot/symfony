@@ -28,10 +28,10 @@ use Symfony\Component\Tui\Exception\InvalidArgumentException;
  */
 final class Padding
 {
-    private readonly int $top;
-    private readonly int $right;
-    private readonly int $bottom;
-    private readonly int $left;
+    public readonly int $top;
+    public readonly int $right;
+    public readonly int $bottom;
+    public readonly int $left;
 
     public function __construct(int $top, int $right, int $bottom, int $left)
     {
@@ -39,26 +39,6 @@ final class Padding
         $this->right = max(0, $right);
         $this->bottom = max(0, $bottom);
         $this->left = max(0, $left);
-    }
-
-    public function getTop(): int
-    {
-        return $this->top;
-    }
-
-    public function getRight(): int
-    {
-        return $this->right;
-    }
-
-    public function getBottom(): int
-    {
-        return $this->bottom;
-    }
-
-    public function getLeft(): int
-    {
-        return $this->left;
     }
 
     /**

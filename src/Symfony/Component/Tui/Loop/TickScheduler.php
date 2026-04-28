@@ -66,7 +66,7 @@ final class TickScheduler
 
     public function runDue(?float $now = null): void
     {
-        if ([] === $this->intervals) {
+        if (!$this->intervals) {
             return;
         }
 
@@ -89,7 +89,7 @@ final class TickScheduler
 
     public function getNextDelay(?float $now = null): ?float
     {
-        if ([] === $this->intervals) {
+        if (!$this->intervals) {
             return null;
         }
 

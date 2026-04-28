@@ -185,7 +185,7 @@ final class StateDiff
         );
 
         // Failed examples section
-        if ([] !== $failures) {
+        if ($failures) {
             $html .= '<h2 class="section-title">❌ Failed Examples ('.\count($failures).')</h2>';
 
             $failureIndex = 0;
@@ -197,7 +197,7 @@ final class StateDiff
                 $html .= '<h3><span class="badge failed">FAILED</span> '.htmlspecialchars($data['example'] ?? $name).'.php</h3>';
 
                 // Show all steps as tabs
-                if (isset($data['all_steps']) && [] !== $data['all_steps']) {
+                if (isset($data['all_steps']) && $data['all_steps']) {
                     $html .= '<div class="steps-tabs">';
                     $html .= '<h3>Steps to reproduce:</h3>';
 
@@ -316,7 +316,7 @@ final class StateDiff
         } // end failures section
 
         // Passed examples section
-        if ([] !== $successes) {
+        if ($successes) {
             $html .= '<h2 class="section-title">✅ Passed Examples ('.\count($successes).')</h2>';
 
             $successIndex = 0;

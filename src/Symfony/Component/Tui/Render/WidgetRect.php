@@ -25,31 +25,11 @@ namespace Symfony\Component\Tui\Render;
 final class WidgetRect
 {
     public function __construct(
-        private int $row,
-        private int $col,
-        private int $columns,
-        private int $rows,
+        public readonly int $row,
+        public readonly int $col,
+        public readonly int $columns,
+        public readonly int $rows,
     ) {
-    }
-
-    public function getRow(): int
-    {
-        return $this->row;
-    }
-
-    public function getCol(): int
-    {
-        return $this->col;
-    }
-
-    public function getColumns(): int
-    {
-        return $this->columns;
-    }
-
-    public function getRows(): int
-    {
-        return $this->rows;
     }
 
     /**

@@ -29,8 +29,8 @@ trait KeybindingsTrait
 {
     private ?Keybindings $keybindings = null;
 
-    /** @var (callable(string): bool)|null */
-    private $onInput;
+    /** @var (\Closure(string): bool)|null */
+    private ?\Closure $onInput = null;
 
     /**
      * Return the effective keybindings for this widget.
@@ -42,16 +42,12 @@ trait KeybindingsTrait
      */
     public function getKeybindings(): Keybindings
     {
-        $bindings = static::getDefaultKeybindings();
-
         $context = $this->getContext()?->keybindings();
-        if (null !== $context) {
-            $bindings = array_merge($bindings, $context->all());
-        }
-
-        if (null !== $this->keybindings) {
-            $bindings = array_merge($bindings, $this->keybindings->all());
-        }
+        $bindings = array_merge(
+            static::getDefaultKeybindings(),
+            $context?->all() ?? [],
+            $this->keybindings?->all() ?? [],
+        );
 
         return new Keybindings($bindings, $context?->getParser());
     }
@@ -71,7 +67,7 @@ trait KeybindingsTrait
      */
     public function onInput(?callable $callback): static
     {
-        $this->onInput = $callback;
+        $this->onInput = $callback ? $callback(...) : null;
 
         return $this;
     }

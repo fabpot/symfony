@@ -45,8 +45,8 @@ class StyleSheetTest extends TestCase
 
         $resolved = $stylesheet->resolve($widget);
 
-        $this->assertSame(1, $resolved->getPadding()->getTop());
-        $this->assertSame(2, $resolved->getPadding()->getRight());
+        $this->assertSame(1, $resolved->getPadding()->top);
+        $this->assertSame(2, $resolved->getPadding()->right);
     }
 
     public function testResolveWithFqcnSelector()
@@ -84,7 +84,7 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Should inherit padding from universal selector
-        $this->assertSame(2, $resolved->getPadding()->getTop());
+        $this->assertSame(2, $resolved->getPadding()->top);
         // And have color from FQCN selector
         $this->assertSame(Color::named('red')->toForegroundCode(), $resolved->getColor()->toForegroundCode());
     }
@@ -101,10 +101,10 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Should use explicit zero padding, not inherit
-        $this->assertSame(0, $resolved->getPadding()->getTop());
-        $this->assertSame(0, $resolved->getPadding()->getRight());
-        $this->assertSame(0, $resolved->getPadding()->getBottom());
-        $this->assertSame(0, $resolved->getPadding()->getLeft());
+        $this->assertSame(0, $resolved->getPadding()->top);
+        $this->assertSame(0, $resolved->getPadding()->right);
+        $this->assertSame(0, $resolved->getPadding()->bottom);
+        $this->assertSame(0, $resolved->getPadding()->left);
     }
 
     public function testMergeBorderInheritance()
@@ -119,7 +119,7 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Should inherit border from universal selector
-        $this->assertSame(1, $resolved->getBorder()->getTop());
+        $this->assertSame(1, $resolved->getBorder()->top);
     }
 
     public function testMergeBorderExplicitZero()
@@ -134,10 +134,10 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Should use explicit zero border, not inherit
-        $this->assertSame(0, $resolved->getBorder()->getTop());
-        $this->assertSame(0, $resolved->getBorder()->getRight());
-        $this->assertSame(0, $resolved->getBorder()->getBottom());
-        $this->assertSame(0, $resolved->getBorder()->getLeft());
+        $this->assertSame(0, $resolved->getBorder()->top);
+        $this->assertSame(0, $resolved->getBorder()->right);
+        $this->assertSame(0, $resolved->getBorder()->bottom);
+        $this->assertSame(0, $resolved->getBorder()->left);
     }
 
     public function testMergeColorInheritance()
@@ -168,7 +168,7 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Should have padding and background from .card
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         $this->assertSame(Color::named('blue')->toForegroundCode(), $resolved->getBackground()->toForegroundCode());
         // And color and bold from .highlight
         $this->assertSame(Color::named('yellow')->toForegroundCode(), $resolved->getColor()->toForegroundCode());
@@ -185,7 +185,7 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Instance style should override stylesheet
-        $this->assertSame(5, $resolved->getPadding()->getTop());
+        $this->assertSame(5, $resolved->getPadding()->top);
         $this->assertSame(Color::named('blue')->toForegroundCode(), $resolved->getColor()->toForegroundCode());
     }
 
@@ -200,7 +200,7 @@ class StyleSheetTest extends TestCase
         $resolved = $stylesheet->resolve($widget);
 
         // Instance style's explicit zero should override stylesheet's padding
-        $this->assertSame(0, $resolved->getPadding()->getTop());
+        $this->assertSame(0, $resolved->getPadding()->top);
     }
 
     /**
@@ -294,7 +294,7 @@ class StyleSheetTest extends TestCase
         $resolved = $merged->resolve($widget);
 
         // Should have padding from user sheet (overriding default)
-        $this->assertSame(5, $resolved->getPadding()->getTop());
+        $this->assertSame(5, $resolved->getPadding()->top);
         // Should have color from user sheet (overriding default)
         $this->assertSame(Color::named('blue')->toForegroundCode(), $resolved->getColor()->toForegroundCode());
     }
@@ -318,7 +318,7 @@ class StyleSheetTest extends TestCase
         $resolved = $merged->resolve($widget);
 
         // Should have padding from default sheet
-        $this->assertSame(2, $resolved->getPadding()->getTop());
+        $this->assertSame(2, $resolved->getPadding()->top);
         // Should have color from default sheet
         $this->assertSame(Color::named('red')->toForegroundCode(), $resolved->getColor()->toForegroundCode());
         // Should have bold from user sheet
@@ -343,7 +343,7 @@ class StyleSheetTest extends TestCase
         $resolved = $merged->resolve($widget);
 
         // Last sheet's universal rule wins
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         // Previous universal rules are replaced, not property-merged
         $this->assertNull($resolved->getColor());
         $this->assertNull($resolved->getBold());
@@ -366,7 +366,7 @@ class StyleSheetTest extends TestCase
         $resolved = $merged->resolve($widget);
 
         // Should have padding and bold from FQCN selector
-        $this->assertSame(1, $resolved->getPadding()->getTop());
+        $this->assertSame(1, $resolved->getPadding()->top);
         $this->assertTrue($resolved->getBold());
         // Color from .highlight overrides FQCN color (class selectors > FQCN)
         $this->assertSame(Color::named('yellow')->toForegroundCode(), $resolved->getColor()->toForegroundCode());

@@ -22,9 +22,6 @@ use Symfony\Component\Tui\Widget\SettingsListWidget;
  */
 class SettingChangeEvent extends AbstractEvent
 {
-    private const ENABLED_VALUES = ['on', 'true', 'yes', '1', 'enabled'];
-    private const DISABLED_VALUES = ['off', 'false', 'no', '0', 'disabled'];
-
     public function __construct(
         SettingsListWidget $target,
         private readonly string $id,
@@ -51,21 +48,17 @@ class SettingChangeEvent extends AbstractEvent
 
     /**
      * Check if the value represents an enabled/truthy state.
-     *
-     * Matches: on, true, yes, 1, enabled
      */
     public function isEnabled(): bool
     {
-        return \in_array(strtolower($this->value), self::ENABLED_VALUES, true);
+        return filter_var($this->value, \FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
     /**
      * Check if the value represents a disabled/falsy state.
-     *
-     * Matches: off, false, no, 0, disabled
      */
     public function isDisabled(): bool
     {
-        return \in_array(strtolower($this->value), self::DISABLED_VALUES, true);
+        return !(filter_var($this->value, \FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true);
     }
 }

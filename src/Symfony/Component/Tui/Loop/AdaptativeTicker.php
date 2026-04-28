@@ -52,29 +52,29 @@ final class AdaptativeTicker
             return null;
         }
 
-        $intervals = [];
+        $interval = null;
 
         if ($renderRequested) {
-            $intervals[] = $this->activeTickInterval;
+            $interval = $this->activeTickInterval;
         }
 
         if (null !== $nextScheduledDelay) {
-            $intervals[] = $nextScheduledDelay;
+            $interval = min($interval ?? $nextScheduledDelay, $nextScheduledDelay);
         }
 
         if ($hasTickCallback) {
-            if (true === $lastTickBusyHint) {
-                $intervals[] = $this->activeTickInterval;
+            if ($lastTickBusyHint) {
+                $interval = min($interval ?? $this->activeTickInterval, $this->activeTickInterval);
             } elseif (null === $lastTickBusyHint) {
-                $intervals[] = $this->idleTickInterval;
+                $interval = min($interval ?? $this->idleTickInterval, $this->idleTickInterval);
             }
         }
 
-        if ([] === $intervals) {
+        if (null === $interval) {
             return null;
         }
 
-        return max(self::MIN_INTERVAL, min($intervals));
+        return max(self::MIN_INTERVAL, $interval);
     }
 
     private function setInterval(?float $interval): void
