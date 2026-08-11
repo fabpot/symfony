@@ -70,6 +70,46 @@ final class AlignTest extends TestCase
         $this->assertSame(str_repeat(' ', 25).'Hello', $visible);
     }
 
+    public function testAlignRightKeepsTrackedRectAcrossFrames()
+    {
+        $renderer = new Renderer(new StyleSheet([
+            '.parent' => new Style(align: Align::Right),
+            '.child' => new Style(maxColumns: 10),
+        ]));
+
+        $root = new ContainerWidget();
+        $root->addStyleClass('parent');
+        $child = new TextWidget('Hello');
+        $child->addStyleClass('child');
+        $root->add($child);
+
+        $renderer->render($root, 30, 5);
+        $this->assertSame(25, $renderer->getWidgetRect($child)->col);
+
+        $root->invalidate();
+        $renderer->render($root, 30, 5);
+        $this->assertSame(25, $renderer->getWidgetRect($child)->col);
+    }
+
+    public function testVerticalAlignBottomKeepsTrackedRectAcrossFrames()
+    {
+        $renderer = new Renderer(new StyleSheet([
+            '.parent' => new Style(verticalAlign: VerticalAlign::Bottom),
+        ]));
+
+        $root = new ContainerWidget();
+        $root->addStyleClass('parent');
+        $child = new TextWidget('Hello');
+        $root->add($child);
+
+        $renderer->render($root, 30, 5);
+        $this->assertSame(4, $renderer->getWidgetRect($child)->row);
+
+        $root->invalidate();
+        $renderer->render($root, 30, 5);
+        $this->assertSame(4, $renderer->getWidgetRect($child)->row);
+    }
+
     public function testAlignCenterWithMultipleChildren()
     {
         $renderer = new Renderer(new StyleSheet([
